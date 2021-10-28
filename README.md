@@ -1,6 +1,9 @@
 # App-Development-Project
-Nanyang Polytechnic Y1 App Development Group Project [5 members] <br />
-Group Members: <br />
+Nanyang Polytechnic Y1 App Development Group Project [5 members] 
+<br />
+<br />
+Group Members: 
+<br />
 <ol>
   <li>Daniel</li>
   <li>Jason</li>
