@@ -1,7 +1,15 @@
+#navbar {
+	background-color: #7588FD !important;
+}
+.nav-link {
+	color: #FFF !important;
+}
+
 /* ============ desktop view ============ */
 @media all and (min-width: 992px) {
 	#explore {
 		margin: 0 25px;
+		color: #FFF;
 	}
 	.admin-dropdown {
 		margin-right: 20px;

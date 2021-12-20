@@ -1,5 +1,5 @@
 <!-- ============= COMPONENT ============== -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg" id="navbar">
     <div class="container-fluid">
         <a id="logo" href="/"><img src="{{ url_for('static',filename='images/common/logo.png') }}" alt="CourseFinity Logo"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main_nav"  aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
                 <li class="nav-item main-nav-icons">
                     <div id="searchbar">
                         <form action="#">
-                            <input id="search-input" type="text" placeholder="Search.." name="search">
+                            <input id="search-input" type="text" placeholder="Search..." name="search">
                             <button id="search-btn" type="submit"><i class="fa fa-search"></i></button>
                         </form>
                     </div>

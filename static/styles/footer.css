@@ -1,0 +1,135 @@
+.container {
+	max-width: 1170px !important;
+	margin: auto !important;
+	/* to align the footer in the centre */;
+}
+/* !important as to avoid bootstrap from overriding them */
+.row {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	/* Make the flexible items wrap if necessary */;
+}
+ul {
+	list-style: none;
+	padding-left: 0;
+	/* to override bootstrap 5 */;
+}
+.footer {
+	background-color: #7588FD;
+	padding: 70px 0;
+	/* adds padding of 70px to the top and bottom */
+	font-family: montserratbold;
+	text-align: left;
+}
+.footer-col {
+	width: 25%;
+	/* width of each footer column */
+	padding: 0 15px;
+	/* adds padding of 15px to the left and right */;
+}
+.footer-col h4 {
+	font-size: 18px;
+	color: #fff;
+	margin-bottom: 35px;
+	/* margin of 35px from the li tags */
+	font-weight: bold;
+	position: relative;
+	/* position relative to footer */;
+}
+.footer-col h4::before {
+	content: '';
+	/* creates an empty content before h4 in the footer-col class */
+	/* css for the content below to put in the empty content created above */
+	position: absolute;
+	left: 0;
+	bottom: -10px;
+	/* makes it so that the blue bar will be below the h4 text */
+	background-color: #A375FD;
+	height: 2px;
+	box-sizing: border-box;
+	/* to ensure that width will be 60px, inclusive of any padding, etc. */
+	width: 60px;
+}
+/* applies margin-bottom to all except the last li element at the very bottom */
+.footer-col ul li:not(:last-child) {
+	margin-bottom: 10px;
+}
+.footer-col ul li a {
+	text-decoration: none;
+	/* to override bootstrap 5 */
+	font-size: 16px;
+	color: #FFF;
+	display: block;
+	/* for resetting the hover animation (which is by adding padding-left) smoothly */
+	transition: all 0.3s ease;
+}
+.footer-col ul li {
+	text-decoration: none;
+	/* to override bootstrap 5 */
+	font-size: 16px;
+	color: #fff;
+	display: block;
+}
+/* for simple text animation */
+.footer-col ul li a:hover {
+    text-decoration: underline;
+	padding-left: 8px;
+	/* adds padding to the left by 8px upon hover which will make the text go to the right */;
+}
+/* for the social links icon */
+.footer-col .social-links a {
+	display: inline-block;
+	/* ensures the icon lines up */
+	height: 40px;
+	width: 40px;
+	background-color: rgba(35, 120, 163, 0.2);
+	margin: 0 10px 10px 0;
+	/* adds margin of 10px to the right and 10px to the bottom */
+	text-align: center;
+	line-height: 40px;
+	/* line height to align the icons in the centre of the circle */
+	border-radius: 50%;
+	/* to make it a circle */
+	color: #fff;
+	/* colour for the icons */
+	/* for resetting the animation smoothly */
+	transition: all 0.5s ease;
+}
+/* changes/inverts the colour of the cicrle background and the icons upon hover */
+.footer-col .social-links a:hover {
+	color: #54c3fa;
+	background-color: #fff;
+}
+/* to make the footer columns become 2 footer columns per row */
+@media (max-width: 1050px) {
+	.footer-col {
+		width: 50%;
+		margin-bottom: 30px;
+	}
+}
+@media (max-width: 440px) {
+	.footer-col {
+		width: 100%;
+	}
+}
+/* for the copyright text at the bottom of the footer */
+#copyright {
+	margin: auto;
+	font-size: 16px;
+	color: #FFF;
+	text-align: center;
+}
+@media (max-width: 240px) {
+	.footer-col h4 {
+		font-size: 6vw;
+	}
+	.footer-col ul li a {
+		font-size: 4vw;
+	}
+    .footer-col ul li {
+		font-size: 4vw;
+	}
+	#copyright {
+		font-size: 4vw;
+	}
+}
