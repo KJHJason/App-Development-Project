@@ -1,0 +1,80 @@
+{% extends "user_base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='styles/user_profile.css') }}">{% endblock %}
+{% block title %}User Profile Settings{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark rounded" id="left-user">
+                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <span class="fs-4">User Settings</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active active-custom" aria-current="page">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-link text-white">
+                            Payment Methods
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div id="right-user" class="border border-dark rounded">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <img src="{{ url_for('static', filename = 'images/user/default.png') }}" alt="User Profile Icon" id="user-icon-setting" accept=".png">
+                            <div class="mb-9">
+                                <form action="/upload_profile" method="POST" enctype="multipart/form-data">
+                                    <label for="profileImage" class="form-label">Upload Profile Image</label>
+                                    <input class="form-control" type="file" id="profileImage" name="image">
+                                    <button type="submit" class="btn btn-success profile-icon">Save Profile Icon</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="container profile-settings">
+                                <div class="row profile-info">
+                                    <div class="col-sm-4">
+                                        <h6 class="margin-btm">Username:</h6>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <h6 class="margin-btm">John Doe</h6>
+                                        <a href="#">Change Username</a>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h6 class="margin-btm margin-top">Email:</h6>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <h6 class="margin-btm margin-top">johndoe@gmail.com</h6>
+                                        <a href="#">Change Email</a>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h6 class="margin-btm margin-top">Password:</h6>
+                                    </div>
+                                    <div class="col-sm-8 margin-top">
+                                        <a href="#">Change Password</a>
+                                    </div>
+                                </div>
+                                <h4 class="user-tip">Did you know?</h4>
+                                <p>If you have a passion for teaching, you can become a educator!</p>
+                                <form action="#" method="POST">
+                                    <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

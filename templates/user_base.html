@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <!-- Our CSS -->
     <link rel="stylesheet" href="{{ url_for('static',filename='styles/common.css') }}">
+    {% block head %}
+    {% endblock %}
     <!-- link tags for the favicon for all browsers including safari -->
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static',filename='images/common/favicon_180x180.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static',filename='images/common/favicon_32x32.png') }}">
@@ -20,20 +22,18 @@
         {% include 'includes/_user_navbar.html' %}
     {% endblock %}
 
-    <div class="container-fluid">
-        {% block content %}
-        {% endblock %}
-    </div>
+    {% block content %}
+    {% endblock %}
+    
+    {% block footer %}
+        {% include 'includes/_footer.html' %}
+    {% endblock %}
 
     <!-- Bootstrap JS bundle -->
     {% block scripts %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="{{ url_for('static',filename='scripts/common.js') }}"></script>
-    {% endblock %}
-
-    {% block footer %}
-        {% include 'includes/_footer.html' %}
     {% endblock %}
 </body>
 </html>

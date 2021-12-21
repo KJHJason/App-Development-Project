@@ -2,6 +2,13 @@
 	font-family: sans-serif;
 }
 
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
 
 /* ============ Navigation Bar ============ */
 
