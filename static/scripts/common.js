@@ -1,3 +1,5 @@
+////////////////// Navigation Bar Javascript //////////////////
+
 //	window.addEventListener("resize", function() {
 //		"use strict"; window.location.reload(); 
 //	});
@@ -51,3 +53,17 @@ document.addEventListener("DOMContentLoaded", function(){
 
 }); 
 // DOMContentLoaded  end
+
+////////////////// End of Navigation Bar Javascript //////////////////
+
+////////////////// Boostrap 5 Tooltip Javascript //////////////////
+
+(function () {
+    'use strict'
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  })()
+
+////////////////// End of Boostrap 5 Tooltip Javascript //////////////////
