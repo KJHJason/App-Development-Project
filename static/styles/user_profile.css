@@ -1,3 +1,7 @@
+.profile-label {
+  float: right;
+}
+
 #left-user {
   height: 700px;
   margin: 20px 0;
@@ -62,6 +66,9 @@
 @media (max-width: 767px) {
   #right-user {
     height: 800px;
+  }
+  .profile-label {
+    float: none;
   }
 }
 

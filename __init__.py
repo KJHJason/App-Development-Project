@@ -18,6 +18,13 @@ def home():
 def userProfile():
     return render_template('user_profile.html')
     
+@app.route('/login')
+def userLogin():
+    return render_template('login.html')
+
+@app.route('/signup')
+def userSignUp():
+    return render_template('signup.html')    
 
 if __name__ == '__main__':
     app.run()
