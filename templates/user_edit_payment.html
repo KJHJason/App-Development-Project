@@ -1,0 +1,78 @@
+{% extends "user_base.html" %}
+{% block head %}<link rel="stylesheet" href="static/styles/user_profile.css">{% endblock %}
+{% block title %}Edit Payment Details | CourseFinity{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-3 merge-boxes">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
+                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                    <span class="fs-4">My Account</span>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/user_profile" class="nav-link text-white">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/payment_method" class="nav-link text-white active-custom">
+                            Payment Method
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9 merge-boxes">
+            <div id="right-user">
+                <div class="container">
+                    <div class="row">
+                        <div class="card">
+                            <h4 class="card-title margin-top">Edit Payment Details</h4>
+                            <div class="card-body">
+                                <div class="mb-3 row">
+                                    <label for="cardName" class="col-sm-2 col-form-label">Name on card:</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" readonly class="form-control-plaintext" id="cardName" value="John Doe" required>
+                                    </div>
+                                </div>
+                                <div class="col margin-top margin-top2">
+                                    <div class="mb-3 row">
+                                        <label for="cardNo" class="col-sm-2 col-form-label">Card number:</label>
+                                        <div class="col-sm-10">
+                                            <input type="number" readonly class="form-control-plaintext" id="cardNo" value="4319531202151234" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col margin-top margin-top2">
+                                    <div class="mb-3 row">
+                                        <label for="cardType" class="col-sm-2 col-form-label">Card Type:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext" id="cardType" value="Visa" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <form action="#" method="POST">
+                                    <div class="row">
+                                        <div class="col-md-6 margin-top margin-top2">
+                                            <label for="cardExpiry" class="form-label">Expiry Date:</label>
+                                            <input type="date" class="form-control" id="cardExpiry" placeholder="09/21" required>
+                                        </div>
+                                        <div class="col-md-6 margin-top margin-top2">
+                                            <label for="cardCVV" class="form-label">CVV:</label>
+                                            <input type="number" class="form-control" id="cardCVV" placeholder="123" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success margin-top margin-top2 float-end">Save</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
