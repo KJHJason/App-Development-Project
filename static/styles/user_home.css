@@ -3,9 +3,13 @@ h2{
   margin-bottom:50px;
 }
 
+.image{
+  text-align:center;
+}
+
 .col-md img{
   height:auto;
-  width:90%;
+  width:100%;
   margin-bottom:10px;
   border-radius:10px;
 }
