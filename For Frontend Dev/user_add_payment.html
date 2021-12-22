@@ -131,16 +131,37 @@
                     <div class="container">
                         <div class="row">
                             <div class="card">
+                                <h4 class="card-title margin-top">Add Payment Method</h4>
                                 <div class="card-body">
-                                    <h6 class="card-title payment">
-                                        <span class="float-start"><img src="../static/images/payment/visa.png" alt="payment method logo" id="payment_logo"> &#8226;&#8226;&#8226;&#8226;1234</span>
-                                        <span class="float-end"><a href="#">Edit</a></span>
-                                    </h6>
-                                    <h6 class="card-text payment">John Doe</h6>
-                                    <h6 class="card-title payment">
-                                        <span class="float-start">Expiry Date: 01/2022</span>
-                                        <span class="float-end"><a href="#">Delete Card</a></span>
-                                    </h6>
+                                    <form action="#" method="POST">
+                                        <div class="col">
+                                            <label for="cardName" class="form-label">Name on card:</label>
+                                            <input type="text" class="form-control" id="cardName" placeholder="John Doe" required>
+                                        </div>
+                                        <div class="col margin-top margin-top2">
+                                            <label for="cardNo" class="form-label">Card number:</label>
+                                            <input type="number" class="form-control" id="cardNo" placeholder="4319531202151234" required>
+                                        </div>
+                                        <div class="col margin-top margin-top2">
+                                            <label for="cardType" class="form-label">Card Type:</label>
+                                            <select class="form-select" aria-label="Default select example" required>
+                                                <option selected value="">Select card type</option>
+                                                <option value="mastercard">Mastercard</option>
+                                                <option value="visa">Visa</option>
+                                            </select>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 margin-top margin-top2">
+                                                <label for="cardExpiry" class="form-label">Expiry Date:</label>
+                                                <input type="date" class="form-control" id="cardExpiry" placeholder="09/21" required>
+                                            </div>
+                                            <div class="col-md-6 margin-top margin-top2">
+                                                <label for="cardCVV" class="form-label">CVV:</label>
+                                                <input type="number" class="form-control" id="cardCVV" placeholder="123" required>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-success margin-top margin-top2 float-end">Save</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

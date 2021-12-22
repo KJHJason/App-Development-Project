@@ -1,7 +1,3 @@
-.profile-label {
-  float: right;
-}
-
 #left-user {
   height: 600px;
   margin: 20px 0;
@@ -82,12 +78,6 @@
   #user-icon-setting {
     height: 150px;
     width: 150px;
-  }
-}
-
-@media (max-width: 767px) {
-  .profile-label {
-    float: none;
   }
 }
 
