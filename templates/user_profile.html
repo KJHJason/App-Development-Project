@@ -1,5 +1,5 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='styles/user_profile.css') }}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="static/styles/user_profile.css">{% endblock %}
 {% block title %}Profile Settings | CourseFinity{% endblock %}
 
 {% block content %}
@@ -30,7 +30,7 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5">
-                            <img src="{{ url_for('static', filename = 'images/user/default.png') }}" alt="User Profile Icon" id="user-icon-setting" accept=".png">
+                            <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting" accept=".png">
                             <div class="mb-9">
                                 <form action="/upload_profile" method="POST" enctype="multipart/form-data">
                                     <label for="profileImage" class="form-label">Upload Profile Image</label>
