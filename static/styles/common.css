@@ -115,12 +115,12 @@ a:hover {
 
 /* ============ Footer ============ */
 
-.container {
+.footer-container {
 	max-width: 1170px !important;
 	margin: auto !important;
 }
 
-.row {
+.footer-row {
 	display: flex !important;
 	flex-wrap: wrap !important;
 }
