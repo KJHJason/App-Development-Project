@@ -28,3 +28,11 @@ h2{
 .teacher p{
   margin-bottom:40px !important;
 }
+
+@media screen and (max-width: 1500px){
+
+button{
+  margin-bottom:50px;
+}
+
+}
