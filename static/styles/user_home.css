@@ -1,0 +1,26 @@
+h2{
+  margin-top:50px;
+  margin-bottom:50px;
+}
+
+.col-md img{
+  height:auto;
+  width:90%;
+  margin-bottom:10px;
+  border-radius:10px;
+}
+
+.col-md p{
+  margin-bottom:100px;
+}
+
+.teacher {
+  text-align:center;
+}
+
+.teacher img{
+  margin-bottom:100px;
+}
+.teacher p{
+  margin-bottom:40px !important;
+}
