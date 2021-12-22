@@ -20,7 +20,7 @@ def userProfile():
 
 @app.route('/payment_method')
 def userPayment():
-    return render_template('user_payment.html')   
+    return render_template('user_existing_payment.html')   
     
 @app.route('/login')
 def userLogin():
