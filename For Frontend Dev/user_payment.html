@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
     <!-- Our CSS -->
     <link rel="stylesheet" href="../static/styles/common.css">
+    <link rel="stylesheet" href="../static/styles/user_profile.css">
     <!-- link tags for the favicon for all browsers including safari -->
     <link rel="apple-touch-icon" sizes="180x180" href="../static/images/common/favicon_180x180.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../static/images/common/favicon_32x32.png">
@@ -103,11 +104,40 @@
         </div> <!-- container-fluid.// -->
     </nav>
 
-    <!-- content -->
     <div class="container">
-        
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark rounded" id="left-user">
+                    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-4">User Settings</span>
+                    </a>
+                    <hr>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link text-white">
+                                Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-link text-white active-custom" aria-current="page">
+                                Payment Methods
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div id="right-user" class="border border-dark rounded">
+                    <div class="container">
+                        <div class="row">
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-row">
