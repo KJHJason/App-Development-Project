@@ -3,15 +3,20 @@
 }
 
 #left-user {
-  height: 700px;
+  height: 600px;
   margin: 20px 0;
   background-color: #758bfd !important;
+  border-radius: 15px 0 0 15px;
 }
 
 #right-user {
-  height: 700px;
+  height: 600px;
   margin: 20px 0;
   padding-top: 20px;
+  border-radius: 0 30px 30px 0;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #758bfd;
 }
 
 #user-icon-setting {
@@ -54,33 +59,81 @@
   margin: 0 10px;
 }
 
+.merge-boxes {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+
+}
+
 @media (max-width: 991px) {
   #left-user {
-    height: 190px;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0px;
+    height: 100%;
   }
   #right-user {
-    height: 500px;
+    border-radius: 0 0 10px 10px;
+    margin-top: 0px;
+    height: 100%;
+  }
+  .footer {
+    margin-top: 5%;
+  }
+  #user-icon-setting {
+    height: 150px;
+    width: 150px;
   }
 }
 
 @media (max-width: 767px) {
-  #right-user {
-    height: 800px;
-  }
   .profile-label {
     float: none;
   }
 }
 
-
 @media (max-width: 576px) {
-  #right-user {
-    height: 100%;
-  }
   .profile-settings {
     margin: 0 0px !important;
   }
-  .footer {
-		margin-top: 100px;
-	}
+  #left-user {
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0px;
+  }
+  #right-user {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  #left-user {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .margin-top {
+    margin-top: 0px;
+  }
+  .margin-top2 {
+    margin-top: 15px;
+  }
+}
+
+@media (max-width: 374px) {
+  .payment {
+    font-size: 4vw;
+  }
+}
+
+@media (max-width: 280px) {
+  .payment {
+    font-size: 3.5vw;
+  }
+}
+
+#payment_logo {
+  width: 35px;
+  height: auto;
+}
+
+.payment {
+  vertical-align: middle;
+  display: inline-block;
+  width: 100%;
 }

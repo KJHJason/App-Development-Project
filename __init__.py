@@ -17,6 +17,10 @@ def home():
 @app.route('/user_profile')
 def userProfile():
     return render_template('user_profile.html')
+
+@app.route('/payment_method')
+def userPayment():
+    return render_template('user_payment.html')   
     
 @app.route('/login')
 def userLogin():

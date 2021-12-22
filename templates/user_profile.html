@@ -1,32 +1,32 @@
 {% extends "user_base.html" %}
 {% block head %}<link rel="stylesheet" href="{{ url_for('static',filename='styles/user_profile.css') }}">{% endblock %}
-{% block title %}User Profile Settings{% endblock %}
+{% block title %}Profile Settings | CourseFinity{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="col-lg-4">
-            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark rounded" id="left-user">
+        <div class="col-lg-3 merge-boxes">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
                 <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-4">User Settings</span>
+                    <span class="fs-4">My Account</span>
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
-                        <a href="#" class="nav-link text-white active-custom" aria-current="page">
+                        <a href="/user_profile" class="nav-link text-white active-custom">
                             Profile
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-link text-white">
-                            Payment Methods
+                        <a href="/payment_method" class="nav-link text-white">
+                            Payment Method
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
-        <div class="col-lg-8">
-            <div id="right-user" class="border border-dark rounded">
+        <div class="col-lg-9 merge-boxes">
+            <div id="right-user">
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5">
@@ -50,14 +50,14 @@
                                         <a href="#">Change Username</a>
                                     </div>
                                     <div class="col-sm-4">
-                                        <h6 class="margin-btm margin-top profile-label">Email:</h6>
+                                        <h6 class="margin-btm margin-top profile-label margin-top2">Email:</h6>
                                     </div>
                                     <div class="col-sm-8">
                                         <h6 class="margin-btm margin-top">johndoe@gmail.com</h6>
                                         <a href="#">Change Email</a>
                                     </div>
                                     <div class="col-sm-4">
-                                        <h6 class="margin-btm margin-top profile-label">Password:</h6>
+                                        <h6 class="margin-btm margin-top profile-label margin-top2">Password:</h6>
                                     </div>
                                     <div class="col-sm-8 margin-top">
                                         <a href="#">Change Password</a>

@@ -10,17 +10,17 @@
     <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
     <!-- Our CSS -->
-    <link rel="stylesheet" href="static/styles/common.css">
-    <link rel="stylesheet" href="static/styles/user_profile.css">
+    <link rel="stylesheet" href="../static/styles/common.css">
+    <link rel="stylesheet" href="../static/styles/user_profile.css">
     <!-- link tags for the favicon for all browsers including safari -->
-    <link rel="apple-touch-icon" sizes="180x180" href="static/images/common/favicon_180x180.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="static/images/common/favicon_32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../static/images/common/favicon_180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../static/images/common/favicon_32x32.png">
 </head>
 <body>
     <!-- ============= COMPONENT ============== -->
     <nav class="navbar navbar-dark navbar-expand-lg" id="navbar">
         <div class="container-fluid">
-            <a id="logo" href="/"><img src="static/images/common/logo.png" alt="CourseFinity Logo"></a>
+            <a id="logo" href="/"><img src="../static/images/common/logo.png" alt="CourseFinity Logo"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main_nav"  aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -106,32 +106,32 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-lg-4">
-                <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark rounded" id="left-user">
+            <div class="col-lg-3 merge-boxes">
+                <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
                     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <span class="fs-4">User Settings</span>
+                        <span class="fs-4">My Account</span>
                     </a>
                     <hr>
                     <ul class="nav nav-pills flex-column mb-auto">
                         <li class="nav-item">
-                            <a href="#" class="nav-link text-white active-custom" aria-current="page">
+                            <a href="/user_profile" class="nav-link text-white active-custom">
                                 Profile
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="nav-link text-white">
-                                Payment Methods
+                            <a href="/payment_method" class="nav-link text-white">
+                                Payment Method
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
-            <div class="col-lg-8">
-                <div id="right-user" class="border border-dark rounded">
+            <div class="col-lg-9 merge-boxes">
+                <div id="right-user">
                     <div class="container">
                         <div class="row">
                             <div class="col-md-5">
-                                <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting">
+                                <img src="../static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting">
                                 <div class="mb-9">
                                     <label for="formFile" class="form-label">Upload Profile Image</label>
                                     <input class="form-control" type="file" id="formFile">
@@ -149,14 +149,14 @@
                                             <a href="#">Change Username</a>
                                         </div>
                                         <div class="col-sm-4">
-                                            <h6 class="margin-btm margin-top">Email:</h6>
+                                            <h6 class="margin-btm margin-top margin-top2">Email:</h6>
                                         </div>
                                         <div class="col-sm-8">
                                             <h6 class="margin-btm margin-top">johndoe@gmail.com</h6>
                                             <a href="#">Change Email</a>
                                         </div>
                                         <div class="col-sm-4">
-                                            <h6 class="margin-btm margin-top">Password:</h6>
+                                            <h6 class="margin-btm margin-top margin-top2">Password:</h6>
                                         </div>
                                         <div class="col-sm-8 margin-top">
                                             <a href="#">Change Password</a>
@@ -249,6 +249,6 @@
    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="static/scripts/common.js"></script>
+    <script src="../static/scripts/common.js"></script>
 </body>
 </html>
