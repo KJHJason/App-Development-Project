@@ -127,3 +127,7 @@
   display: inline-block;
   width: 100%;
 }
+
+.form-buttons {
+  display: inline-block;
+}
