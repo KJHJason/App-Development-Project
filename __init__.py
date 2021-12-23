@@ -49,7 +49,6 @@ def userLogin():
                 userDict = db['Users']
             else:
                 db["Users"] = userDict
-
         except:
             print("Error in retrieving Users from user.db")
 
@@ -81,7 +80,6 @@ def userSignUp():
                 userDict = db['Users']
             else:
                 db["Users"] = userDict
-
         except:
             print("Error in retrieving Users from user.db")
 
