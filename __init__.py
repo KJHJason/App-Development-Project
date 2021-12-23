@@ -92,10 +92,10 @@ def userSignUp():
         db["Users"] = userDict
 
         db.close()
-        # print("user added")
+        print("User added.")
         return redirect(url_for("home"))
-    # else:
-    #     print("failed")
+    else:
+        print("Failed to add user.")
 
     return render_template('signup.html', form=create_signup_form)    
 
