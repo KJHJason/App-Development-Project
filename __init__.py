@@ -60,9 +60,11 @@ def userLogin():
                 if passwordInput == passwordShelveData:
                     return redirect(url_for("userProfile"))
                 else:
+                    print("User password incorrect.")
                     return render_template('login_failed.html', form=create_login_form)
             else:
-                    return render_template('login_failed.html', form=create_login_form)
+                print("User email not found.")
+                return render_template('login_failed.html', form=create_login_form)
 
     return render_template('login.html', form=create_login_form)
 
