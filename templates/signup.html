@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-md-4 offset-md-4">
             <div class="login-form bg-colour mt-4 p-4" id="userForm">
-                <form action="#" method="POST" class="row g-3">
+                <form action="" method="POST" class="row g-3">
                     <h4 class="text-white">Create your account!</h4>
                     <div class="col-12 text-white">
                         {{ render_field(form.username, class="form-control") }}
@@ -25,14 +25,9 @@
                         {{ render_field(form.password, class="form-control") }}
                         <!-- <label for="password" class="text-white">Password:</label>
                         <input type="password" name="password" class="form-control" id="password" placeholder="Enter your password" required> -->
-                    </div>
-                    <div class="col-12 text-white">
-                        {{ render_field(form.cfm_password, class="form-control") }}
-                        <!-- <label for="cfm_password" class="text-white">Confirm Password:</label>
-                        <input type="password" name="password" class="form-control" id="cfm_password" placeholder="Enter the same password" required> -->
-                    </div>
+                    </div>                 
                     <div class="col-12">
-                        <button type="submit" class="btn btn-colour text-white float-end">Sign Up</button>
+                        <button type="submit" value="Submit" class="btn btn-colour text-white float-end">Sign Up</button>
                     </div>
                 </form>
                 <hr class="mt-4 text-white">
