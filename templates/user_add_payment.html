@@ -3,6 +3,8 @@
 {% block title %}Add Payment Method | CourseFinity{% endblock %}
 
 {% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
 <div class="container">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -34,29 +36,34 @@
                             <div class="card-body">
                                 <form action="#" method="POST">
                                     <div class="col">
-                                        <label for="cardName" class="form-label">Name on card:</label>
-                                        <input type="text" class="form-control" id="cardName" placeholder="John Doe" required>
+                                        {{ render_field(form.cardName, class="form-control", placeholder="John Doe") }}
+                                        <!-- label for="cardName" class="form-label">Name on card:</label>
+                                        <input type="text" class="form-control" id="cardName" placeholder="John Doe" required> -->
                                     </div>
                                     <div class="col margin-top margin-top2">
-                                        <label for="cardNo" class="form-label">Card number:</label>
-                                        <input type="number" class="form-control" id="cardNo" placeholder="4319531202151234" required>
+                                        {{ render_field(form.cardNo, class="form-control", placeholder="4319531202151234") }}
+                                        <!-- <label for="cardNo" class="form-label">Card number:</label>
+                                        <input type="number" class="form-control" id="cardNo" placeholder="4319531202151234" required> -->
                                     </div>
                                     <div class="col margin-top margin-top2">
-                                        <label for="cardType" class="form-label">Card Type:</label>
+                                        {{ render_field(form.cardType, class="form-select") }}
+                                        <!-- <label for="cardType" class="form-label">Card Type:</label>
                                         <select class="form-select" aria-label="Default select example" required>
                                             <option selected value="">Select card type</option>
                                             <option value="mastercard">Mastercard</option>
                                             <option value="visa">Visa</option>
-                                        </select>
+                                        </select> -->
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 margin-top margin-top2">
-                                            <label for="cardExpiry" class="form-label">Expiry Date:</label>
-                                            <input type="date" class="form-control" id="cardExpiry" placeholder="09/21" required>
+                                            {{ render_field(form.cardExpiry, class="form-control") }}
+                                            <!-- <label for="cardExpiry" class="form-label">Expiry Date:</label>
+                                            <input type="date" class="form-control" id="cardExpiry" placeholder="09/21" required> -->
                                         </div>
                                         <div class="col-md-6 margin-top margin-top2">
-                                            <label for="cardCVV" class="form-label">CVV:</label>
-                                            <input type="number" class="form-control" id="cardCVV" placeholder="123" required>
+                                            {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}
+                                            <!-- <label for="cardCVV" class="form-label">CVV:</label>
+                                            <input type="number" class="form-control" id="cardCVV" placeholder="123" required> -->
                                         </div>
                                     </div>
                                     <button type="submit" class="btn btn-success margin-top margin-top2 float-end">Save</button>
