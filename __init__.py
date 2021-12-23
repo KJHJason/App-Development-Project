@@ -5,7 +5,7 @@ import os
 import Forms
 
 app = Flask(__name__)
-UPLOAD_PATH = '/static/images/user'
+UPLOAD_PATH = 'static/images/user'
 ALLOWED_EXTENSIONS = {"png"}
 app.config['UPLOAD_PATH'] = "uploads"
 app.config['MAX_CONTENT_LENGTH'] = 5120 * 5120
@@ -35,11 +35,13 @@ def userEditPayment():
 
 @app.route('/login')
 def userLogin():
-    return render_template('login.html')
+    create_login_form = Forms.CreateLoginForm(request.form)
+    return render_template('login.html', form=create_login_form)
 
 @app.route('/signup')
 def userSignUp():
-    return render_template('signup.html')    
+    create_signup_form = Forms.CreateSignUpForm(request.form)
+    return render_template('signup.html', form=create_signup_form)    
 
 if __name__ == '__main__':
     app.run()
