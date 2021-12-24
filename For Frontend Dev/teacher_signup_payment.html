@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>test</title>
+    <!-- Bootstrap 5.1.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <!-- Our CSS -->
+    <link rel="stylesheet" href="../static/styles/common.css">
+    <link rel="stylesheet" href="../static/styles/login_signin.css">
+    <!-- link tags for the favicon for all browsers including safari -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../static/images/common/favicon_180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../static/images/common/favicon_32x32.png">
+</head>
+<body>
+    <!-- ============= COMPONENT ============== -->
+    <nav class="navbar navbar-dark navbar-expand-lg" id="navbar">
+        <div class="container-fluid">
+            <a id="logo" href="/"><img src="../static/images/common/logo.png" alt="CourseFinity Logo"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main_nav"  aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main_nav">
+            
+
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link text-white dropdown-toggle" id="explore" href="#" data-bs-toggle="dropdown">Explore Categories!</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"> Dropdown item 1 &raquo;</a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Submenu item 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Submenu item 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Submenu item 3</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="dropdown-item" href="#"> Dropdown item 2 &raquo; </a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Submenu item 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Submenu item 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Submenu item 3</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="dropdown-item" href="#"> Dropdown item 3 &raquo; </a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="dropdown-item" href="#"> Dropdown item 4 &raquo;</a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="dropdown-item" href="#"> Dropdown item 5 &raquo;</a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
+                                </ul>
+                            </li>
+                            <li><a class="dropdown-item" href="#"> Dropdown item 6 &raquo;</a>
+                                <ul class="submenu dropdown-menu">
+                                    <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
+                                    <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item main-nav-icons"><a class="nav-link text-white" href="#"><i class="fas fa-shopping-cart fa-lg"></i> Cart</a></li>
+                    <li class="nav-item dropdown main-nav-icons">
+                        <a class="nav-link text-white dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle fa-lg"></i> Account</a>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a class="dropdown-item" href="#">Purchases</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item main-nav-icons">
+                        <div id="searchbar">
+                            <form action="#">
+                                <input id="search-input" type="text" placeholder="Search..." name="search">
+                                <button id="search-btn" type="submit"><i class="fa fa-search"></i></button>
+                            </form>
+                        </div>
+                    </li>
+                </ul> 
+            </div> <!-- navbar-collapse.// -->
+        </div> <!-- container-fluid.// -->
+    </nav>
+
+    <!-- content -->
+    <div class="container">
+        <div class="row">
+            <div class="LSUForm col">
+                <div class="login-form bg-colour mt-4 p-4 rounded" id="userForm">
+                    <form action="#" method="POST" class="row g-3">
+                        <h4 class="text-white">Add a payment method</h4>
+                        <div class="col-md-12">
+                            <label for="password" class="text-white">Name on card:</label>
+                            <input type="text" name="password" class="form-control" id="password" placeholder="Enter your password" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="email" class="text-white">Card number:</label>
+                            <input type="number" name="email" class="form-control" id="email" placeholder="johndoe@gmail.com" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label for="cardType" class="form-label text-white">Card Type:</label>
+                            <select class="form-select" id="cardType" aria-label="Default select example" required>
+                                <option selected value="">Select card type</option>
+                                <option value="mastercard">Mastercard</option>
+                                <option value="visa">Visa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="text-white">Expiry Date:</label>
+                            <input type="month" name="password" class="form-control" id="password" placeholder="Enter your password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="text-white">CVV:</label>
+                            <input type="number" name="password" class="form-control" id="password" placeholder="Enter your password" required>
+                        </div>
+                        <div class="col-md-12">
+                            <a href="/user_profile" class="float-start text-white">Skip <i class="fas fa-arrow-right"></i></a>
+                            <button type="submit" class="btn btn-colour text-white float-end">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-row">
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Useful Links</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Become a Teacher</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                        <li><a href="#">Teacher's Handbook</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Socials</h4>
+                    <div class="social-links">
+                        <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Info</h4>
+                    <div class="social-links">
+                        <ul>
+                            <li><i class="far fa-envelope"></i> Email: coursefinity@support.com</li>
+                            <li><i class="fas fa-phone-alt"></i> +65 6251 2112</li>
+                            <li><i class="far fa-clock"></i> Operating Hours</li>
+                            <li>Monday to Friday: <br>08:00 to 18:00</li>
+                            <li>Saturday: <br>08:00 to 12:00</li>
+                            <li>Closed on Sundays and PH</li>
+                        </ul>
+                    </div>
+                </div>
+                <p id="copyright">&copy; CourseFinity, Inc. 2022</p>
+            </div>
+        </div>
+    </footer>
+    <!-- Bootstrap JS bundle -->
+   
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../static/scripts/common.js"></script>
+</body>
+</html>

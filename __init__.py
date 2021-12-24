@@ -188,5 +188,17 @@ def userSignUp():
 
     return render_template('signup.html', form=create_signup_form)    
 
+@app.route('/teacher_signup', methods=['GET', 'POST'])
+def teacherSignUp():
+    create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
+    create_teacher_payment_form = Forms.CreateTeacherPayment(request.form)
+   
+    if request.method == 'POST' and create_teacher_sign_up_form.validate():
+        if request.method == 'POST' and create_teacher_payment_form.validate():
+            pass
+        return render_template('teacher_signup_payment.html', form=create_teacher_payment_form) 
+
+    return render_template('teacher_signup.html', form=create_teacher_sign_up_form) 
+
 if __name__ == '__main__':
     app.run()

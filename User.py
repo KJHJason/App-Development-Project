@@ -9,6 +9,7 @@ class User:
         self.__password = password
         self.__acc_type = acc_type
         self.__status = status
+        
 
     def set_user_id(self, user_id):
         self__user_id = user_id

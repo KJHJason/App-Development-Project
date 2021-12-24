@@ -1,0 +1,38 @@
+{% extends "guest_base.html" %}
+{% block head %}<link rel="stylesheet" href="static/styles/login_signin.css">{% endblock %}
+{% block title %}Add a Payment Method | CourseFinity{% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper2.html" import render_field %}
+
+<div class="container">
+    <div class="row">
+        <div class="LSUForm col">
+            <div class="login-form bg-colour mt-4 p-4 rounded" id="userForm">
+                <form action="" method="POST" class="row g-3">
+                    <h4 class="text-white">Add a payment method</h4>
+                    <div class="col-md-12 text-white">
+                        {{ render_field(form.cardName, class="form-control", placeholder="John Doe") }}
+                    </div>
+                    <div class="col-md-12 text-white">
+                        {{ render_field(form.cardNo, class="form-control", placeholder="4319531202151234") }}
+                    </div>
+                    <div class="col-md-12 text-white">
+                        {{ render_field(form.cardType, class="form-select") }}
+                    </div>
+                    <div class="col-md-6 text-white">
+                        {{ render_field(form.cardExpiry, class="form-control") }}
+                    </div>
+                    <div class="col-md-6 text-white">
+                        {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}
+                    </div>
+                    <div class="col-md-12">
+                        <a href="/user_profile" class="float-start text-white">Skip <i class="fas fa-arrow-right"></i></a>
+                        <button type="submit" class="btn btn-colour text-white float-end">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
