@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField
 from werkzeug.utils import secure_filename
 import os
 import Forms
-import User
+import Student, Teacher, Admin
 import shelve
 
 app = Flask(__name__)
@@ -52,22 +52,44 @@ def userLogin():
         except:
             print("Error in retrieving Users from user.db")
 
+        # Declaring the 4 variables below to prevent UnboundLocalError
+        email_found = False
+        password_matched = False
+        passwordShelveData = ""
+        emailShelveData = ""
+
         for key in userDict:
             emailShelveData = userDict[key].get_email()
-            passwordShelveData = userDict[key].get_password()
             if emailInput == emailShelveData:
-                if passwordInput == passwordShelveData:
-                    db.close()
-                    return redirect(url_for("userProfile"))
-                else:
-                    print("User password incorrect.")
-                    db.close()
-                    return render_template('login.html', form=create_login_form, failedAttempt=True)
+                email_found = True
+                break
             else:
                 print("User email not found.")
-                db.close()
-                return render_template('login.html', form=create_login_form, failedAttempt=True)
-        
+                
+        if email_found:
+            for key in userDict:
+                passwordShelveData = userDict[key].get_password()
+                if passwordInput == passwordShelveData:
+                    password_matched = True
+                    break
+                else:
+                    print("Password incorrect.")
+                
+        if email_found and password_matched:
+            print("Email in database:", emailShelveData)
+            print("Email Input:", emailInput)
+            print("Password in database:", passwordShelveData)
+            print("Password Input:", passwordInput)
+            db.close()
+            return redirect(url_for("userProfile"))
+        else:
+            print("Email in database:", emailShelveData)
+            print("Email Input:", emailInput)
+            print("Password in database:", passwordShelveData)
+            print("Password Input:", passwordInput)
+            db.close()
+            return render_template('login.html', form=create_login_form, failedAttempt=True)
+
     return render_template('login.html', form=create_login_form)
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -140,7 +162,7 @@ def userSignUp():
         # If there were no duplicates and passwords entered were the same, create a new user
         if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
 
-            user = User.User(usernameInput, emailInput, passwordInput, "student", "good")
+            user = Student.Student(usernameInput, emailInput, passwordInput)
             print(user)
 
             userDict[user.get_user_id()] = user

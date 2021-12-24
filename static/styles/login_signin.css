@@ -7,10 +7,28 @@
 }
 
 #userForm {
-    margin: 50px 0;
-    border-radius: 3px;
+    max-width: 40%;
+    margin: 30px 30%;
 }
 
 .warning_text {
     margin: 10px;
+}
+
+
+@media (max-width: 991px) {
+    .LSUForm {
+        margin: 0 10px;
+    }
+    #userForm {
+        max-width: 80%;
+        margin: 25px 10%;
+    }
+}
+
+@media (max-width: 576px) {
+    #userForm {
+        max-width: 100%;
+        margin: 15px 0;
+    }
 }
