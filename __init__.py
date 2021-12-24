@@ -58,22 +58,23 @@ def userLogin():
         passwordShelveData = ""
         emailShelveData = ""
 
+        # Checking the email input and see if it matches with any in the database
         for key in userDict:
             emailShelveData = userDict[key].get_email()
             if emailInput == emailShelveData:
+                email_key = userDict[key]
                 email_found = True
                 break
             else:
                 print("User email not found.")
                 
+        # if the email is found in the database, it will then check its password and see if it is matched
         if email_found:
-            for key in userDict:
-                passwordShelveData = userDict[key].get_password()
-                if passwordInput == passwordShelveData:
-                    password_matched = True
-                    break
-                else:
-                    print("Password incorrect.")
+            passwordShelveData = email_key.get_password()
+            if passwordInput == passwordShelveData:
+                password_matched = True
+            else:
+                print("Password incorrect.")
                 
         if email_found and password_matched:
             print("Email in database:", emailShelveData)
