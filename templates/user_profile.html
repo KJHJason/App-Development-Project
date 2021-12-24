@@ -3,6 +3,8 @@
 {% block title %}Profile Settings | CourseFinity{% endblock %}
 
 {% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
 <div class="container">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -30,11 +32,10 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5">
-                            <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting" accept=".png">
+                            <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting">
                             <div class="mb-9">
-                                <form action="/upload_profile" method="POST" enctype="multipart/form-data">
-                                    <label for="profileImage" class="form-label">Upload Profile Image</label>
-                                    <input class="form-control" type="file" id="profileImage" name="image">
+                                <form action="" method="POST" enctype="multipart/form-data">
+                                    {{ render_field(form.imageFormFile, class="form-control") }}
                                     <button type="submit" class="btn btn-success profile-icon">Save Profile Icon</button>
                                 </form>
                             </div>
@@ -57,17 +58,29 @@
                                         <a href="#">Change Email</a>
                                     </div>
                                     <div class="col-sm-4">
+                                        <h6 class="margin-btm margin-top margin-top2">Account Type:</h6>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <h6 class="margin-btm margin-top">Student</h6>
+                                        <a href="#">Become a Teacher!</a>
+                                    </div>
+                                    <div class="col-sm-4">
                                         <h6 class="margin-btm margin-top margin-top2">Password:</h6>
                                     </div>
                                     <div class="col-sm-8 margin-top">
                                         <a href="#">Change Password</a>
                                     </div>
                                 </div>
-                                <h4 class="user-tip">Did you know?</h4>
-                                <p>If you have a passion for teaching, you can become a educator!</p>
-                                <form action="#" method="POST">
-                                    <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
-                                </form>
+                                <div class="card user-tip">
+                                    <div class="card-body">
+                                        <h4>Did you know?</h4>
+                                        <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
+                                        <p>Click on the button below or click on "Become a Teacher!" above!</p>
+                                        <form action="#" method="POST">
+                                            <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

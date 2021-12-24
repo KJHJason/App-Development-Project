@@ -13,13 +13,16 @@ app.config['UPLOAD_PATH'] = "uploads"
 app.config['MAX_CONTENT_LENGTH'] = 5120 * 5120
 
 
-@app.route('/')
+@app.route('/', methods=["GET","POST"])
 def home():
     return render_template('home.html')
 
-@app.route('/user_profile')
+@app.route('/user_profile', methods=["GET","POST"])
 def userProfile():
-    return render_template('user_profile.html')
+    create_image_upload_form = Forms.CreateImageUploadForm(request.form)
+    if request.method == "POST" and create_image_upload_form.validate():
+        return redirect(url_for("home"))
+    return render_template('user_profile.html', form=create_image_upload_form)
 
 @app.route('/payment_method', methods=["GET","POST"])
 def userPayment():
