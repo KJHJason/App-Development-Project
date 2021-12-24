@@ -1,6 +1,6 @@
 from User import User
 
-class Student(User):
+class Teacher(User):
     def __init__(self, username, email, password, card_name, card_no, card_expiry, card_cvv, card_type):
         super().__init__(username, email, password, "Teacher", "Good")
         self.__earnings = 0
