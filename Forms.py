@@ -20,4 +20,5 @@ class CreateLoginForm(Form):
 class CreateSignUpForm(Form):
     username = StringField("Username:", [validators.DataRequired()])
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
-    password = PasswordField("Password:", [validators.DataRequired()])
+    password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+    cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
