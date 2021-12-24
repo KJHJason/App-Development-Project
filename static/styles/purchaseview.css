@@ -1,0 +1,12 @@
+.box{
+  background-color: white;
+  padding: 50px;
+  border: 5px solid #A375FD;
+  margin-bottom:50px;
+  width:85%;
+}
+
+h3{
+  margin-bottom:40px;
+  margin-top:40px;
+}
