@@ -29,8 +29,8 @@ def userPayment():
     #return render_template('user_existing_payment.html')
 
     create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
-    #if request.method == "POST" and create_add_payment_form.validate():
-        #return render_template("home.html")
+    if request.method == "POST" and create_add_payment_form.validate():
+        return render_template('user_existing_payment.html')
     return render_template('user_add_payment.html', form=create_add_payment_form)
 
 @app.route('/edit_payment', methods=["GET","POST"])
