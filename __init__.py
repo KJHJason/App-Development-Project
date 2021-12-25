@@ -57,7 +57,7 @@ def userLogin():
         emailInput = create_login_form.email.data
         passwordInput = create_login_form.password.data
         userDict = {}
-        db = shelve.open("user", "r")
+        db = shelve.open("user", "c") # "c" flag as to create the user shelve files if the files did not exist in the first place
 
         try:
             if 'Users' in db:
@@ -356,4 +356,4 @@ def signUpPayment():
 """End of Teacher's login/signup process"""
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True) # debug=True for development purposes
