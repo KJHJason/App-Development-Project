@@ -14,3 +14,12 @@ h5{
   margin-bottom:40px;
   margin-top:40px;
 }
+button{
+  float:right;
+}
+textarea{
+  margin-bottom:40px;
+}
+.btn{
+  background-color:#A375FD;
+}
