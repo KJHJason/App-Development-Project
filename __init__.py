@@ -63,7 +63,7 @@ def userLogin():
                 else:
                     print("User email not found.")
                     
-            # if the email is found in the database, it will then check its password and see if it is matched
+            # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
                 passwordShelveData = email_key.get_password()
                 print("Password in database:", passwordShelveData)
