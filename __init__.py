@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from wtforms import StringField, PasswordField
 from werkzeug.utils import secure_filename
 import os
 import Forms
