@@ -57,6 +57,8 @@ def userLogin():
                 if emailInput == emailShelveData:
                     email_key = userDict[key]
                     email_found = True
+                    print("Email in database:", emailShelveData)
+                    print("Email Input:", emailInput)
                     break
                 else:
                     print("User email not found.")
@@ -64,16 +66,20 @@ def userLogin():
             # if the email is found in the database, it will then check its password and see if it is matched
             if email_found:
                 passwordShelveData = email_key.get_password()
+                print("Password in database:", passwordShelveData)
+                print("Password Input:", passwordInput)
                 if passwordInput == passwordShelveData:
                     password_matched = True
                 else:
                     print("Password incorrect.")
                     
             if email_found and password_matched:
+                print("User validated...")
                 print("Email in database:", emailShelveData)
                 print("Email Input:", emailInput)
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
+                print("Account type:", email_key.get_acc_type())
                 db.close()
 
                 username = email_key.get_username()
@@ -174,7 +180,7 @@ def userSignUp():
                 user = Student.Student(usernameInput, emailInput, passwordInput)
                 print(user)
 
-                userDict[user.get_user_id()] = user
+                userDict[user.get_username()] = user
                 db["Users"] = userDict
                 
                 print(userDict)
@@ -270,7 +276,7 @@ def teacherSignUp():
                 user = Teacher.Teacher(usernameInput, emailInput, passwordInput)
                 print(user)
 
-                userDict[user.get_user_id()] = user
+                userDict[user.get_username()] = user
                 db["Users"] = userDict
                 
                 session["teacher"] = emailInput # to send the email to the add payment form as part of the teacher sign up process and for setting the payment method information into the teacher object
@@ -332,7 +338,6 @@ def signUpPayment():
                         break
                     else:
                         print("Error, teacher's email not found.")
-                        return redirect(url_for("teacherSignUp"))
 
                 # setting the teacher's payment method which in a way editing the teacher's object
                 teacherKey.set_card_name(cardName)
@@ -362,11 +367,44 @@ def signUpPayment():
 def userProfile():
     if "userSession" in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
+        usernameSession = session["userSession"]
         create_image_upload_form = Forms.CreateImageUploadForm(request.form)
         if request.method == "POST" and create_image_upload_form.validate():
             return redirect(url_for("home"))
         else:
-            return render_template('user_profile.html', form=create_image_upload_form)
+            # declaring userKey variable to prevent unboundLocalError
+            userKey = ""
+
+            # Retrieving data from shelve
+            userDict = {}
+            db = shelve.open("user", "c")
+            
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                else:
+                    db["Users"] = userDict
+            except:
+                print("Error in retrieving Users from user.db")
+
+            # retrieving the object from the shelve based on the user's email
+            print("Username session:", usernameSession)
+            for key in userDict:
+                print("retrieving")
+                usernameShelveData = userDict[key].get_username()
+                print("Username in database:", usernameShelveData)
+                
+                if usernameSession == usernameShelveData:
+                    print("Verdict: User email found.")
+                    userKey = userDict[key]
+                    break
+                else:
+                    print("Error, user not found.")
+            
+            userEmail = userKey.get_email()
+            userAccType = userKey.get_acc_type()
+
+            return render_template('user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType)
     else:
         return redirect(url_for("home"))
 

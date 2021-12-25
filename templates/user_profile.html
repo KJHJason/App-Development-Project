@@ -31,54 +31,67 @@
             <div id="right-user">
                 <div class="container">
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-md-5 image-center">
                             <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting">
                             <div class="mb-9">
                                 <form action="" method="POST" enctype="multipart/form-data">
                                     {{ render_field(form.imageFormFile, class="form-control") }}
-                                    <button type="submit" class="btn btn-success profile-icon">Save Profile Icon</button>
+                                    <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
                                 </form>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="container profile-settings">
                                 <div class="row profile-info">
-                                    <div class="col-sm-4">
+                                    <div class="col-4 text-responsive">
                                         <h6 class="margin-btm">Username:</h6>
                                     </div>
-                                    <div class="col-sm-8">
-                                        <h6 class="margin-btm">John Doe</h6>
+                                    <div class="col-8 text-responsive">
+                                        <h6 class="margin-btm">{{ username }}</h6>
                                         <a href="#">Change Username</a>
                                     </div>
-                                    <div class="col-sm-4">
-                                        <h6 class="margin-btm margin-top margin-top2">Email:</h6>
+                                    <div class="col-4 text-responsive">
+                                        <h6 class="margin-btm margin-top">Email:</h6>
                                     </div>
-                                    <div class="col-sm-8">
-                                        <h6 class="margin-btm margin-top">johndoe@gmail.com</h6>
+                                    <div class="col-8 text-responsive">
+                                        <h6 class="margin-btm margin-top">{{ email }}</h6>
                                         <a href="#">Change Email</a>
                                     </div>
-                                    <div class="col-sm-4">
-                                        <h6 class="margin-btm margin-top margin-top2">Account Type:</h6>
+                                    <div class="col-4 text-responsive">
+                                        <h6 class="margin-btm margin-top">Account Type:</h6>
                                     </div>
-                                    <div class="col-sm-8">
-                                        <h6 class="margin-btm margin-top">Student</h6>
-                                        <a href="#">Become a Teacher!</a>
+                                    <div class="col-8 text-responsive">
+                                        <h6 class="margin-btm margin-top">{{ accType }}</h6>
+                                        {% if accType == "Student" %}
+                                        <span><a href="#">Become a Teacher!</a></span>
+                                        {% endif %}
                                     </div>
-                                    <div class="col-sm-4">
-                                        <h6 class="margin-btm margin-top margin-top2">Password:</h6>
+                                    <div class="col-4 text-responsive">
+                                        <h6 class="margin-btm margin-top">Password:</h6>
                                     </div>
-                                    <div class="col-sm-8 margin-top">
+                                    <div class="col-8 margin-top text-responsive">
                                         <a href="#">Change Password</a>
                                     </div>
                                 </div>
                                 <div class="card user-tip">
                                     <div class="card-body">
+                                        {% if accType == "Student" %}
                                         <h4>Did you know?</h4>
                                         <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
+                                        <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
                                         <p>Click on the button below or click on "Become a Teacher!" above!</p>
                                         <form action="#" method="POST">
                                             <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
                                         </form>
+                                        {% endif %}
+                                        {% if accType == "Teacher" %}
+                                        <h4>Did you know?</h4>
+                                        <p>If you want to teach a subject that is not listed in the select option when uploading a video, you can contact us to get it added to the list of subjects!</p>
+                                        <p>Additionally, if you require any assistance, feel free to contact us!</p>
+                                        <form action="#" method="POST">
+                                            <button type="submit" class="btn btn-secondary btn-lg" value="">Contact Us</button>
+                                        </form>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

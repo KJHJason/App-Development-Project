@@ -32,3 +32,13 @@
         margin: 15px 0;
     }
 }
+
+.form_checkbox {
+    display: inline-flex;
+}
+
+@media (max-width: 420px) {
+    .form_checkbox {
+        display: inline-block !important;
+    }
+}

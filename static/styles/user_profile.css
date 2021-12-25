@@ -1,13 +1,13 @@
 #left-user {
-  height: 650px;
-  margin: 20px 0;
+  height: 100%;
+  margin-bottom: 20px;
   background-color: #758bfd !important;
   border-radius: 15px 0 0 15px;
 }
 
 #right-user {
-  height: 650px;
-  margin: 20px 0;
+  height: 100%;
+  margin-bottom: 20px;
   padding-top: 20px;
   border-radius: 0 30px 30px 0;
   border-width: 5px;
@@ -70,12 +70,10 @@
   #left-user {
     border-radius: 10px 10px 0 0;
     margin-bottom: 0px;
-    height: 100%;
   }
   #right-user {
     border-radius: 0 0 10px 10px;
     margin-top: 0px;
-    height: 100%;
   }
   .footer {
     margin-top: 5%;
@@ -83,6 +81,12 @@
   #user-icon-setting {
     height: 150px;
     width: 150px;
+  }
+}
+
+@media(max-width: 767px) {
+  .image-center {
+    text-align: center;
   }
 }
 
@@ -103,16 +107,19 @@
     margin-right: 10px;
   }
   .margin-top {
-    margin-top: 0px;
-  }
-  .margin-top2 {
-    margin-top: 15px;
+    margin-top: 10px;
   }
 }
 
 @media (max-width: 374px) {
   .payment {
     font-size: 4vw;
+  }
+  .text-responsive {
+    width: 100% !important;
+  }
+  .margin-top {
+    margin-top: 5px;
   }
 }
 
