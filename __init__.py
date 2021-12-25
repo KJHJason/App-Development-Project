@@ -6,6 +6,8 @@ import Forms
 import Student, Teacher, Admin
 import shelve
 
+"""General"""
+
 app = Flask(__name__)
 UPLOAD_PATH = 'static/images/user'
 ALLOWED_EXTENSIONS = {"png"}
@@ -17,6 +19,10 @@ app.secret_key = "test" # for demonstration purposes, if deployed, change it to 
 @app.route('/', methods=["GET","POST"])
 def home():
     return render_template('home.html')
+
+"""End of General"""
+
+"""User Profile Settings"""
 
 @app.route('/user_profile', methods=["GET","POST"])
 def userProfile():
@@ -39,6 +45,10 @@ def userPayment():
 def userEditPayment():
     create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
     return render_template('user_edit_payment.html', form=create_edit_payment_form)    
+
+"""End of User Profile Settings"""
+
+"""Student login/signup process"""
 
 @app.route('/login', methods=['GET', 'POST'])
 def userLogin():
@@ -190,6 +200,10 @@ def userSignUp():
 
     return render_template('signup.html', form=create_signup_form)    
 
+"""End of Student login/signup process"""
+
+"""Teacher's login/signup process"""
+
 @app.route('/teacher_signup', methods=['GET', 'POST'])
 def teacherSignUp():
     create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
@@ -338,6 +352,8 @@ def signUpPayment():
         return render_template('teacher_signup_payment.html', form=create_teacher_payment_form)
     else:
         return redirect(url_for("home"))
+
+"""End of Teacher's login/signup process"""
 
 if __name__ == '__main__':
     app.run()
