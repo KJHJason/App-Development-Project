@@ -10,9 +10,9 @@ class CreateEditPaymentForm(Form):
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=150), validators.DataRequired()])
     cardNo = IntegerField("Card Number:", [validators.DataRequired()])
-    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
+    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')
 
 class CreateLoginForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
@@ -36,6 +36,6 @@ class CreateTeacherSignUpForm(Form):
 class CreateTeacherPayment(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=150), validators.DataRequired()])
     cardNo = IntegerField("Card Number:", [validators.DataRequired()])
-    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
+    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')

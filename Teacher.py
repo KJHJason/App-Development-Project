@@ -1,14 +1,14 @@
 from User import User
 
 class Teacher(User):
-    def __init__(self, username, email, password, card_name, card_no, card_expiry, card_cvv, card_type):
+    def __init__(self, username, email, password):
         super().__init__(username, email, password, "Teacher", "Good")
         self.__earnings = 0
-        self.__card_name = card_name
-        self.__card_no = card_no
-        self.__card_expiry = card_expiry
-        self.__card_cvv = card_cvv
-        self.__card_type = card_type
+        self.__card_name = ""
+        self.__card_no = ""
+        self.__card_expiry = ""
+        self.__card_cvv = ""
+        self.__card_type = ""
 
     def self_earnings(self, earnings):
         self.__earnings = earnings
@@ -37,3 +37,6 @@ class Teacher(User):
         return self.__card_cvv
     def get_card_type(self):
         return self.__card_type
+
+    def display_card_info(self):
+        print("teacher's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)
