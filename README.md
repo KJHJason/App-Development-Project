@@ -18,5 +18,5 @@ Modules needed:
   <li>email-validator</li>
   <li>WTForms</li>
   <li>setuptools</li>
-  <li>Flask_Limiter</li>
+  <li>Flask-Limiter</li>
 </ol>	
