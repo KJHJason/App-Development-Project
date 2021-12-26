@@ -8,7 +8,7 @@ class CreateEditPaymentForm(Form):
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
 
 class CreateAddPaymentForm(Form):
-    cardName = StringField("Card Name:", [validators.Length(min=1, max=150), validators.DataRequired()])
+    cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
     cardNo = IntegerField("Card Number:", [validators.DataRequired()])
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
