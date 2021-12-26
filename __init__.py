@@ -36,16 +36,17 @@ def userLogin():
         if request.method == "POST" and create_login_form.validate():
             emailInput = create_login_form.email.data.lower()
             passwordInput = create_login_form.password.data
-            userDict = {}
-            db = shelve.open("user", "c") # "c" flag as to create the user shelve files if the files did not exist in the first place
-
             try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db["Users"] = userDict
+                userDict = {}
+                db = shelve.open("user", "r")
+                userDict = db['Users']
+                print("File found.")
             except:
-                print("Error in retrieving Users from user.db")
+                print("File could not be found.")
+                # since the shelve files could not be found, it will create a placeholder/empty shelve files
+                userDict = {}
+                db = shelve.open("user", "c")
+                db["Users"] = userDict
 
             # Declaring the 4 variables below to prevent UnboundLocalError
             email_found = False
@@ -140,6 +141,7 @@ def userSignUp():
                 if 'Users' in db:
                     userDict = db['Users']
                 else:
+                    print("No user data in user shelve files.")
                     db["Users"] = userDict
             except:
                 print("Error in retrieving Users from user.db")
@@ -237,6 +239,7 @@ def teacherSignUp():
                 if 'Users' in db:
                     userDict = db['Users']
                 else:
+                    print("No user data in user shelve files")
                     db["Users"] = userDict
             except:
                 print("Error in retrieving Users from user.db")
@@ -319,14 +322,16 @@ def signUpPayment():
                 # Retrieving data from shelve
                 userDict = {}
                 db = shelve.open("user", "c")
-                
                 try:
-                    if 'Users' in db:
-                        userDict = db['Users']
-                    else:
-                        db["Users"] = userDict
+                    userDict = {}
+                    db = shelve.open("user", "r")
+                    userDict = db['Users']
+                    print("File found.")
                 except:
-                    print("Error in retrieving Users from user.db")
+                    print("File could not be found.")
+                    # since the file could not be found either due to the admin deleting or something else, it will clear any session and redirect the user to the homepage
+                    session.clear()
+                    return redirect(url_for("home"))
 
                 # retrieving the object from the shelve based on the user's email
                 for key in userDict:
@@ -348,6 +353,7 @@ def signUpPayment():
                 teacherKey.set_card_cvv(cardCVV)
                 teacherKey.set_card_type(cardType)
                 teacherKey.display_card_info()
+                db['Users'] = userDict
                 print("Payment added")
 
                 db.close()
@@ -378,18 +384,19 @@ def userProfile():
             userKey = ""
 
             # Retrieving data from shelve
-            userDict = {}
-            db = shelve.open("user", "c")
-            
             try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db["Users"] = userDict
+                userDict = {}
+                db = shelve.open("user", "r")
+                userDict = db['Users']
+                print("File found.")
             except:
-                print("Error in retrieving Users from user.db")
+                print("File could not be found.")
+                # since the file could not be found either due to the admin deleting or something else, it will clear any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
 
-            # retrieving the object from the shelve based on the user's email
+
+            # retrieving the object from the shelve based on the user's username
             print("Username session:", usernameSession)
             for key in userDict:
                 print("retrieving")
@@ -397,7 +404,7 @@ def userProfile():
                 print("Username in database:", usernameShelveData)
                 
                 if usernameSession == usernameShelveData:
-                    print("Verdict: User email found.")
+                    print("Verdict: Username found.")
                     userKey = userDict[key]
                     break
                 else:
@@ -413,13 +420,80 @@ def userProfile():
 @app.route('/payment_method', methods=["GET","POST"])
 def userPayment():
     if "userSession" in session:
-        #return render_template('users/loggedin/user_existing_payment.html')
+        usernameSession = session["userSession"]
 
-        create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
-        if request.method == "POST" and create_add_payment_form.validate():
-            return render_template('users/loggedin/user_existing_payment.html')
+        # declaring userKey variable to prevent unboundLocalError
+        userKey = ""
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                print("User data in shelve is empty.")
+                session.clear() # since the file could not be found either due to the admin deleting or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            print("Error in retrieving Users from user.db")
+
+        # retrieving the object from the shelve based on the user's username
+        print("Username session:", usernameSession)
+        for key in userDict:
+            print("retrieving")
+            usernameShelveData = userDict[key].get_username()
+            print("Username in database:", usernameShelveData)
+            if usernameSession == usernameShelveData:
+                print("Verdict: Username found.")
+                userKey = userDict[key]
+                break
+            else:
+                print("Error, user not found.")
+
+        cardExist = bool(userKey.get_card_name())
+        print("Card exist?:", cardExist)
+        
+        if cardExist == False:
+            print("Entered if loop")
+            create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
+            if request.method == "POST" and create_add_payment_form.validate():
+                print("POST request sent and form entries validated")
+                cardName = create_add_payment_form.cardName.data
+                cardNo = create_add_payment_form.cardNo.data
+                cardType = create_add_payment_form.cardType.data
+                cardExpiry = create_add_payment_form.cardExpiry.data
+                cardCVV = create_add_payment_form.cardCVV.data
+
+                # setting the user's payment method
+                userKey.set_card_name(cardName)
+                userKey.set_card_no(cardNo)
+                userKey.set_card_expiry(cardExpiry)
+                userKey.set_card_cvv(cardCVV)
+                userKey.set_card_type(cardType)
+                userKey.display_card_info()
+                db['Users'] = userDict
+                print("Payment added")
+
+                db.close()
+                return redirect(url_for("userPayment"))
+            else:
+                print("POST request sent but form not validated")
+                db.close()
+                return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form)
         else:
-            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form)
+            cardName = userKey.get_card_name()
+            cardNo = str(userKey.get_card_no())
+            cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
+            print("Sliced credit number:", cardNo)
+            cardExpiry = str(userKey.get_card_expiry())
+            cardYear = cardExpiry[:4] # string slicing to get the year from the date format "YYYY-MM-DD"
+            cardMonth = cardExpiry[5:7] # string slicing to get the month from the date format "YYYY-MM-DD"
+            cardExpiry = cardMonth + "/" + cardYear
+            print("Sliced card expiry date:", cardExpiry)
+
+            db.close()
+            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry)
     else:
         return redirect(url_for("home"))
 

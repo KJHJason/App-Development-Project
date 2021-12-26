@@ -21,6 +21,10 @@
   margin: 5px 0;
 }
 
+.payment_exist {
+  height: 600px;
+}
+
 .active-custom {
   background-color: #75cffd !important;
   font-weight: bold;
@@ -81,6 +85,12 @@
   #user-icon-setting {
     height: 150px;
     width: 150px;
+  }
+  .payment_exist {
+    height: 100%;
+  }
+  .payment_card {
+    margin: 10px 0;
   }
 }
 
