@@ -32,7 +32,7 @@ def userLogin():
     if "userSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
-            emailInput = create_login_form.email.data
+            emailInput = create_login_form.email.data.lower()
             passwordInput = create_login_form.password.data
             userDict = {}
             db = shelve.open("user", "c") # "c" flag as to create the user shelve files if the files did not exist in the first place
@@ -127,7 +127,7 @@ def userSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = create_signup_form.email.data
+            emailInput = create_signup_form.email.data.lower()
             usernameInput = create_signup_form.username.data
 
             # Retrieving data from shelve for duplicate data checking
@@ -224,7 +224,7 @@ def teacherSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = create_teacher_sign_up_form.email.data
+            emailInput = create_teacher_sign_up_form.email.data.lower()
             usernameInput = create_teacher_sign_up_form.username.data
 
             # Retrieving data from shelve for duplicate data checking
