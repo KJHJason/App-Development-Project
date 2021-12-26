@@ -92,6 +92,9 @@
   .payment_card {
     margin: 10px 0;
   }
+  .cc-table {
+    margin-bottom: 10px;
+  }
 }
 
 @media(max-width: 767px) {
@@ -122,9 +125,6 @@
 }
 
 @media (max-width: 374px) {
-  .payment {
-    font-size: 4vw;
-  }
   .text-responsive {
     width: 100% !important;
   }
@@ -133,23 +133,22 @@
   }
 }
 
-@media (max-width: 280px) {
-  .payment {
-    font-size: 3.5vw;
-  }
-}
-
 #payment_logo {
   width: 35px;
   height: auto;
 }
 
-.payment {
-  vertical-align: middle;
-  display: inline-block;
-  width: 100%;
-}
-
 .form-buttons {
   display: inline-block;
+}
+
+@media (max-width: 500px) {
+  .cc-table {
+    white-space: nowrap;
+  }
+}
+
+.cc-table {
+  border: 2px solid #aaa;
+  border-radius: 5px;
 }

@@ -315,9 +315,14 @@ def signUpPayment():
             if request.method == 'POST' and create_teacher_payment_form.validate():
                 cardName = create_teacher_payment_form.cardName.data
                 cardNo = create_teacher_payment_form.cardNo.data
-                cardExpiry = create_teacher_payment_form.cardExpiry.data
+                cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
                 cardCVV = create_teacher_payment_form.cardCVV.data
                 cardType = create_teacher_payment_form.cardType.data
+
+                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                cardExpiry = cardMonth + "/" + cardYear
 
                 # Retrieving data from shelve
                 userDict = {}
@@ -375,6 +380,7 @@ def signUpPayment():
 def userProfile():
     if "userSession" in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
+        
         usernameSession = session["userSession"]
         create_image_upload_form = Forms.CreateImageUploadForm(request.form)
         if request.method == "POST" and create_image_upload_form.validate():
@@ -462,8 +468,13 @@ def userPayment():
                 cardName = create_add_payment_form.cardName.data
                 cardNo = create_add_payment_form.cardNo.data
                 cardType = create_add_payment_form.cardType.data
-                cardExpiry = create_add_payment_form.cardExpiry.data
+                cardExpiry = str(create_add_payment_form.cardExpiry.data)
                 cardCVV = create_add_payment_form.cardCVV.data
+
+                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                cardExpiry = cardMonth + "/" + cardYear
 
                 # setting the user's payment method
                 userKey.set_card_name(cardName)
@@ -484,24 +495,148 @@ def userPayment():
         else:
             cardName = userKey.get_card_name()
             cardNo = str(userKey.get_card_no())
+            print("Original card number:", cardNo)
             cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
-            print("Sliced credit number:", cardNo)
-            cardExpiry = str(userKey.get_card_expiry())
-            cardYear = cardExpiry[:4] # string slicing to get the year from the date format "YYYY-MM-DD"
-            cardMonth = cardExpiry[5:7] # string slicing to get the month from the date format "YYYY-MM-DD"
-            cardExpiry = cardMonth + "/" + cardYear
-            print("Sliced card expiry date:", cardExpiry)
+            print("Sliced card number:", cardNo)
+            cardExpiry = userKey.get_card_expiry()
+            print("Card expiry date:", cardExpiry)
+            cardType = userKey.get_card_type()
 
             db.close()
-            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry)
+            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType)
     else:
         return redirect(url_for("home"))
 
 @app.route('/edit_payment', methods=["GET","POST"])
 def userEditPayment():
     if "userSession" in session:
-        create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
-        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form)
+        # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
+
+        usernameSession = session["userSession"]
+
+        # declaring userKey variable to prevent unboundLocalError
+        userKey = ""
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                print("User data in shelve is empty.")
+                session.clear() # since the file could not be found either due to the admin deleting or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            print("Error in retrieving Users from user.db")
+
+        # retrieving the object from the shelve based on the user's username
+        print("Username session:", usernameSession)
+        for key in userDict:
+            print("retrieving")
+            usernameShelveData = userDict[key].get_username()
+            print("Username in database:", usernameShelveData)
+            if usernameSession == usernameShelveData:
+                print("Verdict: Username found.")
+                userKey = userDict[key]
+                break
+            else:
+                print("Error, user not found.")
+
+        cardExist = bool(userKey.get_card_name())
+        print("Card exist?:", cardExist)
+        cardName = userKey.get_card_name()
+
+        cardNo = str(userKey.get_card_no())
+        print("Original card number:", cardNo)
+        cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
+        print("Sliced card number:", cardNo)
+
+        cardType = userKey.get_card_type()
+        if cardExist:
+            create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
+            if request.method == "POST" and create_edit_payment_form.validate():
+                cardCVV = create_edit_payment_form.cardCVV.data
+                cardExpiry = str(create_edit_payment_form.cardExpiry.data)
+
+                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                cardExpiry = cardMonth + "/" + cardYear
+
+                # changing the user's payment info
+                userKey.set_card_cvv(cardCVV)
+                userKey.set_card_expiry(cardExpiry)
+                db['Users'] = userDict
+                print("Payment added")
+                db.close()
+
+                return redirect(url_for("userPayment"))
+            else:
+                db.close()
+                return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType)
+        else:
+            db.close()
+            return redirect(url_for("user_profile"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route('/delete_card', methods=['POST'])
+def deleteCard():
+    if "userSession" in session:
+        usernameSession = session["userSession"]
+
+        # declaring userKey variable to prevent unboundLocalError
+        userKey = ""
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                print("User data in shelve is empty.")
+                session.clear() # since the file could not be found either due to the admin deleting or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            print("Error in retrieving Users from user.db")
+
+        # retrieving the object from the shelve based on the user's username
+        print("Username session:", usernameSession)
+        for key in userDict:
+            print("retrieving")
+            usernameShelveData = userDict[key].get_username()
+            print("Username in database:", usernameShelveData)
+            if usernameSession == usernameShelveData:
+                print("Verdict: Username found.")
+                userKey = userDict[key]
+                break
+            else:
+                print("Error, user not found.")
+
+        # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
+        cardExist = bool(userKey.get_card_name())
+        print("Card exist?:", cardExist)
+
+        if cardExist:
+            # deleting user's payment info, specifically changing their payment info to empty strings
+            userKey.set_card_name("")
+            userKey.set_card_no("")
+            userKey.set_card_expiry("")
+            userKey.set_card_cvv("")
+            userKey.set_card_type("")
+            userKey.display_card_info()
+
+            db['Users'] = userDict
+            print("Payment added")
+            db.close()
+
+            return redirect(url_for("userPayment"))
+            
+        else:
+            db.close()
+            return redirect(url_for("user_profile"))
     else:
         return redirect(url_for("home"))
 
