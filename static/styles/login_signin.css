@@ -42,3 +42,7 @@
         display: inline-block !important;
     }
 }
+
+.updateForm {
+    padding: 30px !important;
+}
