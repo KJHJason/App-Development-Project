@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import os
-import shelve
-import Forms
+import shelve, Forms, os
 import Student, Teacher, Admin
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 
 """General"""
@@ -13,21 +13,23 @@ UPLOAD_PATH = 'static/images/user'
 ALLOWED_EXTENSIONS = {"png"}
 app.config['UPLOAD_PATH'] = "uploads"
 app.config['MAX_CONTENT_LENGTH'] = 5120 * 5120
+limiter = Limiter(app, key_func=get_remote_address)
 
-app.secret_key = "test" # for demonstration purposes, if deployed, change it to something more secure
+app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
 
 @app.route('/', methods=["GET","POST"])
 def home():
     if "userSession" in session:
-        return render_template('user_home.html')
+        return render_template('users/loggedin/user_home.html')
     else:
-        return render_template('guest_home.html')
+        return render_template('users/guest/guest_home.html')
 
 """End of General"""
 
 """User login and logout"""
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("2/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
 def userLogin():
     if "userSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
@@ -92,9 +94,9 @@ def userLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
                 db.close()
-                return render_template('login.html', form=create_login_form, failedAttempt=True)
+                return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
-            return render_template('login.html', form=create_login_form)
+            return render_template('users/guest/login.html', form=create_login_form)
     else:
         return redirect(url_for("home"))
 
@@ -193,9 +195,9 @@ def userSignUp():
                 # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                 db.close()
                 print("Validation conditions were not met.")
-                return render_template('signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
         else:
-            return render_template('signup.html', form=create_signup_form)    
+            return render_template('users/guest/signup.html', form=create_signup_form)    
     else:
         return redirect(url_for("home"))
 
@@ -293,13 +295,13 @@ def teacherSignUp():
                 # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                 db.close()
                 print("Validation conditions were not met.")
-                return render_template('teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
         else:
-            return render_template('teacher_signup.html', form=create_teacher_sign_up_form) 
+            return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form) 
     else:
         return redirect(url_for("home"))
 
-@app.route('/signUpPayment', methods=['GET', 'POST'])
+@app.route('/sign_up_payment', methods=['GET', 'POST'])
 def signUpPayment():
     if "userSession" in session:
         if "teacher" in session:
@@ -351,9 +353,9 @@ def signUpPayment():
                 db.close()
 
                 session.pop("teacher", None) # deleting data from the session after registering the payment method
-                return redirect(url_for("userProfile"))
+                return redirect(url_for("home"))
             else:
-                return render_template('teacher_signup_payment.html', form=create_teacher_payment_form)
+                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
         else:
             return redirect(url_for("home"))
     else:
@@ -404,20 +406,20 @@ def userProfile():
             userEmail = userKey.get_email()
             userAccType = userKey.get_acc_type()
 
-            return render_template('user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType)
+            return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType)
     else:
         return redirect(url_for("home"))
 
 @app.route('/payment_method', methods=["GET","POST"])
 def userPayment():
     if "userSession" in session:
-        #return render_template('user_existing_payment.html')
+        #return render_template('users/loggedin/user_existing_payment.html')
 
         create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
         if request.method == "POST" and create_add_payment_form.validate():
-            return render_template('user_existing_payment.html')
+            return render_template('users/loggedin/user_existing_payment.html')
         else:
-            return render_template('user_add_payment.html', form=create_add_payment_form)
+            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form)
     else:
         return redirect(url_for("home"))
 
@@ -425,11 +427,43 @@ def userPayment():
 def userEditPayment():
     if "userSession" in session:
         create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
-        return render_template('user_edit_payment.html', form=create_edit_payment_form)
+        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form)
     else:
         return redirect(url_for("home"))
 
 """End of User Profile Settings"""
+
+"""Custom Error Pages"""
+
+@app.errorhandler(401)
+def error401(error):
+    return render_template("errors/401.html"), 401
+
+@app.errorhandler(403)
+def error403(error):
+    return render_template("errors/403.html"), 403
+
+@app.errorhandler(404)
+def error404(error):
+    return render_template("errors/404.html"), 404
+
+@app.errorhandler(429)
+def error429(error):
+    return render_template("errors/429.html"), 429
+
+@app.errorhandler(500)
+def error500(error):
+    return render_template("errors/500.html"), 500
+
+@app.errorhandler(502)
+def error502(error):
+    return render_template("errors/502.html"), 502
+
+@app.errorhandler(503)
+def error503(error):
+    return render_template("errors/503.html"), 503
+
+"""End of Custom Error Pages"""
 
 if __name__ == '__main__':
     app.run(debug=True) # debug=True for development purposes
