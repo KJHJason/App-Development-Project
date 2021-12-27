@@ -19,6 +19,7 @@
   height: 200px;
   width: 200px;
   margin: 5px 0;
+  border-radius: 50%;
 }
 
 .payment_exist {

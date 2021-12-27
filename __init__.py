@@ -2,11 +2,126 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import shelve, Forms, os
 import Student, Teacher, Admin
+from Security import PasswordManager, Sanitise
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+"""Functions used throughout"""
 
-"""General"""
+# use this function if you want to validate and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
+def get_key_and_validate(userInput, userDict, userInfoType):
+    userKey = ""
+    userFound = False
+    if userInfoType == "username":
+        print("Username session:", userInput)
+        for key in userDict:
+            print("retrieving")
+            usernameShelveData = userDict[key].get_username()
+            print("Username in database:", usernameShelveData)
+            if userInput == usernameShelveData:
+                print("Verdict: Username found.")
+                userKey = userDict[key]
+                userFound = True
+                return userKey, userFound
+        return userKey, userFound
+
+    elif userInfoType == "email":
+        print("Email input:", userInput)
+        for key in userDict:
+            print("retrieving")
+            emailShelveData = userDict[key].get_email()
+            if userInput == emailShelveData:
+                print("Email in database:", emailShelveData)
+                print("Email input:", userInput)
+                print("Verdict: User email found.")
+                userKey = userDict[key]
+                userFound = True
+                return userKey, userFound
+        return userKey, userFound
+            
+    else:
+        raise Exception('Third argument for get_key() can only take in "username" or "email"!')
+
+# use the function below if you have already opened the user shelve files previously but want to validate the session
+def validate_session(userSession, userDict):
+    userFound = False
+    print("Username session:", userSession)
+    for key in userDict:
+        print("retrieving")
+        usernameShelveData = userDict[key].get_username()
+        print("Username in database:", usernameShelveData)
+        if userSession == usernameShelveData:
+            print("Verdict: Username found.")
+            userFound = True
+            return userFound
+
+# use the function below if you just want to validate the session
+def validate_session_open_file(userSession):
+    # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
+    try:
+        userDict = {}
+        db = shelve.open("user", "r")
+        userDict = db['Users']
+        print("File found.")
+        db.close()
+    except:
+        print("File could not be found.")
+        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
+        session.clear()
+        return redirect(url_for("home"))
+        
+    userFound = False
+    print("Username session:", userSession)
+    for key in userDict:
+        print("retrieving")
+        usernameShelveData = userDict[key].get_username()
+        print("Username in database:", usernameShelveData)
+        if userSession == usernameShelveData:
+            print("Verdict: Username found.")
+            userFound = True
+            return userFound # will return True
+    return userFound # will return False
+
+# use this function to check for any duplicates data in the user shelve files
+def check_duplicates(userInput, userDict, infoToCheck):
+    if infoToCheck == "username":
+        # checking duplicates for username
+        for key in userDict:
+            print("retrieving")
+            usernameShelveData = userDict[key].get_username()
+            if userInput == usernameShelveData:
+                print("Username in database:", usernameShelveData)
+                print("Username input:", userInput)
+                print("Verdict: Username already taken.")
+                return True
+            else:
+                print("Username in database:", usernameShelveData)
+                print("Username input:", userInput)
+                print("Verdict: Username is unique.")
+        return False
+
+    elif infoToCheck == "email":
+        # Checking duplicates for email
+        for key in userDict:
+            print("retrieving")
+            emailShelveData = userDict[key].get_email()
+            if userInput == emailShelveData:
+                print("Email in database:", emailShelveData)
+                print("Email input:", userInput)
+                print("Verdict: User email already exists.")
+                return True
+            else:
+                print("Email in database:", emailShelveData)
+                print("Email input:", userInput)
+                print("Verdict: User email is unique.")
+        return False
+
+    else:
+        raise Exception('Third argument for get_key() can only take in "username" or "email"!')
+
+"""Functions used throughout"""
+
+"""Web app configurations"""
 
 app = Flask(__name__)
 UPLOAD_PATH = 'static/images/user'
@@ -17,40 +132,17 @@ limiter = Limiter(app, key_func=get_remote_address)
 
 app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
 
+"""End of Web app configurations"""
+
+"""General pages"""
+
 @app.route('/', methods=["GET","POST"])
 def home():
     if "userSession" in session:
         usernameSession = session["userSession"]
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        # userKey = ""
-        userFound = False
 
-        # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
-        try:
-            userDict = {}
-            db = shelve.open("user", "r")
-            userDict = db['Users']
-            print("File found.")
-        except:
-            print("File could not be found.")
-            # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-            session.clear()
-            return render_template('users/guest/guest_home.html')
+        userFound = validate_session_open_file(usernameSession)
 
-
-        # retrieving the object from the shelve based on the user's username in the session to check the validity of the session
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                # userKey = userDict[key]
-                userFound = True
-                break
-        
         if userFound == True:
             return render_template('users/loggedin/user_home.html')
         else:
@@ -61,7 +153,7 @@ def home():
     else:
         return render_template('users/guest/guest_home.html')
 
-"""End of General"""
+"""End of General pages"""
 
 """User login and logout"""
 
@@ -71,12 +163,13 @@ def userLogin():
     if "userSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
-            emailInput = create_login_form.email.data.lower()
+            emailInput = Sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
             try:
                 userDict = {}
                 db = shelve.open("user", "r")
                 userDict = db['Users']
+                db.close()
                 print("File found.")
             except:
                 print("File could not be found.")
@@ -84,6 +177,7 @@ def userLogin():
                 userDict = {}
                 db = shelve.open("user", "c")
                 db["Users"] = userDict
+                db.close()
 
             # Declaring the 4 variables below to prevent UnboundLocalError
             email_found = False
@@ -108,8 +202,11 @@ def userLogin():
                 passwordShelveData = email_key.get_password()
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
-                if passwordInput == passwordShelveData:
-                    password_matched = True
+
+                password_matched = PasswordManager().verify_password(passwordShelveData, passwordInput)
+
+                if password_matched:
+                    print("Correct password!")
                 else:
                     print("Password incorrect.")
                     
@@ -120,18 +217,14 @@ def userLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
                 print("Account type:", email_key.get_acc_type())
-                db.close()
-
                 username = email_key.get_username()
                 session["userSession"] = username
-
                 return redirect(url_for("userProfile"))
             else:
                 print("Email in database:", emailShelveData)
                 print("Email Input:", emailInput)
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
-                db.close()
                 return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
             return render_template('users/guest/login.html', form=create_login_form)
@@ -167,13 +260,12 @@ def userSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = create_signup_form.email.data.lower()
-            usernameInput = create_signup_form.username.data
+            emailInput = Sanitise(create_signup_form.email.data.lower())
+            usernameInput = Sanitise(create_signup_form.username.data)
 
             # Retrieving data from shelve for duplicate data checking
             userDict = {}
             db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
-            
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -183,42 +275,15 @@ def userSignUp():
             except:
                 print("Error in retrieving Users from user.db")
 
-            # Checking duplicates for email
-            for key in userDict:
-                print("retrieving")
-                emailShelveData = userDict[key].get_email()
-                if emailInput == emailShelveData:
-                    print("Email in database:", emailShelveData)
-                    print("Email input:", emailInput)
-                    print("Verdict: User email already exists.")
-                    email_duplicates = True
-                    break
-                else:
-                    print("Email in database:", emailShelveData)
-                    print("Email input:", emailInput)
-                    print("Verdict: User email is unique.")
-                    email_duplicates = False
-            
-            # checking duplicates for username
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                if usernameInput == usernameShelveData:
-                    print("Username in database:", usernameShelveData)
-                    print("Username input:", usernameInput)
-                    print("Verdict: Username already taken.")
-                    username_duplicates = True
-                    break
-                else:
-                    print("Username in database:", usernameShelveData)
-                    print("Username input:", usernameInput)
-                    print("Verdict: Username is unique.")
-                    username_duplicates = False
+            # Checking duplicates for email and username
+            email_duplicates = check_duplicates(emailInput, userDict, "email")
+            username_duplicates = check_duplicates(usernameInput, userDict, "username")
             
             # If there were no duplicates and passwords entered were the same, create a new user
             if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-
-                user = Student.Student(usernameInput, emailInput, passwordInput)
+                hashedPwd = PasswordManager().hash_password(passwordInput)
+                print("Hashed password:", hashedPwd)
+                user = Student.Student(usernameInput, emailInput, hashedPwd)
                 print(user)
 
                 userDict[user.get_username()] = user
@@ -265,13 +330,12 @@ def teacherSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = create_teacher_sign_up_form.email.data.lower()
-            usernameInput = create_teacher_sign_up_form.username.data
+            emailInput = Sanitise(create_teacher_sign_up_form.email.data.lower())
+            usernameInput = Sanitise(create_teacher_sign_up_form.username.data)
 
             # Retrieving data from shelve for duplicate data checking
             userDict = {}
             db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
-            
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -281,41 +345,15 @@ def teacherSignUp():
             except:
                 print("Error in retrieving Users from user.db")
 
-            # Checking duplicates for email
-            for key in userDict:
-                print("retrieving")
-                emailShelveData = userDict[key].get_email()
-                if emailInput == emailShelveData:
-                    print("Email in database:", emailShelveData)
-                    print("Email input:", emailInput)
-                    print("Verdict: User email already exists.")
-                    email_duplicates = True
-                    break
-                else:
-                    print("Email in database:", emailShelveData)
-                    print("Email input:", emailInput)
-                    print("Verdict: User email is unique.")
-                    email_duplicates = False
-            
-            # checking duplicates for username
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                if usernameInput == usernameShelveData:
-                    print("Username in database:", usernameShelveData)
-                    print("Username input:", usernameInput)
-                    print("Verdict: Username already taken.")
-                    username_duplicates = True
-                    break
-                else:
-                    print("Username in database:", usernameShelveData)
-                    print("Username input:", usernameInput)
-                    print("Verdict: Username is unique.")
-                    username_duplicates = False
+            # Checking duplicates for email and username
+            email_duplicates = check_duplicates(emailInput, userDict, "email")
+            username_duplicates = check_duplicates(usernameInput, userDict, "username")
 
             if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                 print("User info validated.")
-                user = Teacher.Teacher(usernameInput, emailInput, passwordInput)
+                hashedPwd = PasswordManager().hash_password(passwordInput)
+                print("Hashed password:", hashedPwd)
+                user = Teacher.Teacher(usernameInput, emailInput, hashedPwd)
                 print(user)
 
                 userDict[user.get_username()] = user
@@ -324,7 +362,7 @@ def teacherSignUp():
                 session["teacher"] = emailInput # to send the email to the add payment form as part of the teacher sign up process and for setting the payment method information into the teacher object
 
                 print(userDict)
-                print("Teacher added and payment method added.")
+                print("Teacher added.")
 
                 db.close()
                 
@@ -344,6 +382,7 @@ def teacherSignUp():
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
 def signUpPayment():
     if "userSession" in session:
+        userSession = session["userSession"]
         if "teacher" in session:
             teacherEmail = session["teacher"]
 
@@ -351,17 +390,6 @@ def signUpPayment():
             create_teacher_payment_form = Forms.CreateTeacherPayment(request.form)
             if request.method == 'POST' and create_teacher_payment_form.validate():
                 userFound = False # declaring this variable to prevent unboundLocalError
-
-                cardName = create_teacher_payment_form.cardName.data
-                cardNo = create_teacher_payment_form.cardNo.data
-                cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
-                cardCVV = create_teacher_payment_form.cardCVV.data
-                cardType = create_teacher_payment_form.cardType.data
-
-                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                cardExpiry = cardMonth + "/" + cardYear
 
                 # Retrieving data from shelve and to set the teacher's payment method info data
                 userDict = {}
@@ -379,17 +407,7 @@ def signUpPayment():
                     print("Error in retrieving Users from user.db")
 
                 # retrieving the object from the shelve based on the user's email
-                print("Email session:", teacherEmail)
-                for key in userDict:
-                    print("retrieving")
-                    emailShelveData = userDict[key].get_email()
-                    if teacherEmail == emailShelveData:
-                        print("Email in database:", emailShelveData)
-                        print("Email input:", teacherEmail)
-                        print("Verdict: User email found.")
-                        teacherKey = userDict[key]
-                        userFound = True
-                        break
+                teacherKey, userFound = get_key_and_validate(teacherEmail, userDict, "email")
                 
                 if userFound == False:
                     print("User not found")
@@ -397,20 +415,41 @@ def signUpPayment():
                     session.clear()
                     return redirect(url_for("home"))
 
-                # setting the teacher's payment method which in a way editing the teacher's object
-                teacherKey.set_card_name(cardName)
-                teacherKey.set_card_no(cardNo)
-                teacherKey.set_card_expiry(cardExpiry)
-                teacherKey.set_card_cvv(cardCVV)
-                teacherKey.set_card_type(cardType)
-                teacherKey.display_card_info()
-                db['Users'] = userDict
-                print("Payment added")
+                teacherUsername = teacherKey.get_username()
 
-                db.close()
+                if userSession == teacherUsername:
+                    valid_session = True
 
-                session.pop("teacher", None) # deleting data from the session after registering the payment method
-                return redirect(url_for("home"))
+                if valid_session:
+                    cardName = Sanitise(create_teacher_payment_form.cardName.data)
+                    cardNo = create_teacher_payment_form.cardNo.data
+                    cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
+                    cardCVV = create_teacher_payment_form.cardCVV.data
+                    cardType = create_teacher_payment_form.cardType.data
+
+                    # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                    cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                    cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                    cardExpiry = cardMonth + "/" + cardYear
+
+                    # setting the teacher's payment method which in a way editing the teacher's object
+                    teacherKey.set_card_name(cardName)
+                    teacherKey.set_card_no(cardNo)
+                    teacherKey.set_card_expiry(cardExpiry)
+                    teacherKey.set_card_cvv(cardCVV)
+                    teacherKey.set_card_type(cardType)
+                    teacherKey.display_card_info()
+                    db['Users'] = userDict
+                    print("Payment added")
+
+                    db.close()
+
+                    session.pop("teacher", None) # deleting data from the session after registering the payment method
+                    return redirect(url_for("home"))
+                else:
+                    # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
+                    session.pop("teacher", None)
+                    return redirect(url_for("home"))
             else:
                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
         else:
@@ -442,6 +481,7 @@ def userProfile():
                 db = shelve.open("user", "r")
                 userDict = db['Users']
                 print("File found.")
+                db.close()
             except:
                 print("File could not be found.")
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
@@ -450,17 +490,7 @@ def userProfile():
 
 
             # retrieving the object from the shelve based on the user's username
-            print("Username session:", usernameSession)
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                print("Username in database:", usernameShelveData)
-                
-                if usernameSession == usernameShelveData:
-                    print("Verdict: Username found.")
-                    userKey = userDict[key]
-                    userFound = True
-                    break
+            userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
             
             if userFound == False:
                 print("User not found")
@@ -470,8 +500,7 @@ def userProfile():
             
             userEmail = userKey.get_email()
             userAccType = userKey.get_acc_type()
-            db.close()
-
+            
             return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType)
     else:
         return redirect(url_for("home"))
@@ -504,16 +533,7 @@ def updateUsername():
                 print("Error in retrieving Users from user.db")
 
             # retrieving the object from the shelve based on the user's username
-            print("Username session:", usernameSession)
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                print("Username in database:", usernameShelveData)
-                if usernameSession == usernameShelveData:
-                    print("Verdict: Username found.")
-                    userKey = userDict[key]
-                    userFound = True
-                    break
+            userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
             
             if userFound == False:
                 print("User not found")
@@ -521,7 +541,7 @@ def updateUsername():
                 session.clear()
                 return redirect(url_for("home"))
 
-            updatedUsername = create_update_username_form.updateUsername.data
+            updatedUsername = Sanitise(create_update_username_form.updateUsername.data)
             currentUsername = userKey.get_username()
 
             if updatedUsername == currentUsername:
@@ -595,16 +615,7 @@ def updateEmail():
                 print("Error in retrieving Users from user.db")
 
             # retrieving the object from the shelve based on the user's username
-            print("Username session:", usernameSession)
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                print("Username in database:", usernameShelveData)
-                if usernameSession == usernameShelveData:
-                    print("Verdict: Username found.")
-                    userKey = userDict[key]
-                    userFound = True
-                    break
+            userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
             
             if userFound == False:
                 print("User not found")
@@ -612,7 +623,7 @@ def updateEmail():
                 session.clear()
                 return redirect(url_for("home"))
 
-            updatedEmail = create_update_email_form.updateEmail.data.lower()
+            updatedEmail = Sanitise(create_update_email_form.updateEmail.data.lower())
             currentEmail = userKey.get_email()
 
             if updatedEmail == currentEmail:
@@ -684,16 +695,7 @@ def updatePassword():
                 print("Error in retrieving Users from user.db")
 
             # retrieving the object from the shelve based on the user's username
-            print("Username session:", usernameSession)
-            for key in userDict:
-                print("retrieving")
-                usernameShelveData = userDict[key].get_username()
-                print("Username in database:", usernameShelveData)
-                if usernameSession == usernameShelveData:
-                    print("Verdict: Username found.")
-                    userKey = userDict[key]
-                    userFound = True
-                    break
+            userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
             
             if userFound == False:
                 print("User not found")
@@ -719,11 +721,13 @@ def updatePassword():
 
             print("Current password:", currentStoredPassword)
             print("Current password input:", currentPassword)
-            if currentPassword == currentStoredPassword:
-                password_verification = True
+
+            password_verification = PasswordManager().verify_password(currentStoredPassword, currentPassword)
+            
+            if password_verification:
                 print("User identity verified")
             else:
-                print("Current password input did not match with the one in the shelve database")
+                print("Current password input hash did not match with the one in the shelve database")
 
             # if there any validation error, errorMessage will become True for jinja2 to render the error message
             if password_verification == False or password_not_matched:
@@ -731,7 +735,8 @@ def updatePassword():
 
             if password_not_matched == False and password_verification:
                 # updating username of the user
-                userKey.set_password(updatedPassword)
+                hashedPwd = PasswordManager().hash_password(updatedPassword)
+                userKey.set_password(hashedPwd)
                 db['Users'] = userDict
                 print("Password updated")
 
@@ -773,17 +778,7 @@ def userPayment():
             print("Error in retrieving Users from user.db")
 
         # retrieving the object from the shelve based on the user's username
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                userKey = userDict[key]
-                userFound = True
-                break
+        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
         
         if userFound == False:
             print("User not found")
@@ -799,7 +794,7 @@ def userPayment():
             create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
             if request.method == "POST" and create_add_payment_form.validate():
                 print("POST request sent and form entries validated")
-                cardName = create_add_payment_form.cardName.data
+                cardName = Sanitise(create_add_payment_form.cardName.data)
                 cardNo = create_add_payment_form.cardNo.data
                 cardType = create_add_payment_form.cardType.data
                 cardExpiry = str(create_add_payment_form.cardExpiry.data)
@@ -866,18 +861,8 @@ def userEditPayment():
         except:
             print("Error in retrieving Users from user.db")
 
-         # retrieving the object from the shelve based on the user's username
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                userKey = userDict[key]
-                userFound = True
-                break
+        # retrieving the object from the shelve based on the user's username
+        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
         
         if userFound == False:
             print("User not found")
@@ -910,7 +895,8 @@ def userEditPayment():
                 userKey.set_card_cvv(cardCVV)
                 userKey.set_card_expiry(cardExpiry)
                 db['Users'] = userDict
-                print("Payment added")
+                print("Changed CVV:", cardCVV)
+                print("Payment edited")
                 db.close()
 
                 return redirect(url_for("userPayment"))
@@ -946,17 +932,7 @@ def deleteCard():
             print("Error in retrieving Users from user.db")
 
         # retrieving the object from the shelve based on the user's username
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                userKey = userDict[key]
-                userFound = True
-                break
+        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
         
         if userFound == False:
             print("User not found")
@@ -994,7 +970,7 @@ def deleteCard():
 # 3 template app.route("") for you guys :prayge:
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to the USER shelve files
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C")
 """Template app.route(") (use this when adding a new app route)"""
 
 @app.route("/")
@@ -1020,17 +996,7 @@ def function():
             print("Error in retrieving Users from user.db")
 
         # retrieving the object from the shelve based on the user's username
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                userKey = userDict[key]
-                userFound = True
-                break
+        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
         
         if userFound == False:
             print("User not found")
@@ -1039,6 +1005,7 @@ def function():
             return redirect(url_for("home"))
 
         # insert your C,R,U,D operation here to deal with the user shelve data files
+        
         db.close() # remember to close your shelve files!
         return render_template('users/loggedin/page.html')
     else:
@@ -1048,46 +1015,19 @@ def function():
 '''
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to your own CUSTOM shelve files
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
 """Template app.route(") (use this when adding a new app route)"""
 
 @app.route("/")
 def function():
     if "userSession" in session:
         usernameSession = session["userSession"]
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        # userKey = ""
-        userFound = False
 
-        # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
-        try:
-            userDict = {}
-            db = shelve.open("user", "r")
-            userDict = db['Users']
-            print("File found.")
-            db.close()
-        except:
-            print("File could not be found.")
-            # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-            session.clear()
-            return redirect(url_for("home"))
-
-
-        # retrieving the object from the shelve based on the user's username in the session to check the validity of the session
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                # userKey = userDict[key]
-                userFound = True
-                break
+        userFound = validate_session_open_file(usernameSession)
         
         if userFound == True:
             # add in your own code here for your C,R,U,D operation
+
             return render_template('users/loggedin/page.html')
         else:
             print("User not found")
@@ -1105,43 +1045,15 @@ def function():
 # e.g. for general pages such as about_us.html, etc. 
 """Template app.route(") (use this when adding a new app route)"""
 
-@app.route("/")
-def function():
+@app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def insertName():
     if "userSession" in session:
         usernameSession = session["userSession"]
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        # userKey = ""
-        userFound = False
 
-        # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
-        try:
-            userDict = {}
-            db = shelve.open("user", "r")
-            userDict = db['Users']
-            print("File found.")
-            db.close()
-        except:
-            print("File could not be found.")
-            # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-            session.clear()
-            return redirect(url_for("home"))
+        userFound = validate_session_open_file(usernameSession)
 
-
-        # retrieving the object from the shelve based on the user's username in the session to check the validity of the session
-        print("Username session:", usernameSession)
-        for key in userDict:
-            print("retrieving")
-            usernameShelveData = userDict[key].get_username()
-            print("Username in database:", usernameShelveData)
-            
-            if usernameSession == usernameShelveData:
-                print("Verdict: Username found.")
-                # userKey = userDict[key]
-                userFound = True
-                break
-        
         if userFound == True:
-            return render_template('users/loggedin/user_home.html')
+            return render_template('users/loggedin/page.html')
         else:
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -1149,7 +1061,6 @@ def function():
             return redirect(url_for("home"))
     else:
         return redirect(url_for("home"))
-
 """End of Template app.route"""
 '''
 

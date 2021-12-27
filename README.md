@@ -19,4 +19,5 @@ Modules needed:
   <li>WTForms</li>
   <li>setuptools</li>
   <li>Flask-Limiter</li>
+  <li>Argon2 [pip install argon2-cffi]</li>
 </ol>	
