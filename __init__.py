@@ -138,6 +138,15 @@ app.secret_key = "a secret key" # for demonstration purposes, if deployed, chang
 
 @app.route('/', methods=["GET","POST"])
 def home():
+    # checking sessions if the had recently logged out
+    if "recentlyLoggedOut" in session:
+        recentlyLoggedOut = True
+        session.pop("recentlyLoggedOut", None)
+        print("User recently logged out?:", recentlyLoggedOut)
+    else:
+        recentlyLoggedOut = False
+        print("User recently logged out?:", recentlyLoggedOut)
+
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -151,7 +160,7 @@ def home():
             session.clear()
             return render_template('users/guest/guest_home.html')
     else:
-        return render_template('users/guest/guest_home.html')
+        return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
 
 """End of General pages"""
 
@@ -234,6 +243,10 @@ def userLogin():
 @app.route('/logout')
 def logout():
     session.pop("userSession", None)
+    
+    # sending a session data so that when it redirects the user to the homepage, jinja2 will render out a logout alert
+    session["recentlyLoggedOut"] = True
+
     return redirect(url_for("home"))
 
 """End of User login and logout"""
@@ -500,8 +513,33 @@ def userProfile():
             
             userEmail = userKey.get_email()
             userAccType = userKey.get_acc_type()
+
+            # checking sessions if any of the user's acc info has changed
+            if "username_changed" in session:
+                usernameChanged = True
+                session.pop("username_changed", None)
+                print("Username recently changed?:", usernameChanged)
+            else:
+                usernameChanged = False
+                print("Username recently changed?:", usernameChanged)
+
+            if "email_updated" in session:
+                emailChanged = True
+                session.pop("email_updated", None)
+                print("Email recently changed?:", emailChanged)
+            else:
+                emailChanged = False
+                print("Email recently changed?:", emailChanged)
+
+            if "password_changed" in session:
+                passwordChanged = True
+                session.pop("password_changed", None)
+                print("Password recently changed?:", passwordChanged)
+            else:
+                passwordChanged = False
+                print("Password recently changed?:", passwordChanged)
             
-            return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType)
+            return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged)
     else:
         return redirect(url_for("home"))
 
@@ -575,6 +613,9 @@ def updateUsername():
                     # changing the username session data to the updated username
                     session.pop("userSession", None)
                     session["userSession"] = updatedUsername
+
+                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                    session["username_changed"] = True
 
                     db.close()
                     return redirect(url_for("userProfile"))
@@ -652,6 +693,9 @@ def updateEmail():
                     userKey.set_email(updatedEmail)
                     db['Users'] = userDict
                     print("Email updated")
+                    
+                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
+                    session["email_updated"] = True
 
                     db.close()
                     return redirect(url_for("userProfile"))
@@ -678,7 +722,9 @@ def updatePassword():
             userFound = False
             password_not_matched = True
             password_verification = False
-            errorMessage = False # for jinja2
+
+            # for jinja2
+            errorMessage = False 
 
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
@@ -732,19 +778,19 @@ def updatePassword():
             # if there any validation error, errorMessage will become True for jinja2 to render the error message
             if password_verification == False or password_not_matched:
                 errorMessage = True
-
-            if password_not_matched == False and password_verification:
+                db.close()
+                return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+            else:
                 # updating username of the user
                 hashedPwd = PasswordManager().hash_password(updatedPassword)
                 userKey.set_password(hashedPwd)
                 db['Users'] = userDict
                 print("Password updated")
+                db.close()
 
-                db.close()
+                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                session["password_changed"] = True
                 return redirect(url_for("userProfile"))
-            else:
-                db.close()
-                return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
         else:
             return render_template('users/loggedin/change_password.html', form=create_update_password_form)
     else:
@@ -815,12 +861,25 @@ def userPayment():
                 db['Users'] = userDict
                 print("Payment added")
 
+                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
+                session["payment_added"] = True
+
                 db.close()
                 return redirect(url_for("userPayment"))
             else:
                 print("POST request sent but form not validated")
                 db.close()
-                return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form)
+
+                # checking sessions if any of the user's payment method has been deleted
+                if "card_deleted" in session:
+                    cardDeleted = True
+                    session.pop("card_deleted", None)
+                    print("Card recently added?:", cardDeleted)
+                else:
+                    cardDeleted = False
+                    print("Card recently added?:", cardDeleted)
+
+                return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted)
         else:
             cardName = userKey.get_card_name()
             cardNo = str(userKey.get_card_no())
@@ -832,7 +891,25 @@ def userPayment():
             cardType = userKey.get_card_type()
 
             db.close()
-            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType)
+
+            # checking sessions if any of the user's payment method details has changed
+            if "card_updated" in session:
+                cardUpdated = True
+                session.pop("card_updated", None)
+                print("Card recently updated?:", cardUpdated)
+            else:
+                cardUpdated = False
+                print("Card recently updated?:", cardUpdated)
+            
+            if "payment_added" in session:
+                cardAdded = True
+                session.pop("payment_added", None)
+                print("Card recently added?:", cardAdded)
+            else:
+                cardAdded = False
+                print("Card recently added?:", cardAdded)
+
+            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded)
     else:
         return redirect(url_for("home"))
 
@@ -899,6 +976,9 @@ def userEditPayment():
                 print("Payment edited")
                 db.close()
 
+                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
+                session["card_updated"] = True
+
                 return redirect(url_for("userPayment"))
             else:
                 db.close()
@@ -956,7 +1036,9 @@ def deleteCard():
             db['Users'] = userDict
             print("Payment added")
             db.close()
-
+            
+            # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
+            session["card_deleted"] = True
             return redirect(url_for("userPayment"))
             
         else:

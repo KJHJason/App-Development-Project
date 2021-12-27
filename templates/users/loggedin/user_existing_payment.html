@@ -3,7 +3,46 @@
 {% block title %}Payment Method | CourseFinity{% endblock %}
 
 {% block content %}
-<div class="modal fade" id="deleteCardConfirmation" tabindex="-1" aria-labelledby="deleteCardConfirmation" aria-hidden="true">
+
+{% if cardUpdated %}
+<div class="modal fade" id="updatedCardModal" tabindex="-1" aria-labelledby="updatedCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updatedCardModalLabel">Card Details Updated</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your payment method has been successfully updated.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if cardAdded %}
+<div class="modal fade" id="addedCardModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addedCardModalLabel">Payment Method Added</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your card details has been successfully added.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="deleteCardModal" tabindex="-1" aria-labelledby="deleteCardConfirmation" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -67,7 +106,7 @@
                                         <span class="float-start">Expiry Date: {{ cardExpiry }}</span>
                                     </td>
                                     <td>
-                                        <span class="float-end"><button class="btn btn-danger delete_button" data-bs-toggle="modal" data-bs-target="#deleteCardConfirmation">Delete Card</button></span>
+                                        <span class="float-end"><button class="btn btn-danger delete_button" data-bs-toggle="modal" data-bs-target="#deleteCardModal">Delete Card</button></span>
                                     </td>
                                 </tr>
                             </table>
@@ -78,4 +117,19 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if cardUpdated %}
+        <script>
+            var updatedCardModal = new bootstrap.Modal(document.getElementById('updatedCardModal'), {});
+            updatedCardModal.show();
+        </script>
+    {% endif %}
+    {% if cardAdded %}
+        <script>
+            var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
+            addedCardModal.show();
+        </script>
+    {% endif %}
 {% endblock %}

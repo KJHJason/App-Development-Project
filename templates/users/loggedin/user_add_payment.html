@@ -5,6 +5,25 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
+{% if cardDeleted %}
+<div class="modal fade" id="deletedCardModal" tabindex="-1" aria-labelledby="deletedCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletedCardModalLabel">Payment Method Deleted</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your card details has been successfully deleted.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -62,4 +81,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if cardDeleted %}
+        <script>
+            var deletedCardModal = new bootstrap.Modal(document.getElementById('deletedCardModal'), {});
+            deletedCardModal.show();
+        </script>
+    {% endif %}
 {% endblock %}
