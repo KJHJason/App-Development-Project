@@ -612,7 +612,7 @@ def updateEmail():
                 session.clear()
                 return redirect(url_for("home"))
 
-            updatedEmail = create_update_email_form.updateEmail.data
+            updatedEmail = create_update_email_form.updateEmail.data.lower()
             currentEmail = userKey.get_email()
 
             if updatedEmail == currentEmail:
