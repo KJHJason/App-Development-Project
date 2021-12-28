@@ -156,7 +156,7 @@ def home():
             return render_template('users/loggedin/user_home.html')
         else:
             print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            # if user is not found for some reason, it will delete any session and redirect the user to the guest homepage
             session.clear()
             return render_template('users/guest/guest_home.html')
     else:
@@ -1052,7 +1052,7 @@ def deleteCard():
 """Search Function"""
 
 @app.route("/search")
-def function():
+def search():
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -1094,7 +1094,7 @@ def function():
 """Purchase History"""
 
 @app.route("/purchasehistory")
-def function():
+def purchaseHistory():
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -1136,7 +1136,7 @@ def function():
 """Purchase Review"""
 
 @app.route("/purchasereview")
-def function():
+def purchaseReview():
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -1178,7 +1178,7 @@ def function():
 """Purchase View"""
 
 @app.route("/purchaseview")
-def function():
+def purchaseView():
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -1220,7 +1220,7 @@ def function():
 """Teacher Cashout System"""
 
 @app.route("/teacher_cashout")
-def function():
+def teacherCashOut():
     if "userSession" in session:
         usernameSession = session["userSession"]
 
@@ -1259,89 +1259,6 @@ def function():
 
 """End of Teacher Cashout System"""
 
-"""Recommendation Function"""
-
-@app.route("/user_home")
-def function():
-    if "userSession" in session:
-        usernameSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            print("Error in retrieving Users from user.db")
-
-        # retrieving the object from the shelve based on the user's username
-        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
-    else:
-        return redirect(url_for("home"))
-
-"""End of Recommendation Function"""
-
-"""Trending Function"""
-
-@app.route("/")
-def function():
-    if "userSession" in session:
-        usernameSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            print("Error in retrieving Users from user.db")
-
-        # retrieving the object from the shelve based on the user's username
-        userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
-    else:
-        return redirect(url_for("home"))
-
-"""End of Trending Function"""
 
 # 3 template app.route("") for you guys :prayge:
 

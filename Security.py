@@ -1,7 +1,6 @@
 from argon2 import PasswordHasher
 import html
 
-
 """Password hashing"""
 
 # things to note, argon2 by default will use 65536KB of memory and time is 3 iterations, and 4 degrees of parallelism by default
@@ -50,10 +49,10 @@ else:
 """Input sanitisation"""
 
 def Sanitise(userInput):
-    userInput = html.escape(userInput)
+    userInput = html.escape(userInput, quote=True) # quote = True so that the characters (") and (') are escaped/translated
     userInput = userInput.strip()
 
-    if len(userInput) != 0:
+    if len(userInput) != 0: # checking the length of the string if it's empty or not (Just in case as this should have been validated when using wtforms)
         return userInput
     else:
         return False
