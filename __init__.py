@@ -38,7 +38,7 @@ def get_key_and_validate(userInput, userDict, userInfoType):
                 userFound = True
                 return userKey, userFound
         return userKey, userFound
-
+            
     else:
         raise Exception('Third argument for get_key() can only take in "username" or "email"!')
 
@@ -69,7 +69,7 @@ def validate_session_open_file(userSession):
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
         session.clear()
         return redirect(url_for("home"))
-
+        
     userFound = False
     print("Username session:", userSession)
     for key in userDict:
@@ -156,7 +156,7 @@ def home():
             return render_template('users/loggedin/user_home.html')
         else:
             print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the guest homepage
+            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return render_template('users/guest/guest_home.html')
     else:
@@ -205,7 +205,7 @@ def userLogin():
                     break
                 else:
                     print("User email not found.")
-
+                    
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
                 passwordShelveData = email_key.get_password()
@@ -218,7 +218,7 @@ def userLogin():
                     print("Correct password!")
                 else:
                     print("Password incorrect.")
-
+                    
             if email_found and password_matched:
                 print("User validated...")
                 print("Email in database:", emailShelveData)
@@ -243,7 +243,7 @@ def userLogin():
 @app.route('/logout')
 def logout():
     session.pop("userSession", None)
-
+    
     # sending a session data so that when it redirects the user to the homepage, jinja2 will render out a logout alert
     session["recentlyLoggedOut"] = True
 
@@ -257,7 +257,7 @@ def userSignUp():
     if "userSession" not in session:
         create_signup_form = Forms.CreateSignUpForm(request.form)
         if request.method == 'POST' and create_signup_form.validate():
-
+            
             # Declaring the 2 variables below to prevent UnboundLocalError
             email_duplicates = False
             username_duplicates = False
@@ -291,7 +291,7 @@ def userSignUp():
             # Checking duplicates for email and username
             email_duplicates = check_duplicates(emailInput, userDict, "email")
             username_duplicates = check_duplicates(usernameInput, userDict, "username")
-
+            
             # If there were no duplicates and passwords entered were the same, create a new user
             if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                 hashedPwd = PasswordManager().hash_password(passwordInput)
@@ -301,7 +301,7 @@ def userSignUp():
 
                 userDict[user.get_username()] = user
                 db["Users"] = userDict
-
+                
                 print(userDict)
 
                 db.close()
@@ -312,9 +312,9 @@ def userSignUp():
                 # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                 db.close()
                 print("Validation conditions were not met.")
-                return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched)
+                return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
         else:
-            return render_template('users/guest/signup.html', form=create_signup_form)
+            return render_template('users/guest/signup.html', form=create_signup_form)    
     else:
         return redirect(url_for("home"))
 
@@ -326,7 +326,7 @@ def userSignUp():
 def teacherSignUp():
     if "userSession" not in session:
         create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
-
+    
         if request.method == 'POST' and create_teacher_sign_up_form.validate():
             # Declaring the 2 variables below to prevent UnboundLocalError
             email_duplicates = False
@@ -371,14 +371,14 @@ def teacherSignUp():
 
                 userDict[user.get_username()] = user
                 db["Users"] = userDict
-
+                
                 session["teacher"] = emailInput # to send the email to the add payment form as part of the teacher sign up process and for setting the payment method information into the teacher object
 
                 print(userDict)
                 print("Teacher added.")
 
                 db.close()
-
+                
                 session["userSession"] = usernameInput
 
                 return redirect(url_for("signUpPayment"))
@@ -386,9 +386,9 @@ def teacherSignUp():
                 # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                 db.close()
                 print("Validation conditions were not met.")
-                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched)
+                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
         else:
-            return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form)
+            return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form) 
     else:
         return redirect(url_for("home"))
 
@@ -421,7 +421,7 @@ def signUpPayment():
 
                 # retrieving the object from the shelve based on the user's email
                 teacherKey, userFound = get_key_and_validate(teacherEmail, userDict, "email")
-
+                
                 if userFound == False:
                     print("User not found")
                     # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -478,7 +478,7 @@ def signUpPayment():
 def userProfile():
     if "userSession" in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
-
+        
         usernameSession = session["userSession"]
         create_image_upload_form = Forms.CreateImageUploadForm(request.form)
         if request.method == "POST" and create_image_upload_form.validate():
@@ -504,13 +504,13 @@ def userProfile():
 
             # retrieving the object from the shelve based on the user's username
             userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+            
             if userFound == False:
                 print("User not found")
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
-
+            
             userEmail = userKey.get_email()
             userAccType = userKey.get_acc_type()
 
@@ -538,7 +538,7 @@ def userProfile():
             else:
                 passwordChanged = False
                 print("Password recently changed?:", passwordChanged)
-
+            
             return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=usernameSession, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged)
     else:
         return redirect(url_for("home"))
@@ -564,7 +564,7 @@ def updateUsername():
                     userDict = db['Users']
                 else:
                     print("User data in shelve is empty.")
-                    session.clear()
+                    session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -572,7 +572,7 @@ def updateUsername():
 
             # retrieving the object from the shelve based on the user's username
             userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+            
             if userFound == False:
                 print("User not found")
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -649,7 +649,7 @@ def updateEmail():
                     userDict = db['Users']
                 else:
                     print("User data in shelve is empty.")
-                    session.clear()
+                    session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -657,7 +657,7 @@ def updateEmail():
 
             # retrieving the object from the shelve based on the user's username
             userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+            
             if userFound == False:
                 print("User not found")
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -693,7 +693,7 @@ def updateEmail():
                     userKey.set_email(updatedEmail)
                     db['Users'] = userDict
                     print("Email updated")
-
+                    
                     # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
                     session["email_updated"] = True
 
@@ -724,7 +724,7 @@ def updatePassword():
             password_verification = False
 
             # for jinja2
-            errorMessage = False
+            errorMessage = False 
 
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
@@ -734,7 +734,7 @@ def updatePassword():
                     userDict = db['Users']
                 else:
                     print("User data in shelve is empty.")
-                    session.clear()
+                    session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -742,7 +742,7 @@ def updatePassword():
 
             # retrieving the object from the shelve based on the user's username
             userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+            
             if userFound == False:
                 print("User not found")
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -769,7 +769,7 @@ def updatePassword():
             print("Current password input:", currentPassword)
 
             password_verification = PasswordManager().verify_password(currentStoredPassword, currentPassword)
-
+            
             if password_verification:
                 print("User identity verified")
             else:
@@ -818,14 +818,14 @@ def userPayment():
             else:
                 print("User data in shelve is empty.")
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                session.clear()
+                session.clear() 
                 return redirect(url_for("home"))
         except:
             print("Error in retrieving Users from user.db")
 
         # retrieving the object from the shelve based on the user's username
         userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+        
         if userFound == False:
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -834,7 +834,7 @@ def userPayment():
 
         cardExist = bool(userKey.get_card_name())
         print("Card exist?:", cardExist)
-
+        
         if cardExist == False:
             print("Entered if loop")
             create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
@@ -900,7 +900,7 @@ def userPayment():
             else:
                 cardUpdated = False
                 print("Card recently updated?:", cardUpdated)
-
+            
             if "payment_added" in session:
                 cardAdded = True
                 session.pop("payment_added", None)
@@ -932,7 +932,7 @@ def userEditPayment():
                 userDict = db['Users']
             else:
                 print("User data in shelve is empty.")
-                session.clear()
+                session.clear() 
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                 return redirect(url_for("home"))
         except:
@@ -940,7 +940,7 @@ def userEditPayment():
 
         # retrieving the object from the shelve based on the user's username
         userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+        
         if userFound == False:
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -1013,7 +1013,7 @@ def deleteCard():
 
         # retrieving the object from the shelve based on the user's username
         userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+        
         if userFound == False:
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -1036,11 +1036,11 @@ def deleteCard():
             db['Users'] = userDict
             print("Payment added")
             db.close()
-
+            
             # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
             session["card_deleted"] = True
             return redirect(url_for("userPayment"))
-
+            
         else:
             db.close()
             return redirect(url_for("user_profile"))
@@ -1290,7 +1290,7 @@ def function():
 
         # retrieving the object from the shelve based on the user's username
         userKey, userFound = get_key_and_validate(usernameSession, userDict, "username")
-
+        
         if userFound == False:
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
@@ -1298,7 +1298,7 @@ def function():
             return redirect(url_for("home"))
 
         # insert your C,R,U,D operation here to deal with the user shelve data files
-
+        
         db.close() # remember to close your shelve files!
         return render_template('users/loggedin/page.html')
     else:
@@ -1317,7 +1317,7 @@ def function():
         usernameSession = session["userSession"]
 
         userFound = validate_session_open_file(usernameSession)
-
+        
         if userFound == True:
             # add in your own code here for your C,R,U,D operation
 
@@ -1335,7 +1335,7 @@ def function():
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but not dealing with shelve
-# e.g. for general pages such as about_us.html, etc.
+# e.g. for general pages such as about_us.html, etc. 
 """Template app.route(") (use this when adding a new app route)"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
