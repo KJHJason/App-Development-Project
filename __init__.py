@@ -28,14 +28,12 @@ def get_key_and_validate(userSession, userDict):
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
 def get_userID(userDict):
-    noOfUser = 0
+    userIDShelveData = 0 # initialise to 0 as the shelve files can be missing or new which will have no data
     for key in userDict:
         print("retrieving")
-        userIDShelveData = userDict[key].get_user_id()
+        userIDShelveData = int(userDict[key].get_user_id())
         print("ID in database:", userIDShelveData)
-        noOfUser += 1
-    print("Number of users:", noOfUser)
-    userIDShelveData += 1
+        userIDShelveData += 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
     return userIDShelveData
 
 # use the function below if you just want to validate the session but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
@@ -360,6 +358,7 @@ def teacherSignUp():
 
                 # setting user ID for the teacher
                 userID = get_userID(userDict)
+                print("User ID setted: ", userID)
 
                 user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
                 print(user)
