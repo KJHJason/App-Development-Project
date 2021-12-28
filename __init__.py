@@ -145,7 +145,7 @@ def allowed_file(filename):
 app = Flask(__name__)
 app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
 
-# for uploading images to the web app's server configurations
+# for uploading images of the user's profile picture to the web app's server configurations
 UPLOAD_PATH = 'static/images/user'
 ALLOWED_EXTENSIONS = {"png"}
 
