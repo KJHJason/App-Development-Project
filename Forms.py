@@ -1,7 +1,6 @@
 from wtforms import Form, StringField, RadioField, SelectField, TextAreaField, validators, EmailField, DateField, MonthField
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import PasswordField
-from flask_wtf.file import FileField
 
 class CreateEditPaymentForm(Form):
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
@@ -23,9 +22,6 @@ class CreateSignUpForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
     password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-
-class CreateImageUploadForm(Form):
-    imageFormFile = FileField("Upload Profile Image")
 
 class CreateTeacherSignUpForm(Form):
     username = StringField("Username:", [validators.Length(min=1, max=30), validators.DataRequired()])

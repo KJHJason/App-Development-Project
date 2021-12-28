@@ -5,8 +5,10 @@ import Student, Teacher, Admin
 from Security import PasswordManager, Sanitise
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from pathlib import Path
+from PIL import Image
 
-"""Functions used throughout"""
+"""Useful Functions"""
 
 # use this function if you want to validate and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
@@ -24,6 +26,37 @@ def get_key_and_validate(userSession, userDict):
             return userKey, userFound
     print("Verdict: User ID not found.")
     return userKey, userFound
+
+# Use this function if you want to validate the session and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
+def validate_session_get_userKey_open_file(userSession):
+    userDict = {}
+    # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
+    try:
+        db = shelve.open("user", "r")
+        userDict = db['Users']
+        print("File found.")
+        db.close()
+    except:
+        print("File could not be found.")
+        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
+        session.clear()
+        return redirect(url_for("home"))
+        
+    userKey = ""
+    userFound = False
+    print("ID in session:", userSession)
+    for key in userDict:
+        print("retrieving")
+        userIDShelveData = userDict[key].get_user_id()
+        print("ID in database:", userIDShelveData)
+        if userSession == userIDShelveData:
+            print("Verdict: User ID Matched.")
+            userKey = userDict[key]
+            userFound = True
+            return userKey, userFound
+    print("Verdict: User ID not found.")
+    return userKey, userFound
+
 
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
@@ -100,18 +133,24 @@ def check_duplicates(userInput, userDict, infoToCheck):
     else:
         raise Exception('Third argument for get_key() can only take in "username" or "email"!')
 
-"""Functions used throughout"""
+# use this function to check for the allowed extension of images when uploading the image to the web app's server
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+"""End of Useful Functions"""
 
 """Web app configurations"""
 
+# general Flask configurations
 app = Flask(__name__)
+app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+
+# for uploading images to the web app's server configurations
 UPLOAD_PATH = 'static/images/user'
 ALLOWED_EXTENSIONS = {"png"}
-app.config['UPLOAD_PATH'] = "uploads"
-app.config['MAX_CONTENT_LENGTH'] = 5120 * 5120
-limiter = Limiter(app, key_func=get_remote_address)
 
-app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+# Flask limiter configuration
+limiter = Limiter(app, key_func=get_remote_address)
 
 """End of Web app configurations"""
 
@@ -392,8 +431,8 @@ def signUpPayment():
         userSession = session["userSession"]
         if "teacher" in session:
             teacherID = session["teacher"]
-
             print(teacherID)
+
             create_teacher_payment_form = Forms.CreateTeacherPayment(request.form)
             if request.method == 'POST' and create_teacher_payment_form.validate():
                 userFound = False # declaring this variable to prevent unboundLocalError
@@ -417,43 +456,45 @@ def signUpPayment():
                 teacherKey, userFound = get_key_and_validate(teacherID, userDict)
                 
                 if userFound == False:
+                    db.close()
                     print("User not found")
                     # if user is not found for some reason, it will delete any session and redirect the user to the homepage
                     session.clear()
                     return redirect(url_for("home"))
-
-                if userSession == teacherID:
-                    # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
-
-                    cardName = Sanitise(create_teacher_payment_form.cardName.data)
-                    cardNo = create_teacher_payment_form.cardNo.data
-                    cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
-                    cardCVV = create_teacher_payment_form.cardCVV.data
-                    cardType = create_teacher_payment_form.cardType.data
-
-                    # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                    cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                    cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                    cardExpiry = cardMonth + "/" + cardYear
-
-                    # setting the teacher's payment method which in a way editing the teacher's object
-                    teacherKey.set_card_name(cardName)
-                    teacherKey.set_card_no(cardNo)
-                    teacherKey.set_card_expiry(cardExpiry)
-                    teacherKey.set_card_cvv(cardCVV)
-                    teacherKey.set_card_type(cardType)
-                    teacherKey.display_card_info()
-                    db['Users'] = userDict
-                    print("Payment added")
-
-                    db.close()
-
-                    session.pop("teacher", None) # deleting data from the session after registering the payment method
-                    return redirect(url_for("home"))
                 else:
-                    # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
-                    session.pop("teacher", None)
-                    return redirect(url_for("home"))
+                    if userSession == teacherID:
+                        # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
+
+                        cardName = Sanitise(create_teacher_payment_form.cardName.data)
+                        cardNo = create_teacher_payment_form.cardNo.data
+                        cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
+                        cardCVV = create_teacher_payment_form.cardCVV.data
+                        cardType = create_teacher_payment_form.cardType.data
+
+                        # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                        cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                        cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                        cardExpiry = cardMonth + "/" + cardYear
+
+                        # setting the teacher's payment method which in a way editing the teacher's object
+                        teacherKey.set_card_name(cardName)
+                        teacherKey.set_card_no(cardNo)
+                        teacherKey.set_card_expiry(cardExpiry)
+                        teacherKey.set_card_cvv(cardCVV)
+                        teacherKey.set_card_type(cardType)
+                        teacherKey.display_card_info()
+                        db['Users'] = userDict
+                        print("Payment added")
+
+                        db.close()
+
+                        session.pop("teacher", None) # deleting data from the session after registering the payment method
+                        return redirect(url_for("home"))
+                    else:
+                        db.close()
+                        # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
+                        session.pop("teacher", None)
+                        return redirect(url_for("home"))
             else:
                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
         else:
@@ -469,69 +510,122 @@ def signUpPayment():
 def userProfile():
     if "userSession" in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
-        
+
         userSession = session["userSession"]
-        create_image_upload_form = Forms.CreateImageUploadForm(request.form)
-        if request.method == "POST" and create_image_upload_form.validate():
-            return redirect(url_for("home"))
+        userKey, userFound = validate_session_get_userKey_open_file(userSession)
+        if userFound:
+            if request.method == "POST":
+                if "profileImage" not in request.files:
+                    print("No file sent.")
+                    return redirect(url_for("userProfile"))
+
+                file = request.files["profileImage"]
+                filename = file.filename
+
+                if filename != "":
+                    if file and allowed_file(filename):
+                        # will only accept .png
+                        print("File extension accepted.")
+
+                        #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
+                        # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image 
+                        filename = secure_filename(filename) 
+                        
+                        # constructing the file path so that the it will know where to store the image
+                        filePath = os.path.join(app.root_path, UPLOAD_PATH, filename)
+                        userID = str(userKey.get_user_id()) + ".png"
+                        newFilePath = os.path.join(app.root_path, UPLOAD_PATH, userID)
+
+                        # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                        # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
+                        # else it will just save normally and rename it to userID.png (e.g. 0.png)
+                        if Path(newFilePath).is_file():
+                            print("Removing existing image.")
+                            os.remove(newFilePath)
+                            file.save(filePath)
+                            os.rename(filePath, newFilePath)
+                            print("File renamed to", newFilePath, "and has been overwrited.")
+                        else:
+                            print("Saving image file.")
+                            file.save(filePath)
+                            os.rename(filePath, newFilePath)
+                            print("File renamed to", newFilePath, "and has been saved.")
+
+                        # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                        profileImage = Image.open(newFilePath)
+                        resizedImage = profileImage.resize((500, 500))
+                        os.remove(newFilePath)
+                        resizedImage.save(newFilePath)
+
+                        session["imageChanged"] = True
+                        return redirect(url_for("userProfile"))
+                    else:
+                        print("Image extension not allowed.")
+                        session["imageFailed"] = True
+                        return redirect(url_for("userProfile"))
+                else:
+                    print("No selected file/the user sent a empty file without a filename")
+                    return redirect(url_for("userProfile"))
+            else:
+                userUsername = userKey.get_username()
+                userEmail = userKey.get_email()
+                userAccType = userKey.get_acc_type()
+
+                # checking if the user have uploaded a profile image before
+                imageName = str(userKey.get_user_id()) + ".png"
+                imageFilePath = os.path.join(app.root_path, UPLOAD_PATH, imageName)
+                if Path(imageFilePath).is_file():
+                    imagesrcPath = "static/images/user/" + imageName
+                else:
+                    imagesrcPath = "static/images/user/default.png"
+
+                # checking sessions if any of the user's acc info has changed
+                if "username_changed" in session:
+                    usernameChanged = True
+                    session.pop("username_changed", None)
+                    print("Username recently changed?:", usernameChanged)
+                else:
+                    usernameChanged = False
+                    print("Username recently changed?:", usernameChanged)
+
+                if "email_updated" in session:
+                    emailChanged = True
+                    session.pop("email_updated", None)
+                    print("Email recently changed?:", emailChanged)
+                else:
+                    emailChanged = False
+                    print("Email recently changed?:", emailChanged)
+
+                if "password_changed" in session:
+                    passwordChanged = True
+                    session.pop("password_changed", None)
+                    print("Password recently changed?:", passwordChanged)
+                else:
+                    passwordChanged = False
+                    print("Password recently changed?:", passwordChanged)
+
+                if "imageFailed" in session:
+                    imageFailed = True
+                    session.pop("imageFailed", None)
+                    print("Fail to upload image because of wrong extension?:", imageFailed)
+                else:
+                    imageFailed = False
+                    print("Fail to upload image because of wrong extension?:", imageFailed)
+
+                if "imageChanged" in session:
+                    imageChanged = True
+                    session.pop("imageChanged", None)
+                    print("Profile icon recently changed?:", imageChanged)
+                else:
+                    imageChanged = False
+                    print("Profile icon recently changed?:", imageChanged)
+                
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath)
         else:
-            # declaring userKey and userFound variable to prevent unboundLocalError
-            userKey = ""
-            userFound = False
-
-            # Retrieving data from shelve
-            try:
-                userDict = {}
-                db = shelve.open("user", "r")
-                userDict = db['Users']
-                print("File found.")
-                db.close()
-            except:
-                print("File could not be found.")
-                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-
-
-            # retrieving the object from the shelve based on the user's user ID
-            userKey, userFound = get_key_and_validate(userSession, userDict)
-            
-            if userFound == False:
-                print("User not found")
-                # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-            
-            userUsername = userKey.get_username()
-            userEmail = userKey.get_email()
-            userAccType = userKey.get_acc_type()
-
-            # checking sessions if any of the user's acc info has changed
-            if "username_changed" in session:
-                usernameChanged = True
-                session.pop("username_changed", None)
-                print("Username recently changed?:", usernameChanged)
-            else:
-                usernameChanged = False
-                print("Username recently changed?:", usernameChanged)
-
-            if "email_updated" in session:
-                emailChanged = True
-                session.pop("email_updated", None)
-                print("Email recently changed?:", emailChanged)
-            else:
-                emailChanged = False
-                print("Email recently changed?:", emailChanged)
-
-            if "password_changed" in session:
-                passwordChanged = True
-                session.pop("password_changed", None)
-                print("Password recently changed?:", passwordChanged)
-            else:
-                passwordChanged = False
-                print("Password recently changed?:", passwordChanged)
-            
-            return render_template('users/loggedin/user_profile.html', form=create_image_upload_form, username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged)
+            print("User not found")
+            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -570,44 +664,44 @@ def updateUsername():
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
-
-            updatedUsername = Sanitise(create_update_username_form.updateUsername.data)
-            currentUsername = userKey.get_username()
-                
-            if updatedUsername != currentUsername:
-                # checking duplicates for username
-                for key in userDict:
-                    print("retrieving")
-                    usernameShelveData = userDict[key].get_username()
-                    if updatedUsername == usernameShelveData:
-                        print("Username in database:", usernameShelveData)
-                        print("Username input:", updatedUsername)
-                        print("Verdict: Username already taken.")
-                        username_duplicates = True
-                        break
-                    else:
-                        print("Username in database:", usernameShelveData)
-                        print("Username input:", updatedUsername)
-                        print("Verdict: Username is unique.")
-                        username_duplicates = False
-
-                if username_duplicates == False:
-
-                    # updating username of the user
-                    userKey.set_username(updatedUsername)
-                    db['Users'] = userDict
-                    print("Username updated")
-
-                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                    session["username_changed"] = True
-
-                    db.close()
-                    return redirect(url_for("userProfile"))
-                else:
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=username_duplicates)
             else:
-                print("Update username input same as user's current username")
-                return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=sameUsername)
+                updatedUsername = Sanitise(create_update_username_form.updateUsername.data)
+                currentUsername = userKey.get_username()
+                    
+                if updatedUsername != currentUsername:
+                    # checking duplicates for username
+                    for key in userDict:
+                        print("retrieving")
+                        usernameShelveData = userDict[key].get_username()
+                        if updatedUsername == usernameShelveData:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username already taken.")
+                            username_duplicates = True
+                            break
+                        else:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username is unique.")
+                            username_duplicates = False
+
+                    if username_duplicates == False:
+
+                        # updating username of the user
+                        userKey.set_username(updatedUsername)
+                        db['Users'] = userDict
+                        print("Username updated")
+
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["username_changed"] = True
+
+                        db.close()
+                        return redirect(url_for("userProfile"))
+                    else:
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=username_duplicates)
+                else:
+                    print("Update username input same as user's current username")
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=sameUsername)
         else:
             return render_template('users/loggedin/change_username.html', form=create_update_username_form)
     else:
@@ -648,45 +742,45 @@ def updateEmail():
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
-
-            updatedEmail = Sanitise(create_update_email_form.updateEmail.data.lower())
-            currentEmail = userKey.get_email()
-                
-            # Checking duplicates for email
-            if updatedEmail != currentEmail:
-                for key in userDict:
-                    print("retrieving")
-                    emailShelveData = userDict[key].get_email()
-                    if updatedEmail == emailShelveData:
-                        print("Email in database:", emailShelveData)
-                        print("Email input:", updatedEmail)
-                        print("Verdict: User email already exists.")
-                        email_duplicates = True
-                        break
-                    else:
-                        print("Email in database:", emailShelveData)
-                        print("Email input:", updatedEmail)
-                        print("Verdict: User email is unique.")
-                        email_duplicates = False
-
-                if email_duplicates == False:
-                    # updating email of the user
-                    userKey.set_email(updatedEmail)
-                    db['Users'] = userDict
-                    print("Email updated")
+            else:
+                updatedEmail = Sanitise(create_update_email_form.updateEmail.data.lower())
+                currentEmail = userKey.get_email()
                     
-                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
-                    session["email_updated"] = True
+                # Checking duplicates for email
+                if updatedEmail != currentEmail:
+                    for key in userDict:
+                        print("retrieving")
+                        emailShelveData = userDict[key].get_email()
+                        if updatedEmail == emailShelveData:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email already exists.")
+                            email_duplicates = True
+                            break
+                        else:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email is unique.")
+                            email_duplicates = False
 
-                    db.close()
-                    return redirect(url_for("userProfile"))
+                    if email_duplicates == False:
+                        # updating email of the user
+                        userKey.set_email(updatedEmail)
+                        db['Users'] = userDict
+                        print("Email updated")
+                        
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
+                        session["email_updated"] = True
+
+                        db.close()
+                        return redirect(url_for("userProfile"))
+                    else:
+                        db.close()
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=email_duplicates)
                 else:
                     db.close()
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=email_duplicates)
-            else:
-                db.close()
-                print("User updated email input is the same as their current email")
-                return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=sameEmail)
+                    print("User updated email input is the same as their current email")
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=sameEmail)
         else:
             return render_template('users/loggedin/change_email.html', form=create_update_email_form)
     else:
@@ -730,50 +824,50 @@ def updatePassword():
                 # if user is not found for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
-
-            currentPassword = create_update_password_form.currentPassword.data
-            updatedPassword = create_update_password_form.updatePassword.data
-            confirmPassword = create_update_password_form.confirmPassword.data
-
-            # Retrieving current password of the user
-            currentStoredPassword = userKey.get_password()
-
-            # validation starts
-            print("Updated password input:", updatedPassword)
-            print("Confirm password input", confirmPassword)
-            if updatedPassword == confirmPassword:
-                password_not_matched = False
-                print("New and confirm password inputs matched")
             else:
-                print("New and confirm password inputs did not match")
+                currentPassword = create_update_password_form.currentPassword.data
+                updatedPassword = create_update_password_form.updatePassword.data
+                confirmPassword = create_update_password_form.confirmPassword.data
 
-            print("Current password:", currentStoredPassword)
-            print("Current password input:", currentPassword)
+                # Retrieving current password of the user
+                currentStoredPassword = userKey.get_password()
 
-            password_verification = PasswordManager().verify_password(currentStoredPassword, currentPassword)
-            
-            # printing message for debugging purposes
-            if password_verification:
-                print("User identity verified")
-            else:
-                print("Current password input hash did not match with the one in the shelve database")
+                # validation starts
+                print("Updated password input:", updatedPassword)
+                print("Confirm password input", confirmPassword)
+                if updatedPassword == confirmPassword:
+                    password_not_matched = False
+                    print("New and confirm password inputs matched")
+                else:
+                    print("New and confirm password inputs did not match")
 
-            # if there any validation error, errorMessage will become True for jinja2 to render the error message
-            if password_verification == False or password_not_matched:
-                errorMessage = True
-                db.close()
-                return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
-            else:
-                # updating password of the user
-                hashedPwd = PasswordManager().hash_password(updatedPassword)
-                userKey.set_password(hashedPwd)
-                db['Users'] = userDict
-                print("Password updated")
-                db.close()
+                print("Current password:", currentStoredPassword)
+                print("Current password input:", currentPassword)
 
-                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                session["password_changed"] = True
-                return redirect(url_for("userProfile"))
+                password_verification = PasswordManager().verify_password(currentStoredPassword, currentPassword)
+                
+                # printing message for debugging purposes
+                if password_verification:
+                    print("User identity verified")
+                else:
+                    print("Current password input hash did not match with the one in the shelve database")
+
+                # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                if password_verification == False or password_not_matched:
+                    errorMessage = True
+                    db.close()
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                else:
+                    # updating password of the user
+                    hashedPwd = PasswordManager().hash_password(updatedPassword)
+                    userKey.set_password(hashedPwd)
+                    db['Users'] = userDict
+                    print("Password updated")
+                    db.close()
+
+                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                    session["password_changed"] = True
+                    return redirect(url_for("userProfile"))
         else:
             return render_template('users/loggedin/change_password.html', form=create_update_password_form)
     else:
@@ -814,85 +908,85 @@ def userPayment():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
-
-        cardExist = bool(userKey.get_card_name())
-        print("Card exist?:", cardExist)
-        
-        if cardExist == False:
-            print("Entered if loop")
-            create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
-            if request.method == "POST" and create_add_payment_form.validate():
-                print("POST request sent and form entries validated")
-                cardName = Sanitise(create_add_payment_form.cardName.data)
-                cardNo = create_add_payment_form.cardNo.data
-                cardType = create_add_payment_form.cardType.data
-                cardExpiry = str(create_add_payment_form.cardExpiry.data)
-                cardCVV = create_add_payment_form.cardCVV.data
-
-                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                cardExpiry = cardMonth + "/" + cardYear
-
-                # setting the user's payment method
-                userKey.set_card_name(cardName)
-                userKey.set_card_no(cardNo)
-                userKey.set_card_expiry(cardExpiry)
-                userKey.set_card_cvv(cardCVV)
-                userKey.set_card_type(cardType)
-                userKey.display_card_info()
-                db['Users'] = userDict
-                print("Payment added")
-
-                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
-                session["payment_added"] = True
-
-                db.close()
-                return redirect(url_for("userPayment"))
-            else:
-                print("POST request sent but form not validated")
-                db.close()
-
-                # checking sessions if any of the user's payment method has been deleted
-                if "card_deleted" in session:
-                    cardDeleted = True
-                    session.pop("card_deleted", None)
-                    print("Card recently added?:", cardDeleted)
-                else:
-                    cardDeleted = False
-                    print("Card recently added?:", cardDeleted)
-
-                return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted)
         else:
-            db.close()
-            cardName = userKey.get_card_name()
-            cardNo = str(userKey.get_card_no())
-            print("Original card number:", cardNo)
-            cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
-            print("Sliced card number:", cardNo)
-            cardExpiry = userKey.get_card_expiry()
-            print("Card expiry date:", cardExpiry)
-            cardType = userKey.get_card_type()
+            cardExist = bool(userKey.get_card_name())
+            print("Card exist?:", cardExist)
             
+            if cardExist == False:
+                print("Entered if loop")
+                create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
+                if request.method == "POST" and create_add_payment_form.validate():
+                    print("POST request sent and form entries validated")
+                    cardName = Sanitise(create_add_payment_form.cardName.data)
+                    cardNo = create_add_payment_form.cardNo.data
+                    cardType = create_add_payment_form.cardType.data
+                    cardExpiry = str(create_add_payment_form.cardExpiry.data)
+                    cardCVV = create_add_payment_form.cardCVV.data
 
-            # checking sessions if any of the user's payment method details has changed
-            if "card_updated" in session:
-                cardUpdated = True
-                session.pop("card_updated", None)
-                print("Card recently updated?:", cardUpdated)
-            else:
-                cardUpdated = False
-                print("Card recently updated?:", cardUpdated)
-            
-            if "payment_added" in session:
-                cardAdded = True
-                session.pop("payment_added", None)
-                print("Card recently added?:", cardAdded)
-            else:
-                cardAdded = False
-                print("Card recently added?:", cardAdded)
+                    # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                    cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                    cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                    cardExpiry = cardMonth + "/" + cardYear
 
-            return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded)
+                    # setting the user's payment method
+                    userKey.set_card_name(cardName)
+                    userKey.set_card_no(cardNo)
+                    userKey.set_card_expiry(cardExpiry)
+                    userKey.set_card_cvv(cardCVV)
+                    userKey.set_card_type(cardType)
+                    userKey.display_card_info()
+                    db['Users'] = userDict
+                    print("Payment added")
+
+                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
+                    session["payment_added"] = True
+
+                    db.close()
+                    return redirect(url_for("userPayment"))
+                else:
+                    print("POST request sent but form not validated")
+                    db.close()
+
+                    # checking sessions if any of the user's payment method has been deleted
+                    if "card_deleted" in session:
+                        cardDeleted = True
+                        session.pop("card_deleted", None)
+                        print("Card recently added?:", cardDeleted)
+                    else:
+                        cardDeleted = False
+                        print("Card recently added?:", cardDeleted)
+
+                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted)
+            else:
+                db.close()
+                cardName = userKey.get_card_name()
+                cardNo = str(userKey.get_card_no())
+                print("Original card number:", cardNo)
+                cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
+                print("Sliced card number:", cardNo)
+                cardExpiry = userKey.get_card_expiry()
+                print("Card expiry date:", cardExpiry)
+                cardType = userKey.get_card_type()
+                
+
+                # checking sessions if any of the user's payment method details has changed
+                if "card_updated" in session:
+                    cardUpdated = True
+                    session.pop("card_updated", None)
+                    print("Card recently updated?:", cardUpdated)
+                else:
+                    cardUpdated = False
+                    print("Card recently updated?:", cardUpdated)
+                
+                if "payment_added" in session:
+                    cardAdded = True
+                    session.pop("payment_added", None)
+                    print("Card recently added?:", cardAdded)
+                else:
+                    cardAdded = False
+                    print("Card recently added?:", cardAdded)
+
+                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded)
     else:
         return redirect(url_for("userLogin"))
 
@@ -929,46 +1023,46 @@ def userEditPayment():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            cardExist = bool(userKey.get_card_name())
+            print("Card exist?:", cardExist)
+            cardName = userKey.get_card_name()
 
-        cardExist = bool(userKey.get_card_name())
-        print("Card exist?:", cardExist)
-        cardName = userKey.get_card_name()
+            cardNo = str(userKey.get_card_no())
+            print("Original card number:", cardNo)
+            cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
+            print("Sliced card number:", cardNo)
 
-        cardNo = str(userKey.get_card_no())
-        print("Original card number:", cardNo)
-        cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
-        print("Sliced card number:", cardNo)
+            cardType = userKey.get_card_type()
+            if cardExist:
+                create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
+                if request.method == "POST" and create_edit_payment_form.validate():
+                    cardCVV = create_edit_payment_form.cardCVV.data
+                    cardExpiry = str(create_edit_payment_form.cardExpiry.data)
 
-        cardType = userKey.get_card_type()
-        if cardExist:
-            create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
-            if request.method == "POST" and create_edit_payment_form.validate():
-                cardCVV = create_edit_payment_form.cardCVV.data
-                cardExpiry = str(create_edit_payment_form.cardExpiry.data)
+                    # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                    cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                    cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                    cardExpiry = cardMonth + "/" + cardYear
 
-                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                cardExpiry = cardMonth + "/" + cardYear
+                    # changing the user's payment info
+                    userKey.set_card_cvv(cardCVV)
+                    userKey.set_card_expiry(cardExpiry)
+                    db['Users'] = userDict
+                    print("Changed CVV:", cardCVV)
+                    print("Payment edited")
+                    db.close()
 
-                # changing the user's payment info
-                userKey.set_card_cvv(cardCVV)
-                userKey.set_card_expiry(cardExpiry)
-                db['Users'] = userDict
-                print("Changed CVV:", cardCVV)
-                print("Payment edited")
-                db.close()
+                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
+                    session["card_updated"] = True
 
-                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
-                session["card_updated"] = True
-
-                return redirect(url_for("userPayment"))
+                    return redirect(url_for("userPayment"))
+                else:
+                    db.close()
+                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType)
             else:
                 db.close()
-                return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType)
-        else:
-            db.close()
-            return redirect(url_for("user_profile"))
+                return redirect(url_for("user_profile"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1002,31 +1096,31 @@ def deleteCard():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
-
-        # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
-        cardExist = bool(userKey.get_card_name())
-        print("Card exist?:", cardExist)
-
-        if cardExist:
-            # deleting user's payment info, specifically changing their payment info to empty strings
-            userKey.set_card_name("")
-            userKey.set_card_no("")
-            userKey.set_card_expiry("")
-            userKey.set_card_cvv("")
-            userKey.set_card_type("")
-            userKey.display_card_info()
-
-            db['Users'] = userDict
-            print("Payment added")
-            db.close()
-            
-            # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
-            session["card_deleted"] = True
-            return redirect(url_for("userPayment"))
-            
         else:
-            db.close()
-            return redirect(url_for("user_profile"))
+            # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
+            cardExist = bool(userKey.get_card_name())
+            print("Card exist?:", cardExist)
+
+            if cardExist:
+                # deleting user's payment info, specifically changing their payment info to empty strings
+                userKey.set_card_name("")
+                userKey.set_card_no("")
+                userKey.set_card_expiry("")
+                userKey.set_card_cvv("")
+                userKey.set_card_type("")
+                userKey.display_card_info()
+
+                db['Users'] = userDict
+                print("Payment added")
+                db.close()
+                
+                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
+                session["card_deleted"] = True
+                return redirect(url_for("userPayment"))
+                
+            else:
+                db.close()
+                return redirect(url_for("user_profile"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1064,11 +1158,11 @@ def search():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         return redirect(url_for("home"))
 
@@ -1106,11 +1200,11 @@ def purchaseHistory():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         return redirect(url_for("userLogin"))
 
@@ -1148,11 +1242,11 @@ def purchaseReview():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         return redirect(url_for("userLogin"))
 
@@ -1190,11 +1284,11 @@ def purchaseView():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         return redirect(url_for("userLogin"))
 
@@ -1232,18 +1326,18 @@ def teacherCashOut():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         return redirect(url_for("userLogin"))
 
 """End of Teacher Cashout System"""
 
 
-# 3 template app.route("") for you guys :prayge:
+# 4 template app.route("") for you guys :prayge:
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
@@ -1279,11 +1373,11 @@ def function():
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
-
-        # insert your C,R,U,D operation here to deal with the user shelve data files
-        
-        db.close() # remember to close your shelve files!
-        return render_template('users/loggedin/page.html')
+        else:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
     else:
         # determine if it make sense to redirect the user to the home page or the login page
         return redirect(url_for("home"))
@@ -1333,6 +1427,37 @@ def insertName():
         userFound = validate_session_open_file(userSession)
 
         if userFound == True:
+            # add in your code here
+            
+            return render_template('users/loggedin/page.html')
+        else:
+            print("User not found")
+            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        # determine if it make sense to redirect the user to the home page or the login page
+        return redirect(url_for("home"))
+        # return redirect(url_for("userLogin"))
+
+"""End of Template app.route"""
+'''
+
+'''
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but not dealing with shelve and you need to read information from the user's account data
+# e.g. for user pages such as user_profile.html, etc. 
+"""Template app.route(") (use this when adding a new app route)"""
+
+@app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def insertName():
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        userKey, userFound = validate_session_get_userKey_open_file(userSession)
+
+        if userFound == True:
+            # add in your code below
+
             return render_template('users/loggedin/page.html')
         else:
             print("User not found")

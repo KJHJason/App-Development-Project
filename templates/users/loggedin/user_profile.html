@@ -62,6 +62,45 @@
 </div>
 {% endif %}
 
+{% if imageChanged %}
+<div class="modal fade" id="imageChangedModal" tabindex="-1" aria-labelledby="imageChangedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="imageChangedModalLabel">Profile Image Changed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your profile image has been succesfully uploaded and changed.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if imageFailed %}
+<div class="modal fade" id="imageFailedModal" tabindex="-1" aria-labelledby="imageFailedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="imageFailedModalLabel">Failed to change your profile image!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your profile image has not been succesfully uploaded and changed.</h6>
+            <h6>Do note that only images with the extension .png are only accepted.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -89,10 +128,11 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5 image-center">
-                            <img src="static/images/user/default.png" alt="User Profile Icon" id="user-icon-setting">
+                            <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
                             <div class="mb-9">
                                 <form action="" method="POST" enctype="multipart/form-data">
-                                    {{ render_field(form.imageFormFile, class="form-control") }}
+                                    <label for="imageFile" class="form-label">Upload Profile Image</label>
+                                    <input class="form-control" type="file" id="imageFile" name="profileImage">
                                     <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
                                 </form>
                             </div>
@@ -178,6 +218,18 @@
         <script>
             var pwdModal = new bootstrap.Modal(document.getElementById('PasswordModal'), {});
             pwdModal.show();
+        </script>
+    {% endif %}
+    {% if imageChanged %}
+        <script>
+            var imageChangedModal = new bootstrap.Modal(document.getElementById('imageChangedModal'), {});
+            imageChangedModal.show();
+        </script>
+    {% endif %}
+    {% if imageFailed %}
+        <script>
+            var imageFailedModal = new bootstrap.Modal(document.getElementById('imageFailedModal'), {});
+            imageFailedModal.show();
         </script>
     {% endif %}
 {% endblock %}
