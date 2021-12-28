@@ -1,8 +1,8 @@
 from User import User
 
 class Student(User):
-    def __init__(self, username, email, password):
-        super().__init__(username, email, password, "Student", "Good")
+    def __init__(self, userID, username, email, password):
+        super().__init__(userID, username, email, password, "Student", "Good")
         self.__card_name = ""
         self.__card_no = ""
         self.__card_expiry = ""

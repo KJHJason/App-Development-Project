@@ -1,8 +1,8 @@
 from User import User
 
 class Teacher(User):
-    def __init__(self, username, email, password):
-        super().__init__(username, email, password, "Teacher", "Good")
+    def __init__(self, userID, username, email, password):
+        super().__init__(userID, username, email, password, "Teacher", "Good")
         self.__earnings = 0
         self.__card_name = ""
         self.__card_no = ""
