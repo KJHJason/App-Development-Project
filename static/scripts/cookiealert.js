@@ -23,10 +23,10 @@
         cookieAlert.classList.add("show");
     }
 
-    // When clicking on the agree button, create a 1 year
+    // When clicking on the agree button, create a one month or 30 days specifically
     // cookie to remember user's choice and close the banner
     acceptCookies.addEventListener("click", function () {
-        setCookie("acceptCookies", true, 365);
+        setCookie("acceptCookies", true, 30);
         cookieAlert.classList.remove("show");
 
         // dispatch the accept event
