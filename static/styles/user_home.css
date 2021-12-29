@@ -31,7 +31,7 @@ h2{
 
 @media screen and (max-width: 1500px){
 
-button{
+.thebutton{
   margin-bottom:50px;
 }
 
