@@ -1578,7 +1578,21 @@ def purchaseHistory():
         
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+            purchaseID = userKey.get_purchaseID()
+            print("PurchaseID exists?: ", purchaseID)
+
+            userDict = {}
+            db = shelve.open("user", "r")
+            #try:
+                #if purchaseID:
+
+                #else:
+
+            #except:
+            #    db.close()
+            #    print("Error in displaying Purchase History")
+            #    return redirect(url_for("home"))
+
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
         else:
