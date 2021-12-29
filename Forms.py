@@ -50,3 +50,10 @@ class CreateChangePasswordForm(Form):
     confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
 
 """End of WTForms by Jason"""
+
+"""WTForms by Royston"""
+
+class CreateReviewText(Form):
+    review = StringField("Review:", [validators.Length(min=20, max=2000), validators.DataRequired()])
+
+"""End of WTForms by Royston"""
