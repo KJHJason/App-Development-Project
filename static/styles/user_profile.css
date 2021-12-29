@@ -153,3 +153,52 @@
   border: 2px solid #aaa;
   border-radius: 5px;
 }
+
+.wrapper {
+  border: 15px solid #758bfd;
+  width: 80%;
+  height: 100%;
+  margin: 50px auto;
+  border-radius: 10px;
+  padding: 30px;
+}
+.wrapper h2 {
+  margin-bottom: 50px;
+}
+
+.nav_buttons {
+  display: inline-flexbox;
+}
+
+.nav_buttons a {
+  float: left;
+}
+
+#anchor2 {
+  display: none;
+}
+
+.nav_buttons button {
+  float: right
+}
+
+@media (max-width: 450px) {
+  .nav_buttons {
+    display: box;
+  }
+  .nav_buttons a {
+    float: none;
+    width: 100%;
+  }
+  .nav_buttons button {
+    float: none;
+    max-width: 150px;
+    margin: 30px 0;
+  }
+  #anchor1 {
+    display: none;
+  }
+  #anchor2 {
+    display: block;
+  }
+}

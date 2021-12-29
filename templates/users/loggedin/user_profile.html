@@ -101,6 +101,25 @@
 </div>
 {% endif %}
 
+{% if RecentChangeAccType %}
+<div class="modal fade" id="RecentChangeAccTypeModal" tabindex="-1" aria-labelledby="RecentChangeAccTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="RecentChangeAccTypeModalLabel">You are a teacher now!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Congratulations! You have successfully become a teacher! Please do not hesitate to contact us if you have any concerns, we will be very happy to help!</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -160,7 +179,7 @@
                                     <div class="col-8 text-responsive">
                                         <h6 class="margin-btm margin-top">{{ accType }}</h6>
                                         {% if accType == "Student" %}
-                                        <span><a href="#">Become a Teacher!</a></span>
+                                        <span><a href="/change_account_type">Become a Teacher!</a></span>
                                         {% endif %}
                                     </div>
                                     <div class="col-4 text-responsive">
@@ -177,7 +196,7 @@
                                         <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
                                         <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
                                         <p>Click on the button below or click on "Become a Teacher!" above!</p>
-                                        <form action="#" method="POST">
+                                        <form action="/change_account_type" method="GET">
                                             <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
                                         </form>
                                         {% endif %}
@@ -236,6 +255,12 @@
         <script>
             var imageFailedModal = new bootstrap.Modal(document.getElementById('imageFailedModal'), {});
             imageFailedModal.show();
+        </script>
+    {% endif %}
+    {% if RecentChangeAccType %}
+        <script>
+            var RecentChangeAccTypeModal = new bootstrap.Modal(document.getElementById('RecentChangeAccTypeModal'), {});
+            RecentChangeAccTypeModal.show();
         </script>
     {% endif %}
 {% endblock %}

@@ -10,7 +10,7 @@ from PIL import Image
 
 """Useful Functions by Jason"""
 
-# use this function if you want to validate and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
+# use this function if you want to validate, check if the user is banned, and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
     userKey = ""
     userFound = False
@@ -23,11 +23,16 @@ def get_key_and_validate(userSession, userDict):
             print("Verdict: User ID Matched.")
             userKey = userDict[key]
             userFound = True
-            return userKey, userFound
+            accStatus = userKey.get_status()
+            if accStatus == "Good":
+                accStatus = True
+            else:
+                accStatus = False
+            return userKey, userFound, accStatus
     print("Verdict: User ID not found.")
-    return userKey, userFound
+    return userKey, userFound, False
 
-# Use this function if you want to validate the session and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
+# Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
 def validate_session_get_userKey_open_file(userSession):
     userDict = {}
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
@@ -53,9 +58,14 @@ def validate_session_get_userKey_open_file(userSession):
             print("Verdict: User ID Matched.")
             userKey = userDict[key]
             userFound = True
-            return userKey, userFound
+            accStatus = userKey.get_status()
+            if accStatus == "Good":
+                accStatus = True
+            else:
+                accStatus = False
+            return userKey, userFound, accStatus
     print("Verdict: User ID not found.")
-    return userKey, userFound
+    return userKey, userFound, False
 
 
 # use this function if you just want to get the next possible userID based on the user shelve files
@@ -69,7 +79,7 @@ def get_userID(userDict):
         userIDShelveData += 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
     return userIDShelveData
 
-# use the function below if you just want to validate the session but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
+# use the function below if you just want to validate the session and check if the user is banned but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
 def validate_session_open_file(userSession):
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
@@ -93,8 +103,13 @@ def validate_session_open_file(userSession):
         if userSession == userIDShelveData:
             print("Verdict: User ID Matched.")
             userFound = True
-            return userFound # will be true if found
-    return userFound # will be false as it could not find the user based on the user ID
+            accStatus = userDict[key].get_status()
+            if accStatus == "Good":
+                accStatus = True
+            else:
+                accStatus = False
+            return userFound, accStatus
+    return userFound, False # will be false as it could not find the user based on the user ID
 
 # use this function to check for any duplicates data in the user shelve files
 def check_duplicates(userInput, userDict, infoToCheck):
@@ -210,13 +225,13 @@ def home():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        userFound = validate_session_open_file(userSession)
+        userFound, accGoodStatus = validate_session_open_file(userSession)
 
-        if userFound:
+        if userFound and accGoodStatus:
             return render_template('users/loggedin/user_home.html')
         else:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return render_template('users/guest/guest_home.html')
     else:
@@ -287,11 +302,17 @@ def userLogin():
                 print("Password Input:", passwordInput)
                 print("Account type:", email_key.get_acc_type())
 
-                # setting the user session based on the user's user ID
-                userID = email_key.get_user_id()
-                session["userSession"] = userID
-
-                return redirect(url_for("userProfile"))
+                # checking if the user is banned
+                accGoodStatus = email_key.get_status()
+                if accGoodStatus == "Good":
+                    # setting the user session based on the user's user ID
+                    userID = email_key.get_user_id()
+                    session["userSession"] = userID
+                    print("User account not banned, login successful.")
+                    return redirect(url_for("userProfile"))
+                else:
+                    print("User account banned.")
+                    return render_template('users/guest/login.html', form=create_login_form, banned=True)
             else:
                 print("Email in database:", emailShelveData)
                 print("Email Input:", emailInput)
@@ -479,7 +500,6 @@ def signUpPayment():
 
             create_teacher_payment_form = Forms.CreateTeacherPayment(request.form)
             if request.method == 'POST' and create_teacher_payment_form.validate():
-                userFound = False # declaring this variable to prevent unboundLocalError
 
                 # Retrieving data from shelve and to set the teacher's payment method info data
                 userDict = {}
@@ -501,15 +521,9 @@ def signUpPayment():
                     
 
                 # retrieving the object from the shelve based on the user's email
-                teacherKey, userFound = get_key_and_validate(teacherID, userDict)
+                teacherKey, userFound, accGoodStatus = get_key_and_validate(teacherID, userDict)
                 
-                if userFound == False:
-                    db.close()
-                    print("User not found")
-                    # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-                    session.clear()
-                    return redirect(url_for("home"))
-                else:
+                if userFound and accGoodStatus:
                     if userSession == teacherID:
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
@@ -543,6 +557,12 @@ def signUpPayment():
                         # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
                         session.pop("teacher", None)
                         return redirect(url_for("home"))
+                else:
+                    db.close()
+                    print("User not found or is banned.")
+                    # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                    session.clear()
+                    return redirect(url_for("home"))
             else:
                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
         else:
@@ -579,9 +599,9 @@ def userProfile():
             print("Error in retrieving Users from user.db")
             return redirect(url_for("home"))
 
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound:
+        if userFound and accGoodStatus:
             if request.method == "POST":
                 if "profileImage" not in request.files:
                     print("No file sent.")
@@ -702,11 +722,19 @@ def userProfile():
                 else:
                     imageChanged = False
                     print("Profile icon recently changed?:", imageChanged)
+
+                if "RecentChangeAccType" in session:
+                    RecentChangeAccType = True
+                    session.pop("RecentChangeAccType", None)
+                    print("Recently changed account type to teacher?:", RecentChangeAccType)
+                else:
+                    RecentChangeAccType = False
+                    print("Recently changed account type to teacher?:", RecentChangeAccType)
                 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, RecentChangeAccType=RecentChangeAccType)
         else:
             db.close()
-            print("User not found")
+            print("User not found or is banned.")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
@@ -720,9 +748,7 @@ def updateUsername():
         if request.method == "POST" and create_update_username_form.validate():
             userSession = session["userSession"]
 
-            # declaring userKey, userFound, username_duplicates, and sameUsername variable to prevent unboundLocalError
-            userKey = ""
-            userFound = False
+            # declaring username_duplicates, and sameUsername variable to prevent unboundLocalError
             username_duplicates = True
             sameUsername = False
 
@@ -744,14 +770,9 @@ def updateUsername():
                 return redirect(url_for("home"))
 
             # retrieving the object from the shelve based on the user's user ID
-            userKey, userFound = get_key_and_validate(userSession, userDict)
+            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
             
-            if userFound == False:
-                print("User not found")
-                # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-            else:
+            if userFound and accGoodStatus:
                 updatedUsername = Sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
                     
@@ -789,6 +810,11 @@ def updateUsername():
                 else:
                     print("Update username input same as user's current username")
                     return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=sameUsername)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
         else:
             return render_template('users/loggedin/change_username.html', form=create_update_username_form)
     else:
@@ -801,9 +827,7 @@ def updateEmail():
         if request.method == "POST" and create_update_email_form.validate():
             userSession = session["userSession"]
 
-            # declaring userKey, userFound, email_duplicates, sameEmail variable to prevent unboundLocalError
-            userKey = ""
-            userFound = False
+            # declaring email_duplicates, sameEmail variable to prevent unboundLocalError
             email_duplicates = True
             sameEmail = False
 
@@ -825,14 +849,9 @@ def updateEmail():
                 return redirect(url_for("home"))
 
             # retrieving the object based on the shelve files using the user's user ID
-            userKey, userFound = get_key_and_validate(userSession, userDict)
+            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
             
-            if userFound == False:
-                print("User not found")
-                # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-            else:
+            if userFound and accGoodStatus:
                 updatedEmail = Sanitise(create_update_email_form.updateEmail.data.lower())
                 currentEmail = userKey.get_email()
                     
@@ -871,6 +890,11 @@ def updateEmail():
                     db.close()
                     print("User updated email input is the same as their current email")
                     return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=sameEmail)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
         else:
             return render_template('users/loggedin/change_email.html', form=create_update_email_form)
     else:
@@ -883,9 +907,7 @@ def updatePassword():
         if request.method == "POST" and create_update_password_form.validate():
             userSession = session["userSession"]
 
-            # declaring userKey, userFound, password_not_matched, and errorMessage variable to prevent unboundLocalError
-            userKey = ""
-            userFound = False
+            # declaring password_not_matched, and errorMessage variable to prevent unboundLocalError
             password_not_matched = True
             password_verification = False
 
@@ -910,14 +932,9 @@ def updatePassword():
                 return redirect(url_for("home"))
 
             # retrieving the object based on the shelve files using the user's user ID
-            userKey, userFound = get_key_and_validate(userSession, userDict)
+            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
             
-            if userFound == False:
-                print("User not found")
-                # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-            else:
+            if userFound and accGoodStatus:
                 currentPassword = create_update_password_form.currentPassword.data
                 updatedPassword = create_update_password_form.updatePassword.data
                 confirmPassword = create_update_password_form.confirmPassword.data
@@ -961,10 +978,71 @@ def updatePassword():
                     # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
                     session["password_changed"] = True
                     return redirect(url_for("userProfile"))
+            else:
+                print("User not found is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
         else:
             return render_template('users/loggedin/change_password.html', form=create_update_password_form)
     else:
         return redirect(url_for("userLogin"))
+
+@app.route('/change_account_type', methods=["GET","POST"])
+def changeAccountType():
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        accType = userKey.get_acc_type()
+        print("Account type:", accType)
+
+        if userFound and accGoodStatus:
+            if accType == "Student":
+                if request.method == "POST":
+                    # updating the user's account type to teacher if the user pressed on the "Become a teacher" button and confirmed his/her intention by clicking on confirm on the bootstrap 5 modal
+                    userKey.set_acc_type("Teacher")
+                    db["Users"] = userDict
+                    db.close()
+                    print("Account type updated to teacher.")
+                    session["RecentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
+                    return redirect(url_for("userProfile"))
+                else:    
+                    db.close()
+                    return render_template('users/loggedin/change_account_type.html')
+            else:
+                db.close()
+                print("User is not a student.")
+                # if the user is not a student but visits this webpage, it will redirect the user to the user profile page
+                return redirect(url_for("userProfile"))
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        # determine if it make sense to redirect the user to the home page or the login page
+        return redirect(url_for("home"))
+        # return redirect(url_for("userLogin"))
+
 
 """End of User Profile Settings"""
 
@@ -974,10 +1052,6 @@ def updatePassword():
 def userPayment():
     if "userSession" in session:
         userSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -997,14 +1071,9 @@ def userPayment():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
         
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
             
@@ -1083,6 +1152,11 @@ def userPayment():
                     print("Card recently added?:", cardAdded)
 
                 return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1092,10 +1166,6 @@ def userEditPayment():
         # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
 
         userSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -1115,14 +1185,9 @@ def userEditPayment():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
         
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
             cardName = userKey.get_card_name()
@@ -1162,6 +1227,11 @@ def userEditPayment():
             else:
                 db.close()
                 return redirect(url_for("user_profile"))
+        else:
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1169,10 +1239,6 @@ def userEditPayment():
 def deleteCard():
     if "userSession" in session:
         userSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -1191,14 +1257,9 @@ def deleteCard():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
         
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -1223,6 +1284,11 @@ def deleteCard():
             else:
                 db.close()
                 return redirect(url_for("user_profile"))
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1235,10 +1301,6 @@ def search():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
         db = shelve.open("user", "c")
@@ -1256,18 +1318,19 @@ def search():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-
+            
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("home"))
 
@@ -1280,10 +1343,6 @@ def purchaseHistory():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
         db = shelve.open("user", "c")
@@ -1301,18 +1360,19 @@ def purchaseHistory():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-
+            
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1325,10 +1385,6 @@ def purchaseReview():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
         db = shelve.open("user", "c")
@@ -1346,18 +1402,19 @@ def purchaseReview():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-
+            
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1370,10 +1427,6 @@ def purchaseView():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
         db = shelve.open("user", "c")
@@ -1391,18 +1444,19 @@ def purchaseView():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-
+            
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1415,10 +1469,6 @@ def teacherCashOut():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
-
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
         db = shelve.open("user", "c")
@@ -1436,18 +1486,19 @@ def teacherCashOut():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-
+            
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("userLogin"))
 
@@ -1457,17 +1508,13 @@ def teacherCashOut():
 # 4 template app.route("") for you guys :prayge:
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
 """Template app.route(") (use this when adding a new app route)"""
 
 @app.route("/")
 def function():
     if "userSession" in session:
         userSession = session["userSession"]
-
-        # declaring userKey and userFound variable to prevent unboundLocalError
-        userKey = ""
-        userFound = False
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -1486,18 +1533,19 @@ def function():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
         
-        if userFound == False:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-        else:
+        if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
     else:
         # determine if it make sense to redirect the user to the home page or the login page
         return redirect(url_for("home"))
@@ -1507,7 +1555,7 @@ def function():
 '''
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
 """Template app.route(") (use this when adding a new app route)"""
 
 @app.route("/")
@@ -1515,15 +1563,15 @@ def function():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        userFound = validate_session_open_file(userSession)
+        userFound, accGoodStatus = validate_session_open_file(userSession)
         
-        if userFound == True:
+        if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
             return render_template('users/loggedin/page.html')
         else:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
     else:
@@ -1535,7 +1583,7 @@ def function():
 '''
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but not dealing with shelve
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve
 # e.g. for general pages such as about_us.html, etc. 
 """Template app.route(") (use this when adding a new app route)"""
 
@@ -1544,27 +1592,29 @@ def insertName():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        userFound = validate_session_open_file(userSession)
+        userFound, accGoodStatus = validate_session_open_file(userSession)
 
-        if userFound == True:
-            # add in your code here
+        if userFound and accGoodStatus:
+            # add in your code here (if any)
             
             return render_template('users/loggedin/page.html')
         else:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
+            # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
     else:
-        # determine if it make sense to redirect the user to the home page or the login page
+        # determine if it make sense to redirect the user to the home page or the login page or this function's html page
         return redirect(url_for("home"))
         # return redirect(url_for("userLogin"))
+        # render_template("users/guest/page.html)
 
 """End of Template app.route"""
 '''
 
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not but not dealing with shelve and you need to read information from the user's account data
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve and you need to read information from the user's account data
 # e.g. for user pages such as user_profile.html, etc. 
 """Template app.route(") (use this when adding a new app route)"""
 
@@ -1573,15 +1623,15 @@ def insertName():
     if "userSession" in session:
         userSession = session["userSession"]
 
-        userKey, userFound = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
 
-        if userFound == True:
+        if userFound and accGoodStatus:
             # add in your code below
 
             return render_template('users/loggedin/page.html')
         else:
-            print("User not found")
-            # if user is not found for some reason, it will delete any session and redirect the user to the homepage
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
     else:

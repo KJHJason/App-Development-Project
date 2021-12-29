@@ -1,0 +1,43 @@
+{% extends "user_base.html" %}
+{% block head %}<link rel="stylesheet" href="static/styles/user_profile.css">{% endblock %}
+{% block title %}Profile Settings | CourseFinity{% endblock %}
+
+{% block content %}
+<div class="modal fade" id="becomeTeacherModal" tabindex="-1" aria-labelledby="becomeTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="becomeTeacherModalLabel">Confirm Change of Account Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Are you sure that you would like to become a teacher in CourseFinity?</h6>
+                <h6>Reverting of account type from teacher to student is not possible.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                <form action="" method="POST">
+                    <button type="submit" class="btn btn-success">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="wrapper">
+            <h2>Change Account Type To Teacher?</h2>
+            <p>Are you sure that you would like to become a teacher in CourseFinity?</p>
+            <p>If so, please read the <a href="#" target="_blank">Teacher's Handbook</a> and any failure to comply with the rules written in the <a href="#" target="_blank">Teacher's Handbook</a> will result in <span class="text-danger">termination</span> of your account.</p>
+            <p class="text-danger">Warning: Changing of account type from teacher to student is not possible. Hence, please consider this opportunity seriously and carefully.</p>
+            <p>Otherwise, please click the back button and continue to enjoy learning various skills!</p>
+            <div class="nav_buttons">
+                <a href="/user_profile" id="anchor1"><i class="fas fa-arrow-left"></i> Back</a>
+                <button type="submit" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#becomeTeacherModal">Become a teacher!</button>
+                <a href="/user_profile" id="anchor2"><i class="fas fa-arrow-left"></i> Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
