@@ -7,7 +7,6 @@ class User:
         self.__acc_type = acc_type
         self.__status = status
         self.__profile_image = ""
-        
 
     def set_user_id(self, user_id):
         self__user_id = user_id

@@ -2,6 +2,8 @@ from wtforms import Form, StringField, RadioField, SelectField, TextAreaField, v
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import PasswordField
 
+"""WTForms by Jason"""
+
 class CreateEditPaymentForm(Form):
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
@@ -46,3 +48,5 @@ class CreateChangePasswordForm(Form):
     currentPassword = PasswordField("Enter your current password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     updatePassword =  PasswordField("Enter a new password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+
+"""End of WTForms by Jason"""

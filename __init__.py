@@ -204,7 +204,7 @@ limiter = Limiter(app, key_func=get_remote_address)
 
 """End of Web app configurations"""
 
-"""General pages"""
+"""General pages by INSERT_YOUR_NAME"""
 
 @app.route('/', methods=["GET","POST"])
 def home():
@@ -233,9 +233,9 @@ def home():
     else:
         return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
 
-"""End of General pages"""
+"""End of General pages by INSERT_YOUR_NAME"""
 
-"""User login and logout"""
+"""User login and logout by Jason"""
 
 @app.route('/login', methods=['GET', 'POST'])
 @limiter.limit("2/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
@@ -329,9 +329,9 @@ def logout():
 
     return redirect(url_for("home"))
 
-"""End of User login and logout"""
+"""End of User login and logout by Jason"""
 
-"""Student signup process"""
+"""Student signup process by Jason"""
 @app.route('/signup', methods=['GET', 'POST'])
 def userSignUp():
     if "userSession" not in session:
@@ -405,9 +405,9 @@ def userSignUp():
     else:
         return redirect(url_for("home"))
 
-"""End of Student signup process"""
+"""End of Student signup process by Jason"""
 
-"""Teacher's signup process"""
+"""Teacher's signup process by Jason"""
 
 @app.route('/teacher_signup', methods=['GET', 'POST'])
 def teacherSignUp():
@@ -566,9 +566,9 @@ def signUpPayment():
     else:
         return redirect(url_for("home"))
 
-"""End of Teacher's login/signup process"""
+"""End of Teacher's login/signup process by Jason"""
 
-"""User Profile Settings"""
+"""User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
 def userProfile():
@@ -1039,10 +1039,9 @@ def changeAccountType():
         return redirect(url_for("home"))
         # return redirect(url_for("userLogin"))
 
+"""End of User Profile Settings by Jason"""
 
-"""End of User Profile Settings"""
-
-"""User payment method settings"""
+"""User payment method settings by Jason"""
 
 @app.route('/payment_method', methods=["GET","POST"])
 def userPayment():
@@ -1288,9 +1287,9 @@ def deleteCard():
     else:
         return redirect(url_for("userLogin"))
 
-"""End of User payment method settings"""
+"""End of User payment method settings by Jason"""
 
-"""Search Function"""
+"""Search Function by Royston"""
 
 @app.route("/search")
 def search():
@@ -1330,9 +1329,9 @@ def search():
     else:
         return redirect(url_for("home"))
 
-""""End of Search Function"""
+""""End of Search Function by Royston"""
 
-"""Purchase History"""
+"""Purchase History by Royston"""
 
 @app.route("/purchasehistory")
 def purchaseHistory():
@@ -1372,9 +1371,9 @@ def purchaseHistory():
     else:
         return redirect(url_for("userLogin"))
 
-"""End of Purchase History"""
+"""End of Purchase History by Royston"""
 
-"""Purchase Review"""
+"""Purchase Review by Royston"""
 
 @app.route("/purchasereview")
 def purchaseReview():
@@ -1414,9 +1413,9 @@ def purchaseReview():
     else:
         return redirect(url_for("userLogin"))
 
-"""End of Purchase Review"""
+"""End of Purchase Review by Royston"""
 
-"""Purchase View"""
+"""Purchase View by Royston"""
 
 @app.route("/purchaseview")
 def purchaseView():
@@ -1456,9 +1455,9 @@ def purchaseView():
     else:
         return redirect(url_for("userLogin"))
 
-"""End of Purchase View"""
+"""End of Purchase View by Royston"""
 
-"""Teacher Cashout System"""
+"""Teacher Cashout System by Royston"""
 
 @app.route("/teacher_cashout")
 def teacherCashOut():
@@ -1498,14 +1497,14 @@ def teacherCashOut():
     else:
         return redirect(url_for("userLogin"))
 
-"""End of Teacher Cashout System"""
+"""End of Teacher Cashout System by Royston"""
 
 
 # 4 template app.route("") for you guys :prayge:
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
-"""Template app.route(") (use this when adding a new app route)"""
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
 def function():
@@ -1547,12 +1546,12 @@ def function():
         return redirect(url_for("home"))
         # return redirect(url_for("userLogin"))
 
-"""End of Template app.route"""
+"""End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
-"""Template app.route(") (use this when adding a new app route)"""
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
 def function():
@@ -1575,13 +1574,13 @@ def function():
         return redirect(url_for("home"))
         # return redirect(url_for("userLogin"))
 
-"""End of Template app.route"""
+"""End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve
 # e.g. for general pages such as about_us.html, etc. 
-"""Template app.route(") (use this when adding a new app route)"""
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
@@ -1606,13 +1605,13 @@ def insertName():
         # return redirect(url_for("userLogin"))
         # render_template("users/guest/page.html)
 
-"""End of Template app.route"""
+"""End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve and you need to read information from the user's account data
 # e.g. for user pages such as user_profile.html, etc. 
-"""Template app.route(") (use this when adding a new app route)"""
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
@@ -1635,7 +1634,7 @@ def insertName():
         return redirect(url_for("home"))
         # return redirect(url_for("userLogin"))
 
-"""End of Template app.route"""
+"""End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 
