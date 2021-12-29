@@ -10,7 +10,7 @@ Group Members:
   <li>Clarence</li>
   <li>Royston</li>
 </ol>
-Modules needed:
+Libraries needed:
 <ol>
   <li>Flask [pip install Flask]</li>
   <li>Flask-WTF [pip install Flask-WTF]</li>
