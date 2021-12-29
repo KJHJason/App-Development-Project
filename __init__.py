@@ -43,9 +43,7 @@ def validate_session_get_userKey_open_file(userSession):
         db.close()
     except:
         print("File could not be found.")
-        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-        session.clear()
-        return redirect(url_for("home"))
+        return False, False
         
     userKey = ""
     userFound = False
@@ -90,8 +88,7 @@ def validate_session_open_file(userSession):
     except:
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-        session.clear()
-        return redirect(url_for("home"))
+        return False, False
         
     userFound = False
     print("User ID in session:", userSession)
@@ -222,6 +219,7 @@ def home():
 
     if "userSession" in session:
         userSession = session["userSession"]
+        print(userSession)
 
         userFound, accGoodStatus = validate_session_open_file(userSession)
 
