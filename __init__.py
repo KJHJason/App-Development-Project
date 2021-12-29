@@ -187,7 +187,6 @@ def allow_file_size(fileSize, maximumFileSize):
     else:
         return False
 
-
 """End of Useful Functions by Jason"""
 
 """Web app configurations"""
