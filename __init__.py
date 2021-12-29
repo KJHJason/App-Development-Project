@@ -34,6 +34,7 @@ def get_key_and_validate(userSession, userDict):
 
 # Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
 def validate_session_get_userKey_open_file(userSession):
+    userKey = ""
     userDict = {}
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
@@ -43,9 +44,8 @@ def validate_session_get_userKey_open_file(userSession):
         db.close()
     except:
         print("File could not be found.")
-        return False, False
+        return userKey, False, False
         
-    userKey = ""
     userFound = False
     print("ID in session:", userSession)
     for key in userDict:
@@ -105,7 +105,7 @@ def validate_session_open_file(userSession):
             else:
                 accStatus = False
             return userFound, accStatus
-    return userFound, False # will be false as it could not find the user based on the user ID
+    return userFound, False
 
 # use this function to check for any duplicates data in the user shelve files
 def check_duplicates(userInput, userDict, infoToCheck):
@@ -183,6 +183,86 @@ def allow_file_size(fileSize, maximumFileSize):
     else:
         return False
 
+def admin_validate_session_open_file(adminSession):
+    # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
+    try:
+        adminDict = {}
+        db = shelve.open("admin", "r")
+        adminDict = db['Admins']
+        print("File found.")
+        db.close()
+    except:
+        print("File could not be found.")
+        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
+        return False, False
+        
+    userFound = False
+    print("Admin ID in session:", adminSession)
+    for key in adminDict:
+        print("retrieving")
+        userIDShelveData = adminDict[key].get_user_id()
+        print("Admin ID in database:", userIDShelveData)
+        if adminSession == userIDShelveData:
+            print("Verdict: Admin ID Matched.")
+            userFound = True
+            accStatus = adminDict[key].get_status()
+            if accStatus == "Active":
+                accStatus = True
+            else:
+                accStatus = False
+            return userFound, accStatus
+    return userFound, False
+
+def admin_get_key_and_validate(adminSession, adminDict):
+    adminKey = ""
+    userFound = False
+    print("ID in session:", adminSession)
+    for key in adminDict:
+        print("retrieving")
+        userIDShelveData = adminDict[key].get_user_id()
+        print("ID in database:", userIDShelveData)
+        if adminSession == userIDShelveData:
+            print("Verdict: User ID Matched.")
+            adminKey = adminDict[key]
+            userFound = True
+            accStatus = adminKey.get_status()
+            if accStatus == "Active":
+                accStatus = True
+            else:
+                accStatus = False
+            return adminKey, userFound, accStatus
+    print("Verdict: User ID not found.")
+    return adminKey, userFound, False
+
+def admin_get_key_and_validate_open_file(adminSession):
+    adminKey = ""
+    try:
+        db = shelve.open("admin", "r")
+        adminDict = db["Admins"]
+        print("File found.")
+        db.close()
+    except:
+        print("No files found.")
+        return adminKey, False, False
+    
+    userFound = False
+    print("Admin ID in session:", adminSession)
+    for key in adminDict:
+        print("retrieving")
+        userIDShelveData = adminDict[key].get_user_id()
+        print("Admin ID in database:", userIDShelveData)
+        if adminSession == userIDShelveData:
+            print("Verdict: Admin ID Matched.")
+            userFound = True
+            adminKey = adminDict[key]
+            accStatus = adminDict[key].get_status()
+            if accStatus == "Active":
+                accStatus = True
+            else:
+                accStatus = False
+            return adminKey, userFound, accStatus
+    return adminKey, userFound, False
+
 """End of Useful Functions by Jason"""
 
 """Web app configurations"""
@@ -217,21 +297,34 @@ def home():
         recentlyLoggedOut = False
         print("User recently logged out?:", recentlyLoggedOut)
 
-    if "userSession" in session:
-        userSession = session["userSession"]
-        print(userSession)
-
-        userFound, accGoodStatus = validate_session_open_file(userSession)
-
-        if userFound and accGoodStatus:
-            return render_template('users/loggedin/user_home.html')
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        
+        if userFound and accActive:
+            return render_template('users/admin/admin_home.html')
         else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return render_template('users/guest/guest_home.html')
     else:
-        return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
+        if "userSession" in session:
+            userSession = session["userSession"]
+            print(userSession)
+
+            userFound, accGoodStatus = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                return render_template('users/loggedin/user_home.html')
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return render_template('users/guest/guest_home.html')
+        else:
+            return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
 
 """End of General pages by INSERT_YOUR_NAME"""
 
@@ -240,7 +333,7 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 @limiter.limit("2/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
 def userLogin():
-    if "userSession" not in session:
+    if "userSession" not in session and "adminSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
             emailInput = Sanitise(create_login_form.email.data.lower())
@@ -322,11 +415,15 @@ def userLogin():
 
 @app.route('/logout')
 def logout():
-    session.pop("userSession", None)
+    if "userSession" in session:
+        session.pop("userSession", None)
+    elif "adminSession" in session:
+        session.pop("adminSession", None)
+    else:
+        return redirect(url_for("home"))
     
     # sending a session data so that when it redirects the user to the homepage, jinja2 will render out a logout alert
     session["recentlyLoggedOut"] = True
-
     return redirect(url_for("home"))
 
 """End of User login and logout by Jason"""
@@ -334,7 +431,7 @@ def logout():
 """Student signup process by Jason"""
 @app.route('/signup', methods=['GET', 'POST'])
 def userSignUp():
-    if "userSession" not in session:
+    if "userSession" not in session and "adminSession" not in session:
         create_signup_form = Forms.CreateSignUpForm(request.form)
         if request.method == 'POST' and create_signup_form.validate():
             
@@ -411,7 +508,7 @@ def userSignUp():
 
 @app.route('/teacher_signup', methods=['GET', 'POST'])
 def teacherSignUp():
-    if "userSession" not in session:
+    if "userSession" not in session and "adminSession" not in session:
         create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
     
         if request.method == 'POST' and create_teacher_sign_up_form.validate():
@@ -484,11 +581,14 @@ def teacherSignUp():
         else:
             return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form) 
     else:
-        return redirect(url_for("home"))
+        if "userSession" in session:
+            return redirect(url_for("changeAccountType"))
+        else:
+            return redirect(url_for("home"))
 
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
 def signUpPayment():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         if "teacher" in session:
             teacherID = session["teacher"]
@@ -568,11 +668,100 @@ def signUpPayment():
 
 """End of Teacher's login/signup process by Jason"""
 
+"""Admin login and User management for Admins by Jason"""
+
+@app.route('/admin_login', methods=['GET', 'POST'])
+@limiter.limit("1/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
+def adminLogin():
+    if "adminSession" not in session and "userSession" not in session:
+        create_login_form = Forms.CreateLoginForm(request.form)
+        if request.method == "POST" and create_login_form.validate():
+            emailInput = Sanitise(create_login_form.email.data.lower())
+            passwordInput = create_login_form.password.data
+            try:
+                adminDict = {}
+                db = shelve.open("admin", "r")
+                adminDict = db['Admins']
+                db.close()
+                print("File found.")
+            except:
+                print("File could not be found.")
+                # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
+                adminDict = {}
+                db = shelve.open("admin", "c")
+                db["Admins"] = adminDict
+                db.close()
+
+            # Declaring the 4 variables below to prevent UnboundLocalError
+            email_found = False
+            password_matched = False
+            passwordShelveData = ""
+            emailShelveData = ""
+
+            # Checking the email input and see if it matches with any in the database
+            for key in adminDict:
+                emailShelveData = adminDict[key].get_email()
+                if emailInput == emailShelveData:
+                    email_key = adminDict[key]
+                    email_found = True
+                    print("Email in database:", emailShelveData)
+                    print("Email Input:", emailInput)
+                    break
+                else:
+                    print("User email not found.")
+                    
+            # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
+            if email_found:
+                passwordShelveData = email_key.get_password()
+                print("Password in database:", passwordShelveData)
+                print("Password Input:", passwordInput)
+
+                password_matched = PasswordManager().verify_password(passwordShelveData, passwordInput)
+
+                if password_matched:
+                    print("Correct password!")
+                else:
+                    print("Password incorrect.")
+                    
+            if email_found and password_matched:
+                print("Admin account validated...")
+                print("Email in database:", emailShelveData)
+                print("Email Input:", emailInput)
+                print("Password in database:", passwordShelveData)
+                print("Password Input:", passwordInput)
+                print("Account type:", email_key.get_acc_type())
+
+                # checking if the admin account is active
+                accActiveStatus = email_key.get_status()
+                if accActiveStatus == "Active":
+                    # setting the user session based on the user's user ID
+                    userID = email_key.get_user_id()
+                    session["adminSession"] = userID
+                    print(userID)
+                    print("Admin account active, login successful.")
+                    return redirect(url_for("home"))
+                else:
+                    print("Admin account inactive.")
+                    return render_template('users/guest/admin_login.html', form=create_login_form, notActive=True)
+            else:
+                print("Email in database:", emailShelveData)
+                print("Email Input:", emailInput)
+                print("Password in database:", passwordShelveData)
+                print("Password Input:", passwordInput)
+                print("Failed to login.")
+                return render_template('users/guest/admin_login.html', form=create_login_form, failedAttempt=True)
+        else:
+            return render_template('users/guest/admin_login.html', form=create_login_form)
+    else:
+        return redirect(url_for("home"))
+
+"""End of Admin login and User management for Admins by Jason"""
+
 """User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
 def userProfile():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
 
         userSession = session["userSession"]
@@ -735,11 +924,14 @@ def userProfile():
             session.clear()
             return redirect(url_for("home"))
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route("/change_username", methods=["GET","POST"])
 def updateUsername():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         create_update_username_form = Forms.CreateChangeUsername(request.form)
         if request.method == "POST" and create_update_username_form.validate():
             userSession = session["userSession"]
@@ -814,11 +1006,14 @@ def updateUsername():
         else:
             return render_template('users/loggedin/change_username.html', form=create_update_username_form)
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route("/change_email", methods=["GET","POST"])
 def updateEmail():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         create_update_email_form = Forms.CreateChangeEmail(request.form)
         if request.method == "POST" and create_update_email_form.validate():
             userSession = session["userSession"]
@@ -894,11 +1089,14 @@ def updateEmail():
         else:
             return render_template('users/loggedin/change_email.html', form=create_update_email_form)
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route("/change_password", methods=["GET","POST"])
 def updatePassword():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         create_update_password_form = Forms.CreateChangePasswordForm(request.form)
         if request.method == "POST" and create_update_password_form.validate():
             userSession = session["userSession"]
@@ -982,11 +1180,14 @@ def updatePassword():
         else:
             return render_template('users/loggedin/change_password.html', form=create_update_password_form)
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route('/change_account_type', methods=["GET","POST"])
 def changeAccountType():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -1035,9 +1236,10 @@ def changeAccountType():
             session.clear()
             return redirect(url_for("home"))
     else:
-        # determine if it make sense to redirect the user to the home page or the login page
-        return redirect(url_for("home"))
-        # return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 """End of User Profile Settings by Jason"""
 
@@ -1045,7 +1247,7 @@ def changeAccountType():
 
 @app.route('/payment_method', methods=["GET","POST"])
 def userPayment():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -1153,11 +1355,14 @@ def userPayment():
             session.clear()
             return redirect(url_for("home"))
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route('/edit_payment', methods=["GET","POST"])
 def userEditPayment():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
 
         userSession = session["userSession"]
@@ -1228,11 +1433,14 @@ def userEditPayment():
             session.clear()
             return redirect(url_for("home"))
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 @app.route('/delete_card', methods=['POST'])
 def deleteCard():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -1285,7 +1493,10 @@ def deleteCard():
             session.clear()
             return redirect(url_for("home"))
     else:
-        return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
 
 """End of User payment method settings by Jason"""
 
@@ -1293,222 +1504,7 @@ def deleteCard():
 
 @app.route("/search")
 def search():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("home"))
-
-""""End of Search Function by Royston"""
-
-"""Purchase History by Royston"""
-
-@app.route("/purchasehistory")
-def purchaseHistory():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("userLogin"))
-
-"""End of Purchase History by Royston"""
-
-"""Purchase Review by Royston"""
-
-@app.route("/purchasereview")
-def purchaseReview():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("userLogin"))
-
-"""End of Purchase Review by Royston"""
-
-"""Purchase View by Royston"""
-
-@app.route("/purchaseview")
-def purchaseView():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("userLogin"))
-
-"""End of Purchase View by Royston"""
-
-"""Teacher Cashout System by Royston"""
-
-@app.route("/teacher_cashout")
-def teacherCashOut():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("userLogin"))
-
-"""End of Teacher Cashout System by Royston"""
-
-
-# 4 template app.route("") for you guys :prayge:
-
-'''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
-"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
-
-@app.route("/")
-def function():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -1542,20 +1538,265 @@ def function():
             session.clear()
             return redirect(url_for("home"))
     else:
-        # determine if it make sense to redirect the user to the home page or the login page
-        return redirect(url_for("home"))
-        # return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+""""End of Search Function by Royston"""
+
+"""Purchase History by Royston"""
+
+@app.route("/purchasehistory")
+def purchaseHistory():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Purchase History by Royston"""
+
+"""Purchase Review by Royston"""
+
+@app.route("/purchasereview")
+def purchaseReview():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Purchase Review by Royston"""
+
+"""Purchase View by Royston"""
+
+@app.route("/purchaseview")
+def purchaseView():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Purchase View by Royston"""
+
+"""Teacher Cashout System by Royston"""
+
+@app.route("/teacher_cashout")
+def teacherCashOut():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Teacher Cashout System by Royston"""
+
+
+# 7 template app.route("") for you guys :prayge:
+
+'''
+# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
+# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an admin view
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route("/")
+def function():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/page.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
+# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an admin view
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
 def function():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userFound, accGoodStatus = validate_session_open_file(userSession)
@@ -1570,40 +1811,60 @@ def function():
             session.clear()
             return redirect(url_for("home"))
     else:
-        # determine if it make sense to redirect the user to the home page or the login page
-        return redirect(url_for("home"))
-        # return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve
-# e.g. for general pages such as about_us.html, etc. 
+# e.g. for general pages such as about_us.html, etc. which will take into account if the user or admin is logged in
+# Admin view and user view included
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
-    if "userSession" in session:
-        userSession = session["userSession"]
-
-        userFound, accGoodStatus = validate_session_open_file(userSession)
-
-        if userFound and accGoodStatus:
-            # add in your code here (if any)
-            
-            return render_template('users/loggedin/page.html')
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        
+        if userFound and accActive:
+            return render_template('users/admin/page.html')
         else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
             return redirect(url_for("home"))
-            # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+            # return redirect(url_for("adminLogin"))
+            # render_template("users/guest/page.html)
     else:
-        # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-        return redirect(url_for("home"))
-        # return redirect(url_for("userLogin"))
-        # render_template("users/guest/page.html)
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+                
+                return render_template('users/loggedin/page.html')
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+            # render_template("users/guest/page.html)
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
@@ -1611,11 +1872,12 @@ def insertName():
 '''
 # below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve and you need to read information from the user's account data
 # e.g. for user pages such as user_profile.html, etc. 
+# Admin view not included
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
@@ -1630,13 +1892,128 @@ def insertName():
             session.clear()
             return redirect(url_for("home"))
     else:
-        # determine if it make sense to redirect the user to the home page or the login page
-        return redirect(url_for("home"))
-        # return redirect(url_for("userLogin"))
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+'''
+# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C") and not the admin shelve files
+# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
+# use case: admin pages
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route("/")
+def function():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        
+        if userFound and accActive:
+            # add in your code here
+            xDict = {}
+            db = shelve.open("", "c") # change the flag accordingly
+            # implement your try and except here to handle the shelve files
+
+            return render_template('users/admin/page.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+'''
+
+'''
+# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are also dealing with shelve with regards to the admin shelve files, meaning you are dealing with shelve.open("admin", "C") 
+# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
+# use case: admin pages
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route("/")
+def function():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+
+        db = shelve.open("admin", "c")
+        try:
+            if 'Admins' in db:
+                adminDict = db['Admins']
+            else:
+                db.close()
+                print("Admin account data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Admins from admin.db")
+            return redirect(url_for("home"))
+
+        userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+        
+        if userFound and accActive:
+            # add in your code here
+
+            db.close() # remember to close the admin shelve file!
+            return render_template('users/admin/page.html')
+        else:
+            db.close()
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+'''
+
+'''
+# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are NOT dealing with shelve with regards to the admin shelve files
+# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
+# use case: admin pages that requires the admin acc details to be read
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route("/")
+def function():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+
+        userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            # add in your code here
+
+            db.close() # remember to close the admin shelve file!
+            return render_template('users/admin/page.html')
+        else:
+            db.close()
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+'''
 
 """Custom Error Pages"""
 
