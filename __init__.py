@@ -721,15 +721,15 @@ def userProfile():
                     imageChanged = False
                     print("Profile icon recently changed?:", imageChanged)
 
-                if "RecentChangeAccType" in session:
-                    RecentChangeAccType = True
-                    session.pop("RecentChangeAccType", None)
-                    print("Recently changed account type to teacher?:", RecentChangeAccType)
+                if "recentChangeAccType" in session:
+                    recentChangeAccType = True
+                    session.pop("recentChangeAccType", None)
+                    print("Recently changed account type to teacher?:", recentChangeAccType)
                 else:
-                    RecentChangeAccType = False
-                    print("Recently changed account type to teacher?:", RecentChangeAccType)
+                    recentChangeAccType = False
+                    print("Recently changed account type to teacher?:", recentChangeAccType)
                 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, RecentChangeAccType=RecentChangeAccType)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType)
         else:
             db.close()
             print("User not found or is banned.")
@@ -1020,7 +1020,7 @@ def changeAccountType():
                     db["Users"] = userDict
                     db.close()
                     print("Account type updated to teacher.")
-                    session["RecentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
+                    session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
                     return redirect(url_for("userProfile"))
                 else:    
                     db.close()
