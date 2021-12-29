@@ -183,6 +183,7 @@ def allow_file_size(fileSize, maximumFileSize):
     else:
         return False
 
+# use the function below if you just want to validate the session and check if the admin is active but there is no need to manipulate the data in the admin shelve data files and also assuming that the admin must be logged in, meaning the admin shelve data must be present in the directory
 def admin_validate_session_open_file(adminSession):
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
@@ -213,6 +214,7 @@ def admin_validate_session_open_file(adminSession):
             return userFound, accStatus
     return userFound, False
 
+# use this function if you want to validate, check if the admin is banned, and get the adminKey to manipulate the data in the admin shelve files (provided you have already opened the admin shelve files previously)
 def admin_get_key_and_validate(adminSession, adminDict):
     adminKey = ""
     userFound = False
@@ -234,6 +236,7 @@ def admin_get_key_and_validate(adminSession, adminDict):
     print("Verdict: User ID not found.")
     return adminKey, userFound, False
 
+# Use this function if you want to validate the session, check if the admin is active, and get the adminKey but not manipulating the data in the admin shelve files (usually this will be used for reading the admin account data or other data relevant to the admin)
 def admin_get_key_and_validate_open_file(adminSession):
     adminKey = ""
     try:
