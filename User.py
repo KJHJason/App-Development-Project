@@ -9,7 +9,7 @@ class User:
         self.__profile_image = ""
 
     def set_user_id(self, user_id):
-        self__user_id = user_id
+        self.__user_id = user_id
     def set_username(self, username):
         self.__username = username
     def set_email(self, email):
