@@ -6,6 +6,7 @@ class User:
         self.__password = password
         self.__acc_type = acc_type
         self.__status = status
+        self.__profile_image = ""
         
 
     def set_user_id(self, user_id):
@@ -20,6 +21,8 @@ class User:
         self.__acc_type = acc_type
     def set_status(self, status):
         self.__status = status
+    def set_profile_image(self, imagePath):
+        self.__profile_image = imagePath
     
     def get_user_id(self):
         return self.__user_id
@@ -33,3 +36,5 @@ class User:
         return self.__acc_type
     def get_status(self):
         return self.__status
+    def get_profile_image(self):
+        return self.__profile_image

@@ -91,7 +91,7 @@
         </div>
         <div class="modal-body">
             <h6>Your profile image has not been succesfully uploaded and changed.</h6>
-            <h6>Do note that only images with the extension .png are only accepted.</h6>
+            <h6>Do note that only images with the extension png, jpg, or jpeg are only accepted and the image size must be 1MB or less.</h6>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
@@ -132,7 +132,7 @@
                             <div class="mb-9">
                                 <form action="" method="POST" enctype="multipart/form-data">
                                     <label for="imageFile" class="form-label">Upload Profile Image</label>
-                                    <input class="form-control" type="file" id="imageFile" name="profileImage">
+                                    <input class="form-control" type="file" id="imageFile" name="profileImage" oninput="filesize(this)" required>
                                     <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
                                 </form>
                             </div>
@@ -202,6 +202,12 @@
 {% endblock %}
 
 {% block extra_js %}
+    <script>
+        // to set a cookie to contain the file size value upon submission
+        function filesize(element) {
+            document.cookie = `filesize = ${element.files[0].size}`; // using string interpolation to get the value of the image file size and element.files[0] for the first file's size
+        } 
+    </script>
     {% if usernameChanged %}
         <script>
             var usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'), {});

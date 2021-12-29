@@ -8,7 +8,7 @@ from flask_limiter.util import get_remote_address
 from pathlib import Path
 from PIL import Image
 
-"""Useful Functions"""
+"""Useful Functions by Jason"""
 
 # use this function if you want to validate and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
@@ -133,11 +133,47 @@ def check_duplicates(userInput, userDict, infoToCheck):
     else:
         raise Exception('Third argument for get_key() can only take in "username" or "email"!')
 
-# use this function to check for the allowed extension of images when uploading the image to the web app's server
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# use this function to check for the allowed image extensions when uploading an image to the web app's server
+# it will return True or False
+def allowed_image_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
-"""End of Useful Functions"""
+# use this function to to get the extension type of a file
+# it will return the extension type (e.g. ".png")
+def get_extension(filename):
+    extension = filename.rsplit('.', 1)[1].lower()
+    extension = "." + str(extension)
+    return extension
+
+# for overwriting existing files but must validate if the file already exists else it will cause a runtime error
+def overwrite_file(file, oldFilePath, newFilePath):
+    os.remove(oldFilePath)
+    file.save(newFilePath)
+
+# use this function to resize your image to the desired dimensions
+# do note that the dimensions argument must be in a tuple, e.g. (500, 500)
+def resize_image(imagePath, dimensions):
+    image = Image.open(imagePath)
+    resizedImage = image.resize(dimensions)
+    os.remove(imagePath)
+    resizedImage.save(imagePath)
+
+# use this function to construct a path for storing files such as images in the web app directory
+# pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
+def construct_path(relativeUploadPath, filename):
+    return os.path.join(app.root_path, relativeUploadPath, filename)
+
+# to check if the uploaded file size is within the maximum file size specified by you below in the web app configurations.
+# do note that the 2nd argument, maximumFileSize, must be in bytes (e.g. 3 * 1024 * 1024 which is 3145728 bytes or 3MiB)
+# also, in order to get the file size before saving onto the server directory, you need javascript to set a cookie that contain the file size in bytes as when I was reading the Flask documentation, I could not find any methods to get the file size when the user submits the form to upload a file
+def allow_file_size(fileSize, maximumFileSize):
+    if int(fileSize) <= maximumFileSize:
+        return True
+    else:
+        return False
+
+
+"""End of Useful Functions by Jason"""
 
 """Web app configurations"""
 
@@ -146,8 +182,12 @@ app = Flask(__name__)
 app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
 
 # for uploading images of the user's profile picture to the web app's server configurations
-UPLOAD_PATH = 'static/images/user'
-ALLOWED_EXTENSIONS = {"png"}
+PROFILE_UPLOAD_PATH = 'static/images/user'
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+# Maximum file size for uploading anything to the web app's server
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
+app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 1 * 1024 * 1024 # 1MiB
 
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address)
@@ -309,7 +349,9 @@ def userSignUp():
                     print("No user data in user shelve files.")
                     db["Users"] = userDict
             except:
+                db.close()
                 print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
             # Checking duplicates for email and username
             email_duplicates = check_duplicates(emailInput, userDict, "email")
@@ -384,7 +426,9 @@ def teacherSignUp():
                     print("No user data in user shelve files")
                     db["Users"] = userDict
             except:
+                db.close()
                 print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
             # Checking duplicates for email and username
             email_duplicates = check_duplicates(emailInput, userDict, "email")
@@ -445,12 +489,16 @@ def signUpPayment():
                         # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                         userDict = db['Users']
                     else:
+                        db.close()
                         print("No user data in user shelve files.")
                         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                         session.clear()
                         return redirect(url_for("home"))
                 except:
+                    db.close()
                     print("Error in retrieving Users from user.db")
+                    return redirect(url_for("home"))
+                    
 
                 # retrieving the object from the shelve based on the user's email
                 teacherKey, userFound = get_key_and_validate(teacherID, userDict)
@@ -512,7 +560,27 @@ def userProfile():
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
 
         userSession = session["userSession"]
-        userKey, userFound = validate_session_get_userKey_open_file(userSession)
+
+        # Retrieving data from shelve and to set the teacher's payment method info data
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                userDict = db['Users']
+            else:
+                db.close()
+                print("No user data in user shelve files.")
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        userKey, userFound = get_key_and_validate(userSession, userDict)
+
         if userFound:
             if request.method == "POST":
                 if "profileImage" not in request.files:
@@ -522,60 +590,75 @@ def userProfile():
                 file = request.files["profileImage"]
                 filename = file.filename
 
+                uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                print("Uploaded file size:", uploadedFileSize, "bytes")
+
+                withinFileLimit = allow_file_size(uploadedFileSize, app.config['MAX_PROFILE_IMAGE_FILESIZE'])
+
                 if filename != "":
-                    if file and allowed_file(filename):
-                        # will only accept .png
-                        print("File extension accepted.")
+                    if file and allowed_image_file(filename) and withinFileLimit:
+                        # will only accept .png, .jpg, .jpeg
+                        print("File extension accepted and is within size limit.")
 
                         #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
                         # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image 
                         filename = secure_filename(filename) 
                         
                         # constructing the file path so that the it will know where to store the image
-                        filePath = os.path.join(app.root_path, UPLOAD_PATH, filename)
-                        userID = str(userKey.get_user_id()) + ".png"
-                        newFilePath = os.path.join(app.root_path, UPLOAD_PATH, userID)
+                        filePath = construct_path(PROFILE_UPLOAD_PATH, filename)
+
+                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+                        extensionType = get_extension(filename)
+                        userImageFileName = str(userSession) + extensionType
+                        newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+
+                        # constructing a file path to see if the user has already uploaded an image and if the file exists
+                        userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
 
                         # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
                         # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
                         # else it will just save normally and rename it to userID.png (e.g. 0.png)
-                        if Path(newFilePath).is_file():
+                        if Path(userOldImageFilePath).is_file():
                             print("Removing existing image.")
-                            os.remove(newFilePath)
-                            file.save(filePath)
-                            os.rename(filePath, newFilePath)
+                            overwrite_file(file, userOldImageFilePath, filePath)
+                            os.rename(filePath, newFilePath) # afterwards, it will rename the image that the user uploaded to userID.png
                             print("File renamed to", newFilePath, "and has been overwrited.")
                         else:
                             print("Saving image file.")
                             file.save(filePath)
-                            os.rename(filePath, newFilePath)
+                            os.rename(filePath, newFilePath) # rename the image that the user uploaded to userID.png
                             print("File renamed to", newFilePath, "and has been saved.")
 
                         # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
-                        profileImage = Image.open(newFilePath)
-                        resizedImage = profileImage.resize((500, 500))
-                        os.remove(newFilePath)
-                        resizedImage.save(newFilePath)
+                        resize_image(newFilePath, (500, 500))
+
+                        userKey.set_profile_image(userImageFileName)
+                        db['Users'] = userDict
+                        db.close()
 
                         session["imageChanged"] = True
                         return redirect(url_for("userProfile"))
                     else:
-                        print("Image extension not allowed.")
+                        db.close()
+                        print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
                         session["imageFailed"] = True
                         return redirect(url_for("userProfile"))
                 else:
+                    db.close()
                     print("No selected file/the user sent a empty file without a filename")
                     return redirect(url_for("userProfile"))
             else:
+                db.close()
                 userUsername = userKey.get_username()
                 userEmail = userKey.get_email()
                 userAccType = userKey.get_acc_type()
 
-                # checking if the user have uploaded a profile image before
-                imageName = str(userKey.get_user_id()) + ".png"
-                imageFilePath = os.path.join(app.root_path, UPLOAD_PATH, imageName)
-                if Path(imageFilePath).is_file():
-                    imagesrcPath = "static/images/user/" + imageName
+                userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
+                userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+
+                # checking if the user have uploaded a profile image before and if the image file exists
+                if userProfileImage != "" and Path(userProfileImagePath).is_file():
+                    imagesrcPath = "static/images/user/" + userProfileImage
                 else:
                     imagesrcPath = "static/images/user/default.png"
 
@@ -622,6 +705,7 @@ def userProfile():
                 
                 return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath)
         else:
+            db.close()
             print("User not found")
             # if user is not found for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
@@ -649,12 +733,15 @@ def updateUsername():
                 if 'Users' in db:
                     userDict = db['Users']
                 else:
+                    db.close()
                     print("User data in shelve is empty.")
                     session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
+                db.close()
                 print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
             # retrieving the object from the shelve based on the user's user ID
             userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -727,12 +814,15 @@ def updateEmail():
                 if 'Users' in db:
                     userDict = db['Users']
                 else:
+                    db.close()
                     print("User data in shelve is empty.")
                     session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
+                db.close()
                 print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
             # retrieving the object based on the shelve files using the user's user ID
             userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -809,12 +899,15 @@ def updatePassword():
                 if 'Users' in db:
                     userDict = db['Users']
                 else:
+                    db.close()
                     print("User data in shelve is empty.")
                     session.clear() 
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
+                db.close()
                 print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
             # retrieving the object based on the shelve files using the user's user ID
             userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -893,12 +986,15 @@ def userPayment():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                 session.clear() 
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1008,12 +1104,15 @@ def userEditPayment():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() 
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1082,11 +1181,14 @@ def deleteCard():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1144,11 +1246,14 @@ def search():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1186,11 +1291,14 @@ def purchaseHistory():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1228,11 +1336,14 @@ def purchaseReview():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1270,11 +1381,14 @@ def purchaseView():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1312,11 +1426,14 @@ def teacherCashOut():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1359,11 +1476,14 @@ def function():
             if 'Users' in db:
                 userDict = db['Users']
             else:
+                db.close()
                 print("User data in shelve is empty.")
                 session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
+            db.close()
             print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound = get_key_and_validate(userSession, userDict)
@@ -1475,30 +1595,47 @@ def insertName():
 
 """Custom Error Pages"""
 
+# Unauthorised
 @app.errorhandler(401)
 def error401(error):
     return render_template("errors/401.html"), 401
 
+# Forbidden
 @app.errorhandler(403)
 def error403(error):
     return render_template("errors/403.html"), 403
 
+# Not Found
 @app.errorhandler(404)
 def error404(error):
     return render_template("errors/404.html"), 404
 
+# Payload Too Large
+@app.errorhandler(413)
+def error413(error):
+    return render_template("errors/413.html"), 413
+
+# Too Many Requests
 @app.errorhandler(429)
 def error429(error):
     return render_template("errors/429.html"), 429
 
+# Internal Server Error
 @app.errorhandler(500)
 def error500(error):
     return render_template("errors/500.html"), 500
 
+# Not Implemented
+@app.errorhandler(501)
+def error501(error):
+    return render_template("errors/501.html"), 501
+
+# Bad Gateway
 @app.errorhandler(502)
 def error502(error):
     return render_template("errors/502.html"), 502
 
+# Service Temporarily Unavailable
 @app.errorhandler(503)
 def error503(error):
     return render_template("errors/503.html"), 503
