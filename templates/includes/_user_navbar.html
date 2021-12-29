@@ -1,87 +1,124 @@
-<nav class="navbar navbar-dark navbar-expand-lg" id="navbar">
-    <div class="container-fluid">
-        <a id="logo" href="/"><img src="static/images/common/logo.png" alt="CourseFinity Logo"></a>
-        <input type="checkbox" id="check" data-bs-toggle="collapse" data-bs-target="#main_nav"  aria-expanded="false" aria-label="Toggle navigation">
-        <label for="check" id="nav-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-        </label>
-        <div class="collapse navbar-collapse" id="main_nav">
-        
-            <ul class="navbar-nav">
+<nav class="navbar navbar-expand-lg navbar-light bg-dark navbar-dark shadow">
+	<div class="container-fluid">
+		<a id="logo" href="/"><img src="static/images/common/logo.png" alt="CourseFinity Logo"></a>
+		</a>
+		<button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-content">
+			<div class="hamburger-toggle">
+				<div class="hamburger">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+			</div>
+		</button>
+		<div class="collapse navbar-collapse" id="navbar-content">
+			<ul class="navbar-nav mr-auto mb-2 mb-lg-0">
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" data-bs-auto-close="outside">Explore Categories!</a>
+					<ul class="dropdown-menu shadow">
+						<li class="dropend">
+							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 1</a>
+							<ul class="dropdown-menu shadow">
+								<li>
+									<a class="dropdown-item" href="#"> Second level 1</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 2</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 3</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Third level 5</a>
+								</li>
+							</ul>
+						</li>
+                        <li class="dropend">
+							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 2</a>
+							<ul class="dropdown-menu shadow">
+								<li>
+									<a class="dropdown-item" href="#"> Second level 1</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 2</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 3</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Third level 5</a>
+								</li>
+							</ul>
+						</li>
+                        <li class="dropend">
+							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 3</a>
+							<ul class="dropdown-menu shadow">
+								<li>
+									<a class="dropdown-item" href="#"> Second level 1</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 2</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 3</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Third level 5</a>
+								</li>
+							</ul>
+						</li>
+                        <li class="dropend">
+							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 4</a>
+							<ul class="dropdown-menu shadow">
+								<li>
+									<a class="dropdown-item" href="#"> Second level 1</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 2</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 3</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Third level 5</a>
+								</li>
+							</ul>
+						</li>
+                        <li class="dropend">
+							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 5</a>
+							<ul class="dropdown-menu shadow">
+								<li>
+									<a class="dropdown-item" href="#"> Second level 1</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 2</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Second level 3</a>
+								</li>
+								<li>
+									<a class="dropdown-item" href="#"> Third level 5</a>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+                <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-shopping-cart fa-lg"></i> Cart</a></li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link text-white dropdown-toggle" id="explore" href="#" data-bs-toggle="dropdown">Explore Categories!</a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 1 &raquo;</a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Submenu item 1</a></li>
-                                <li><a class="dropdown-item" href="#">Submenu item 2</a></li>
-                                <li><a class="dropdown-item" href="#">Submenu item 3</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 2 &raquo; </a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Submenu item 1</a></li>
-                                <li><a class="dropdown-item" href="#">Submenu item 2</a></li>
-                                <li><a class="dropdown-item" href="#">Submenu item 3</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 3 &raquo; </a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 4 &raquo;</a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 5 &raquo;</a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
-                            </ul>
-                        </li>
-                        <li><a class="dropdown-item" href="javascript:void(0)"> Dropdown item 6 &raquo;</a>
-                            <ul class="submenu dropdown-menu">
-                                <li><a class="dropdown-item" href="#">Another submenu 1</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 2</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 3</a></li>
-                                <li><a class="dropdown-item" href="#">Another submenu 4</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item main-nav-icons"><a class="nav-link text-white" href="#"><i class="fas fa-shopping-cart fa-lg"></i> Cart</a></li>
-                <li class="nav-item dropdown main-nav-icons">
-                    <a class="nav-link text-white dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-circle fa-lg"></i> Account</a>
-                    <ul class="dropdown-menu dropdown-menu-right">
-                        <li><a class="dropdown-item" href="#">Purchases</a></li>
+					<a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i class="fas fa-user-circle fa-lg"></i> Account</a>
+					<ul class="dropdown-menu shadow">
+						<li><a class="dropdown-item" href="#">Purchases</a></li>
                         <li><a class="dropdown-item" href="/user_profile">Settings</a></li>
                         <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item main-nav-icons">
-                    <div id="searchbar">
-                        <form action="#">
-                            <input id="search-input" type="text" placeholder="Search..." name="search">
-                            <button id="search-btn" type="submit"><i class="fa fa-search"></i></button>
-                        </form>
-                    </div>
-                </li>
-            </ul> 
-        </div>
-    </div>
+					</ul>
+				</li>
+            </ul>
+			<form class="d-flex ms-auto">
+				<div class="input-group">
+					<input class="form-control border-0 mr-2" type="search" placeholder="Search" aria-label="Search">
+					<button class="btn btn-secondary border-0" type="submit">Search</button>
+				</div>
+			</form>
+		</div>
+	</div>
 </nav>

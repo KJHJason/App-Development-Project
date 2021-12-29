@@ -31,8 +31,9 @@ h2{
 
 @media screen and (max-width: 1500px){
 
-button{
+/* button {
   margin-bottom:50px;
 }
-
+ */
+/* Please fix this issue as it selects all buttons including the search bar button */
 }
