@@ -6,7 +6,7 @@
  * Released under MIT license
  */
 
-(function () {
+document.addEventListener("DOMContentLoaded", function () {
     "use strict";
 
     var cookieAlert = document.querySelector(".cookiealert");
@@ -30,7 +30,7 @@
         cookieAlert.classList.remove("show");
 
         // dispatch the accept event
-        window.dispatchEvent(new Event("cookieAlertAccept"))
+        window.dispatchEvent(new Event("cookieAlertAccept"));
     });
 
     // Cookie functions from w3schools
@@ -56,6 +56,6 @@
         }
         return "";
     }
-})();
+});
 
 ////////////////// End of Cookie warning alert Javascript //////////////////
