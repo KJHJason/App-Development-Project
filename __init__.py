@@ -1429,7 +1429,7 @@ def userEditPayment():
                     return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType)
             else:
                 db.close()
-                return redirect(url_for("user_profile"))
+                return redirect(url_for("userProfile"))
         else:
             print("User not found or is banned")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -1489,7 +1489,7 @@ def deleteCard():
                 
             else:
                 db.close()
-                return redirect(url_for("user_profile"))
+                return redirect(url_for("userProfile"))
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
