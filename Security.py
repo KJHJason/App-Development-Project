@@ -30,6 +30,25 @@ class PasswordManager:
         except:
             return False
 
+    # different salt for the admin account for extra security as if the user's salt somehow got cracked, the attackers will still have to crack the admin's salt
+    def admin_salt_password(self, pwd):
+        # salting the password for extra security, do not change the salt as all the admins' password must have the same salt
+        self.__admin_salt = "C%qf9D"
+        self.__admin_salted_pwd = pwd + self.__admin_salt
+        return self.__admin_salted_pwd
+
+    def admin_hash_password(self, pwd):
+        self.__admin_pwd = self.admin_salt_password(pwd)
+        return self.hasher.hash(self.__admin_pwd)
+
+    def admin_verify_password(self, hashed, pwd):
+        # try and except as argon2 will raise an exception if the hashes are not matched
+        try:
+            self.__admin_pwd = self.admin_salt_password(pwd)
+            return self.hasher.verify(hashed, self.__admin_pwd)
+        except:
+            return False
+
 """ 
 # for testing purposes
 pwdManager = PasswordManager()
