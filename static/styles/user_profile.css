@@ -1,7 +1,6 @@
 #left-user {
   height: 100%;
   margin-bottom: 20px;
-  background-color: #758bfd !important;
   border-radius: 15px 0 0 15px;
 }
 
@@ -12,7 +11,7 @@
   border-radius: 0 30px 30px 0;
   border-width: 5px;
   border-style: solid;
-  border-color: #758bfd;
+  border-color: #212529;
 }
 
 #user-icon-setting {
@@ -27,7 +26,7 @@
 }
 
 .active-custom {
-  background-color: #75cffd !important;
+  background-color: #009DF8 !important;
   font-weight: bold;
 }
 
@@ -132,6 +131,12 @@
   .margin-top {
     margin-top: 5px;
   }
+  .margin-btm-text {
+    margin-bottom: 20px;
+  }
+  .res_padding_remove {
+    padding: 5px !important;
+  }
 }
 
 #payment_logo {
@@ -155,12 +160,14 @@
 }
 
 .wrapper {
-  border: 15px solid #758bfd;
+  background-color: #212529;
+  color: #FFF;
   width: 80%;
   height: 100%;
   margin: 50px auto;
   border-radius: 10px;
   padding: 30px;
+  box-shadow: 0 8px 8px -4px #212529;
 }
 .wrapper h2 {
   margin-bottom: 50px;

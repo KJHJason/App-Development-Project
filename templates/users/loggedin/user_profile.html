@@ -124,8 +124,7 @@
     <div class="row">
         <div class="col-lg-3 merge-boxes">
             <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
-                <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-4">My Account</span>
+                <h4><span class="fs-4">My Account</span></h4>
                 </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
@@ -134,17 +133,24 @@
                             Profile
                         </a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a href="/payment_method" class="nav-link text-white">
                             Payment Method
                         </a>
                     </li>
+                    {% if accType == "Teacher" %}
+                    <li class="nav-item">
+                        <a href="#" class="nav-link text-white">
+                          Cash Out
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
         <div class="col-lg-9 merge-boxes">
             <div id="right-user">
-                <div class="container">
+                <div class="container res_padding_remove">
                     <div class="row">
                         <div class="col-md-5 image-center">
                             <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
@@ -162,21 +168,21 @@
                                     <div class="col-4 text-responsive">
                                         <h6 class="margin-btm">Username:</h6>
                                     </div>
-                                    <div class="col-8 text-responsive">
+                                    <div class="col-8 text-responsive margin-btm-text">
                                         <h6 class="margin-btm">{{ username }}</h6>
                                         <a href="/change_username">Change Username</a>
                                     </div>
                                     <div class="col-4 text-responsive">
                                         <h6 class="margin-btm margin-top">Email:</h6>
                                     </div>
-                                    <div class="col-8 text-responsive">
+                                    <div class="col-8 text-responsive margin-btm-text">
                                         <h6 class="margin-btm margin-top">{{ email }}</h6>
                                         <a href="/change_email">Change Email</a>
                                     </div>
                                     <div class="col-4 text-responsive">
                                         <h6 class="margin-btm margin-top">Account Type:</h6>
                                     </div>
-                                    <div class="col-8 text-responsive">
+                                    <div class="col-8 text-responsive margin-btm-text">
                                         <h6 class="margin-btm margin-top">{{ accType }}</h6>
                                         {% if accType == "Student" %}
                                         <span><a href="/change_account_type">Become a Teacher!</a></span>
@@ -197,7 +203,7 @@
                                         <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
                                         <p>Click on the button below or click on "Become a Teacher!" above!</p>
                                         <form action="/change_account_type" method="GET">
-                                            <button type="submit" class="btn btn-secondary btn-lg" value="">Change account type</button>
+                                            <button type="submit" class="btn button_colour btn-lg">Change account type</button>
                                         </form>
                                         {% endif %}
                                         {% if accType == "Teacher" %}
@@ -205,7 +211,7 @@
                                         <p>If you want to teach a subject that is not listed in the select option when uploading a video, you can contact us to get it added to the list of subjects!</p>
                                         <p>Additionally, if you require any assistance, feel free to contact us!</p>
                                         <form action="#" method="POST">
-                                            <button type="submit" class="btn btn-secondary btn-lg" value="">Contact Us</button>
+                                            <button type="submit" class="btn button_colour btn-lg">Contact Us</button>
                                         </form>
                                         {% endif %}
                                     </div>

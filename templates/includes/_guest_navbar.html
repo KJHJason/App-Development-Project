@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-dark navbar-dark shadow">
+<nav class="navbar navbar-expand-lg bg-dark">
 	<div class="container-fluid">
 		<a id="logo" href="/"><img src="static/images/common/logo.png" alt="CourseFinity Logo"></a>
 		</a>
@@ -14,7 +14,7 @@
 		<div class="collapse navbar-collapse" id="navbar-content">
 			<ul class="navbar-nav mr-auto mb-2 mb-lg-0">
 				<li class="nav-item dropdown">
-					<a class="nav-link dropdown-toggle" href="javascript:void(0)" data-bs-toggle="dropdown" data-bs-auto-close="outside">Explore Categories!</a>
+					<a class="nav-link dropdown-toggle text-white" href="javascript:void(0)" data-bs-toggle="dropdown" data-bs-auto-close="outside">Explore Categories!</a>
 					<ul class="dropdown-menu shadow">
 						<li class="dropend">
 							<a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside">Subject 1</a>
@@ -103,13 +103,17 @@
 						</li>
 					</ul>
 				</li>
-                <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
-                <li class="nav-item"><a class="nav-link" href="/signup">Sign Up</a></li>
             </ul>
-			<form class="d-flex ms-auto">
+			<div class="d-flex ms-auto">
+				<ul class="navbar-nav">
+					<li class="nav-item"><a class="nav-link text-white" href="/login">Login</a></li>
+					<li class="nav-item"><a class="nav-link text-white" href="/signup">Sign Up</a></li>
+				</ul>
+			</div>
+			<form action="#" method="GET" class="d-flex">
 				<div class="input-group">
 					<input class="form-control border-0 mr-2" type="search" placeholder="Search" aria-label="Search">
-					<button class="btn btn-secondary border-0" type="submit">Search</button>
+					<button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
 				</div>
 			</form>
 		</div>

@@ -1,9 +1,5 @@
 .btn-colour {
-    background-color: #75cffd;
-}
-
-.bg-colour {
-    background-color: #758bfd;
+    background-color: #009DF8;
 }
 
 #userForm {
@@ -14,7 +10,6 @@
 .warning_text {
     margin: 10px;
 }
-
 
 @media (max-width: 991px) {
     .LSUForm {

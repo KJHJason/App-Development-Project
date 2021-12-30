@@ -1,4 +1,8 @@
-{% if var %}
+{% extends "user_base.html" %}
+{% block head %}<link rel="stylesheet" href="static/styles/aboutUs.css">{% endblock %}
+{% block title %}About Us | CourseFinity{% endblock %}
+
+{% block content %}
 <ul class="breadcrumb">
   <li><a href="home.html">Home</a></li>
   <li>About Us</li>
@@ -32,4 +36,4 @@
 <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit"</p>
 <p>- Eden Pang, Competitive Programmer</p>
 </div>
-{% endif %}
+{% endblock %}

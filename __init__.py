@@ -1226,7 +1226,7 @@ def changeAccountType():
                     return redirect(url_for("userProfile"))
                 else:    
                     db.close()
-                    return render_template('users/loggedin/change_account_type.html')
+                    return render_template("users/student/change_account_type.html")
             else:
                 db.close()
                 print("User is not a student.")
@@ -1276,7 +1276,8 @@ def userPayment():
         if userFound and accGoodStatus:
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
-            
+            accType = userKey.get_acc_type()
+
             if cardExist == False:
                 print("Entered if loop")
                 create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
@@ -1321,7 +1322,7 @@ def userPayment():
                         cardDeleted = False
                         print("Card recently added?:", cardDeleted)
 
-                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted)
+                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType)
             else:
                 db.close()
                 cardName = userKey.get_card_name()
@@ -1351,7 +1352,7 @@ def userPayment():
                     cardAdded = False
                     print("Card recently added?:", cardAdded)
 
-                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded)
+                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded, accType=accType)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -1391,6 +1392,8 @@ def userEditPayment():
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
         
         if userFound and accGoodStatus:
+            accType = userKey.get_acc_type()
+
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
             cardName = userKey.get_card_name()
@@ -1426,7 +1429,7 @@ def userEditPayment():
                     return redirect(url_for("userPayment"))
                 else:
                     db.close()
-                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType)
+                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType)
             else:
                 db.close()
                 return redirect(url_for("userProfile"))

@@ -3,9 +3,10 @@ body {
 	text-align: center;
 	font-family: sans-serif;
 	font-weight: bolder;
+	background-color: #212529;
 }
 .content-area {
-	color: #7588FD;
+	color: #fff;
 	position: relative;
 	height: 100vh;
 }
@@ -24,10 +25,10 @@ a {
 	text-transform: uppercase;
 	color: #fff;
 	position: relative;
-	background: #7588FD;
+	background: #009DF8;
 	border: 1px solid #fff;
 	padding: 20px;
-	box-shadow: 4px 4px 0px 0px #7588FD;
+	box-shadow: 4px 4px 0px 0px #006faf;
 	letter-spacing: 2px;
 	transition: all 0.3s ease-in-out;
 	left: 0;
@@ -36,14 +37,14 @@ a {
 a:hover {
 	left: 4px;
 	top: 4px;
-	box-shadow: 0 0 0 0 #fff;
+	box-shadow: 0 0 0 0 #006faf;
 }
 #error {
 	font-size: 10em;
 	margin: 0;
 }
 #copyright-error {
-	color: #7588FD;
+	color: #fff;
 }
 @media (max-width: 1200px) {
 	.container {
