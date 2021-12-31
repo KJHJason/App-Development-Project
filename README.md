@@ -5,7 +5,7 @@ Nanyang Polytechnic Y1 App Development Group Project [4 members]
 Group Members: 
 <br>
 <ol>
-  <li>Wei Ren (Group Leader)</li>
+  <li>Wei Ren (Sus Group Leader)</li>
   <li>Jason</li>
   <li>Clarence</li>
   <li>Royston</li>
