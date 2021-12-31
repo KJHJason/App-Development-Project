@@ -1,5 +1,5 @@
 from argon2 import PasswordHasher
-import html
+import html, re
 
 # done by Jason
 
@@ -16,7 +16,7 @@ import html
 # minimum requirement as of OWASP; Use Argon2id with a minimum configuration of 15 MiB of memory (15728KB), an iteration count of 2, and 1 degree of parallelism.
 # OWASP website: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-class PasswordManager:
+class password_manager:
     def __init__(self):
         self.hasher = PasswordHasher()
 
@@ -47,7 +47,7 @@ else:
 
 """Input sanitisation"""
 
-def Sanitise(userInput):
+def sanitise(userInput):
     userInput = html.escape(userInput, quote=True) # quote = True so that the characters (") and (') are escaped/translated
     userInput = userInput.strip()
 
@@ -57,3 +57,18 @@ def Sanitise(userInput):
         return False
 
 """End of input sanitisation"""
+
+"""Email Validation using regex/regular expression"""
+
+# useful resources:
+# https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
+
+def validate_email(email):
+    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # compile the regex so that it does not have to rewrite the regex
+
+    if(re.fullmatch(regex, email)):
+        return True
+    else:
+        return False
+
+"""End of Email Validation using regex/regular expression"""

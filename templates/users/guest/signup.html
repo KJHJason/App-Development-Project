@@ -14,19 +14,14 @@
                     <div class="col-12 text-white">
                         {{ render_field(form.username, class="form-control") }}
                         {% if username_duplicates %}<div class="text-danger"><strong>Username is already taken</strong></div>{% endif %}
-                        <!-- <label for="username" class="text-white">Username:</label>
-                        <input type="text" name="username" class="form-control" id="username" placeholder="John Doe" required> -->
                     </div>
                     <div class="col-12 text-white">
                         {{ render_field(form.email, class="form-control") }}
                         {% if email_duplicates %}<div class="text-danger"><strong>Email is already used</strong></div>{% endif %}
-                        <!-- <label for="email" class="text-white">Email:</label>
-                        <input type="email" name="email" class="form-control" id="email" placeholder="johndoe@gmail.com" required> -->
+                        {% if emailInvalid %}<div class="text-danger"><strong>Please enter a valid email address</strong></div>{% endif %}
                     </div>
                     <div class="col-12 text-white">
                         {{ render_field(form.password, class="form-control") }}
-                        <!-- <label for="password" class="text-white">Password:</label>
-                        <input type="password" name="password" class="form-control" id="password" placeholder="Enter your password" required> -->
                     </div>       
                     <div class="col-12 text-white">
                         {{ render_field(form.cfm_password, class="form-control") }}

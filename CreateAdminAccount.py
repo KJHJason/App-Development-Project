@@ -1,14 +1,6 @@
 from Admin import Admin
-from Security import PasswordManager, Sanitise
+from Security import password_manager, sanitise, validate_email
 import shelve, re
-
-def validate_email(email):
-    if(re.fullmatch(regex, email)):
-        print("Verdict: Valid Email")
-        return True
-    else:
-        print("Verdict: Invalid Email")
-        return False
 
 def validate_pwd_length(pwd, pwdMinimumLength):
     if len(pwd) < pwdMinimumLength:
@@ -18,10 +10,7 @@ def validate_pwd_length(pwd, pwdMinimumLength):
         print("Verdict: Password length accepted, within {} characters minimum requirement." .format(pwdMinimumLength))
         return True
 
-# regular expression for validating an Email from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
-regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
-
-pwdManager = PasswordManager()
+pwdManager = password_manager()
 
 cmd_menu = """
 Welcome to admin control panel!
@@ -38,8 +27,8 @@ while True:
     print(cmd_menu)
     cmd_input = input("Enter number: ")
     if cmd_input == "1":
-        username = Sanitise(input("Enter username for admin account: "))
-        email = Sanitise(input("Enter email for admin account: "))
+        username = sanitise(input("Enter username for admin account: "))
+        email = sanitise(input("Enter email for admin account: "))
         emailValid = False
         if email != False:
             print("\nValidating Email...")

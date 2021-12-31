@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import shelve, Forms, os
 import Student, Teacher, Admin
-from Security import PasswordManager, Sanitise
+from Security import password_manager, sanitise, validate_email
 from CardValidation import validate_card, get_card_type, validate_cvv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -347,7 +347,7 @@ def userLogin():
     if "userSession" not in session and "adminSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
-            emailInput = Sanitise(create_login_form.email.data.lower())
+            emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
             try:
                 userDict = {}
@@ -387,7 +387,7 @@ def userLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = PasswordManager().verify_password(passwordShelveData, passwordInput)
+                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
 
                 if password_matched:
                     print("Correct password!")
@@ -461,53 +461,58 @@ def userSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = Sanitise(create_signup_form.email.data.lower())
-            usernameInput = Sanitise(create_signup_form.username.data)
+            emailInput = sanitise(create_signup_form.email.data.lower())
+            emailValid = validate_email(emailInput)
+            if emailValid:
 
-            # Retrieving data from shelve for duplicate data checking
-            userDict = {}
-            db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    print("No user data in user shelve files.")
-                    db["Users"] = userDict
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
+                usernameInput = sanitise(create_signup_form.username.data)
 
-            # Checking duplicates for email and username
-            email_duplicates = check_duplicates(emailInput, userDict, "email")
-            username_duplicates = check_duplicates(usernameInput, userDict, "username")
-            
-            # If there were no duplicates and passwords entered were the same, create a new user
-            if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-                hashedPwd = PasswordManager().hash_password(passwordInput)
-                print("Hashed password:", hashedPwd)
+                # Retrieving data from shelve for duplicate data checking
+                userDict = {}
+                db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                try:
+                    if 'Users' in db:
+                        userDict = db['Users']
+                    else:
+                        print("No user data in user shelve files.")
+                        db["Users"] = userDict
+                except:
+                    db.close()
+                    print("Error in retrieving Users from user.db")
+                    return redirect(url_for("home"))
 
-                # setting user ID for the user
-                userID = get_userID(userDict)
-                print("User ID setted: ", userID)
-
-                user = Student.Student(userID, usernameInput, emailInput, hashedPwd)
-                print(user)
-
-                userDict[userID] = user
-                db["Users"] = userDict
+                # Checking duplicates for email and username
+                email_duplicates = check_duplicates(emailInput, userDict, "email")
+                username_duplicates = check_duplicates(usernameInput, userDict, "username")
                 
-                print(userDict)
+                # If there were no duplicates and passwords entered were the same, create a new user
+                if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
+                    hashedPwd = password_manager().hash_password(passwordInput)
+                    print("Hashed password:", hashedPwd)
 
-                db.close()
-                print("User added.")
-                session["userSession"] = userID
-                return redirect(url_for("home"))
+                    # setting user ID for the user
+                    userID = get_userID(userDict)
+                    print("User ID setted: ", userID)
+
+                    user = Student.Student(userID, usernameInput, emailInput, hashedPwd)
+                    print(user)
+
+                    userDict[userID] = user
+                    db["Users"] = userDict
+                    
+                    print(userDict)
+
+                    db.close()
+                    print("User added.")
+                    session["userSession"] = userID
+                    return redirect(url_for("home"))
+                else:
+                    # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
+                    db.close()
+                    print("Validation conditions were not met.")
+                    return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
             else:
-                # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
-                db.close()
-                print("Validation conditions were not met.")
-                return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                return render_template('users/guest/signup.html', form=create_signup_form, emailInvalid=True)
         else:
             return render_template('users/guest/signup.html', form=create_signup_form)    
     else:
@@ -538,57 +543,62 @@ def teacherSignUp():
                 pwd_were_not_matched = True
                 print("Password not matched")
 
-            emailInput = Sanitise(create_teacher_sign_up_form.email.data.lower())
-            usernameInput = Sanitise(create_teacher_sign_up_form.username.data)
+            emailInput = sanitise(create_teacher_sign_up_form.email.data.lower())
+            emailValid = validate_email(emailInput)
 
-            # Retrieving data from shelve for duplicate data checking
-            userDict = {}
-            db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    print("No user data in user shelve files")
+            if emailValid:
+                usernameInput = sanitise(create_teacher_sign_up_form.username.data)
+
+                # Retrieving data from shelve for duplicate data checking
+                userDict = {}
+                db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                try:
+                    if 'Users' in db:
+                        userDict = db['Users']
+                    else:
+                        print("No user data in user shelve files")
+                        db["Users"] = userDict
+                except:
+                    db.close()
+                    print("Error in retrieving Users from user.db")
+                    return redirect(url_for("home"))
+
+                # Checking duplicates for email and username
+                email_duplicates = check_duplicates(emailInput, userDict, "email")
+                username_duplicates = check_duplicates(usernameInput, userDict, "username")
+
+                if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
+                    print("User info validated.")
+                    hashedPwd = password_manager().hash_password(passwordInput)
+                    print("Hashed password:", hashedPwd)
+
+                    # setting user ID for the teacher
+                    userID = get_userID(userDict)
+                    print("User ID setted: ", userID)
+
+                    user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
+                    print(user)
+
+                    userDict[userID] = user
                     db["Users"] = userDict
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
+                    
+                    session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
 
-            # Checking duplicates for email and username
-            email_duplicates = check_duplicates(emailInput, userDict, "email")
-            username_duplicates = check_duplicates(usernameInput, userDict, "username")
+                    print(userDict)
+                    print("Teacher added.")
 
-            if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-                print("User info validated.")
-                hashedPwd = PasswordManager().hash_password(passwordInput)
-                print("Hashed password:", hashedPwd)
+                    db.close()
+                    
+                    session["userSession"] = userID
 
-                # setting user ID for the teacher
-                userID = get_userID(userDict)
-                print("User ID setted: ", userID)
-
-                user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
-                print(user)
-
-                userDict[userID] = user
-                db["Users"] = userDict
-                
-                session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
-
-                print(userDict)
-                print("Teacher added.")
-
-                db.close()
-                
-                session["userSession"] = userID
-
-                return redirect(url_for("signUpPayment"))
+                    return redirect(url_for("signUpPayment"))
+                else:
+                    # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
+                    db.close()
+                    print("Validation conditions were not met.")
+                    return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
             else:
-                # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
-                db.close()
-                print("Validation conditions were not met.")
-                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, invalidEmail=True) 
         else:
             return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form) 
     else:
@@ -634,12 +644,12 @@ def signUpPayment():
                     if userSession == teacherID:
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
-                        cardName = Sanitise(create_teacher_payment_form.cardName.data)
+                        cardName = sanitise(create_teacher_payment_form.cardName.data)
 
-                        cardNo = Sanitise(create_teacher_payment_form.cardNo.data)
+                        cardNo = sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card(cardNo)
 
-                        cardCVV = Sanitise(create_teacher_payment_form.cardCVV.data)
+                        cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
                         cardCVVValid = validate_cvv(cardCVV)
                         
                         if cardValid and cardCVVValid:
@@ -700,7 +710,7 @@ def adminLogin():
     if "adminSession" not in session and "userSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
-            emailInput = Sanitise(create_login_form.email.data.lower())
+            emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
             try:
                 adminDict = {}
@@ -740,7 +750,7 @@ def adminLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = PasswordManager().verify_password(passwordShelveData, passwordInput)
+                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
 
                 if password_matched:
                     print("Correct password!")
@@ -985,7 +995,7 @@ def updateUsername():
             userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
             
             if userFound and accGoodStatus:
-                updatedUsername = Sanitise(create_update_username_form.updateUsername.data)
+                updatedUsername = sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
                     
                 if updatedUsername != currentUsername:
@@ -1067,7 +1077,7 @@ def updateEmail():
             userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
             
             if userFound and accGoodStatus:
-                updatedEmail = Sanitise(create_update_email_form.updateEmail.data.lower())
+                updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
                 currentEmail = userKey.get_email()
                     
                 # Checking duplicates for email
@@ -1172,7 +1182,7 @@ def updatePassword():
                 print("Current password:", currentStoredPassword)
                 print("Current password input:", currentPassword)
 
-                password_verification = PasswordManager().verify_password(currentStoredPassword, currentPassword)
+                password_verification = password_manager().verify_password(currentStoredPassword, currentPassword)
                 
                 # printing message for debugging purposes
                 if password_verification:
@@ -1187,7 +1197,7 @@ def updatePassword():
                     return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
                 else:
                     # updating password of the user
-                    hashedPwd = PasswordManager().hash_password(updatedPassword)
+                    hashedPwd = password_manager().hash_password(updatedPassword)
                     userKey.set_password(hashedPwd)
                     db['Users'] = userDict
                     print("Password updated")
@@ -1303,12 +1313,12 @@ def userPayment():
                 create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
                 if request.method == "POST" and create_add_payment_form.validate():
                     print("POST request sent and form entries validated")
-                    cardName = Sanitise(create_add_payment_form.cardName.data)
+                    cardName = sanitise(create_add_payment_form.cardName.data)
 
-                    cardNo = Sanitise(create_add_payment_form.cardNo.data)
+                    cardNo = sanitise(create_add_payment_form.cardNo.data)
                     cardValid = validate_card(cardNo)
 
-                    cardCVV = Sanitise(create_add_payment_form.cardCVV.data)
+                    cardCVV = sanitise(create_add_payment_form.cardCVV.data)
                     cardCVVValid = validate_cvv(cardCVV)
 
                     if cardValid and cardCVVValid:

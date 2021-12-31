@@ -18,6 +18,7 @@
                     <div class="col-md-12 text-white">
                         {{ render_field(form.email, class="form-control") }}
                         {% if email_duplicates %}<div class="text-danger"><strong>Email is already used</strong></div>{% endif %}
+                        {% if emailInvalid %}<div class="text-danger"><strong>Please enter a valid email address</strong></div>{% endif %}
                     </div>
                     <div class="col-md-12 text-white">
                         {{ render_field(form.password, class="form-control") }}

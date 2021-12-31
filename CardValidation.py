@@ -21,44 +21,40 @@ def intList(numbers):
 
 # main function to validate credit cards using the Luhn's algorithm, aka the modulus 10 or mod 10 algorithm
 def validate_card(cardNumber):
-    isValid = 1
+    isValid = 1 # initialise the isValid to 1 for the finally block so that it will return False by default if there's an error such as the string containing letters
     try:
         cardNoList = intList(cardNumber)
-        # print(cardNoList)
-        oddIndexDigits = cardNoList[-1::-2] # string slicing to get the list of numbers from the odd indexes starting from the last digits/rightmost of the string
-        # print("Odd digits:", oddIndexDigits)
-        evenIndexDigits = cardNoList[-2::-2] # string slicing to get the list of numbers from the even indexes starting from the last digits/rightmost of the string
-        # print("Even digits:", evenIndexDigits)
-        totalSum = 0 # initialise checksum to 0
+
+        # list slicing to get the list of numbers from the odd indexes starting from the last digits/rightmost of the string
+        oddIndexDigits = cardNoList[-1::-2] # starting from the very last digit/rightmost digit, with a stride of 2 digits
+
+        # list slicing to get the list of numbers from the even indexes starting from the last digits/rightmost of the string
+        evenIndexDigits = cardNoList[-2::-2] # starting from the 2nd last digit on the rightmost of the list, with a stride of 2 digits
+
+        totalSum = 0 # initialise totalSum to 0
         totalSum += sum(oddIndexDigits) # adds up all the sum from the list of numbers
 
         # multiplying the numbers by 2 and if the the multiplied numbers have 2 digits, it will add the 2 digits up. E.g. 9 * 2 = 18, since it has 2 digits, it will add up 1 and 8 together to form 9.
-        numberList = []
         for number in evenIndexDigits:
-            numberList.clear()
-            # print("\nOriginal number:", number)
             number = number * 2
-            # print("Multiplied number:", number)
             if number >= 10:
-                numberList = intList(number) # converting the number into a list
-                # print("Added numbers:", numberList)
-                # print("Sum up number from list:", sum(numberList))
-                totalSum += sum(numberList) # then adding up the total sum with the sum of the number list
+                numberList = intList(number) # converting the number into a list e.g. the number 10 to [1,0]
+                totalSum += sum(numberList) # then adding up the total sum with the sum of the number list elements
             else:
                 totalSum += number
         isValid = totalSum % 10
     except:
-        print("Card number input must only contain numbers!")
+        print("Card number input must only contain numbers!") # if the string contained any letters, it will raise a runtime error. Hence, using try and except to handle this error.
     finally:
         if isValid == 0:
-            return True
+            return True # if the totalSum is a multiple of 10, it is valid and will return True
         else:
             return False
 
 def get_card_type(cardNumber):
     try:
         cardNoList = intList(cardNumber)
-        firstDigit = cardNoList[0]
+        firstDigit = cardNoList[0] # getting the first digit of the credit card number
         if firstDigit == 4:
             # Visa cards starts with the number 4
             return "visa"
@@ -71,11 +67,14 @@ def get_card_type(cardNumber):
         print("Card number input must only contain numbers!")
         return False
 
-def validate_cvv(CVV):
-    regex = r"^[0-9]{3,4}$"
-    cvv = str(CVV).strip()
+def validate_cvv(cardCVV):
+    # try and except as in the __init__.py, I validated the sanitise the CVV so if it return False for some reason (empty strings, etc.), it will go to the except block and return False
+    try:
+        regex = re.compile(r"^[0-9]{3,4}$") # compile the regex so that it does not have to rewrite the regex
 
-    if(re.match(regex, cvv)):
-        return True
-    else:
-        return False
+        if(re.match(regex, cardCVV)):
+            return True
+        else:
+            return False
+    except:
+        return False # if the cardCVV variable contained a string with letters, it will return False
