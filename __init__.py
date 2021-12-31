@@ -1757,13 +1757,13 @@ def teacherCashOut():
 
 
 # 7 template app.route("") for you guys :prayge:
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
   
   - Using user shelve files --> shelve.open("user", "C") ONLY
-  - Webpage will not have admin view                                                                            '''
+  - Webpage will not have admin view
 '''  
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -1812,14 +1812,15 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-                                                                                                                '''
+'''
 
+'''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
   
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
-  - Webpage will not have admin view                                                                            '''
+  - Webpage will not have admin view
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -1849,8 +1850,9 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+'''
 
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
@@ -1858,7 +1860,7 @@ def function():
   - NOT using shelve
   
   - Webpage will have admin and user view
-  e.g. General pages (about_us.html, etc) that check whether user/admin is logged in.                           '''
+  e.g. General pages (about_us.html, etc) that check whether user/admin is logged in.
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -1903,8 +1905,9 @@ def insertName():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+'''
 
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
@@ -1913,7 +1916,7 @@ def insertName():
   - Reading info from user account data
   
   - Webpage will not have admin view
-  e.g. User pages (user_profile.html, etc)                                                                      '''
+  e.g. User pages (user_profile.html, etc)'
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -1943,8 +1946,9 @@ def insertName():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+'''
 
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
@@ -1952,7 +1956,7 @@ def insertName():
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
   
   - Webpage will not have user view
-  e.g. Admin pages                                                                                              '''
+  e.g. Admin pages
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -1982,8 +1986,9 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+'''
 
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
@@ -1991,7 +1996,7 @@ def function():
   - Using admin shelve files --> shelve.open("admin", "C") ONLY
   
   - Webpage will not have user view
-  e.g. Admin pages                                                                                              '''
+  e.g. Admin pages
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -2035,8 +2040,9 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+'''
 
-                                                                                                                '''
+'''
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
@@ -2045,7 +2051,7 @@ def function():
   - Reading info from admin account data
   
   - Webpage will not have user view
-  e.g. Admin pages                                                                                              '''
+  e.g. Admin pages
 '''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
@@ -2074,6 +2080,7 @@ def function():
         return redirect(url_for("home"))
 
 """End of Template app.route by INSERT_YOUR_NAME"""
+'''
 '''
 
 """Custom Error Pages"""
