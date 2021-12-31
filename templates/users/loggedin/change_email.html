@@ -1,5 +1,5 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="static/styles/login_signin.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="static/styles/login_sign_up.css">{% endblock %}
 {% block title %}Change Email | CourseFinity{% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
 <div class="container">
     <div class="row">
         <div class="LSUForm col">
-            <div class="login-form bg-colour mt-4 p-4 rounded updateForm" id="userForm">
+            <div class="login-form bg-dark mt-4 p-4 rounded updateForm" id="userForm">
                 {% if email_duplicates %}
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>

@@ -1445,6 +1445,7 @@ def userEditPayment():
             print("Sliced card number:", cardNo)
 
             cardType = userKey.get_card_type()
+            cardType = cardType.capitalize()
             if cardExist:
                 create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
                 if request.method == "POST" and create_edit_payment_form.validate():
