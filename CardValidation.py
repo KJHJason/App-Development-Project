@@ -16,13 +16,13 @@ import re
 # https://developers.google.com/edu/python/regular-expressions
 
 # for converting a string or a number into a list of numbers by using map() function
-def intList(numbers):
+def int_list(numbers):
     return list(map(int, str(numbers)))
 
 # function to recognise a card type by the card number
 def get_card_type(cardNumber):
     try:
-        cardNoList = intList(cardNumber)
+        cardNoList = int_list(cardNumber)
         firstDigit = cardNoList[0] # getting the first digit of the credit card number
         if firstDigit == 4:
             # Visa cards starts with the number 4
@@ -65,7 +65,7 @@ def validate_cvv(cardCVV, cardType):
 # main function to validate credit cards using the Luhn's algorithm, aka the modulus 10 or mod 10 algorithm
 def validate_card(cardNumber, cardCVV):
     try:
-        cardNoList = intList(cardNumber)
+        cardNoList = int_list(cardNumber)
 
         # list slicing to get the list of numbers from the odd indexes starting from the last digits/rightmost of the string
         oddIndexDigits = cardNoList[-1::-2] # starting from the very last digit/rightmost digit, with a stride of 2 digits
@@ -80,7 +80,7 @@ def validate_card(cardNumber, cardCVV):
         for number in evenIndexDigits:
             number = number * 2
             if number >= 10:
-                numberList = intList(number) # converting the number into a list e.g. the number 10 to [1,0]
+                numberList = int_list(number) # converting the number into a list e.g. the number 10 to [1,0]
                 totalSum += sum(numberList) # then adding up the total sum with the sum of the number list elements
             else:
                 totalSum += number
