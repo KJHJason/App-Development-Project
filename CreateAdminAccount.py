@@ -18,8 +18,8 @@ def validate_pwd_length(pwd, pwdMinimumLength):
         print("Verdict: Password length accepted, within {} characters minimum requirement." .format(pwdMinimumLength))
         return True
 
-# regular expression for validating an Email
-regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+# regular expression for validating an Email from https://www.geeksforgeeks.org/check-if-email-address-valid-or-not-in-python/
+regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
 
 pwdManager = PasswordManager()
 

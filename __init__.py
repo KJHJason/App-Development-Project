@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import shelve, Forms, os
 import Student, Teacher, Admin
 from Security import PasswordManager, Sanitise
-from CardValidation import validate_card, get_card_type
+from CardValidation import validate_card, get_card_type, validate_cvv
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -635,14 +635,18 @@ def signUpPayment():
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
                         cardName = Sanitise(create_teacher_payment_form.cardName.data)
-                        cardNo = Sanitise(create_teacher_payment_form.cardNo.data)
 
+                        cardNo = Sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card(cardNo)
-                        if cardValid:
+
+                        cardCVV = Sanitise(create_teacher_payment_form.cardCVV.data)
+                        cardCVVValid = validate_cvv(cardCVV)
+                        
+                        if cardValid and cardCVVValid:
                             cardType = get_card_type(cardNo)
                             if cardType != False:
                                 cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
-                                cardCVV = create_teacher_payment_form.cardCVV.data
+                                
 
                                 # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
                                 cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
@@ -1300,15 +1304,18 @@ def userPayment():
                 if request.method == "POST" and create_add_payment_form.validate():
                     print("POST request sent and form entries validated")
                     cardName = Sanitise(create_add_payment_form.cardName.data)
-                    cardNo = Sanitise(create_add_payment_form.cardNo.data)
-                    cardExpiry = str(create_add_payment_form.cardExpiry.data)
-                    cardCVV = create_add_payment_form.cardCVV.data
 
+                    cardNo = Sanitise(create_add_payment_form.cardNo.data)
                     cardValid = validate_card(cardNo)
 
-                    if cardValid:
+                    cardCVV = Sanitise(create_add_payment_form.cardCVV.data)
+                    cardCVVValid = validate_cvv(cardCVV)
+
+                    if cardValid and cardCVVValid:
                         cardType = get_card_type(cardNo)
                         if cardType != False:
+                            cardExpiry = str(create_add_payment_form.cardExpiry.data)
+                            
                             # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
                             cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
                             cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"

@@ -1,3 +1,5 @@
+import re
+
 # Done by Jason
 
 # helpful resources that was needed to create this credit card validation algorithm: 
@@ -5,7 +7,13 @@
 # https://allwin-raju-12.medium.com/credit-card-number-validation-using-luhns-algorithm-in-python-c0ed2fac6234
 # https://www.youtube.com/watch?v=zMAEI5A6dIA
 
-# Research notes for the different types of credit cards: https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
+# Research notes for the different types of credit cards: 
+# https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
+# https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
+
+# helpful resources for validating CVV
+# https://www.geeksforgeeks.org/how-to-validate-cvv-number-using-regular-expression/
+# https://developers.google.com/edu/python/regular-expressions
 
 # for converting a string or a number into a list of numbers by using map() function
 def intList(numbers):
@@ -61,4 +69,13 @@ def get_card_type(cardNumber):
             return False
     except:
         print("Card number input must only contain numbers!")
+        return False
+
+def validate_cvv(CVV):
+    regex = r"^[0-9]{3,4}$"
+    cvv = str(CVV).strip()
+
+    if(re.match(regex, cvv)):
+        return True
+    else:
         return False

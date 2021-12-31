@@ -4,7 +4,9 @@ from wtforms.fields.simple import PasswordField
 
 """WTForms by Jason"""
 
-# Research notes for the different types of credit cards: https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
+# Research notes for the different types of credit cards: 
+# https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
+# https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
 
 class CreateEditPaymentForm(Form):
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
@@ -14,7 +16,7 @@ class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
     cardNo = StringField("Card Number:", [validators.Length(min=14, max=19), validators.DataRequired()])
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
-    cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
+    cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateLoginForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
