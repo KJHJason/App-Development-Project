@@ -14,7 +14,7 @@ class Teacher(User):
         self.__viewed = ""
         self.__joinDate = ""
 
-    def self_earnings(self, earnings):
+    def set_earnings(self, earnings):
         self.__earnings = earnings
 
     def get_earnings(self):
