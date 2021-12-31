@@ -14,12 +14,6 @@ class Teacher(User):
         self.__viewed = ""
         self.__joinDate = ""
 
-    def set_earnings(self, earnings):
-        self.__earnings = earnings
-
-    def get_earnings(self):
-        return self.__earnings
-
     def set_card_name(self, card_name):
         self.__card_name = card_name
     def set_card_no(self, card_no):
@@ -38,6 +32,8 @@ class Teacher(User):
         self.__viewed = viewed
     def self_joinDate(self, joinDate):
         self.__joinDate = joinDate
+    def set_earnings(self, earnings):
+        self.__earnings = earnings
 
     def get_card_name(self):
         return self.__card_name
@@ -57,6 +53,8 @@ class Teacher(User):
         return self.__viewed
     def get_joinDate(self):
         return self.__joinDate
+    def get_earnings(self):
+        return self.__earnings
 
     def display_card_info(self):
         print("teacher's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)

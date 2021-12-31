@@ -4,16 +4,17 @@ from wtforms.fields.simple import PasswordField
 
 """WTForms by Jason"""
 
+# Research notes for the different types of credit cards: https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
+
 class CreateEditPaymentForm(Form):
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
 
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
-    cardNo = IntegerField("Card Number:", [validators.DataRequired()])
+    cardNo = StringField("Card Number:", [validators.Length(min=14, max=19), validators.DataRequired()])
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
     cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
-    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')
 
 class CreateLoginForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
@@ -30,13 +31,6 @@ class CreateTeacherSignUpForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.DataRequired()])
     password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-
-class CreateTeacherPayment(Form):
-    cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
-    cardNo = IntegerField("Card Number:", [validators.DataRequired()])
-    cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
-    cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
-    cardType = SelectField('Card Type:', [validators.DataRequired()], choices=[('', 'Select card type'), ('mastercard', 'Mastercard'), ('visa', 'Visa')], default='')
 
 class CreateChangeUsername(Form):
     updateUsername = StringField("Enter a new username:", [validators.Length(min=1, max=30), validators.DataRequired()])

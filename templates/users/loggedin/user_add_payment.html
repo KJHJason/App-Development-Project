@@ -24,6 +24,26 @@
 </div>
 {% endif %}
 
+{% if invalidCard %}
+<div class="modal fade" id="invalidCardModal" tabindex="-1" aria-labelledby="invalidCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="invalidCardModalLabel">Invalid Card!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Please enter a valid card or check your entries and try again.</h6>
+                <h6>Do note that we only accept Visa or Mastercard as of now.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -66,9 +86,6 @@
                                     <div class="col margin-top margin-top2">
                                         {{ render_field(form.cardNo, class="form-control", placeholder="4319531202151234") }}
                                     </div>
-                                    <div class="col margin-top margin-top2">
-                                        {{ render_field(form.cardType, class="form-select") }}
-                                    </div>
                                     <div class="row">
                                         <div class="col-md-6 margin-top margin-top2">
                                             {{ render_field(form.cardExpiry, class="form-control") }}
@@ -94,6 +111,12 @@
         <script>
             var deletedCardModal = new bootstrap.Modal(document.getElementById('deletedCardModal'), {});
             deletedCardModal.show();
+        </script>
+    {% endif %}
+    {% if invalidCard %}
+        <script>
+            var invalidCardModal = new bootstrap.Modal(document.getElementById('invalidCardModal'), {});
+            invalidCardModal.show();
         </script>
     {% endif %}
 {% endblock %}

@@ -1,6 +1,13 @@
 from argon2 import PasswordHasher
 import html
 
+# done by Jason
+
+# helpful resources: 
+# https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
+# https://lindevs.com/generate-argon2id-password-hash-using-python/
+# https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
+
 """Password hashing"""
 
 # things to note, argon2 by default will generate a random salt and use 65536KB of memory and time is 3 iterations, and 4 degrees of parallelism when hashing

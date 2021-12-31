@@ -12,7 +12,6 @@ class Student(User):
         self.__reviewID = ""
         self.__viewed = ""
         
-
     def set_card_name(self, card_name):
         self.__card_name = card_name
     def set_card_no(self, card_no):
