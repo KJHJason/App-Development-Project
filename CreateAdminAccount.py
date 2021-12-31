@@ -1,6 +1,6 @@
 from Admin import Admin
 from Security import password_manager, sanitise, validate_email
-import shelve, re
+import shelve
 
 def validate_pwd_length(pwd, pwdMinimumLength):
     if len(pwd) < pwdMinimumLength:
