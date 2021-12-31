@@ -401,7 +401,7 @@ def userLogin():
                     userID = email_key.get_user_id()
                     session["userSession"] = userID
                     print("User account not banned, login successful.")
-                    return redirect(url_for("userProfile"))
+                    return redirect(url_for("home"))
                 else:
                     print("User account banned.")
                     return render_template('users/guest/login.html', form=create_login_form, banned=True)
