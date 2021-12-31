@@ -5,7 +5,7 @@
 # https://allwin-raju-12.medium.com/credit-card-number-validation-using-luhns-algorithm-in-python-c0ed2fac6234
 # https://www.youtube.com/watch?v=zMAEI5A6dIA
 
-# for converting a string or a number into a list of numbers
+# for converting a string or a number into a list of numbers by using map() function
 def intList(numbers):
     return list(map(int, str(numbers)))
 
