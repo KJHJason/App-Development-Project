@@ -1765,6 +1765,7 @@ def teacherCashOut():
   
   - Using user shelve files --> shelve.open("user", "C") ONLY
   - Webpage will not have admin view
+  - Use case: User features such as change_password.html, etc.
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1819,7 +1820,9 @@ def function():
   - User banned?
   
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
+  - If your feature might need to retrieve the user's account details
   - Webpage will not have admin view
+  - Use case: User features/pages that deals with other shelve files
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1827,7 +1830,9 @@ def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userFound, accGoodStatus = validate_session_open_file(userSession)
+        userFound, accGoodStatus = validate_session_open_file(userSession) 
+        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
+        # userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
         
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
@@ -1850,9 +1855,49 @@ def function():
 '''
 
 '''
+# Template for your app.route("") if [Note that this is similar to one above]
+  - User session validity check needed (Logged in?)
+  - User banned?
+  
+  - NOT using shelve but there's a need to retrieve user account data
+  - Reading info from user account data
+  
+  - Webpage will not have admin view
+  - Use case: User pages (user_profile.html, etc)
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def insertName():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
+
+        if userFound and accGoodStatus:
+            # add in your code below
+
+            return render_template('users/loggedin/page.html')
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+'''
+
+'''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
+  - Is user admin?
   
   - NOT using shelve
   
@@ -1904,45 +1949,6 @@ def insertName():
 
 '''
 # Template for your app.route("") if
-  - User session validity check needed (Logged in?)
-  - User banned?
-  
-  - NOT using shelve
-  - Reading info from user account data
-  
-  - Webpage will not have admin view
-  e.g. User pages (user_profile.html, etc)'
-"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
-
-@app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-def insertName():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
-
-        if userFound and accGoodStatus:
-            # add in your code below
-
-            return render_template('users/loggedin/page.html')
-        else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Template app.route by INSERT_YOUR_NAME"""
-'''
-
-'''
-# Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
   
@@ -1950,6 +1956,7 @@ def insertName():
   
   - Webpage will not have user view
   e.g. Admin pages
+  - Use case: Admim pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1958,6 +1965,8 @@ def function():
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
         
         if userFound and accActive:
             # add in your code here
@@ -2040,7 +2049,7 @@ def function():
   - Reading info from admin account data
   
   - Webpage will not have user view
-  e.g. Admin pages
+  - Use case: Admin pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
