@@ -1757,6 +1757,7 @@ def teacherCashOut():
 
 
 # 7 template app.route("") for you guys :prayge:
+# Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
