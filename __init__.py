@@ -1757,10 +1757,14 @@ def teacherCashOut():
 
 
 # 7 template app.route("") for you guys :prayge:
-
-'''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to the USER shelve files, meaning you are dealing with shelve.open("user", "C") ONLY
-# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an admin view
+                                                                                                                '''
+# Template for your app.route("") if
+  - User session validity check needed (Logged in?)
+  - User banned?
+  
+  - Using user shelve files --> shelve.open("user", "C") ONLY
+  - Webpage will not have admin view                                                                            '''
+'''  
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1808,10 +1812,15 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
+                                                                                                                '''
 
+# Template for your app.route("") if
+  - User session validity check needed (Logged in?)
+  - User banned?
+  
+  - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
+  - Webpage will not have admin view                                                                            '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C")
-# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an admin view
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1841,10 +1850,16 @@ def function():
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+                                                                                                                '''
+# Template for your app.route("") if
+  - User session validity check needed (Logged in?)
+  - User banned?
+  
+  - NOT using shelve
+  
+  - Webpage will have admin and user view
+  e.g. General pages (about_us.html, etc) that check whether user/admin is logged in.                           '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve
-# e.g. for general pages such as about_us.html, etc. which will take into account if the user or admin is logged in
-# Admin view and user view included
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
@@ -1889,10 +1904,17 @@ def insertName():
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+                                                                                                                '''
+# Template for your app.route("") if
+  - User session validity check needed (Logged in?)
+  - User banned?
+  
+  - NOT using shelve
+  - Reading info from user account data
+  
+  - Webpage will not have admin view
+  e.g. User pages (user_profile.html, etc)                                                                      '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the user session if the user is logged in or not and to check if the user is banned but not dealing with shelve and you need to read information from the user's account data
-# e.g. for user pages such as user_profile.html, etc. 
-# Admin view not included
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
@@ -1922,10 +1944,16 @@ def insertName():
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+                                                                                                                '''
+# Template for your app.route("") if
+  - Admin session validity check needed (Logged in?)
+  - Admin account active?
+  
+  - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
+  
+  - Webpage will not have user view
+  e.g. Admin pages                                                                                              '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are also dealing with shelve with regards to your own CUSTOM shelve files, meaning you are dealing with shelve.open("insert your shelve file name", "C") and not the admin shelve files
-# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
-# use case: admin pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1955,10 +1983,16 @@ def function():
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+                                                                                                                '''
+# Template for your app.route("") if
+  - Admin session validity check needed (Logged in?)
+  - Admin account active?
+  
+  - Using admin shelve files --> shelve.open("admin", "C") ONLY
+  
+  - Webpage will not have user view
+  e.g. Admin pages                                                                                              '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are also dealing with shelve with regards to the admin shelve files, meaning you are dealing with shelve.open("admin", "C") 
-# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
-# use case: admin pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -2002,10 +2036,17 @@ def function():
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
 
+                                                                                                                '''
+# Template for your app.route("") if
+  - Admin session validity check needed (Logged in?)
+  - Admin account active?
+  
+  - NOT using shelve
+  - Reading info from admin account data
+  
+  - Webpage will not have user view
+  e.g. Admin pages                                                                                              '''
 '''
-# below will be the template for your app.route("") if there's a need to check validity of the ADMIN session if the admin is logged in or not and to check if the admin account is active but you are NOT dealing with shelve with regards to the admin shelve files
-# Do note that this template route is only meant for you to use if you think that the page/feature you're doing do not have an USER view
-# use case: admin pages that requires the admin acc details to be read
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
