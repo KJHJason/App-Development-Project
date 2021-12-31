@@ -10,7 +10,7 @@ from wtforms.fields.simple import PasswordField
 
 class CreateEditPaymentForm(Form):
     cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
-    cardCVV = IntegerField("CVV:", [validators.NumberRange(min=0, max=999), validators.DataRequired()])
+    cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])

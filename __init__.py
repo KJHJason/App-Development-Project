@@ -647,13 +647,11 @@ def signUpPayment():
                         cardName = sanitise(create_teacher_payment_form.cardName.data)
 
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
-                        cardValid = validate_card(cardNo)
-
                         cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
-                        cardCVVValid = validate_cvv(cardCVV)
+                        cardValid = validate_card(cardNo, cardCVV)
                         
-                        if cardValid and cardCVVValid:
-                            cardType = get_card_type(cardNo)
+                        if cardValid:
+                            cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
                             if cardType != False:
                                 cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
                                 
@@ -1316,13 +1314,11 @@ def userPayment():
                     cardName = sanitise(create_add_payment_form.cardName.data)
 
                     cardNo = sanitise(create_add_payment_form.cardNo.data)
-                    cardValid = validate_card(cardNo)
-
                     cardCVV = sanitise(create_add_payment_form.cardCVV.data)
-                    cardCVVValid = validate_cvv(cardCVV)
+                    cardValid = validate_card(cardNo, cardCVV)
 
-                    if cardValid and cardCVVValid:
-                        cardType = get_card_type(cardNo)
+                    if cardValid:
+                        cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
                         if cardType != False:
                             cardExpiry = str(create_add_payment_form.cardExpiry.data)
                             
@@ -1374,7 +1370,6 @@ def userPayment():
                 cardExpiry = userKey.get_card_expiry()
                 print("Card expiry date:", cardExpiry)
                 cardType = userKey.get_card_type()
-                
 
                 # checking sessions if any of the user's payment method details has changed
                 if "card_updated" in session:
@@ -1445,31 +1440,35 @@ def userEditPayment():
             print("Sliced card number:", cardNo)
 
             cardType = userKey.get_card_type()
-            cardType = cardType.capitalize()
             if cardExist:
                 create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
                 if request.method == "POST" and create_edit_payment_form.validate():
-                    cardCVV = create_edit_payment_form.cardCVV.data
-                    cardExpiry = str(create_edit_payment_form.cardExpiry.data)
+                    cardCVV = sanitise(create_edit_payment_form.cardCVV.data)
+                    cardCVVValid = validate_cvv(cardCVV, cardType)
+                    if cardCVVValid:
+                        cardExpiry = str(create_edit_payment_form.cardExpiry.data)
 
-                    # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                    cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                    cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                    cardExpiry = cardMonth + "/" + cardYear
+                        # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                        cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                        cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                        cardExpiry = cardMonth + "/" + cardYear
 
-                    # changing the user's payment info
-                    userKey.set_card_cvv(cardCVV)
-                    userKey.set_card_expiry(cardExpiry)
-                    db['Users'] = userDict
-                    print("Changed CVV:", cardCVV)
-                    print("Payment edited")
-                    db.close()
+                        # changing the user's payment info
+                        userKey.set_card_cvv(cardCVV)
+                        userKey.set_card_expiry(cardExpiry)
+                        db['Users'] = userDict
+                        print("Changed CVV:", cardCVV)
+                        print("Payment edited")
+                        db.close()
 
-                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
-                    session["card_updated"] = True
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
+                        session["card_updated"] = True
 
-                    return redirect(url_for("userPayment"))
+                        return redirect(url_for("userPayment"))
+                    else:
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cvvInvalid=True)
                 else:
+                    cardType = cardType.capitalize()
                     db.close()
                     return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType)
             else:

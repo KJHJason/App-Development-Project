@@ -20,8 +20,7 @@ def intList(numbers):
     return list(map(int, str(numbers)))
 
 # main function to validate credit cards using the Luhn's algorithm, aka the modulus 10 or mod 10 algorithm
-def validate_card(cardNumber):
-    isValid = 1 # initialise the isValid to 1 for the finally block so that it will return False by default if there's an error such as the string containing letters
+def validate_card(cardNumber, cardCVV):
     try:
         cardNoList = intList(cardNumber)
 
@@ -43,13 +42,23 @@ def validate_card(cardNumber):
             else:
                 totalSum += number
         isValid = totalSum % 10
-    except:
-        print("Card number input must only contain numbers!") # if the string contained any letters, it will raise a runtime error. Hence, using try and except to handle this error.
-    finally:
         if isValid == 0:
-            return True # if the totalSum is a multiple of 10, it is valid and will return True
+            # validating the card type if it is accepted in CourseFinity
+            cardType = get_card_type(cardNumber) 
+            if cardType != False:
+                # if the card type is accepted in CourseFinity, now validating the card's CVV
+                cardCVVValid = validate_cvv(cardCVV, cardType)
+                if cardCVVValid:
+                    return True
+                else:
+                    return False
+            else:
+                return False
         else:
             return False
+    except:
+        print("Card number input must only contain numbers!") # if the string contained any letters, it will raise a runtime error. Hence, using try and except to handle this error.
+        return False
 
 def get_card_type(cardNumber):
     try:
@@ -67,14 +76,27 @@ def get_card_type(cardNumber):
         print("Card number input must only contain numbers!")
         return False
 
-def validate_cvv(cardCVV):
+def validate_cvv(cardCVV, cardType):
     # try and except as in the __init__.py, I validated the sanitise the CVV so if it return False for some reason (empty strings, etc.), it will go to the except block and return False
-    try:
-        regex = re.compile(r"^[0-9]{3,4}$") # compile the regex so that it does not have to rewrite the regex
+    if cardType == "visa" or cardType == "mastercard":
+        try:
+            # for 3 digits CVV cards
+            regex3D = re.compile(r"^[0-9]{3}$") # compile the regex so that it does not have to rewrite the regex
 
-        if(re.match(regex, cardCVV)):
-            return True
-        else:
-            return False
-    except:
-        return False # if the cardCVV variable contained a string with letters, it will return False
+            if(re.match(regex3D, cardCVV)):
+                return True
+            else:
+                return False
+        except:
+            return False # if the cardCVV variable contained a string with letters, it will return False
+    else:
+        # for 4 digits CVV cards
+        try:
+            regex4D = re.compile(r"^[0-9]{4}$") # compile the regex so that it does not have to rewrite the regex
+
+            if(re.match(regex4D, cardCVV)):
+                return True
+            else:
+                return False
+        except:
+            return False # if the cardCVV variable contained a string with letters, it will return False
