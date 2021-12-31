@@ -19,7 +19,7 @@ import re
 def intList(numbers):
     return list(map(int, str(numbers)))
 
-# main function to validate credit cards
+# main function to validate credit cards using the Luhn's algorithm, aka the modulus 10 or mod 10 algorithm
 def validate_card(cardNumber):
     isValid = 1
     try:
