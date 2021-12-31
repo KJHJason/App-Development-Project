@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import shelve, Forms, os
 import Student, Teacher, Admin
 from Security import PasswordManager, Sanitise
-from CreditCardValidation import validate_card, get_card_type
+from CardValidation import validate_card, get_card_type
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -318,10 +318,17 @@ def home():
             userSession = session["userSession"]
             print(userSession)
 
+            # checking if the teacher recently added their payment method when signing up
+            if "teacherPaymentAdded" in session:
+                teacherPaymentAdded = True
+                session.pop("teacherPaymentAdded", None)
+            else:
+                teacherPaymentAdded = False
+
             userFound, accGoodStatus = validate_session_open_file(userSession)
 
             if userFound and accGoodStatus:
-                return render_template('users/loggedin/user_home.html')
+                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -628,34 +635,37 @@ def signUpPayment():
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
                         cardName = Sanitise(create_teacher_payment_form.cardName.data)
-                        cardNo = create_teacher_payment_form.cardNo.data
+                        cardNo = Sanitise(create_teacher_payment_form.cardNo.data)
 
                         cardValid = validate_card(cardNo)
-                        cardType = get_card_type(cardNo)
+                        if cardValid:
+                            cardType = get_card_type(cardNo)
+                            if cardType != False:
+                                cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
+                                cardCVV = create_teacher_payment_form.cardCVV.data
 
-                        if cardValid and cardType != False:
-                            cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
-                            cardCVV = create_teacher_payment_form.cardCVV.data
+                                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                                cardExpiry = cardMonth + "/" + cardYear
 
-                            # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                            cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                            cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                            cardExpiry = cardMonth + "/" + cardYear
+                                # setting the teacher's payment method which in a way editing the teacher's object
+                                teacherKey.set_card_name(cardName)
+                                teacherKey.set_card_no(cardNo)
+                                teacherKey.set_card_expiry(cardExpiry)
+                                teacherKey.set_card_cvv(cardCVV)
+                                teacherKey.set_card_type(cardType)
+                                teacherKey.display_card_info()
+                                db['Users'] = userDict
+                                print("Payment added")
 
-                            # setting the teacher's payment method which in a way editing the teacher's object
-                            teacherKey.set_card_name(cardName)
-                            teacherKey.set_card_no(cardNo)
-                            teacherKey.set_card_expiry(cardExpiry)
-                            teacherKey.set_card_cvv(cardCVV)
-                            teacherKey.set_card_type(cardType)
-                            teacherKey.display_card_info()
-                            db['Users'] = userDict
-                            print("Payment added")
+                                db.close()
 
-                            db.close()
-
-                            session.pop("teacher", None) # deleting data from the session after registering the payment method
-                            return redirect(url_for("home"))
+                                session.pop("teacher", None) # deleting data from the session after registering the payment method
+                                session["teacherPaymentAdded"] = True
+                                return redirect(url_for("home"))
+                            else:
+                                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True)
                         else:
                             return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCard=True)
                     else:
@@ -1295,29 +1305,32 @@ def userPayment():
                     cardCVV = create_add_payment_form.cardCVV.data
 
                     cardValid = validate_card(cardNo)
-                    cardType = get_card_type(cardNo)
 
-                    if cardValid and cardType != False:
-                        # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                        cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                        cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                        cardExpiry = cardMonth + "/" + cardYear
+                    if cardValid:
+                        cardType = get_card_type(cardNo)
+                        if cardType != False:
+                            # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
+                            cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
+                            cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
+                            cardExpiry = cardMonth + "/" + cardYear
 
-                        # setting the user's payment method
-                        userKey.set_card_name(cardName)
-                        userKey.set_card_no(cardNo)
-                        userKey.set_card_expiry(cardExpiry)
-                        userKey.set_card_cvv(cardCVV)
-                        userKey.set_card_type(cardType)
-                        userKey.display_card_info()
-                        db['Users'] = userDict
-                        print("Payment added")
+                            # setting the user's payment method
+                            userKey.set_card_name(cardName)
+                            userKey.set_card_no(cardNo)
+                            userKey.set_card_expiry(cardExpiry)
+                            userKey.set_card_cvv(cardCVV)
+                            userKey.set_card_type(cardType)
+                            userKey.display_card_info()
+                            db['Users'] = userDict
+                            print("Payment added")
 
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
-                        session["payment_added"] = True
+                            # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
+                            session["payment_added"] = True
 
-                        db.close()
-                        return redirect(url_for("userPayment"))
+                            db.close()
+                            return redirect(url_for("userPayment"))
+                        else:
+                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True)
                     else:
                         return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCard=True)
                 else:

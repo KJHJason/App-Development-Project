@@ -7,6 +7,7 @@ import html
 # https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
 # https://lindevs.com/generate-argon2id-password-hash-using-python/
 # https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
+# https://stackoverflow.com/questions/58431973/argon2-library-that-hashes-passwords-without-a-secret-and-with-a-random-salt-tha
 
 """Password hashing"""
 

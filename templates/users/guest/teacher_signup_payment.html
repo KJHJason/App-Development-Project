@@ -15,7 +15,28 @@
             </div>
             <div class="modal-body">
                 <h6>Please enter a valid card or check your entries and try again.</h6>
-                <h6>Do note that we only accept Visa or Mastercard as of now.</h6>
+                <h6>Do note that we only accept Mastercard or Visa cards as of now.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+{% if invalidCardType %}
+<div class="modal fade" id="invalidCardTypeModal" tabindex="-1" aria-labelledby="invalidCardTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="invalidCardTypeModalLabel">Sorry!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>We only accept Mastercard or a Visa cards as of now!</h6>
+                <h6>Please enter a Mastercard or a Visa card and try again.</h6>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
@@ -59,6 +80,12 @@
         <script>
             var invalidCardModal = new bootstrap.Modal(document.getElementById('invalidCardModal'), {});
             invalidCardModal.show();
+        </script>
+    {% endif %}
+    {% if invalidCardType %}
+        <script>
+            var invalidCardTypeModal = new bootstrap.Modal(document.getElementById('invalidCardTypeModal'), {});
+            invalidCardTypeModal.show();
         </script>
     {% endif %}
 {% endblock %}
