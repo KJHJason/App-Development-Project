@@ -1764,7 +1764,6 @@ def teacherCashOut():
   
   - Using user shelve files --> shelve.open("user", "C") ONLY
   - Webpage will not have admin view
-'''  
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1812,7 +1811,6 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -1821,7 +1819,6 @@ def function():
   
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
   - Webpage will not have admin view
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1850,7 +1847,6 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -1861,7 +1857,6 @@ def function():
   
   - Webpage will have admin and user view
   e.g. General pages (about_us.html, etc) that check whether user/admin is logged in.
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
@@ -1905,7 +1900,6 @@ def insertName():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -1917,7 +1911,6 @@ def insertName():
   
   - Webpage will not have admin view
   e.g. User pages (user_profile.html, etc)'
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
@@ -1946,7 +1939,6 @@ def insertName():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -1957,7 +1949,6 @@ def insertName():
   
   - Webpage will not have user view
   e.g. Admin pages
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -1986,7 +1977,6 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -1997,7 +1987,6 @@ def function():
   
   - Webpage will not have user view
   e.g. Admin pages
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -2040,7 +2029,6 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 '''
 # Template for your app.route("") if
@@ -2052,7 +2040,6 @@ def function():
   
   - Webpage will not have user view
   e.g. Admin pages
-'''
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
@@ -2081,53 +2068,52 @@ def function():
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
-'''
 
 """Custom Error Pages"""
 
 # Unauthorised
 @app.errorhandler(401)
-def error401(error):
+def error401(e):
     return render_template("errors/401.html"), 401
 
 # Forbidden
 @app.errorhandler(403)
-def error403(error):
+def error403(e):
     return render_template("errors/403.html"), 403
 
 # Not Found
 @app.errorhandler(404)
-def error404(error):
+def error404(e):
     return render_template("errors/404.html"), 404
 
 # Payload Too Large
 @app.errorhandler(413)
-def error413(error):
+def error413(e):
     return render_template("errors/413.html"), 413
 
 # Too Many Requests
 @app.errorhandler(429)
-def error429(error):
+def error429(e):
     return render_template("errors/429.html"), 429
 
 # Internal Server Error
 @app.errorhandler(500)
-def error500(error):
+def error500(e):
     return render_template("errors/500.html"), 500
 
 # Not Implemented
 @app.errorhandler(501)
-def error501(error):
+def error501(e):
     return render_template("errors/501.html"), 501
 
 # Bad Gateway
 @app.errorhandler(502)
-def error502(error):
+def error502(e):
     return render_template("errors/502.html"), 502
 
 # Service Temporarily Unavailable
 @app.errorhandler(503)
-def error503(error):
+def error503(e):
     return render_template("errors/503.html"), 503
 
 """End of Custom Error Pages"""
