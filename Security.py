@@ -1,5 +1,5 @@
 from argon2 import PasswordHasher
-import html, re
+import html, re # importing html for escaping inputs and re for compiling regular expression for validating email addresses
 
 # done by Jason
 
