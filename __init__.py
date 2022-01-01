@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import shelve, Forms, os
 import Student, Teacher, Admin
 from Security import password_manager, sanitise, validate_email
-from CardValidation import validate_card, get_card_type, validate_cvv
+from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_formatted_expiry_date, validate_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -647,15 +647,18 @@ def signUpPayment():
                         cardName = sanitise(create_teacher_payment_form.cardName.data)
 
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
-                        cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
-                        cardValid = validate_card(cardNo, cardCVV)
+                        cardValid = validate_card_number(cardNo)
                         
-                        if cardValid:
-                            cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
-                            if cardType != False:
-                                cardExpiry = str(create_teacher_payment_form.cardExpiry.data)
-                                
+                        cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
+                        cardType = get_card_type(cardNo)
+                        cardCVVValid = validate_cvv(cardCVV, cardType)
 
+                        cardExpiry = create_teacher_payment_form.cardExpiry.data
+                        cardExpiryValid = validate_expiry_date(cardExpiry)
+
+                        if cardValid and cardExpiryValid and cardCVVValid:
+                            if cardType != False: # checking if the card type is supported
+                                cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
                                 # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
                                 cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
                                 cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
@@ -679,7 +682,7 @@ def signUpPayment():
                             else:
                                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True)
                         else:
-                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCard=True)
+                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid)
                     else:
                         db.close()
                         # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
@@ -1314,14 +1317,18 @@ def userPayment():
                     cardName = sanitise(create_add_payment_form.cardName.data)
 
                     cardNo = sanitise(create_add_payment_form.cardNo.data)
-                    cardCVV = sanitise(create_add_payment_form.cardCVV.data)
-                    cardValid = validate_card(cardNo, cardCVV)
+                    cardValid = validate_card_number(cardNo)
 
-                    if cardValid:
-                        cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
+                    cardCVV = sanitise(create_add_payment_form.cardCVV.data)
+                    cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
+                    cardCVVValid = validate_cvv(cardCVV, cardType)
+
+                    cardExpiry = create_add_payment_form.cardExpiry.data
+                    cardExpiryValid = validate_expiry_date(cardExpiry)
+
+                    if cardValid and cardExpiryValid and cardCVVValid:
                         if cardType != False:
-                            cardExpiry = str(create_add_payment_form.cardExpiry.data)
-                            
+                            cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
                             # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
                             cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
                             cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
@@ -1345,7 +1352,7 @@ def userPayment():
                         else:
                             return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCard=True)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -1439,15 +1446,18 @@ def userEditPayment():
             cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
             print("Sliced card number:", cardNo)
 
-            cardType = userKey.get_card_type()
+            cardType = userKey.get_card_type().capitalize()
             if cardExist:
                 create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
                 if request.method == "POST" and create_edit_payment_form.validate():
                     cardCVV = sanitise(create_edit_payment_form.cardCVV.data)
-                    cardCVVValid = validate_cvv(cardCVV, cardType)
-                    if cardCVVValid:
-                        cardExpiry = str(create_edit_payment_form.cardExpiry.data)
+                    cardCVVValid = validate_cvv(cardCVV, cardType.lower())
 
+                    cardExpiry = create_edit_payment_form.cardExpiry.data
+                    cardExpiryValid = validate_expiry_date(cardExpiry)
+                    if cardCVVValid and cardExpiryValid:
+
+                        cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
                         # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
                         cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
                         cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
@@ -1466,9 +1476,8 @@ def userEditPayment():
 
                         return redirect(url_for("userPayment"))
                     else:
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cvvInvalid=True)
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
                 else:
-                    cardType = cardType.capitalize()
                     db.close()
                     return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType)
             else:

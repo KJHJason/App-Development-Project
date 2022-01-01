@@ -5,38 +5,17 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
-{% if invalidCard %}
-<div class="modal fade" id="invalidCardModal" tabindex="-1" aria-labelledby="invalidCardModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="invalidCardModalLabel">Invalid Card!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Please enter a valid card or check your entries and try again.</h6>
-                <h6>Do note that we only accept Mastercard or Visa cards as of now.</h6>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-
 {% if invalidCardType %}
 <div class="modal fade" id="invalidCardTypeModal" tabindex="-1" aria-labelledby="invalidCardTypeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="invalidCardTypeModalLabel">Sorry!</h5>
+                <h5 class="modal-title" id="invalidCardTypeModalLabel">We are sorry!</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <h6>We only accept Mastercard or a Visa cards as of now!</h6>
-                <h6>Please enter a Mastercard or a Visa card and try again.</h6>
+                <h6>We only accept Mastercard, Visa or American Express cards.</h6>
+                <h6>Sorry for the inconvenience caused.</h6>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
@@ -57,12 +36,15 @@
                     </div>
                     <div class="col-md-12 text-white">
                         {{ render_field(form.cardNo, class="form-control", placeholder="4111111111111111") }}
+                        {% if cardValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid Card Number</strong></h6></div>{% endif %}
                     </div>
                     <div class="col-md-6 text-white">
                         {{ render_field(form.cardExpiry, class="form-control") }}
+                        {% if cardExpiryValid == False %}<div class="text-danger warning_alert"><h6><strong>Credit Card Expired</strong></h6></div>{% endif %}
                     </div>
                     <div class="col-md-6 text-white">
                         {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}
+                        {% if cardCVVValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid CVV</strong></h6></div>{% endif %}
                     </div>
                     <div class="col-md-12">
                         <a href="/user_profile" class="float-start text-white">Skip <i class="fas fa-arrow-right"></i></a>

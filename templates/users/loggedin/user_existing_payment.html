@@ -96,7 +96,7 @@
                             <table class="table table-borderless">
                                 <tr>
                                     <td>
-                                        {% if cardType == "visa" %}<span class="float-start"><img src="static/images/payment/visa.png" alt="payment method logo" id="payment_logo">{% endif %}{% if cardType == "mastercard" %}<span class="float-start"><img src="static/images/payment/mastercard.png" alt="payment method logo" id="payment_logo">{% endif %} &#8226;&#8226;&#8226;&#8226;{{ cardNo }}</span>
+                                        {% if cardType == "visa" %}<span class="float-start"><img src="static/images/payment/visa.svg" alt="Visa logo" id="payment_logo">{% endif %}{% if cardType == "mastercard" %}<span class="float-start"><img src="static/images/payment/mastercard.svg" alt="Mastercard logo" id="payment_logo">{% endif %}{% if cardType == "american express" %}<span class="float-start"><img src="static/images/payment/american_express.svg" alt="American Express logo" id="payment_logo">{% endif %} &#8226;&#8226;&#8226;&#8226;{{ cardNo }}</span>
                                     </td>
                                     <td>
                                         <span class="float-end"><a href="/edit_payment">Edit</a></span>
