@@ -41,3 +41,7 @@
 .updateForm {
     padding: 30px !important;
 }
+
+.warning_alert {
+    margin-top: 10px;
+}
