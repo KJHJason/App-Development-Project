@@ -78,3 +78,9 @@ document.addEventListener('click',function(e){
 })   
 
 ////////////////// END OF HAMBURGER MENU JAVASCRIPT //////////////////
+
+//////////////////Start of footer copyright year Javascript //////////////////
+
+let footerCopright = document.getElementById("copyright_year").appendChild(document.createTextNode(new Date().getFullYear()));
+
+////////////////// End of footer copyright year Javascript //////////////////
