@@ -1,5 +1,5 @@
-import re
-from datetime import date
+import re # for compiling the regular expression for the card's CVV
+from datetime import date # importing date module from the datetime library as I am only using it for getting the current date to validate the credit card expiry date
 
 # Done by Jason
 
@@ -16,6 +16,10 @@ from datetime import date
 # helpful resources for validating CVV
 # https://www.geeksforgeeks.org/how-to-validate-cvv-number-using-regular-expression/
 # https://developers.google.com/edu/python/regular-expressions
+
+# # helpful resources for validating the card expiry date:
+# https://www.geeksforgeeks.org/comparing-dates-python/
+# https://stackoverflow.com/questions/48457027/how-to-compare-two-dates-based-on-month-and-year-only-in-python
 
 # for converting a string or a number into a list of numbers by using map() function
 def int_list(numbers):
@@ -112,7 +116,7 @@ def validate_formatted_expiry_date(cardDate):
 
 # function to validate the card expiry date based on the datetime.date object obtained from wtforms
 def validate_expiry_date(cardDate):
-    currentDate = date.today().replace(day=1) # getting the current date and replacing the day with the number 1
+    currentDate = date.today().replace(day=1) # getting the current date and replacing the day with the number 1 for comparison with the user input obtained from WTForms since WTForms month field will return a datetime.date object with the format YYYY-MM-DD where the DD/days is always 1.
     if cardDate >= currentDate:
         return True
     else:

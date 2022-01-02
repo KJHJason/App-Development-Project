@@ -1,5 +1,5 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="static/styles/search.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/search.css') }}">{% endblock %}
 {% block title %}Search | CourseFinity{% endblock %}
 
 {% block content %}

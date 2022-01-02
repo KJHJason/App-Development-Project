@@ -1,5 +1,5 @@
 {% extends "guest_base.html" %}
-{% block head %}<link rel="stylesheet" href="static/styles/login_sign_up.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/login_sign_up.css') }}">{% endblock %}
 {% block title %}Admin Login | CourseFinity{% endblock %}
 
 {% block content %}

@@ -1,0 +1,131 @@
+{% extends "admin_base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
+{% block title %}User Management | CourseFinity{% endblock %}
+
+{% block content %}
+
+<div class="container container_margin">
+    <div class="row">
+        <div class="col-lg-3 merge-boxes">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
+                <h4><span class="fs-4">Admin Dashboard</span></h4>
+                </a>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/user_profile" class="nav-link text-white">
+                            Account Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/user_management" class="nav-link text-white active-custom">
+                            User Management
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9 merge-boxes">
+            <div id="right-user">
+                <div class="container">
+                    <div class="row">
+                        <h6>There are {{ count }} users in CourseFinity.</h6>
+                        <div class="table-responsive-md">
+                            <table class="table">
+                                <tr>
+                                    <td>User ID</td>
+                                    <td>Name</td>
+                                    <td>Account Type</td>
+                                    <td>Email</td>
+                                    <td>Status</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                {% for user in userList %}
+                                    <tr>
+                                        <td>{{ user.get_user_id() }}</td>
+                                        <td>{{ user.get_username() }}</td>
+                                        <td>{{ user.get_acc_type() }}</td>
+                                        <td>{{ user.get_email() }}</td>
+                                        <td>{{ user.get_status() }}</td>
+                                        <td>
+                                            {% if user.get_status() == "Good" %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-primary dropdown-toggle" type="button" id="actionsButtons" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="actionsButtons">
+                                                    <li><a class="dropdown-item" href="#">Ban</a></li>
+                                                    <li><a class="dropdown-item" href="#">Reset Password</a></li>
+                                                </ul>
+                                            </div>
+                                            {% elif user.get_status() == "Banned" %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-primary dropdown-toggle" type="button" id="actionsButtons" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Actions
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="actionsButtons">
+                                                    <li><a class="dropdown-item" href="#">Unban</a></li>
+                                                    <li><a class="dropdown-item" href="#">Reset Password</a></li>
+                                                </ul>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form action="" method="POST">
+                                                <button type="button" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+                        {% if maxPages > 5 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item ms-auto">
+                                    <a class="page-link" href="/user_management/1" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                {% for key in paginationList %}
+                                <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                {% endfor %}
+                                <li class="page-item me-auto">
+                                    <a class="page-link" href="/user_management/{{ maxPages }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% elif maxPages <= 5 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item ms-auto">
+                                    <a class="page-link" href="/user_management/1" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                {% set pageCount = 1 %}
+                                {% for key in paginationList %}
+                                <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                {% endfor %}
+                                <li class="page-item me-auto">
+                                    <a class="page-link" href="/user_management/{{ maxPages }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="static/styles/user_profile.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
 {% block title %}Edit Payment Details | CourseFinity{% endblock %}
 
 {% block content %}
@@ -66,7 +66,7 @@
                                     <div class="row">
                                         <div class="col-md-6 margin-top margin-top2">
                                             {{ render_field(form.cardExpiry, class="form-control") }}
-                                            {% if cardExpiryValid == False %}<div class="text-danger"><h6><strong>Credit Card Expired</strong></h6></div>{% endif %}
+                                            {% if cardExpiryValid == False %}<div class="text-danger"><h6><strong>Card Expired</strong></h6></div>{% endif %}
                                         </div>
                                         <div class="col-md-6 margin-top margin-top2">
                                             {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}

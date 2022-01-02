@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import shelve, Forms, os
+import shelve, Forms, os, math
 import Student, Teacher, Admin
 from Security import password_manager, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_formatted_expiry_date, validate_expiry_date
@@ -13,25 +13,20 @@ from PIL import Image
 
 # use this function if you want to validate, check if the user is banned, and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
-    userKey = ""
+    userKey = userDict.get(userSession)
     userFound = False
     print("ID in session:", userSession)
-    for key in userDict:
-        print("retrieving")
-        userIDShelveData = userDict[key].get_user_id()
-        print("ID in database:", userIDShelveData)
-        if userSession == userIDShelveData:
-            print("Verdict: User ID Matched.")
-            userKey = userDict[key]
-            userFound = True
-            accStatus = userKey.get_status()
-            if accStatus == "Good":
-                accStatus = True
-            else:
-                accStatus = False
-            return userKey, userFound, accStatus
-    print("Verdict: User ID not found.")
-    return userKey, userFound, False
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        userAccStatus = userKey.get_status()
+        if userAccStatus == "Good":
+            return userKey, userFound, True
+        else:
+            return userKey, userFound, False
+    else:
+        return "", userFound, False
+    
 
 # Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
 def validate_session_get_userKey_open_file(userSession):
@@ -49,22 +44,19 @@ def validate_session_get_userKey_open_file(userSession):
         
     userFound = False
     print("ID in session:", userSession)
-    for key in userDict:
-        print("retrieving")
-        userIDShelveData = userDict[key].get_user_id()
-        print("ID in database:", userIDShelveData)
-        if userSession == userIDShelveData:
-            print("Verdict: User ID Matched.")
-            userKey = userDict[key]
-            userFound = True
-            accStatus = userKey.get_status()
-            if accStatus == "Good":
-                accStatus = True
-            else:
-                accStatus = False
-            return userKey, userFound, accStatus
-    print("Verdict: User ID not found.")
-    return userKey, userFound, False
+    userKey = userDict.get(userSession)
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        userAccStatus = userKey.get_status()
+        if userAccStatus == "Good":
+            return userKey, userFound, True
+        else:
+            return userKey, userFound, False
+    else:
+        print("Verdict: User ID not found.")
+        return userKey, userFound, False
+    
 
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
@@ -93,20 +85,17 @@ def validate_session_open_file(userSession):
         
     userFound = False
     print("User ID in session:", userSession)
-    for key in userDict:
-        print("retrieving")
-        userIDShelveData = userDict[key].get_user_id()
-        print("User ID in database:", userIDShelveData)
-        if userSession == userIDShelveData:
-            print("Verdict: User ID Matched.")
-            userFound = True
-            accStatus = userDict[key].get_status()
-            if accStatus == "Good":
-                accStatus = True
-            else:
-                accStatus = False
-            return userFound, accStatus
-    return userFound, False
+    userKey = userDict.get(userSession)
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        accStatus = userKey.get_status()
+        if accStatus == "Good":
+            return userFound, True
+        else:
+            return userFound, False
+    else:
+        return userFound, False
 
 # use this function to check for any duplicates data in the user shelve files
 def check_duplicates(userInput, userDict, infoToCheck):
@@ -200,43 +189,35 @@ def admin_validate_session_open_file(adminSession):
         
     userFound = False
     print("Admin ID in session:", adminSession)
-    for key in adminDict:
-        print("retrieving")
-        userIDShelveData = adminDict[key].get_user_id()
-        print("Admin ID in database:", userIDShelveData)
-        if adminSession == userIDShelveData:
-            print("Verdict: Admin ID Matched.")
-            userFound = True
-            accStatus = adminDict[key].get_status()
-            if accStatus == "Active":
-                accStatus = True
-            else:
-                accStatus = False
-            return userFound, accStatus
-    return userFound, False
+    adminKey = adminDict.get(adminSession)
+    if adminKey != None:
+        print("Verdict: Admin ID Matched.")
+        userFound = True
+        accStatus = adminKey.get_status()
+        if accStatus == "Active":
+            return userFound, True
+        else:
+            return userFound, False
+    else:
+        return userFound, False
 
 # use this function if you want to validate, check if the admin is banned, and get the adminKey to manipulate the data in the admin shelve files (provided you have already opened the admin shelve files previously)
 def admin_get_key_and_validate(adminSession, adminDict):
     adminKey = ""
     userFound = False
     print("ID in session:", adminSession)
-    for key in adminDict:
-        print("retrieving")
-        userIDShelveData = adminDict[key].get_user_id()
-        print("ID in database:", userIDShelveData)
-        if adminSession == userIDShelveData:
-            print("Verdict: User ID Matched.")
-            adminKey = adminDict[key]
-            userFound = True
-            accStatus = adminKey.get_status()
-            if accStatus == "Active":
-                accStatus = True
-            else:
-                accStatus = False
-            return adminKey, userFound, accStatus
-    print("Verdict: User ID not found.")
-    return adminKey, userFound, False
-
+    adminKey = adminDict.get(adminSession)
+    if adminKey != None:
+        print("Verdict: Admin ID Matched.")
+        userFound = True
+        accStatus = adminKey.get_status()
+        if accStatus == "Active":
+            return adminKey, userFound, True
+        else:
+            return adminKey, userFound, False
+    else:
+        return adminKey, userFound, False
+    
 # Use this function if you want to validate the session, check if the admin is active, and get the adminKey but not manipulating the data in the admin shelve files (usually this will be used for reading the admin account data or other data relevant to the admin)
 def admin_get_key_and_validate_open_file(adminSession):
     adminKey = ""
@@ -251,21 +232,56 @@ def admin_get_key_and_validate_open_file(adminSession):
     
     userFound = False
     print("Admin ID in session:", adminSession)
-    for key in adminDict:
-        print("retrieving")
-        userIDShelveData = adminDict[key].get_user_id()
-        print("Admin ID in database:", userIDShelveData)
-        if adminSession == userIDShelveData:
-            print("Verdict: Admin ID Matched.")
-            userFound = True
-            adminKey = adminDict[key]
-            accStatus = adminDict[key].get_status()
-            if accStatus == "Active":
-                accStatus = True
-            else:
-                accStatus = False
-            return adminKey, userFound, accStatus
-    return adminKey, userFound, False
+    adminKey = adminDict.get(adminSession)
+    if adminKey != None:
+        print("Verdict: Admin ID Matched.")
+        userFound = True
+        accStatus = adminKey.get_status()
+        if accStatus == "Active":
+            return adminKey, userFound, True
+        else:
+            return adminKey, userFound, False
+    else:
+        return adminKey, userFound, False
+
+# page number given here must start from 0
+# resources that helped me in the pagination algorithm, https://www.tutorialspoint.com/book-pagination-in-python
+def paginate(contentList, pageNumber, itemPerPage):
+    # mainly using list slicing manipulation
+    numOfItemsSeen = pageNumber * itemPerPage # calculating how many items are alrd seen based on the page number given
+    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen. 
+
+# getting the numbers of pagination buttons to display
+def get_pagination_button_list(pageNum, maxPages):
+    paginationList = []
+    if maxPages <= 5:
+        pageCount = 0
+        for i in range(maxPages):
+            pageCount += 1
+            paginationList.append(pageCount)
+        print(paginationList)
+    else:
+        currentFromMax = maxPages - pageNum # calculating the difference from the user's current page to max number of pages
+        if pageNum < 4: # if the user's current page number is 3 or less,
+            paginationList.append(1)
+            paginationList.append(2)     
+            paginationList.append(3)
+            paginationList.append(4)
+            paginationList.append(5)
+        elif currentFromMax <= 2: # if the difference is 2 or less
+            paginationList.append(maxPages - 4)
+            paginationList.append(maxPages - 3)     
+            paginationList.append(maxPages - 2)
+            paginationList.append(maxPages - 1)
+            paginationList.append(maxPages )
+        else:
+            paginationList.append(pageNum - 2)
+            paginationList.append(pageNum - 1 )     
+            paginationList.append(pageNum)
+            paginationList.append(pageNum + 1)
+            paginationList.append(pageNum + 2)
+                
+    return paginationList
 
 """End of Useful Functions by Jason"""
 
@@ -388,7 +404,8 @@ def userLogin():
                 print("Password Input:", passwordInput)
 
                 password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
-
+                
+                # printing for debugging purposes
                 if password_matched:
                     print("Correct password!")
                 else:
@@ -613,35 +630,34 @@ def signUpPayment():
         userSession = session["userSession"]
         if "teacher" in session:
             teacherID = session["teacher"]
-            print(teacherID)
-
-            create_teacher_payment_form = Forms.CreateAddPaymentForm(request.form)
-            if request.method == 'POST' and create_teacher_payment_form.validate():
-
-                # Retrieving data from shelve and to set the teacher's payment method info data
-                userDict = {}
-                db = shelve.open("user", "c")
-                try:
-                    if 'Users' in db:
-                        # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
-                        userDict = db['Users']
-                    else:
-                        db.close()
-                        print("No user data in user shelve files.")
-                        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                        session.clear()
-                        return redirect(url_for("home"))
-                except:
-                    db.close()
-                    print("Error in retrieving Users from user.db")
-                    return redirect(url_for("home"))
-                    
-
-                # retrieving the object from the shelve based on the user's email
-                teacherKey, userFound, accGoodStatus = get_key_and_validate(teacherID, userDict)
+            if teacherID == userSession:
                 
-                if userFound and accGoodStatus:
-                    if userSession == teacherID:
+                create_teacher_payment_form = Forms.CreateAddPaymentForm(request.form)
+                if request.method == 'POST' and create_teacher_payment_form.validate():
+
+                    # Retrieving data from shelve and to set the teacher's payment method info data
+                    userDict = {}
+                    db = shelve.open("user", "c")
+                    try:
+                        if 'Users' in db:
+                            # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                            userDict = db['Users']
+                        else:
+                            db.close()
+                            print("No user data in user shelve files.")
+                            # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                            session.clear()
+                            return redirect(url_for("home"))
+                    except:
+                        db.close()
+                        print("Error in retrieving Users from user.db")
+                        return redirect(url_for("home"))
+                        
+
+                    # retrieving the object from the shelve based on the user's email
+                    teacherKey, userFound, accGoodStatus = get_key_and_validate(teacherID, userDict)
+                    
+                    if userFound and accGoodStatus:
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
                         cardName = sanitise(create_teacher_payment_form.cardName.data)
@@ -685,17 +701,16 @@ def signUpPayment():
                             return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid)
                     else:
                         db.close()
-                        # clear the teacher session if the logged in user somehow have a teacher session and submits the form, it will then redirect them to the home page
-                        session.pop("teacher", None)
+                        print("User not found or is banned.")
+                        # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                        session.clear()
                         return redirect(url_for("home"))
                 else:
-                    db.close()
-                    print("User not found or is banned.")
-                    # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                    session.clear()
-                    return redirect(url_for("home"))
+                    return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
             else:
-                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
+                # clear the teacher session if the logged in user somehow have a teacher session, it will then redirect them to the home page
+                session.pop("teacher", None)
+                return redirect(url_for("home"))
         else:
             return redirect(url_for("home"))
     else:
@@ -703,7 +718,7 @@ def signUpPayment():
 
 """End of Teacher's login/signup process by Jason"""
 
-"""Admin login and User management for Admins by Jason"""
+"""Admin login by Jason"""
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 @limiter.limit("1/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
@@ -790,7 +805,58 @@ def adminLogin():
     else:
         return redirect(url_for("home"))
 
-"""End of Admin login and User management for Admins by Jason"""
+"""End of Admin login by Jason"""
+
+"""User Management for Admins by Jason"""
+
+@app.route("/user_management/<string:pageNum>/")
+def userManagement(pageNum):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        
+        if userFound and accActive:
+            # add in your code here
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                    print("Users found")
+                else:
+                    db["Users"] = userDict
+                    print("No user data in user shelve files.")
+            except:
+                print("Error in retrieving Users from user.db")
+
+            userList = []
+            for users in userDict:
+                user = userDict.get(users)
+                userList.append(user)
+
+            pageNumForPagination = int(pageNum) - 1 # minus for the paginate function
+            maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+            paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+
+            userListLen = len(userList) # get the length of the userList
+            maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+
+            pageNum = int(pageNum)
+            paginationList = get_pagination_button_list(pageNum, maxPages)
+
+            return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of User Management for Admins by Jason"""
 
 """User Profile Settings by Jason"""
 
@@ -898,9 +964,9 @@ def userProfile():
 
                 # checking if the user have uploaded a profile image before and if the image file exists
                 if userProfileImage != "" and Path(userProfileImagePath).is_file():
-                    imagesrcPath = "static/images/user/" + userProfileImage
+                    imagesrcPath = "/static/images/user/" + userProfileImage
                 else:
-                    imagesrcPath = "static/images/user/default.png"
+                    imagesrcPath = "/static/images/user/default.png"
 
                 # checking sessions if any of the user's acc info has changed
                 if "username_changed" in session:
@@ -970,11 +1036,7 @@ def updateUsername():
         create_update_username_form = Forms.CreateChangeUsername(request.form)
         if request.method == "POST" and create_update_username_form.validate():
             userSession = session["userSession"]
-
-            # declaring username_duplicates, and sameUsername variable to prevent unboundLocalError
-            username_duplicates = True
-            sameUsername = False
-
+            
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
             db = shelve.open("user", "c")
@@ -1029,10 +1091,10 @@ def updateUsername():
                         db.close()
                         return redirect(url_for("userProfile"))
                     else:
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=username_duplicates)
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True)
                 else:
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=sameUsername)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -1052,10 +1114,6 @@ def updateEmail():
         create_update_email_form = Forms.CreateChangeEmail(request.form)
         if request.method == "POST" and create_update_email_form.validate():
             userSession = session["userSession"]
-
-            # declaring email_duplicates, sameEmail variable to prevent unboundLocalError
-            email_duplicates = True
-            sameEmail = False
 
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
@@ -1111,11 +1169,11 @@ def updateEmail():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=email_duplicates)
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=sameEmail)
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -1197,7 +1255,7 @@ def updatePassword():
                     db.close()
                     return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
                 else:
-                    # updating password of the user
+                    # updating password of the user once validated
                     hashedPwd = password_manager().hash_password(updatedPassword)
                     userKey.set_password(hashedPwd)
                     db['Users'] = userDict
