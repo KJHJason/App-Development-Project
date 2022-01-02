@@ -835,13 +835,13 @@ def userManagement(pageNum):
                 user = userDict.get(users)
                 userList.append(user)
 
-            pageNumForPagination = int(pageNum) - 1
-            maxItemsPerPage = 10
+            pageNumForPagination = int(pageNum) - 1 # minus for the paginate function
+            maxItemsPerPage = 10 # declare the number of items that can be seen per pages
             paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
 
-            userListLen = len(userList)
+            userListLen = len(userList) # get the length of the userList
+            maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-            maxPages = math.ceil(userListLen/maxItemsPerPage)
             pageNum = int(pageNum)
             paginationList = get_pagination_button_list(pageNum, maxPages)
 
