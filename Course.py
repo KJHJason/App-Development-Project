@@ -1,5 +1,5 @@
 '''
-User --> Teacher (Object)
+User --> Teacher (Object) 1
   - Courses (Object) 1
     - Name 1
     - Description 1

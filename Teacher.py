@@ -15,7 +15,7 @@ class Teacher(User):
         self.__viewed = ""
         self.__joinDate = ""
         # Added by Wei Ren for courses
-        self.__courses = []
+        self.__coursesTeaching = []
 
     def set_card_name(self, card_name):
         self.__card_name = card_name
@@ -63,9 +63,9 @@ class Teacher(User):
         print("teacher's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)
 
 # Added by Wei Ren for courses
-    def get_courses(self):
-        return self.__courses
+    def get_coursesTeaching(self):
+        return self.__coursesTeaching
 
-    def set_course(self, title, description, thumbnail, price, courseType, status):   # As an object
+    def set_courseTeaching(self, title, description, thumbnail, price, courseType, status):   # As an object
         course = Course(title, description, thumbnail, price, courseType, status)
-        self.__courses.append(course)
+        self.__coursesTeaching.append(course)
