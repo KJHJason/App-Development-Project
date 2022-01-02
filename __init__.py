@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import shelve, Forms, os
+import shelve, Forms, os, math
 import Student, Teacher, Admin
 from Security import password_manager, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_formatted_expiry_date, validate_expiry_date
@@ -66,7 +66,6 @@ def get_userID(userDict):
         print("retrieving")
         userIDShelveData = int(userDict[key].get_user_id())
         print("ID in database:", userIDShelveData)
-    if userIDShelveData != 0: # since if the shelve files are empty, which means it will be an empty userDict, it will skip the for loop and the next possible ID will be 0
         userIDShelveData += 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
     return userIDShelveData
 
@@ -244,7 +243,46 @@ def admin_get_key_and_validate_open_file(adminSession):
             return adminKey, userFound, False
     else:
         return adminKey, userFound, False
-    
+
+# page number given here must start from 0
+# resources that helped me in the pagination algorithm, https://www.tutorialspoint.com/book-pagination-in-python
+def paginate(contentList, pageNumber, itemPerPage):
+    # mainly using list slicing manipulation
+    numOfItemsSeen = pageNumber * itemPerPage # calculating how many items are alrd seen based on the page number given
+    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen. 
+
+# getting the numbers of pagination buttons to display
+def get_pagination_button_list(pageNum, maxPages):
+    paginationList = []
+    if maxPages <= 5:
+        pageCount = 0
+        for i in range(maxPages):
+            pageCount += 1
+            paginationList.append(pageCount)
+        print(paginationList)
+    else:
+        currentFromMax = maxPages - pageNum # calculating the difference from the user's current page to max number of pages
+        if pageNum < 4: # if the user's current page number is 3 or less,
+            paginationList.append(1)
+            paginationList.append(2)     
+            paginationList.append(3)
+            paginationList.append(4)
+            paginationList.append(5)
+        elif currentFromMax <= 2: # if the difference is 2 or less
+            paginationList.append(maxPages - 4)
+            paginationList.append(maxPages - 3)     
+            paginationList.append(maxPages - 2)
+            paginationList.append(maxPages - 1)
+            paginationList.append(maxPages )
+        else:
+            paginationList.append(pageNum - 2)
+            paginationList.append(pageNum - 1 )     
+            paginationList.append(pageNum)
+            paginationList.append(pageNum + 1)
+            paginationList.append(pageNum + 2)
+                
+    return paginationList
+
 """End of Useful Functions by Jason"""
 
 """Web app configurations"""
@@ -769,6 +807,57 @@ def adminLogin():
 
 """End of Admin login and User management for Admins by Jason"""
 
+"""User Management for Admins by Jason"""
+
+@app.route("/user_management/<string:pageNum>/")
+def userManagement(pageNum):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        
+        if userFound and accActive:
+            # add in your code here
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                    print("Users found")
+                else:
+                    db["Users"] = userDict
+                    print("No user data in user shelve files.")
+            except:
+                print("Error in retrieving Users from user.db")
+
+            userList = []
+            for users in userDict:
+                user = userDict.get(users)
+                userList.append(user)
+
+            pageNumForPagination = int(pageNum) - 1
+            maxItemsPerPage = 10
+            paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+
+            userListLen = len(userList)
+
+            maxPages = math.ceil(userListLen/maxItemsPerPage)
+            pageNum = int(pageNum)
+            paginationList = get_pagination_button_list(pageNum, maxPages)
+
+            return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of User Management for Admins by Jason"""
+
 """User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
@@ -875,9 +964,9 @@ def userProfile():
 
                 # checking if the user have uploaded a profile image before and if the image file exists
                 if userProfileImage != "" and Path(userProfileImagePath).is_file():
-                    imagesrcPath = "static/images/user/" + userProfileImage
+                    imagesrcPath = "/static/images/user/" + userProfileImage
                 else:
-                    imagesrcPath = "static/images/user/default.png"
+                    imagesrcPath = "/static/images/user/default.png"
 
                 # checking sessions if any of the user's acc info has changed
                 if "username_changed" in session:
