@@ -718,7 +718,7 @@ def signUpPayment():
 
 """End of Teacher's login/signup process by Jason"""
 
-"""Admin login and User management for Admins by Jason"""
+"""Admin login by Jason"""
 
 @app.route('/admin_login', methods=['GET', 'POST'])
 @limiter.limit("1/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
@@ -805,7 +805,7 @@ def adminLogin():
     else:
         return redirect(url_for("home"))
 
-"""End of Admin login and User management for Admins by Jason"""
+"""End of Admin login by Jason"""
 
 """User Management for Admins by Jason"""
 
