@@ -259,7 +259,6 @@ def get_pagination_button_list(pageNum, maxPages):
         for i in range(maxPages):
             pageCount += 1
             paginationList.append(pageCount)
-        print(paginationList)
     else:
         currentFromMax = maxPages - pageNum # calculating the difference from the user's current page to max number of pages
         if pageNum < 4: # if the user's current page number is 3 or less,
@@ -834,18 +833,26 @@ def userManagement(pageNum):
             for users in userDict:
                 user = userDict.get(users)
                 userList.append(user)
-
-            pageNumForPagination = int(pageNum) - 1 # minus for the paginate function
+            
             maxItemsPerPage = 10 # declare the number of items that can be seen per pages
-            paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
-
             userListLen = len(userList) # get the length of the userList
             maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-
             pageNum = int(pageNum)
-            paginationList = get_pagination_button_list(pageNum, maxPages)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/user_management/0")
+            elif userListLen > 0 and pageNum == 0:
+                return redirect("/user_management/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/user_management/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+                paginationList = get_pagination_button_list(pageNum, maxPages)
 
-            return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+                return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
