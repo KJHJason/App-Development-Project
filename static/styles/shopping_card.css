@@ -13,12 +13,49 @@
     margin: 10vw;
 }
 
+.col-8 .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .card-img {
     margin: 1vw;
     width:25vw;
 }
 
-.card-title span {
+.card-title .fa-times:hover {
+    color:#009df8;
+    cursor:pointer;
+}
+
+.card-title .fa-times {
+    float:right;
+    display:inline-block;
+}
+
+.layer-1, .layer-2 {
+    width:100%;
+}
+
+.layer-2 {
+    position:absolute;
+    height:100%;
+}
+
+.layer-2 .row {
+    align-items:center;
+}
+
+.layer-1 .information {/*Correct Layering to make links clickable*/
+    z-index:2;
+}
+
+.text {
+    height:50%;
+}
+
+.delete {
     float: right;
     display: inline-block;
     font-size: 2.4em;
@@ -27,7 +64,7 @@
     bottom: 0.4em;
 }
 
-.card-title span:hover {
+.delete:hover {
     color: #0d6efd;
     cursor: pointer;
 }
@@ -36,6 +73,10 @@
     width: 50%;
     text-align:center;
     height:90px;
+}
+
+.selection p {
+    margin-bottom:0px;
 }
 
 .selection a, .selection p {
@@ -52,16 +93,31 @@
     transition:0.3s;
 }
 
-.selection a:nth-of-type(2n+1) {/*The Left Selection*/
+.selection a:nth-of-type(2n+1) {/*The Left Selection, if anchor*/
     float:left;
 }
 
-.selection a:nth-of-type(2n) {/*The Right Selection*/
+.selection a:nth-of-type(2n) {/*The Right Selection, if anchor*/
     float:right;
 }
 
+.selection p:nth-of-type(2n+1) {/*The Left Selection, if paragraph*/
+    float:left;
+}
+
+.selection p:nth-of-type(2n) {/*The Right Selection, if paragraph*/
+    float:right;
+}
+
+.selection a:hover{
+    text-decoration:none;
+    font-size:1.3em;
+    transition-duration:0.3s;
+}
+
+/*/////////////////////Colour Schemes for Selections//////////////////////////////*/
 .selected {
-    background-color: rgba(0, 157, 248,0.25);
+    background-color: rgba(0, 157, 248,0.25);/*Same colour, but with transparency*/
     border-color:#009df8;
     color:#009df8;
 }
@@ -82,39 +138,44 @@
     color: #f85700;
 }
 
-.selection a:hover{
-    text-decoration:none;
-    font-size:1.3em;
-    transition-duration:0.3s;
+.info {
+    background-color: rgba(33,37,41,0.25);
+    border-color:#212529;
+    color:#212529;
 }
 
+.view {
+    background-color: rgba(255,193,7,0.25);
+    border-color:#ffc107;
+    color:#ffc107;
+}
 
-.card-body:nth-of-type(2n) .row{
+.view:hover {
+    color:#dfa806;
+}
+
+/*/////////////////////End of Colour Schemes for Selections//////////////////////////////*/
+
+
+.card-body:nth-of-type(2n) .row{/*Inner row of card, where the tabs and options are*/
     height:100%;
 }
 
 .card-body {
-    height:50%;
+    height:50%;/*One upper row, one lower row*/
     display:inline-block;
     width:100%;
 }
 
-.card-body .row{
-    align-content: center;
-}
-
-.small-info {
-    display:none;
-}
-
-.card-body .information {
+.information {
     flex-direction:column;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-overflow:ellipsis;
 }
 
-.information img {
+.information img {/*The Profile Pic*/
     display:inline-block;
     vertical-align:middle;
     height:2em;
@@ -123,58 +184,77 @@
     margin:2.5px;
 }
 
-.information p{
+.information p{/*Text in area around Profile, including Price*/
     direction:rtl;
     margin:0;
 }
 
-.information p:nth-of-type(2n) {
-    font-size:1.75em;
+.information p:nth-of-type(2n) {/*Price*/
     font-weight:bold;
+    font-size:min(1.5625em, 3.75vw);
 }
 
-@media only screen and (max-width: 1175px) {
-    .row {
-        display:block !important;
+.information a:hover {
+    text-decoration:none;
+    transition:0.3s;
+    color:#0a58ca;
+}
+
+@media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
+    .layer-1 {
+        margin:2.5vw;
     }
-    .col-8, .col{
+    .layer-2 {
+        position:relative;
+        margin:auto;
+    }
+    .layer-1 .selection, .layer-2 .information, .layer-2 .col-4{
+        display:none;
+    }
+    .layer-2 .col-8 {
         width:100%;
     }
-    .col-4 {
+    .layer-2 .row {
+    align-items:stretch;/*Default Value*/
+    }
+    .layer-1 .col-8 .card-body:nth-of-type(2n+1) {
         display:none;
     }
-    .selection {
-        display:block;
-    }
-     .thumbnail-v2 {
+    .layer-1 .information {
         width:50%;
-        height:auto;
-        margin:1rem;
-     }
-     .card-body .information {
-        display:none;
-     }
-    .information {
+        padding:0px;/*Fit text better*/
+    }
+    .layer-1 .col-4, .layer-1 .col-8 {
+        width:50%;
+    }
+    .layer-1 .col-4 {
         display:flex;
-        flex-direction: column;
         justify-content: center;
-        text-align:center;
-        width:50%;
     }
-    .small-info {
-        display:flex;
+    .information p, .information a {
+        font-size:min(1.25em,3vw);
+    }
+    .col-8 .card-body {
+        display: contents;
+    }
+    .card {
+        align-items: center;
+        padding:2.5vw;
+    }
+    .selection{
+        margin:5px;
     }
 }
 
-@media only screen and (max-width: 450px) {
-    .information, .thumbnail-v2 {
-        display:block;
-        margin:1vw auto;
+@media only screen and (max-width: 400px) {
+    .layer-2 .selection {
+        display: flex;
+        flex-direction: column;
     }
-    .information {
-        margin-top:3vw;
+    .layer-2 .selection a, .layer-2 .selection p {
+        width:100%;
     }
-    .small-info {
-        display:contents;
+    .layer-2 a:hover {
+        font-size:max(1.1em, 15px);
     }
 }

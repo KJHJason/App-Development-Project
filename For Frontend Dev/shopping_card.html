@@ -150,75 +150,90 @@
 
     <!--{% block content %}-->
 	<div class="card">
-		<div class="row no-gutters">
-		<div class="col-4">
-			<img src="../static/images/courses/course_thumbnail_1.png" class="card-img" alt="Course Thumbnail">
-		</div>
-		<div class="small-info">
-			<img class="thumbnail-v2" src="../static/images/courses/course_thumbnail_1.png" class="card-img" alt="Course Thumbnail">
-			<div class="information">
-				<p><a href=""><img src="../static/images/courses/course_profile.png" class="" alt="Course Creator Profile">Daniel-San</a></p>
-				<p>S$69.00</p>
+		<div class="row no-gutters layer-1">
+			<div class="col-4">
+				<img src="../static/images/courses/course_thumbnail_1.png" class="card-img" alt="Course Thumbnail">
 			</div>
-		</div>
-		<div class="col-8">
-			<div class="card-body">
-				<h5 class="card-title">Card Title<span onclick="unavailable()">&times;</span></h5>
-				<p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-			</div>
-			<div class="card-body">
-				<div class="row">
-					<div class="selection col">
-						<a href="" class="selected">Video Recording</a>
-						<!--<p class="unavailable">Live Zoom<br></p>-->
-						<a href="" class="unselected">Live Zoom</a>
-					</div>
-					<div class="information col">
-						<p><a href=""><img src="../static/images/courses/course_profile.png" class="" alt="Course Creator Profile">Daniel-San</a></p>
-						<p>S$69.00</p>
+			<div class="col-8">
+				<div class="card-body text">
+					<!--Placeholders-->
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							<!--Placeholders-->
+						</div>
+						<div class="information col">
+							<p><a href=""><img src="../static/images/courses/course_profile.png" class="" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>Daniel-San&nbsp;</a></p>
+							<p>S$69.00</p>
+							<!--<p class="review-maker"><a href="">Write a Review</a></p>-->
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	  </div>
+
+
+
+		<div class="row no-gutters layer-2">
+			<div class="col-4">
+				<!--Placeholders-->
+			</div>
+			<div class="col-8">
+				<div class="card-body text">
+					<h5 class="card-title">Card Title<i class="fas fa-times" onclick=""></i></h5>
+					<p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							<p class="info">Online Videos</p>
+							<a href="" class="view">View Recording</a>
+							<!--<a href="" class="selected">Video Recording</a>-->
+							<!--<p class="unavailable">Live Zoom<br></p>-->
+							<!--<a href="" class="unselected">Live Zoom</a>-->
+						</div>
+						<div class="information col">
+							<!--Placeholders-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	<!--{% endblock %}-->
 
-    <footer class="footer bg-dark">
-    <div class="footer-container">
-        <div class="footer-row">
-            <div class="footer-col">
-                <h4>Company</h4>
-                <ul>
-                <li><a href="#">About Us</a></li>
-                <li><a href="#">Careers</a></li>
-                <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Useful Links</h4>
-                <ul>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="/teacher_signup">Become a Teacher</a></li>
-                    <li><a href="#">Community Guidelines</a></li>
-                    <li><a href="#">Teacher's Handbook</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Socials</h4>
-                <div class="social-links">
-                    <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-facebook"></i></a>
+    <footer class="mt-5 pt-5 pb-5 footer bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h4 class="header">Company<div></div></h4>
+                    <ul class="links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
                 </div>
-            </div>
-            <div class="footer-col">
-                <h4>Contact Info</h4>
-                <div class="social-links">
-                    <ul>
-                        <li><i class="far fa-envelope"></i> Email: coursefinity@support.com</li>
-                        <li><i class="fas fa-phone-alt"></i> +65 6251 2112</li>
+                <div class="col-md-3">
+                    <h4 class="header">Useful Links<div></div></h4>
+                    <ul class="links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="header">Teaching<div></div></h4>
+                    <ul class="links">
+                        <li><a href="#">Teacher's Handbook</a></li>
+                        <li><a href="/teacher_signup">Become a Teacher</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="header">Contact Info<div></div></h4>
+                    <ul class="contact_details links">
+                        <li><i class="far fa-envelope"></i> Email: <a href="mailto:coursefinity@support.com">coursefinity@support.com</a></li>
                         <li><i class="far fa-clock"></i> Operating Hours</li>
                         <li>Monday to Friday: <br>08:00 to 18:00</li>
                         <li>Saturday: <br>08:00 to 12:00</li>
@@ -226,10 +241,19 @@
                     </ul>
                 </div>
             </div>
-            <p id="copyright">&copy; CourseFinity, Inc. 2022</p>
+            <div class="row mt-5">
+                <hr>
+                <div class="col">
+                    <small class="text-white float-start copyright">&copy; CourseFinity, Inc. <span id="copyright_year"></span></small>
+                    <small class="about_company float-end">
+                        <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#" target="_blank" class="logo_margin"><i class="fab fa-twitter"></i></a>
+                        <a href="#" target="_blank" class="logo_margin"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</footer>
+    </footer>
 
     <!-- Bootstrap JS bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
