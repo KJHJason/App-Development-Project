@@ -328,9 +328,10 @@ def verify_reset_token(token):
 def send_reset_email(email, email_key):
     token = get_reset_token(email_key)
     message = Message("Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""To reset your password, visit the following link
+    message.body = f"""To reset your password, visit the following link:
 {url_for("resetPassword", token=token, _external=True)}
 
+Do note that this link will expire in 10 minutes.
 If you did not make this request, please ignore this email.
 """
     mail.send(message)
@@ -566,7 +567,7 @@ def requestPasswordReset():
     else:
         return redirect(url_for("home"))
 
-@app.route("/reset_password_form/<token>", methods=['GET', 'POST'])
+@app.route("/reset_password/<token>", methods=['GET', 'POST'])
 def resetPassword(token):
     if "userSession" not in session and "adminSession" not in session:
         validateToken = verify_reset_token(token)
