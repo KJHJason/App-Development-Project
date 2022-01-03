@@ -340,7 +340,7 @@ If you did not make this request, please ignore this email.
 
 @app.route('/', methods=["GET","POST"])
 def home():
-    # checking sessions if the had recently logged out
+    # checking sessions if the user had recently logged out
     if "recentlyLoggedOut" in session:
         recentlyLoggedOut = True
         session.pop("recentlyLoggedOut", None)
