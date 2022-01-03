@@ -45,6 +45,13 @@ class CreateChangePasswordForm(Form):
     updatePassword =  PasswordField("Enter a new password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
 
+class RequestResetPasswordForm(Form):
+    email = EmailField("Enter your email:", [validators.Email(), validators.DataRequired()])
+
+class CreateResetPasswordForm(Form):
+    resetPassword =  PasswordField("Reset password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+    confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+
 """End of WTForms by Jason"""
 
 """WTForms by Royston"""

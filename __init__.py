@@ -8,6 +8,35 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from PIL import Image
+from itsdangerous import TimedJSONWebSignatureSerializer as serializer
+from flask_mail import Mail, Message
+
+"""Web app configurations"""
+
+# general Flask configurations
+app = Flask(__name__)
+app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+
+# for uploading images of the user's profile picture to the web app's server configurations
+PROFILE_UPLOAD_PATH = 'static/images/user'
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+# Maximum file size for uploading anything to the web app's server
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
+app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 1 * 1024 * 1024 # 1MiB
+
+# configuration for email
+app.config["MAIL_SERVER"] = "smtp.googlemail.com" # using gmail
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
+app.config["MAIL_PASSWORD"] = "W8SX696Tz3"
+mail = Mail(app)
+
+# Flask limiter configuration
+limiter = Limiter(app, key_func=get_remote_address)
+
+"""End of Web app configurations"""
 
 """Useful Functions by Jason"""
 
@@ -282,26 +311,30 @@ def get_pagination_button_list(pageNum, maxPages):
                 
     return paginationList
 
+# functions for reset password process via email
+def get_reset_token(userKey, expires_sec=600): # 10 mins
+    s = serializer(app.config["SECRET_KEY"], expires_sec)
+    return s.dumps({"user_id": userKey.get_user_id()}).decode("utf-8")
+
+def verify_reset_token(token):
+    s = serializer(app.config["SECRET_KEY"])
+    try:
+        userID = s.loads(token)["user_id"] # get the token but if the token is invalid or expired, it will raise an exception
+        return userID
+    except:
+        return None
+
+def send_reset_email(email, email_key):
+    token = get_reset_token(email_key)
+    message = Message("Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""To reset your password, visit the following link
+{url_for("resetPassword", token=token, _external=True)}
+
+If you did not make this request, please ignore this email.
+"""
+    mail.send(message)
+
 """End of Useful Functions by Jason"""
-
-"""Web app configurations"""
-
-# general Flask configurations
-app = Flask(__name__)
-app.secret_key = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
-
-# for uploading images of the user's profile picture to the web app's server configurations
-PROFILE_UPLOAD_PATH = 'static/images/user'
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
-
-# Maximum file size for uploading anything to the web app's server
-app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
-app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 1 * 1024 * 1024 # 1MiB
-
-# Flask limiter configuration
-limiter = Limiter(app, key_func=get_remote_address)
-
-"""End of Web app configurations"""
 
 """General pages by INSERT_YOUR_NAME"""
 
@@ -361,6 +394,12 @@ def home():
 def userLogin():
     if "userSession" not in session and "adminSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
+        if "passwordUpdated" in session:
+            passwordUpdated = True
+            session.pop("passwordUpdated", None)
+        else:
+            passwordUpdated = False
+
         if request.method == "POST" and create_login_form.validate():
             emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
@@ -436,7 +475,7 @@ def userLogin():
                 print("Password Input:", passwordInput)
                 return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
-            return render_template('users/guest/login.html', form=create_login_form)
+            return render_template('users/guest/login.html', form=create_login_form, passwordUpdated=passwordUpdated)
     else:
         return redirect(url_for("home"))
 
@@ -454,6 +493,124 @@ def logout():
     return redirect(url_for("home"))
 
 """End of User login and logout by Jason"""
+
+"""Reset Password by Jason"""
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def requestPasswordReset():
+    if "userSession" not in session and "adminSession" not in session:
+        create_request_form = Forms.RequestResetPasswordForm(request.form)
+        if "invalidToken" in session:
+            invalidToken = True
+            session.pop("invalidToken", None)
+        else:
+            invalidToken = False
+
+        if request.method == "POST" and create_request_form.validate():
+            emailInput = sanitise(create_request_form.email.data.lower())
+            try:
+                userDict = {}
+                db = shelve.open("user", "r")
+                userDict = db['Users']
+                db.close()
+                print("File found.")
+            except:
+                print("File could not be found.")
+                # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
+                userDict = {}
+                db = shelve.open("user", "c")
+                db["Users"] = userDict
+                db.close()
+
+            # Declaring the 4 variables below to prevent UnboundLocalError
+            email_found = False
+            emailShelveData = ""
+
+            # Checking the email input and see if it matches with any in the database
+            for key in userDict:
+                emailShelveData = userDict[key].get_email()
+                if emailInput == emailShelveData:
+                    email_key = userDict[key]
+                    email_found = True
+                    print("Email in database:", emailShelveData)
+                    print("Email Input:", emailInput)
+                    break
+                else:
+                    print("User email not found.")
+                
+            if email_found:
+                print("User email found...")
+                print("Email in database:", emailShelveData)
+                print("Email Input:", emailInput)
+
+                # checking if the user is banned
+                accGoodStatus = email_key.get_status()
+                if accGoodStatus == "Good":
+                    send_reset_email(emailInput, email_key)
+                    print("Email sent")
+                    print("User account not banned, login successful.")
+                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                else:
+                    print("User account banned.")
+                    return render_template('users/guest/request_password_reset.html', form=create_request_form, banned=True)
+            else:
+                print("Email in database:", emailShelveData)
+                print("Email Input:", emailInput)
+                return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidEmail=True)
+        else:
+            return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidToken=invalidToken)
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/reset_password_form/<token>", methods=['GET', 'POST'])
+def resetPassword(token):
+    if "userSession" not in session and "adminSession" not in session:
+        validateToken = verify_reset_token(token)
+        if validateToken != None:
+            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)
+            if request.method == "POST" and create_reset_password_form.validate():
+                password = create_reset_password_form.resetPassword.data
+                confirmPassword = create_reset_password_form.confirmPassword.data
+
+                if password == confirmPassword:
+                    userDict = {}
+                    db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                    try:
+                        if 'Users' in db:
+                            userDict = db['Users']
+                        else:
+                            print("No user data in user shelve files.")
+                            db["Users"] = userDict
+                    except:
+                        db.close()
+                        print("Error in retrieving Users from user.db")
+                        return redirect(url_for("home"))
+
+                    userKey = userDict.get(validateToken)
+                    # checking if the user is banned
+                    accGoodStatus = userKey.get_status()
+                    if accGoodStatus == "Good":
+                        hashedPassword = password_manager().hash_password(password)
+                        userKey.set_password(hashedPassword)
+                        db["Users"] = userDict
+                        db.close()
+                        print("Password Reset Successful.")
+                        session["passwordUpdated"] = True
+                        return redirect(url_for("userLogin"))
+                    else:
+                        print("User account banned.")
+                        return render_template('users/guest/reset_password.html', form=create_reset_password_form, banned=True)
+                else:
+                    return render_template('users/guest/reset_password.html', form=create_reset_password_form, pwd_were_not_matched=True)
+            else:
+                return render_template('users/guest/reset_password.html', form=create_reset_password_form)
+        else:
+            session["invalidToken"] = True
+            return redirect(url_for("requestPasswordReset"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Reset Password by Jason"""
 
 """Student signup process by Jason"""
 @app.route('/signup', methods=['GET', 'POST'])

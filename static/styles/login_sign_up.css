@@ -45,3 +45,11 @@
 .warning_alert {
     margin-top: 10px;
 }
+
+.forgetPWD {
+    color: #009DF8;
+}
+
+.forgetPWD:hover {
+    color: #009DF8;
+}

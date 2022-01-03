@@ -20,4 +20,5 @@ Libraries needed:
   <li>Flask-Limiter [pip install Flask-Limiter]</li>
   <li>Argon2 [pip install argon2-cffi]</li>
   <li>Pillow [pip install --upgrade Pillow]</li>
+  <li>Flask-mail [pip install flask-mail]</li>
 </ol>	

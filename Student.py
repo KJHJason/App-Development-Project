@@ -48,4 +48,3 @@ class Student(User):
 
     def display_card_info(self):
         print("student's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)
-    
