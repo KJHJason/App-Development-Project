@@ -318,6 +318,7 @@ def get_reset_token(userKey, expires_sec=600): # 10 mins
 
 def verify_reset_token(token):
     s = serializer(app.config["SECRET_KEY"])
+    # try and except as if the token is invalid, it will raise an exception
     try:
         userID = s.loads(token)["user_id"] # get the token but if the token is invalid or expired, it will raise an exception
         return userID
@@ -551,12 +552,15 @@ def requestPasswordReset():
                     print("User account not banned, login successful.")
                     return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
                 else:
+                    # email found in database but the user is banned.
+                    # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
                     print("User account banned.")
-                    return render_template('users/guest/request_password_reset.html', form=create_request_form, banned=True)
+                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
             else:
+                # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
                 print("Email in database:", emailShelveData)
                 print("Email Input:", emailInput)
-                return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidEmail=True)
+                return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
         else:
             return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidToken=invalidToken)
     else:
@@ -574,13 +578,16 @@ def resetPassword(token):
 
                 if password == confirmPassword:
                     userDict = {}
-                    db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                    db = shelve.open("user", "c")
                     try:
                         if 'Users' in db:
+                            # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                             userDict = db['Users']
                         else:
+                            db.close()
                             print("No user data in user shelve files.")
-                            db["Users"] = userDict
+                            # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
+                            return redirect(url_for("home"))
                     except:
                         db.close()
                         print("Error in retrieving Users from user.db")
