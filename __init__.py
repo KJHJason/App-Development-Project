@@ -1015,6 +1015,7 @@ def userManagement(pageNum):
                 # pagination algorithm starts here
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+                paginatedUserList = paginatedUserList[::-1] # reversing the list using list slicing to show the latest user in the user management page
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
                 return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
