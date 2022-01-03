@@ -30,7 +30,7 @@ app.config["MAIL_SERVER"] = "smtp.googlemail.com" # using gmail
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
-app.config["MAIL_PASSWORD"] = "W8SX696Tz3"
+app.config["MAIL_PASSWORD"] = os.environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
 mail = Mail(app)
 
 # Flask limiter configuration
