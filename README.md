@@ -18,7 +18,7 @@ Libraries needed:
   <li>email-validator Version 1.1.3 [pip install email_validator]</li>
   <li>setuptools Version 60.1.0 [pip install setuptools]</li>
   <li>Flask-Limiter Version 2.0.4 [pip install Flask-Limiter]</li>
-  <li>Argon2 Version 21.3.0 [pip install argon2-cffi]</li>
+  <li>argon2-cffi Version 21.3.0 [pip install argon2-cffi]</li>
   <li>Pillow Version 8.4.0 [pip install --upgrade Pillow]</li>
   <li>Flask-mail Version 0.9.1 [pip install flask-mail]</li>
 </ol>	
