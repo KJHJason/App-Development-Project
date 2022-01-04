@@ -1817,7 +1817,7 @@ def search():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/general/search.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1878,7 +1878,7 @@ def purchaseHistory():
             #    return redirect(url_for("home"))
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchasehistory.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1925,7 +1925,7 @@ def purchaseReview():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchasereview.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1972,7 +1972,7 @@ def purchaseView():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchaseview.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -2019,7 +2019,7 @@ def teacherCashOut():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/teacher/teacher_cashout.html')
         else:
             db.close()
             print("User not found or is banned")

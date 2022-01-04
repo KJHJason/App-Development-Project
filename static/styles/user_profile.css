@@ -214,3 +214,9 @@
     display: block;
   }
 }
+.cashout_button{
+  margin-top:20px;
+  width:max(20%, 120px);
+  float:right;
+  margin-left:auto;
+}
