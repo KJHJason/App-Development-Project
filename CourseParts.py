@@ -36,19 +36,15 @@ class VideoPart(Part):
 # Zoom Link --> To be changed
 # Different timings for different students for different courses
 class ZoomPart(Part):
-    def __init__(self, title, description, thumbnail, **kwargs):
+    def __init__(self, title, description, thumbnail):
         super().__init__(title, description, thumbnail)
         self.__timings = []
         self.__userTimings = {}
-        for date, time in kwargs.items():
-            self.__timings.append([date, time])
 
-    def set_timings(self, **kwargs):
-        for date, time in kwargs.items():
-            self.__timings.append([date, time])
-    def remove_timings(self, **kwargs):
-        for date, time in kwargs.items():
-            self.__timings.remove([date, time])
+    def set_timing(self, date, time):
+        self.__timings.append([date, time])
+    def remove_timing(self, date, time):
+        self.__timings.remove([date, time])
 
     def get_timings(self):
         return self.__timings

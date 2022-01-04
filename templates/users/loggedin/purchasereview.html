@@ -1,6 +1,7 @@
 {% extends "user_base.html" %}
 {% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">{% endblock %}
 {% block title %}Purchase Review | CourseFinity{% endblock %}
+{% from "includes/_formHelper.html" import render_field %}
 
 {% block content %}
 <ul class="breadcrumb">

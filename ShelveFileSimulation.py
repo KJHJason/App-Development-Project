@@ -10,10 +10,11 @@ Please update with variables and relevant shelve files accordingly for testing p
 
 
 """Databases"""
+from Admin import Admin
 from Teacher import Teacher
 from Student import Student
+from Course import Course
 from Security import password_manager, sanitise, validate_email
-from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_formatted_expiry_date, validate_expiry_date
 
 
 import shelve
@@ -42,6 +43,7 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 
 
 
+userBase[userID]=user
 
 """Student 2"""
 
@@ -62,7 +64,7 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-
+userBase[userID]=user
 
 """Teacher 1"""
 
@@ -74,7 +76,7 @@ password = password_manager().hash_password("789&*(")
 user = Teacher(userID, username, email, password)
 
 #Teacher
-user.set_earnings()
+user.set_earnings("100")
 user.set_joinDate("2022-04-01") ## wtforms default datefield format = YYYY-MM-DD
 
 #Card --> No Validation for Simulation
@@ -95,8 +97,23 @@ thumbnail = ""
 price = "72.5"
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
-user.set_courseTeaching(title, description, thumbnail, price, courseType, status)
 
+course = Course(title, description, thumbnail, price, courseType, status)
+course.add_tags("a","b","c","d","e")
+
+# def __init__(self, userID, title, comment, rating)
+course.add_rating("2", "Very Good", "Please make more.", "4")
+
+# def __init__(self, title, description, thumbnail, **kwargs):
+course.add_scheduleZoomPart("Step 1: See Documentation","We learn Flask Documentation","")
+course.get_part(0).set_timing("2022-07-03","15:30")
+
+course.add_scheduleZoomPart("Step 2: Practice","At least 5 Codeforces a Week","")
+course.get_part(1).set_timing("2022-07-10","15:30")
+
+
+
+userBase[userID]=user
 
 """Teacher 2"""
 
@@ -108,7 +125,7 @@ password = password_manager().hash_password("0-=)_+")
 user = Teacher(userID, username, email, password)
 
 #Teacher
-user.set_earnings()
+user.set_earnings("100")
 user.set_joinDate("2020-05-02") ## wtforms default datefield format = YYYY-MM-DD
 
 #Card --> No Validation for Simulation
@@ -129,34 +146,51 @@ thumbnail = ""
 price = "69"
 courseType = "Video" ## Zoom or Video
 status = "Available" ## Available or Unavailable
+
 user.set_courseTeaching(title, description, thumbnail, price, courseType, status)
+course.add_tags("z","y","x","w","v")
+
+# def __init__(self, userID, title, comment, rating)
+course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+
+# def __init__(self, title, description, thumbnail, videoData):
+course.add_scheduleVideoPart("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
+
+course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 
 
+
+userBase[userID]=user
 
 """Admin 1"""
 #General
-userID = "4"
+adminID = "0"
 username = "The Archivist"
 email = validate_email(sanitise("O5-2@SCP.com".lower()))
 password = password_manager().hash_password("27sb2we9djaksidu8a")
-user = Teacher(userID, username, email, password)
+admin = Admin(userID, username, email, password)
 
 #Admin
 
 
 
+adminBase[adminID] = admin
 
 """Admin 2"""
 #General
-userID = "5"
+adminID = "1"
 username = "Tamlin"
 email = validate_email(sanitise("O5-13@SCP.com".lower()))
 password = password_manager().hash_password("o4jru5fjr49f8ieri4")
-user = Teacher(userID, username, email, password)
+admin = Admin(userID, username, email, password)
 
 #Admin
 
 
 
 
+adminBase[adminID] = admin
 
+
+userBase.close()
+adminBase.close()
