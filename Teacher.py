@@ -9,7 +9,6 @@ class Teacher(User):
         self.__card_no = ""
         self.__card_expiry = ""
         self.__card_cvv = ""
-        self.__card_type = ""
         self.__purchaseID = ""
         self.__reviewID = ""
         self.__viewed = ""
@@ -25,8 +24,6 @@ class Teacher(User):
         self.__card_expiry = card_expiry
     def set_card_cvv(self, card_cvv):
         self.__card_cvv = card_cvv
-    def set_card_type(self, card_type):
-        self.__card_type = card_type
     def set_purchaseID(self, purchaseID):
         self.__purchaseID = purchaseID
     def set_reviewID(self, reviewID):
@@ -46,8 +43,6 @@ class Teacher(User):
         return self.__card_expiry
     def get_card_cvv(self):
         return self.__card_cvv
-    def get_card_type(self):
-        return self.__card_type
     def get_purchaseID(self):
         return self.__purchaseID
     def get_reviewID(self):
