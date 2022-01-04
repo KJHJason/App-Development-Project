@@ -1,0 +1,15 @@
+<!--Template by Wei Ren-->
+
+{% extends "user_base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/shopping_card.html') }}">{% endblock %}
+{% block title %}Shopping Cart | CourseFinity{% endblock %}
+
+{% block content %}
+
+
+{% for name in names %}
+  Hello, {{ name }}, welcome to {{ place }}!
+{% endfor %}
+
+
+{% endblock %}

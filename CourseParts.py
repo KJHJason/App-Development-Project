@@ -1,3 +1,5 @@
+"""Made by Wei Ren"""
+
 class Part():
     def __init__(self, title, description, thumbnail):
         self.__title = title

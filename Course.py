@@ -25,6 +25,8 @@ User --> Teacher (Object) 1
       - Date, Time Selected 1
 '''
 
+"""Made by Wei Ren"""
+
 from Rating import Rating
 from CourseParts import ZoomPart, VideoPart
 
@@ -42,7 +44,7 @@ class Course():
         self.__ratings = []
         self.__schedule = []
 
-    def set_title(self, title):
+    def set_title(self, name):
         self.__name = name
     def get_title(self):
         return self.__name

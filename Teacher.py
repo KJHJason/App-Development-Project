@@ -33,7 +33,7 @@ class Teacher(User):
         self.__reviewID = reviewID
     def set_viewed(self, viewed):
         self.__viewed = viewed
-    def self_joinDate(self, joinDate):
+    def set_joinDate(self, joinDate):
         self.__joinDate = joinDate
     def set_earnings(self, earnings):
         self.__earnings = earnings
