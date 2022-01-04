@@ -207,8 +207,7 @@ while True:
                             adminKey = adminDict[key]
                             break
                     if emailValid:
-                        # add in your code here
-                        pass
+                        adminKey.set_status("Inactive")
                     else:
                         db.close()
                         print("\nError: No admin account with that email exists.")
@@ -251,8 +250,7 @@ while True:
                             adminKey = adminDict[key]
                             break
                     if emailValid:
-                        # add in your code here
-                        pass
+                        adminDict.pop(adminKey.get_user_id())
                     else:
                         db.close()
                         print("\nError: No admin account with that email exists.")
