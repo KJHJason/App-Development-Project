@@ -39,8 +39,8 @@
                         {% if cardValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid Card Number</strong></h6></div>{% endif %}
                     </div>
                     <div class="col-md-6 text-white">
-                        {{ render_field(form.cardExpiry, class="form-control") }}
-                        {% if cardExpiryValid == False %}<div class="text-danger warning_alert"><h6><strong>Card Expired</strong></h6></div>{% endif %}
+                        {{ render_field(form.cardExpiry, class="form-control", placeholder="04/22 or 4/2022") }}
+                        {% if cardExpiryValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid Card Expiry Date</strong></h6></div>{% endif %}
                     </div>
                     <div class="col-md-6 text-white">
                         {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}

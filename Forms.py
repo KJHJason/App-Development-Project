@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, RadioField, SelectField, TextAreaField, validators, EmailField, DateField, MonthField
+from wtforms import Form, StringField, RadioField, SelectField, TextAreaField, validators, EmailField, DateField
 from wtforms.fields.numeric import IntegerField
 from wtforms.fields.simple import PasswordField
 
@@ -9,13 +9,13 @@ from wtforms.fields.simple import PasswordField
 # https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
 
 class CreateEditPaymentForm(Form):
-    cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
+    cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
     cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
-    cardNo = StringField("Card Number:", [validators.Length(min=14, max=19), validators.DataRequired()])
-    cardExpiry = MonthField("Expiry Date:", [validators.DataRequired()])
+    cardNo = StringField("Card Number (Only Visa, Mastercard, and American Express):", [validators.Length(min=14, max=19), validators.DataRequired()])
+    cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
     cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateLoginForm(Form):

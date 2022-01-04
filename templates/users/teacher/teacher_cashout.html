@@ -4,11 +4,10 @@
 
 {% block content %}
 <div class="container">
-    <div class="row">
+    <div class="row" style="margin-top:30px;">
         <div class="col-lg-3 merge-boxes">
             <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
                 <h4><span class="fs-4">My Account</span></h4>
-                </a>
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
@@ -33,19 +32,27 @@
             <div id="right-user">
                 <div class="container">
                     <div class="row">
+                      <div>
+                          <h4>You have earned ${} for {}</h4>
+                          <h4>Earning Details:</h4>
+                      </div>
                         <div class="card">
-                            <div class="card-body">
-                                <h6 class="card-title payment">
-                                    <span class="float-start"><img src="../static/images/payment/visa.png" alt="payment method logo" id="payment_logo"> &#8226;&#8226;&#8226;&#8226;1234</span>
-                                    <span class="float-end"><a href="#">Edit</a></span>
-                                </h6>
-                                <h6 class="card-text payment">John Doe</h6>
-                                <h6 class="card-title payment">
-                                    <span class="float-start">Expiry Date: 01/2022</span>
-                                    <span class="float-end"><a href="#">Delete Card</a></span>
-                                </h6>
-                            </div>
+                            <h6 class="card-title payment" style="margin-top:10px;">
+                                <span class="float-start">Earnings from your course:</span>
+                                <span class="float-end">{}</span>
+                            </h6>
+                            <h6 class="card-title payment" style="margin-top:10px;">
+                                <span class="float-start">Commission:</span>
+                                <span class="float-end">{}</span>
+                            </h6>
+                            <h6 class="card-title payment" style="margin-top:10px;">
+                                <span class="float-start">Total:</span>
+                                <span class="float-end">{}</span>
+                            </h6>
                         </div>
+                        <form action="/" method="POST">
+                            <button type="Submit" class="cashout_button btn btn-primary btn-lg">Cash out</button>
+                        </form>
                     </div>
                 </div>
             </div>

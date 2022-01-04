@@ -1,5 +1,6 @@
 import re # for compiling the regular expression for the card's CVV
-from datetime import date # importing date module from the datetime library as I am only using it for getting the current date to validate the credit card expiry date
+from datetime import date
+# importing date module from the datetime library as I am only using it for getting the current date and to convert a string to a date object to validate the credit card expiry date
 
 # Done by Jason
 
@@ -24,6 +25,11 @@ from datetime import date # importing date module from the datetime library as I
 # for converting a string or a number into a list of numbers by using map() function
 def int_list(numbers):
     return list(map(int, str(numbers)))
+
+# converting the card date to a list of numbers for cardMonth and cardYear using map()
+def date_int_list(dateInput):
+    cardMonth, cardYear = list(map(int, dateInput.split("/")))
+    return cardMonth, cardYear
 
 # function to recognise a card type by the card number
 def get_card_type(cardNumber):
@@ -104,20 +110,48 @@ def validate_card_number(cardNumber):
         print("Card number input must only contain numbers!") # if the string contained any letters, it will raise a runtime error. Hence, using try and except to handle this error.
         return False
 
-# function to validate the card expiry date based on the MM/YYYY format
-def validate_formatted_expiry_date(cardDate):
-    currentDate = date.today().replace(day=1) # getting the current date and replacing the day with the number 1
-    cardMonth, cardYear = list(map(int, cardDate.split("/"))) # converting the string to a list of numbers using map()
-    cardDateList = date(cardYear, cardMonth, 1) # converting the list to a datetime.date object
-    if cardDateList >= currentDate:
-        return True
+# function to format the card expiry date into a date object
+def cardExpiryFormatter(cardDate):
+    # try and except to handle user's input for invalid date formats
+    try:
+        cardMonth, cardYear = date_int_list(cardDate) # converting the string to a list of numbers using one of my functions
+        if len(str(cardYear)) == 2: # checking if the year is in YY format
+            cardYear = int(str(date.today().year)[:2] + str(cardYear)) # if so, I did some string slicing and concatenation to get YYYY format
+        cardExpiryDate = date(cardYear, cardMonth, 1) # making a date object
+        return cardExpiryDate
+    except:
+        print("Invalid date input.")
+        return None
+
+# function to convert user's input for the card expiry date to "MM/YYYY" or "M/YYYY" after card expiry date validation
+def cardExpiryStringFormatter(cardDate):
+    cardMonth, cardYear = cardDate.split("/") # spliting the string into a list of strings
+    if cardMonth[0] == "0": # checking if the user's input added a 0 at the front
+        cardMonth = cardMonth[1:] # if so it will slice the card month so that the 0 will be ignored
+    if len(cardYear) == 2: # checking if the card year format is in "YY"
+        cardYear = str(date.today().year)[:2] + cardYear # if so, I did some string slicing and concatenation to get YYYY format
+    cardExpiryDateString = cardMonth + "/" + cardYear
+    return cardExpiryDateString
+
+# function to validate card's expiry date to check if the card is expired
+def validate_expiry_date(cardDate):
+    cardDate = cardExpiryFormatter(cardDate)
+    print(cardDate)
+    if cardDate != None:
+        currentDate = date.today().replace(day=1) # getting the current date and replacing the day with 1 for comparison
+        if cardDate >= currentDate:
+            return True
+        else:
+            return False
     else:
         return False
 
-# function to validate the card expiry date based on the datetime.date object obtained from wtforms
-def validate_expiry_date(cardDate):
-    currentDate = date.today().replace(day=1) # getting the current date and replacing the day with the number 1 for comparison with the user input obtained from WTForms since WTForms month field will return a datetime.date object with the format YYYY-MM-DD where the DD/days is always 1.
-    if cardDate >= currentDate:
+# function to validate the card expiry date based on the MM/YYYY or M/YYYY format
+def validate_formatted_expiry_date(cardDate):
+    currentDate = date.today().replace(day=1) # getting the current date and replacing the day with the number 1
+    cardMonth, cardYear = date_int_list(cardDate) # converting the string to a list of numbers using one of my functions
+    cardDateList = date(cardYear, cardMonth, 1) # converting the list to a date object
+    if cardDateList >= currentDate:
         return True
     else:
         return False

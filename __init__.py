@@ -3,7 +3,7 @@ from werkzeug.utils import secure_filename
 import shelve, Forms, os, math
 import Student, Teacher, Admin
 from Security import password_manager, sanitise, validate_email
-from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_formatted_expiry_date, validate_expiry_date
+from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -833,20 +833,15 @@ def signUpPayment():
                         cardType = get_card_type(cardNo)
                         cardCVVValid = validate_cvv(cardCVV, cardType)
 
-                        cardExpiry = create_teacher_payment_form.cardExpiry.data
+                        cardExpiry = sanitise(create_teacher_payment_form.cardExpiry.data)
                         cardExpiryValid = validate_expiry_date(cardExpiry)
 
                         if cardValid and cardExpiryValid and cardCVVValid:
                             if cardType != False: # checking if the card type is supported
-                                cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
-                                # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                                cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                                cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                                cardExpiry = cardMonth + "/" + cardYear
-
                                 # setting the teacher's payment method which in a way editing the teacher's object
                                 teacherKey.set_card_name(cardName)
                                 teacherKey.set_card_no(cardNo)
+                                cardExpiry = cardExpiryStringFormatter(cardExpiry)
                                 teacherKey.set_card_expiry(cardExpiry)
                                 teacherKey.set_card_cvv(cardCVV)
                                 teacherKey.set_card_type(cardType)
@@ -1554,20 +1549,15 @@ def userPayment():
                     cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
                     cardCVVValid = validate_cvv(cardCVV, cardType)
 
-                    cardExpiry = create_add_payment_form.cardExpiry.data
+                    cardExpiry = sanitise(create_add_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
 
                     if cardValid and cardExpiryValid and cardCVVValid:
                         if cardType != False:
-                            cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
-                            # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                            cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                            cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                            cardExpiry = cardMonth + "/" + cardYear
-
                             # setting the user's payment method
                             userKey.set_card_name(cardName)
                             userKey.set_card_no(cardNo)
+                            cardExpiry = cardExpiryStringFormatter(cardExpiry)
                             userKey.set_card_expiry(cardExpiry)
                             userKey.set_card_cvv(cardCVV)
                             userKey.set_card_type(cardType)
@@ -1684,18 +1674,12 @@ def userEditPayment():
                     cardCVV = sanitise(create_edit_payment_form.cardCVV.data)
                     cardCVVValid = validate_cvv(cardCVV, cardType.lower())
 
-                    cardExpiry = create_edit_payment_form.cardExpiry.data
+                    cardExpiry = sanitise(create_edit_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
                     if cardCVVValid and cardExpiryValid:
-
-                        cardExpiry = str(cardExpiry) # converting the card's expiry date datetime.date object to a string for string slicing
-                        # string slicing for the cardExpiry as to make it in MM/DD format as compared to YYYY-MM-DD
-                        cardYear = cardExpiry[:4] # to get the year from the date format "YYYY-MM-DD"
-                        cardMonth = cardExpiry[5:7] # to get the month from the date format "YYYY-MM-DD"
-                        cardExpiry = cardMonth + "/" + cardYear
-
                         # changing the user's payment info
                         userKey.set_card_cvv(cardCVV)
+                        cardExpiry = cardExpiryStringFormatter(cardExpiry)
                         userKey.set_card_expiry(cardExpiry)
                         db['Users'] = userDict
                         print("Changed CVV:", cardCVV)
@@ -1817,7 +1801,7 @@ def search():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/general/search.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1878,7 +1862,7 @@ def purchaseHistory():
             #    return redirect(url_for("home"))
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchasehistory.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1925,7 +1909,7 @@ def purchaseReview():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchasereview.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -1972,7 +1956,7 @@ def purchaseView():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/purchaseview.html')
         else:
             db.close()
             print("User not found or is banned")
@@ -2019,7 +2003,7 @@ def teacherCashOut():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/teacher/teacher_cashout.html')
         else:
             db.close()
             print("User not found or is banned")

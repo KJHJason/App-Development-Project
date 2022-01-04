@@ -61,26 +61,5 @@
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md teacher">
-            <img src="../static/images/user_home/placeholder.jpg" alt="">
-        </div>
-        <div class="col-md teacher">
-            <h2>Become A Teacher Today!</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-            <form action="/teacher_signup" method="POST">
-                <button type="submit" class="teacher-button btn btn-primary btn-lg">Start Teaching Today</button>
-            </form>
-        </div>
-    </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-    {% if teacherPaymentAdded %}
-        <script>
-            var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
-            addedCardModal.show();
-        </script>
-    {% endif %}
 {% endblock %}
