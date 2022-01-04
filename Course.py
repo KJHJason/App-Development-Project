@@ -81,8 +81,9 @@ class Course():
     def get_overallRating(self):
         return self.__overallRating
 
-    def add_tag(self, tag):
-        self.__tags.append(tag) # As a value
+    def add_tags(self, *args):
+        for tag in args:
+            self.__tags.append(tag) # As a value
     def remove_tag(self, tag):
         self.__tags.remove(tag)
 
@@ -110,11 +111,16 @@ class Course():
                 self.__schedule.remove(VideoPart)
                 break
 
-    def add_scheduleZoomPart(self, title, description, thumbnail, **kwargs):
-        zoomPart = ZoomPart(title, description, thumbnail, kwargs.items())
+    def add_scheduleZoomPart(self, title, description, thumbnail):
+        zoomPart = ZoomPart(title, description, thumbnail)  # kwargs = timings
         self.__schedule.append(zoomPart)
     def remove_scheduleZoomPart(self, title, description):
         for ZoomPart in self.__schedule:
             if VideoPart.get_title() == title and VideoPart.get_description() == description:
                 self.__schedule.remove(ZoomPart)
 
+    def get_schedule(self):
+        return self.__schedule
+
+    def get_part(self, part):
+        return self.__schedule[int(part)]
