@@ -29,6 +29,9 @@ However, it may result in data corruption.
 Hence, please only force shut down the program if necessary.
 """
 
+# Command line 1-2 feature/operations done by Jason
+# Command line 3-5 feature/operations done by Clarence
+
 while True:
     print(cmd_menu)
     cmd_input = input("Enter number: ")
