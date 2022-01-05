@@ -14,16 +14,70 @@ from Admin import Admin
 from Teacher import Teacher
 from Student import Student
 from Course import Course
-from Security import password_manager, sanitise, validate_email
+from Security import password_manager, sanitise
 
 
 import shelve
-userBase = shelve.open("user", "c")
-adminBase = shelve.open("admin", "c")
-courseBase = shelve.open("course", "c")
-userBase["Users"] = {}
-adminBase["Admins"] = {}
-courseBase["Courses"] = {}
+#       (userObject, adminObject, courseObject)   --> Not saving: use "None"
+def save(*args):
+    userObject = args[0]
+    adminObject = args[1]
+    courseObject = args[2]
+    if userObject != None:
+        # Open shelve
+        userBase = shelve.open("user", "c")
+
+        # Pull out dictionary from shelve
+        if len(userBase) == 0:
+            userDict = {}
+        else:
+            userDict = userBase["Users"]
+
+        # Get corresponding userID for updating/adding to dictionary
+        userDict[userObject.get_user_id()] = userObject
+
+        # Overwrite entire shelve with updated dictionary
+        userBase["Users"] = userDict
+
+        # Make sure to close!
+        userBase.close()
+    if adminObject != None:
+        # Open shelve
+        adminBase = shelve.open("admin", "c")
+
+        # Pull out dictionary from shelve
+        if len(adminBase) == 0:
+            adminDict = {}
+        else:
+            adminDict = adminBase["Admins"]
+
+        # Get corresponding userID for updating/adding to dictionary
+        adminDict[adminObject.get_user_id()] = adminObject
+
+        # Overwrite entire shelve with updated dictionary
+        adminBase["Admins"] = adminDict
+
+        # Make sure to close!
+        adminBase.close()
+    if courseObject != None:
+        # Open shelve
+        courseBase = shelve.open("course", "c")
+
+        # Pull out dictionary from shelve
+        if len(courseBase) == 0:
+            courseDict = {}
+        else:
+            courseDict = courseBase["Courses"]
+
+        # Get corresponding userID for updating/adding to dictionary
+        courseDict[courseObject.get_courseID()] = courseObject
+
+        # Overwrite entire shelve with updated dictionary
+        courseBase["Courses"] = courseDict
+
+        # Make sure to close!
+        courseBase.close()
+
 """
 {"Users":{userID:User()}
          {userID:User()}
@@ -44,7 +98,7 @@ courseBase["Courses"] = {}
 #General
 userID = "0"
 username = "James"
-email = validate_email(sanitise("CourseFinity123@gmail.com".lower()))
+email = sanitise("CourseFinity123@gmail.com".lower())
 password = password_manager().hash_password("123!@#")
 user = Student(userID, username, email, password)
 
@@ -58,14 +112,16 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-userBase['Users'][userID] = user
+user.add_to_card("0") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+
+save(user,None,None)
 
 """Student 2"""
 
 #General
 userID = "1"
 username = "Daniel"
-email = validate_email(sanitise("abc.net@gmail.com".lower()))
+email = sanitise("abc.net@gmail.com".lower())
 password = password_manager().hash_password("456$%^")
 user = Student(userID, username, email, password)
 
@@ -78,14 +134,14 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
 
-userBase['Users'][userID] = user
+save(user,None,None)
 
 """Teacher 1"""
 
 #General
 userID = "2"
 username = "Avery"
-email = validate_email(sanitise("ice_cream@gmail.com".lower()))
+email = sanitise("ice_cream@gmail.com".lower())
 password = password_manager().hash_password("789&*(")
 user = Teacher(userID, username, email, password)
 
@@ -127,15 +183,14 @@ course.get_part(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
 
-userBase['Users'][userID] = user
-courseBase["Courses"][course.get_courseID()] = course
+save(user,None,course)
 
 """Teacher 2"""
 
 #General
 userID = "3"
 username = "Sara"
-email = validate_email(sanitise("tourism@gmail.com".lower()))
+email = sanitise("tourism@gmail.com".lower())
 password = password_manager().hash_password("0-=)_+")
 user = Teacher(userID, username, email, password)
 
@@ -176,35 +231,36 @@ course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the jou
 
 user.set_courseTeaching(course.get_courseID())
 
-userBase['Users'][userID] = user
-courseBase["Courses"][course.get_courseID()] = course
+save(user,None,course)
 
 """Admin 1"""
 #General
 adminID = "0"
 username = "The Archivist"
-email = validate_email(sanitise("O5-2@SCP.com".lower()))
+email = sanitise("O5-2@SCP.com".lower())
 password = password_manager().hash_password("27sb2we9djaksidu8a")
-admin = Admin(userID, username, email, password)
+admin = Admin(adminID, username, email, password)
 
 #Admin
 
 
-adminBase['Admins'][adminID] = admin
+save(None,admin,None)
 
 """Admin 2"""
 #General
 adminID = "1"
 username = "Tamlin"
-email = validate_email(sanitise("O5-13@SCP.com".lower()))
+email = sanitise("O5-13@SCP.com".lower())
 password = password_manager().hash_password("o4jru5fjr49f8ieri4")
-admin = Admin(userID, username, email, password)
+admin = Admin(adminID, username, email, password)
 
 #Admin
 
 
+# Save Object to dict
+adminDict = {}
+adminDict[userID] = admin
 
-adminBase['Admins'][adminID] = admin
+# Save dict to shelve
+save(None,admin,None)
 
-userBase.close()
-adminBase.close()
