@@ -11,6 +11,8 @@ class Student(User):
         self.__purchaseID = ""
         self.__reviewID = ""
         self.__viewed = ""
+    # Added by Wei Ren for Courses
+        self.__shoppingCart = []
         
     def set_card_name(self, card_name):
         self.__card_name = card_name
@@ -48,3 +50,12 @@ class Student(User):
 
     def display_card_info(self):
         print("student's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)
+
+    # Added by Wei Ren for Courses
+    def add_to_card(self, courseID):
+        self.__shoppingCart.append(courseID)
+    def remove_from_card(self,courseID):
+        self.__shoppingCart.remove(courseID)
+
+    def get_shoppingCart(self):
+        return self.__shoppingCart

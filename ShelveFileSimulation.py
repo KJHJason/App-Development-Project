@@ -20,9 +20,25 @@ from Security import password_manager, sanitise, validate_email
 import shelve
 userBase = shelve.open("user", "c")
 adminBase = shelve.open("admin", "c")
-
-
-
+courseBase = shelve.open("course", "c")
+userBase["Users"] = {}
+adminBase["Admins"] = {}
+courseBase["Courses"] = {}
+"""
+{"Users":{userID:User()}
+         {userID:User()}
+         {userID:User()}}
+"""
+"""
+{"Admins":{adminID:Admin()}
+          {adminID:Admin()}
+          {adminID:Admin()}}
+"""
+"""
+{"Courses":{courseID:Course()}
+           {courseID:Course()}
+           {courseID:Course()}}
+"""
 """Student 1"""
 
 #General
@@ -42,8 +58,7 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-
-userBase[userID]=user
+userBase['Users'][userID] = user
 
 """Student 2"""
 
@@ -63,8 +78,7 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
 
-
-userBase[userID]=user
+userBase['Users'][userID] = user
 
 """Teacher 1"""
 
@@ -111,9 +125,10 @@ course.get_part(0).set_timing("2022-07-03","15:30")
 course.add_scheduleZoomPart("Step 2: Practice","At least 5 Codeforces a Week","")
 course.get_part(1).set_timing("2022-07-10","15:30")
 
+user.set_courseTeaching(course.get_courseID())
 
-
-userBase[userID]=user
+userBase['Users'][userID] = user
+courseBase["Courses"][course.get_courseID()] = course
 
 """Teacher 2"""
 
@@ -147,7 +162,7 @@ price = "69"
 courseType = "Video" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-user.set_courseTeaching(title, description, thumbnail, price, courseType, status)
+course = Course(title, description, thumbnail, price, courseType, status)
 course.add_tags("z","y","x","w","v")
 
 # def __init__(self, userID, title, comment, rating)
@@ -159,8 +174,10 @@ course.add_scheduleVideoPart("Step 1: Calculate the Circumference of the Sun","H
 course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 
 
+user.set_courseTeaching(course.get_courseID())
 
-userBase[userID]=user
+userBase['Users'][userID] = user
+courseBase["Courses"][course.get_courseID()] = course
 
 """Admin 1"""
 #General
@@ -173,8 +190,7 @@ admin = Admin(userID, username, email, password)
 #Admin
 
 
-
-adminBase[adminID] = admin
+adminBase['Admins'][adminID] = admin
 
 """Admin 2"""
 #General
@@ -188,9 +204,7 @@ admin = Admin(userID, username, email, password)
 
 
 
-
-adminBase[adminID] = admin
-
+adminBase['Admins'][adminID] = admin
 
 userBase.close()
 adminBase.close()

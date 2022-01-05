@@ -2021,6 +2021,119 @@ def teacherCashOut():
 """End of Teacher Cashout System by Royston"""
 
 
+
+"""Template Shopping Cart by Wei Ren"""
+
+@app.route("/shoppingCart/<string:pageNum>/")
+def shoppingCart(pageNum):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            # userKey is the object
+            # print(userKey) --> <Student.Student object at 0x00000294ABDCDE50>
+            shoppingCart = userKey.get_shoppingCart()
+            for courseID in shoppingCart:
+                print(courseID)
+
+            """
+            P
+            L
+            E
+            A
+            S
+            E
+             
+            V
+            A
+            L
+            I
+            D
+            A
+            T
+            E"""
+            dbCourse = shelve.open("course", "c")
+            """
+            T
+            H
+            I
+            S
+            """
+
+            courseList = []
+            for courseID in shoppingCart:
+                course = dbCourse[courseID]
+                courseDict = {"Title":course.get_title(),
+                              "Description":course.get_description(),
+                              "Thumbnail":course.get_thumbnail(),
+                              "VideoCheck":course.get_courseType()["Video"],
+                              "ZoomCheck":course.get_courseType()["Zoom"],
+                              "Price":course.get_price(),
+                              "Owner":course.get_owner()}
+                courseList.append(courseDict)
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(courseList) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/shopping_cart/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/shopping_cart/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/shopping_cart/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = courseList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/student/shopping_cart.html', courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+
+        else:
+            db["Users"] = userDict  # Save changes
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # user is redirected to the home page, as they are not/no longer logged in
+            return redirect(url_for("home"))
+
+
+
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+
+
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
@@ -2124,8 +2237,7 @@ def function():
   - User session validity check needed (Logged in?)
   - User banned?
   
-  - NOT using shelve but there's a need to retrieve user account data
-  - Reading info from user account data
+  - Only READING from shelve (user data)
   
   - Webpage will not have admin view
   - Use case: User pages (user_profile.html, etc)
@@ -2310,8 +2422,7 @@ def function():
   - Admin session validity check needed (Logged in?)
   - Admin account active?
   
-  - NOT using shelve
-  - Reading info from admin account data
+  - Only READING from shelve (admin data)
   
   - Webpage will not have user view
   - Use case: Admin pages

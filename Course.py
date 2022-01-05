@@ -31,18 +31,29 @@ from Rating import Rating
 from CourseParts import ZoomPart, VideoPart
 
 class Course():
-    ratings = []    # TO THE PERSON DOING RATINGS: Cache a version, or calculate directly from shelves? Also see its set/get tags.
-    def __init__(self, title, description, thumbnail, price, courseType, status):
+    course_no = -1
+    def __init__(self, userID, title, description, thumbnail, price, status):
+        self.__class__.course_no += 1
+        self.__courseID = str(self.__class__.course_no)
+        self.__userID = userID  # Owner of course
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
         self.__price = price
-        self.__courseType = courseType  # Zoom or Video?
+        self.__courseType = {"Zoom": False, "Video": False}  # Zoom or Video?
         self.__status = status  # Is course available?
-        self.__overallRating = None
+        self.__overallRating = 0
         self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course?
         self.__ratings = []
         self.__schedule = []
+
+    def get_courseID(self):
+        return self.__courseID
+
+    def set_userID(self, userID):
+        self.__userID = userID
+    def get_userID(self):
+        return self.__userID
 
     def set_title(self, name):
         self.__name = name
@@ -64,8 +75,16 @@ class Course():
     def get_price(self):
         return self.__price
 
-    def set_courseType(self, courseType):
-        self.__courseType = courseType
+    def activate_zoom(self):
+        self.__courseType["Zoom"] = True
+    def deactivate_zoom(self):
+        self.__courseType["Zoom"] = False
+
+    def activate_video(self):
+        self.__courseType["Video"] = True
+    def deactivate_video(self):
+        self.__courseType["Video"] = False
+
     def get_courseType(self):
         return self.__courseType
 
@@ -73,13 +92,6 @@ class Course():
         self.__status = status
     def get_status(self):
         return self.__status
-
-
-
-    def set_overallRating(self):    # To update the value whenever run
-        self.__overallRating = sum(self.__class__.ratings)/len(self.__class__.ratings)
-    def get_overallRating(self):
-        return self.__overallRating
 
     def add_tags(self, *args):
         for tag in args:
@@ -101,6 +113,11 @@ class Course():
 
     def get_ratings(self):
         return self.__ratings
+    def get_averageRating(self):
+        total = 0
+        for rating in self.__ratings:
+            total += rating.get_rating()
+            return (total/len(self.__ratings))
 
     def add_scheduleVideoPart(self, title, description, thumbnail, videoData):
         videoPart = VideoPart(title, description, thumbnail, videoData)
@@ -112,11 +129,11 @@ class Course():
                 break
 
     def add_scheduleZoomPart(self, title, description, thumbnail):
-        zoomPart = ZoomPart(title, description, thumbnail)  # kwargs = timings
+        zoomPart = ZoomPart(title, description, thumbnail)
         self.__schedule.append(zoomPart)
     def remove_scheduleZoomPart(self, title, description):
         for ZoomPart in self.__schedule:
-            if VideoPart.get_title() == title and VideoPart.get_description() == description:
+            if ZoomPart.get_title() == title and ZoomPart.get_description() == description:
                 self.__schedule.remove(ZoomPart)
 
     def get_schedule(self):

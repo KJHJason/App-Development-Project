@@ -14,8 +14,9 @@ class Teacher(User):
         self.__reviewID = ""
         self.__viewed = ""
         self.__joinDate = ""
-        # Added by Wei Ren for courses
-        self.__coursesTeaching = []
+    # Added by Wei Ren for courses
+        self.__coursesTeaching = [] # Course IDs here
+        self.__shoppingCart = [] # Course IDs here
 
     def set_card_name(self, card_name):
         self.__card_name = card_name
@@ -65,7 +66,13 @@ class Teacher(User):
 # Added by Wei Ren for courses
     def get_coursesTeaching(self):
         return self.__coursesTeaching
+    def set_courseTeaching(self, courseID):
+        self.__coursesTeaching.append(courseID)
 
-    def set_courseTeaching(self, title, description, thumbnail, price, courseType, status):   # As an object
-        course = Course(title, description, thumbnail, price, courseType, status)
-        self.__coursesTeaching.append(course)
+    def add_to_card(self, courseID):
+        self.__shoppingCart.append(courseID)
+    def remove_from_card(self,courseID):
+        self.__shoppingCart.remove(courseID)
+
+    def get_shoppingCart(self):
+        return self.__shoppingCart

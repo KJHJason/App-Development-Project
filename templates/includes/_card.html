@@ -1,0 +1,67 @@
+<div class="card">
+		<div class="row no-gutters layer-1">
+			<div class="col-4">
+				<img src="{{ course_thumbnail }}" class="card-img" alt="Course Thumbnail">
+			</div>
+			<div class="col-8">
+				<div class="card-body text">
+					<!--Placeholders-->
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							<!--Placeholders-->
+						</div>
+						<div class="information col">
+							<p><a href="{{ creator_link }}"><img src="{{ creator_thumbnail }}" class="" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>{{ creator_name }}&nbsp;</a></p>
+							<p>{{ price }}</p>
+							<!--<p class="review-maker"><a href="">Write a Review</a></p>-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="row no-gutters layer-2">
+			<div class="col-4">
+				<!--Placeholders-->
+			</div>
+			<div class="col-8">
+				<div class="card-body text">
+					<h5 class="card-title">{{ title }}<i class="fas fa-times" onclick=""></i></h5>
+					<p class="card-text">{{ description }}</p>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							{% if info == "Video" %}
+							<p class="info">Online Videos</p>
+							<a href="{{ link }}" class="view">View Recording</a>
+							{% elif info == "Zoom" %}
+							<p class="info">Zoom Session</p>
+							<a href="{{ link }}" class="view">View Zoom Link</a>
+							{% else %}	<!--Zoom not specified.-->
+								{% if video == "selected" %}
+								<a href="{{ link_vid }}" class="selected">Video Recording</a>
+								{% elif video == "unselected" %}
+								<a href="{{ link_vid }}" class="unselected">Video Recording</a>
+								{% elif video == "unavailable" %}
+								<p class="unavailable">Video Recording<br></p>
+								{% if zoom == "selected" %}
+								<a href="{{ link_zoom }}" class="selected">Live Zoom</a>
+								{% elif zoom == "unselected" %}
+								<a href="{{ link_zoom }}" class="unselected">Live Zoom</a>
+								{% elif zoom == "unavailable" %}
+								<p class="unavailable">Live Zoom<br></p>
+							{% endif %}
+						</div>
+						<div class="information col">
+							<!--Placeholders-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
