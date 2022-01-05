@@ -3,6 +3,9 @@
  * https://github.com/Wruczek/Bootstrap-Cookie-Alert
  * Released under MIT license
  */
+
+ /* note that the cookie alert css has been modified to fit CourseFinity's theme */
+
  .cookiealert {
     position: fixed;
     bottom: 0;
