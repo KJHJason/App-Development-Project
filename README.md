@@ -12,6 +12,7 @@ Group Members:
 </ol>
 Libraries needed:
 <ol>
+  <li>shelve [Inbuilt with Python]</li>
   <li>Flask Version 2.0.2 [pip install Flask]</li>
   <li>Flask-WTF Version 1.0.0 [pip install Flask-WTF] or WTForms Version 3.0.0 [pip install WTForms]</li>
   <li>Jinja2 Version 3.0.3 [pip install Jinja2]</li>
