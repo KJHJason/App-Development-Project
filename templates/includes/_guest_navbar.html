@@ -2,15 +2,12 @@
 	<div class="container-fluid">
 		<a id="logo" href="/"><img src="{{ url_for('static', filename='images/common/logo.png') }}" alt="CourseFinity Logo"></a>
 		</a>
-		<button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-content">
-			<div class="hamburger-toggle">
-				<div class="hamburger">
-					<span></span>
-					<span></span>
-					<span></span>
-				</div>
-			</div>
-		</button>
+		<input type="checkbox" id="check" data-bs-toggle="collapse" data-bs-target="#navbar-content"  aria-expanded="false" aria-label="Toggle navigation">
+		<label for="check" id="nav-icon">
+			<span></span>
+			<span></span>
+			<span></span>
+		</label>
 		<div class="collapse navbar-collapse" id="navbar-content">
 			<ul class="navbar-nav mr-auto mb-2 mb-lg-0">
 				<li class="nav-item dropdown">

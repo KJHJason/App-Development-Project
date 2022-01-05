@@ -1,4 +1,4 @@
-////////////////// Cookie alert Javascript //////////////////
+////////////////// Edited Cookie alert Javascript //////////////////
 
 /*
  * Bootstrap Cookie Alert by Wruczek
@@ -58,4 +58,4 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-////////////////// End of Cookie warning alert Javascript //////////////////
+////////////////// End of Edited Cookie warning alert Javascript //////////////////
