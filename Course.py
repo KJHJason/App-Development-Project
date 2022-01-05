@@ -40,7 +40,8 @@ class Course():
         self.__description = description
         self.__thumbnail = thumbnail
         self.__price = price
-        self.__courseType = {"Zoom": False, "Video": False}  # Zoom or Video?
+        self.__videoCondition = False # Zoom or Video?
+        self.__zoomCondition = False
         self.__status = status  # Is course available?
         self.__overallRating = 0
         self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course?
@@ -85,8 +86,22 @@ class Course():
     def deactivate_video(self):
         self.__courseType["Video"] = False
 
-    def get_courseType(self):
-        return self.__courseType
+    def switch_videoCondition(self):
+        if self.__videoCondition: # if True:
+            self.__videoCondition = False
+        else:
+            self.__videoCondition = True
+
+    def switch_zoomCondition(self):
+        if self.__zoomCondition: # if True:
+            self.__zoomCondition = False
+        else:
+            self.__zoomCondition = True
+
+    def get_videoCondition(self):
+        return self.__courseType["Video"]
+    def get_zoomCondition(self):
+        return self.__courseType["Zoom"]
 
     def set_status(self,status):
         self.__status = status

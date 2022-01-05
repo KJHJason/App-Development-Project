@@ -5,10 +5,82 @@
 {% block title %}Shopping Cart | CourseFinity{% endblock %}
 
 {% block content %}
+<div id="shopping-title">
+    <h4>Shopping Cart</h4>
+    <hr>
+</div>
+
+{% for course in courseList %}
+
+<div class="card">
+		<div class="row no-gutters layer-1">
+			<div class="col-4">
+				<img src= "{{ course.get_thumbnail() }}" class="card-img" alt="Course Thumbnail">
+			</div>
+			<div class="col-8">
+				<div class="card-body text">
+					<!--Placeholders-->
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							<!--Placeholders-->
+						</div>
+						<div class="information col">
+							<p><a href="{{ /course.get_userID() }}"><img src="{{ /userDict[course.get_userID()].get_profile_image() }}" class="" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>{{ userDict[course.get_userID()].get_username() }}&nbsp;</a></p>
+							<p>{{ course.get_price() }}</p>
+							<!--<p class="review-maker"><a href="">Write a Review</a></p>-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
 
-{% for name in names %}
-  Hello, {{ name }}, welcome to {{ place }}!
+
+		<div class="row no-gutters layer-2">
+			<div class="col-4">
+				<!--Placeholders-->
+			</div>
+			<div class="col-8">
+				<div class="card-body text">
+					<h5 class="card-title">{{ course.get_title() }}<i class="fas fa-times" onclick=""></i></h5>
+					<p class="card-text">{{ course.get_description() }}</p>
+				</div>
+				<div class="card-body">
+					<div class="row">
+						<div class="selection col">
+							{% if info == "Video" %}
+							<p class="info">Online Videos</p>
+							<a href="{{ link }}" class="view">View Recording</a>
+							{% elif info == "Zoom" %}
+							<p class="info">Zoom Session</p>
+							<a href="{{ link }}" class="view">View Zoom Link</a>
+							{% else %}	<!--Zoom not specified.-->
+								{% if userKey.get_cartCourseType(course.get_courseID()) == "Video" %}
+								<a href="{{ link_vid }}" class="selected">Video Recording</a>
+								{% elif userKey.get_cartCourseType(course.get_courseID()) != "Video" %}
+								<a href="{{ link_vid }}" class="unselected">Video Recording</a>
+								{% elif course.get_videoCondition() %}
+								<p class="unavailable">Video Recording<br></p>
+								{% if userKey.get_cartCourseType(course.get_courseID()) == "Zoom" %}
+								<a href="{{ link_zoom }}" class="selected">Live Zoom</a>
+								{% elif userKey.get_cartCourseType(course.get_courseID()) != "Zoom" %}
+								<a href="{{ link_zoom }}" class="unselected">Live Zoom</a>
+								{% elif course.get_zoomCondition() %}
+								<p class="unavailable">Live Zoom<br></p>
+							{% endif %}
+						</div>
+						<div class="information col">
+							<!--Placeholders-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% end block %}
 {% endfor %}
 
 

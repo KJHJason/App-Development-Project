@@ -93,48 +93,6 @@ def save(*args):
            {courseID:Course()}
            {courseID:Course()}}
 """
-"""Student 1"""
-
-#General
-userID = "0"
-username = "James"
-email = sanitise("CourseFinity123@gmail.com".lower())
-password = password_manager().hash_password("123!@#")
-user = Student(userID, username, email, password)
-
-#Card --> No Validation for Simulation
-user.set_card_name("James Oliver")
-user.set_card_no("0102030405060708")
-user.set_card_expiry("7/2022") ## Format Important
-user.set_card_cvv("123")
-user.set_card_type("visa") ## [visa, mastercard, american express]
-
-#Courses (Royston)
-
-
-user.add_to_card("0") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
-
-save(user,None,None)
-
-"""Student 2"""
-
-#General
-userID = "1"
-username = "Daniel"
-email = sanitise("abc.net@gmail.com".lower())
-password = password_manager().hash_password("456$%^")
-user = Student(userID, username, email, password)
-
-#Card --> No Validation for Simulation
-user.set_card_name("Daniel Pang")
-user.set_card_no("8070605040302010")
-user.set_card_expiry("10/2023") ## Format Important
-user.set_card_cvv("321")
-user.set_card_type("mastercard") ## [visa, mastercard, american express]
-
-#Courses (Royston)
-
-save(user,None,None)
 
 """Teacher 1"""
 
@@ -232,6 +190,53 @@ course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the jou
 user.set_courseTeaching(course.get_courseID())
 
 save(user,None,course)
+
+
+
+"""Student 1"""
+
+#General
+userID = "0"
+username = "James"
+email = sanitise("CourseFinity123@gmail.com".lower())
+password = password_manager().hash_password("123!@#")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("James Oliver")
+user.set_card_no("0102030405060708")
+user.set_card_expiry("7/2022") ## Format Important
+user.set_card_cvv("123")
+user.set_card_type("visa") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+
+user.add_to_cart("0","Video") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+
+save(user,None,None)
+
+"""Student 2"""
+
+#General
+userID = "1"
+username = "Daniel"
+email = sanitise("abc.net@gmail.com".lower())
+password = password_manager().hash_password("456$%^")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("Daniel Pang")
+user.set_card_no("8070605040302010")
+user.set_card_expiry("10/2023") ## Format Important
+user.set_card_cvv("321")
+user.set_card_type("mastercard") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+save(user,None,None)
+
+
 
 """Admin 1"""
 #General

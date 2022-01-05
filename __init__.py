@@ -338,6 +338,9 @@ If you did not make this request, please ignore this email.
 
 """End of Useful Functions by Jason"""
 
+print("Remember:")
+import this
+
 """General pages by INSERT_YOUR_NAME"""
 
 @app.route('/', methods=["GET","POST"])
@@ -2060,44 +2063,17 @@ def shoppingCart(pageNum):
             # userKey is the object
             # print(userKey) --> <Student.Student object at 0x00000294ABDCDE50>
             shoppingCart = userKey.get_shoppingCart()
-            for courseID in shoppingCart:
-                print(courseID)
 
-            """
-            P
-            L
-            E
-            A
-            S
-            E
-             
-            V
-            A
-            L
-            I
-            D
-            A
-            T
-            E"""
-            dbCourse = shelve.open("course", "c")
-            """
-            T
-            H
-            I
-            S
-            """
+            courseDb = shelve.open("course", "c")
+            if len(courseDb) == 1:
+                courseDict = courseDb["Courses"]
+            else:
+                courseDict = {}
 
             courseList = []
-            for courseID in shoppingCart:
-                course = dbCourse[courseID]
-                courseDict = {"Title":course.get_title(),
-                              "Description":course.get_description(),
-                              "Thumbnail":course.get_thumbnail(),
-                              "VideoCheck":course.get_courseType()["Video"],
-                              "ZoomCheck":course.get_courseType()["Zoom"],
-                              "Price":course.get_price(),
-                              "Owner":course.get_owner()}
-                courseList.append(courseDict)
+            for courseInfo in shoppingCart:
+                course = courseDict[courseInfo[0]]
+                courseList.append(course)
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
             courseListLen = len(courseList) # get the length of the userList
@@ -2107,6 +2083,9 @@ def shoppingCart(pageNum):
             if pageNum < 0:
                 return redirect("/shopping_cart/0")
             elif courseListLen > 0 and pageNum == 0:
+                print(len(courseDict))
+                print(len(courseList))
+                print(courseInfo[0])
                 return redirect("/shopping_cart/1")
             elif pageNum > maxPages:
                 redirectRoute = "/shopping_cart/" + str(maxPages)
@@ -2119,7 +2098,8 @@ def shoppingCart(pageNum):
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/shopping_cart.html', courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+                courseDb.close()
+                return render_template('users/student/shopping_cart.html', courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, userDict = userDict, userKey = userKey)
 
         else:
             db["Users"] = userDict  # Save changes

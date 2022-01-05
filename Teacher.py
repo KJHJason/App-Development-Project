@@ -69,10 +69,16 @@ class Teacher(User):
     def set_courseTeaching(self, courseID):
         self.__coursesTeaching.append(courseID)
 
-    def add_to_card(self, courseID):
-        self.__shoppingCart.append(courseID)
-    def remove_from_card(self,courseID):
-        self.__shoppingCart.remove(courseID)
+    #e.g. add_to_cart(0,"Zoom")
+    def add_to_cart(self, courseID,type):
+        self.__shoppingCart.append([str(courseID),type])
+    def remove_from_cart(self,courseID,type):
+        self.__shoppingCart.remove([str(courseID),type])
+
+    def get_cartCourseType(self, courseID):
+        for course in self.__shoppingCart:
+            if course[0] == courseID:
+                return course[1]
 
     def get_shoppingCart(self):
         return self.__shoppingCart
