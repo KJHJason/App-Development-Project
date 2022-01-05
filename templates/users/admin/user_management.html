@@ -90,7 +90,11 @@
                                     </a>
                                 </li>
                                 {% for key in paginationList %}
-                                <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% if key == pageNum %}
+                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% else %}
+                                    <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% endif %}
                                 {% endfor %}
                                 <li class="page-item me-auto">
                                     <a class="page-link" href="/user_management/{{ maxPages }}" aria-label="Next">
@@ -109,7 +113,7 @@
                                     <span class="sr-only">Previous</span>
                                     </a>
                                 </li>
-                                <li class="page-item"><a class="page-link" href="/user_management/0">0</a></li>
+                                <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/0">0</a></li>
                                 <li class="page-item me-auto">
                                     <a class="page-link" href="/user_management/0" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
@@ -128,7 +132,11 @@
                                     </a>
                                 </li>
                                 {% for key in paginationList %}
-                                <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% if key == pageNum %}
+                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% else %}
+                                    <li class="page-item"><a class="page-link" href="/user_management/{{ key }}">{{ key }}</a></li>
+                                    {% endif %}
                                 {% endfor %}
                                 <li class="page-item me-auto">
                                     <a class="page-link" href="/user_management/{{ maxPages }}" aria-label="Next">

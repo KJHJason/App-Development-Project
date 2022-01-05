@@ -968,6 +968,7 @@ def adminLogin():
 
 """User Management for Admins by Jason"""
 
+# Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
 @app.route("/user_management/<string:pageNum>/")
 def userManagement(pageNum):
     if "adminSession" in session:
@@ -1362,9 +1363,9 @@ def updatePassword():
         if request.method == "POST" and create_update_password_form.validate():
             userSession = session["userSession"]
 
-            # declaring password_not_matched, and errorMessage variable to prevent unboundLocalError
-            password_not_matched = True
-            password_verification = False
+            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
+            passwordNotMatched = True
+            passwordVerification = False
 
             # for jinja2
             errorMessage = False 
@@ -1401,7 +1402,7 @@ def updatePassword():
                 print("Updated password input:", updatedPassword)
                 print("Confirm password input", confirmPassword)
                 if updatedPassword == confirmPassword:
-                    password_not_matched = False
+                    passwordNotMatched = False
                     print("New and confirm password inputs matched")
                 else:
                     print("New and confirm password inputs did not match")
@@ -1409,30 +1410,36 @@ def updatePassword():
                 print("Current password:", currentStoredPassword)
                 print("Current password input:", currentPassword)
 
-                password_verification = password_manager().verify_password(currentStoredPassword, currentPassword)
-                
+                passwordVerification = password_manager().verify_password(currentStoredPassword, currentPassword)
+                oldPassword = password_manager().verify_password(currentStoredPassword, updatedPassword)
+
                 # printing message for debugging purposes
-                if password_verification:
+                if passwordVerification:
                     print("User identity verified")
                 else:
                     print("Current password input hash did not match with the one in the shelve database")
 
-                # if there any validation error, errorMessage will become True for jinja2 to render the error message
-                if password_verification == False or password_not_matched:
-                    errorMessage = True
+                if oldPassword:
                     db.close()
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                    print("User cannot change password to their current password!")
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
                 else:
-                    # updating password of the user once validated
-                    hashedPwd = password_manager().hash_password(updatedPassword)
-                    userKey.set_password(hashedPwd)
-                    db['Users'] = userDict
-                    print("Password updated")
-                    db.close()
+                    # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                    if passwordVerification == False or passwordNotMatched:
+                        db.close()
+                        errorMessage = True
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                    else:
+                        # updating password of the user once validated
+                        hashedPwd = password_manager().hash_password(updatedPassword)
+                        userKey.set_password(hashedPwd)
+                        db['Users'] = userDict
+                        print("Password updated")
+                        db.close()
 
-                    # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                    session["password_changed"] = True
-                    return redirect(url_for("userProfile"))
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["password_changed"] = True
+                        return redirect(url_for("userProfile"))
             else:
                 print("User not found is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage

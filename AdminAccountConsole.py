@@ -19,7 +19,8 @@ Please select the following command number to continue:
 1. Create a new admin account
 2. Update admin password
 3. Deactivate an admin account
-4. Delete an admin account
+4. Reactivate an admin account
+5. Delete an admin account
 0. Exit
 
 Important Notes:
@@ -27,6 +28,9 @@ In the event of the program freezing, press CTRL + C to force shut down the prog
 However, it may result in data corruption.
 Hence, please only force shut down the program if necessary.
 """
+
+# Command line 1-2 feature/operations done by Jason
+# Command line 3-5 feature/operations done by Clarence
 
 while True:
     print(cmd_menu)
@@ -208,6 +212,9 @@ while True:
                             break
                     if emailValid:
                         adminKey.set_status("Inactive")
+                        db["Admins"] = adminDict
+                        db.close()
+                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, deactivated.")
                     else:
                         db.close()
                         print("\nError: No admin account with that email exists.")
@@ -250,7 +257,56 @@ while True:
                             adminKey = adminDict[key]
                             break
                     if emailValid:
-                        adminDict.pop(adminKey.get_user_id())
+                        adminKey.set_status("Active")
+                        db["Admins"] = adminDict
+                        db.close()
+                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, reactivated.")
+                    else:
+                        db.close()
+                        print("\nError: No admin account with that email exists.")
+                else:
+                    print("\nError: Please create an admin account and try again later.")
+            else:
+                print("\nError: Entered email address is not a valid email address. Please try again.")
+        else:
+            print("\nError: You cannot leave the input empty! Please try again.")
+
+    elif cmd_input == "5":
+        email = sanitise(input("Enter email for the admin account: "))
+        if email != False:
+            emailValidation = validate_email(email)
+            if emailValidation:
+                adminDict = {}
+                db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                try:
+                    if 'Admins' in db:
+                        adminDict = db['Admins']
+                        print("\nRetrieved data from admin account database")
+                        fileFound = True
+                    else:
+                        db.close()
+                        print("\nError: No admin account data in admin account database")
+                        fileFound = False
+                except:
+                    db.close()
+                    print("\nError in retrieving Admins from user.db")
+                    fileFound = False
+
+                if fileFound:
+                    emailValid = False
+                    for key in adminDict:
+                        print("\nretrieving emails")
+                        emailShelveData = adminDict[key].get_email()
+                        if email == emailShelveData:
+                            print("Verdict: Admin email Found.")
+                            emailValid = True
+                            adminKey = adminDict[key]
+                            break
+                    if emailValid:
+                        removedAdmin = adminDict.pop(adminKey.get_user_id())
+                        db["Admins"] = adminDict
+                        db.close()
+                        print(f"\nAdmin account with the ID, {removedAdmin.get_user_id()}, deleted successfully.")
                     else:
                         db.close()
                         print("\nError: No admin account with that email exists.")
