@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import shelve, Forms, os, math, stripe
-import Student, Teacher, Admin
+import shelve, os, math, stripe
+import Student, Teacher, Admin, Forms
 from Security import password_manager, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
