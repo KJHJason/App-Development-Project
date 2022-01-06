@@ -1019,6 +1019,8 @@ def userManagement(pageNum):
                 paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
+                session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+
                 return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
         else:
             print("Admin account is not found or is not active.")
@@ -1027,6 +1029,59 @@ def userManagement(pageNum):
             # determine if it make sense to redirect the admin to the home page or the admin login page
             return redirect(url_for("home"))
             # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/delete_user/uid/<int:userID>", methods=['GET', 'POST'])
+def deleteUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+            
+            if userKey != None:
+                userDict.pop(userID)
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been deleted.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object from user.db")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
     else:
         return redirect(url_for("home"))
 
@@ -2483,6 +2538,11 @@ def error403(e):
 @app.errorhandler(404)
 def error404(e):
     return render_template("errors/404.html"), 404
+
+# Method Not Allowed
+@app.errorhandler(405)
+def error405(e):
+    return render_template("errors/405.html"), 405
 
 # Payload Too Large
 @app.errorhandler(413)
