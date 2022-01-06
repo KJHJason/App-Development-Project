@@ -341,11 +341,32 @@ If you did not make this request, please ignore this email.
 """
     mail.send(message)
 
+def send_admin_reset_email(email, password):
+    message = Message("Password Reset Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+As per requested, we have helped you reset your password to the following,
+
+Updated password: {password}
+
+Please use the updated password to login and immediately change it due to security reasons.
+You can login using the following link:
+{url_for("login", _external=True)}
+
+Thank you and enjoy learning or teaching at CourseFinity!
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Sincerely,
+CourseFinity
+"""
+    mail.send(message)
+
 """End of Useful Functions by Jason"""
 
 """General pages by INSERT_YOUR_NAME"""
 
-@app.route('/', methods=["GET","POST"])
+@app.route('/')
 def home():
     # checking sessions if the user had recently logged out
     if "recentlyLoggedOut" in session:
