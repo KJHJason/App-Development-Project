@@ -6,6 +6,8 @@
 <div class="container">
     <a href="#"><h4>Back</h4></a>
     <h2>Purchase History</h2>
+
+    {% for item in purchaseDictionary %}
     <div class="card mb-3" style="max-width: 1000px;">
       <div class="row g-0">
         <div class="col-md-4">
@@ -13,20 +15,28 @@
         </div>
         <div class="col-md-8">
           <div class="card-body">
-            <h5 class="card-title">Card title</h5>
+            <h5 class="card-title">{}</h5>
             <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
             <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
           </div>
         </div>
       </div>
     </div>
+    {% endfor %}
+
     {% if maxPages > 5 %}
     <nav aria-label="Page navigation">
         <ul class="pagination">
             <li class="page-item ms-auto">
-                <a class="page-link" href="/purchasehistory/page/1" aria-label="Previous">
+                <a class="page-link" href="/purchasehistory/page/1" aria-label="First Page">
                 <span aria-hidden="true">&laquo;</span>
-                <span class="sr-only">Previous</span>
+                <span class="sr-only">First Page</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="/purchasehistory/page/{{ previousPage }}" aria-label="Previous">
+                    <span aria-hidden="true">&lt;</span>
+                    <span class="sr-only">Previous</span>
                 </a>
             </li>
             {% for key in paginationList %}
@@ -36,10 +46,16 @@
                 <li class="page-item"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
                 {% endif %}
             {% endfor %}
+            <li class="page-item">
+                <a class="page-link" href="/purchasehistory/page/{{ nextPage }}" aria-label="Next">
+                    <span aria-hidden="true">&gt;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
             <li class="page-item me-auto">
-                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Next">
+                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Last Page">
                 <span aria-hidden="true">&raquo;</span>
-                <span class="sr-only">Next</span>
+                <span class="sr-only">Last Page</span>
                 </a>
             </li>
         </ul>
@@ -66,9 +82,15 @@
     <nav aria-label="Page navigation">
         <ul class="pagination">
             <li class="page-item ms-auto">
-                <a class="page-link" href="/purchasehistory/page/1" aria-label="Previous">
+                <a class="page-link" href="/purchasehistory/page/1" aria-label="First Page">
                 <span aria-hidden="true">&laquo;</span>
-                <span class="sr-only">Previous</span>
+                <span class="sr-only">First Page</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="/purchasehistory/page/{{ previousPage }}" aria-label="Previous">
+                    <span aria-hidden="true">&lt;</span>
+                    <span class="sr-only">Previous</span>
                 </a>
             </li>
             {% for key in paginationList %}
@@ -78,10 +100,16 @@
                 <li class="page-item"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
                 {% endif %}
             {% endfor %}
+            <li class="page-item">
+                <a class="page-link" href="/purchasehistory/page/{{ nextPage }}" aria-label="Next">
+                    <span aria-hidden="true">&gt;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
             <li class="page-item me-auto">
-                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Next">
+                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Last Page">
                 <span aria-hidden="true">&raquo;</span>
-                <span class="sr-only">Next</span>
+                <span class="sr-only">Last Page</span>
                 </a>
             </li>
         </ul>
