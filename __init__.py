@@ -974,7 +974,7 @@ def adminLogin():
 """User Management for Admins by Jason"""
 
 # Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
-@app.route("/user_management/<string:pageNum>/")
+@app.route("/user_management/page/<int:pageNum>")
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1003,14 +1003,14 @@ def userManagement(pageNum):
             maxItemsPerPage = 10 # declare the number of items that can be seen per pages
             userListLen = len(userList) # get the length of the userList
             maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
+
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/user_management/0")
+                return redirect("/user_management/page/0")
             elif userListLen > 0 and pageNum == 0:
-                return redirect("/user_management/1")
+                return redirect("/user_management/page/1")
             elif pageNum > maxPages:
-                redirectRoute = "/user_management/" + str(maxPages)
+                redirectRoute = "/user_management/page/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
