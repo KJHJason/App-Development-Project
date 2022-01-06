@@ -346,12 +346,27 @@ def send_admin_reset_email(email, password):
     message.body = f"""Hello,
 
 As per requested, we have helped you reset your password to the following,
-
 Updated password: {password}
 
 Please use the updated password to login and immediately change it due to security reasons.
 You can login using the following link:
-{url_for("login", _external=True)}
+{url_for("userLogin", _external=True)}
+
+Thank you and enjoy learning or teaching at CourseFinity!
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Sincerely,
+CourseFinity
+"""
+    mail.send(message)
+
+def send_admin_unban_email(email):
+    message = Message("You have been unbanned from CourseFinity", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+We have looked at your ban appeal application and we have unbanned your account.
+We are really sorry for the inconvenience caused and will do our part to investigate the mistake on our end.
 
 Thank you and enjoy learning or teaching at CourseFinity!
 
@@ -995,15 +1010,13 @@ def adminLogin():
 """User Management for Admins by Jason"""
 
 # Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
-@app.route("/user_management/page/<int:pageNum>")
+@app.route("/user_management/page/<int:pageNum>", methods=['GET', 'POST'])
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        
         if userFound and accActive:
-            # add in your code here
             userDict = {}
             db = shelve.open("user", "c")
             try:
@@ -1016,36 +1029,63 @@ def userManagement(pageNum):
             except:
                 print("Error in retrieving Users from user.db")
 
-            userList = []
-            for users in userDict:
-                user = userDict.get(users)
-                userList.append(user)
-            
-            maxItemsPerPage = 10 # declare the number of items that can be seen per pages
-            userListLen = len(userList) # get the length of the userList
-            maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            # for resetting the user's password
+            admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
+            if request.method == "POST" and admin_reset_password_form.validate():
+                password = admin_reset_password_form.password.data
+                userID = int(request.form["userID"])
+                userKey = userDict.get(userID)
 
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
-            if pageNum < 0:
-                return redirect("/user_management/page/0")
-            elif userListLen > 0 and pageNum == 0:
-                return redirect("/user_management/page/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/user_management/page/" + str(maxPages)
-                return redirect(redirectRoute)
+                # for redirecting the admin to the user management page that he/she was in
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+
+                redirectURL = "/user_management/page/" + str(pageNum)
+                if userKey != None:
+                    # changing the password of the user
+                    hashedPwd = password_manager().hash_password(password)
+                    userKey.set_password(hashedPwd)
+                    db["Users"] = userDict
+                    db.close()
+                    send_admin_reset_email(userKey.get_email(), password) # sending an email to the user to notify them of the change
+                    print("User reset password successfully and email sent.")
+                    return redirect(redirectURL)
+                else:
+                    print("Error in retrieving user object.")
+                    return redirect(redirectURL)
             else:
-                # pagination algorithm starts here
-                userList = userList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
-                paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+                userList = []
+                for users in userDict:
+                    user = userDict.get(users)
+                    userList.append(user)
                 
-                previousPage = pageNum - 1
-                nextPage = pageNum + 1
+                maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+                userListLen = len(userList) # get the length of the userList
+                maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-                return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
+                if pageNum < 0:
+                    return redirect("/user_management/page/0")
+                elif userListLen > 0 and pageNum == 0:
+                    return redirect("/user_management/page/1")
+                elif pageNum > maxPages:
+                    redirectRoute = "/user_management/page/" + str(maxPages)
+                    return redirect(redirectRoute)
+                else:
+                    # pagination algorithm starts here
+                    userList = userList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    pageNumForPagination = pageNum - 1 # minus for the paginate function
+                    paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+                    paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                    session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+                    
+                    previousPage = pageNum - 1
+                    nextPage = pageNum + 1
+
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1056,7 +1096,7 @@ def userManagement(pageNum):
     else:
         return redirect(url_for("home"))
 
-@app.route("/delete_user/uid/<int:userID>", methods=['GET', 'POST'])
+@app.route("/delete_user/uid/<int:userID>", methods=['POST'])
 def deleteUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1066,7 +1106,7 @@ def deleteUser(userID):
         # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
         
         if userFound and accActive:
-            
+            # for redirecting the admin to the user management page that he/she was in
             if "pageNum" in session:
                 pageNum = session["pageNum"]
             else:
@@ -1099,7 +1139,115 @@ def deleteUser(userID):
                 return redirect(redirectURL)
             else:
                 db.close()
-                print("Error in retrieving user object from user.db")
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/ban/uid/<int:userID>", methods=['POST'])
+def banUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+            
+            if userKey != None:
+                userKey.set_status("Banned")
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been banned.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/unban/uid/<int:userID>", methods=['POST'])
+def unbanUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+            
+            if userKey != None:
+                userKey.set_status("Good")
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been unbanned.")
+                send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                print("Successfully sent an email.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
