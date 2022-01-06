@@ -1844,7 +1844,7 @@ def deleteCard():
 """Trending & Recommendation for logged in users by Royston"""
 
 @app.route("/user_home")
-def search():
+def trendingRecommendation():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -1891,7 +1891,7 @@ def search():
 """Trending for guest users by Royston"""
 
 @app.route("/guest_home")
-def search():
+def trending():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -2054,7 +2054,7 @@ def purchaseHistory():
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/admin/user_management.html', userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             db.close()
             print("User not found or is banned")
