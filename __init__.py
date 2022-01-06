@@ -2088,36 +2088,24 @@ def purchaseHistory():
             purchaseID = userKey.get_purchaseID()
             print("PurchaseID exists?: ", purchaseID)
 
-            #try:
-                #if purchaseID:
-                    #pass
+            if purchaseID == True:
+                for i in range:
+                    courseID = userKey.get_courseID()
+                    print("Course ID:", courseID)
+                    title = userKey.get_title()
+                    print("Course title:", title)
+                    description = userKey.get_description()
+                    print("Course Description:", description)
+                    thumbnail = userKey.get_thumbnail()
+                    print("Course Thumbnail:", thumbnail)
+                    price = userKey.get_price()
+                    print("Course Price:", price)
+                    courseType = userKey.get_courseType()
+                    print("Course Type:", courseType)
 
-                #else:
-                    #pass
-            #except:
-                #db.close()
-                #print("Error in displaying Purchase History")
-                #return redirect(url_for("home"))
-
-            courseDict = {
-                0: {'name': 'Python 101', 'description': "lorem ipsum on deez python nuts", 'price': 420, "tag": "programming"},
-                1: {'name': 'Maths 101', 'description': "lorem ipsum on deez maths nuts", 'price': 69, "tag": "maths"},
-                2: {'name': 'Science 101', 'description': "lorem ipsum on deez science nuts", 'price': 1337, "tag": "science"}
-            }
-
-
-
-            print(courseDict[1]['name'])
-
-            coursePurchasedList = []
-            purchaseHistoryDict = {
-                0:courseDict[2]
-            }
-
-            for purchasedCourseID in purchaseHistoryDict:
-                coursePurchasedList.append(purchasedCourseID)
-
-            print(purchaseHistoryDict[0]) 
+            else:
+                db.close()
+                print("Purchase History is Empty")
             
             # pagination algorithm starts here
             purchaseHistoryList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
@@ -2129,7 +2117,7 @@ def purchaseHistory():
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/admin/user_management.html', courseID=courseID, title=title, description=description, thumbnail=thumbnail, price=price, courseType=courseType, userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             db.close()
             print("User not found or is banned")
