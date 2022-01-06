@@ -1004,7 +1004,7 @@ def userManagement(pageNum):
             userListLen = len(userList) # get the length of the userList
             maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
             if pageNum < 0:
                 return redirect("/user_management/page/0")
             elif userListLen > 0 and pageNum == 0:
