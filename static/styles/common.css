@@ -256,4 +256,9 @@ footer ul {
 	color: #FFF;
 }
 
+.btn-primary {
+	background-color: #009DF8 !important;
+	color: #FFF !important;
+}
+
 /* ============ End of Others ============ */

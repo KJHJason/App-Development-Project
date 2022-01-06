@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import shelve, Forms, os, math, stripe
-import Student, Teacher, Admin
+import shelve, os, math, stripe
+import Student, Teacher, Admin, Forms
 from Security import password_manager, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
@@ -977,7 +977,7 @@ def adminLogin():
 """User Management for Admins by Jason"""
 
 # Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
-@app.route("/user_management/<string:pageNum>/")
+@app.route("/user_management/page/<int:pageNum>")
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1006,14 +1006,14 @@ def userManagement(pageNum):
             maxItemsPerPage = 10 # declare the number of items that can be seen per pages
             userListLen = len(userList) # get the length of the userList
             maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
             if pageNum < 0:
-                return redirect("/user_management/0")
+                return redirect("/user_management/page/0")
             elif userListLen > 0 and pageNum == 0:
-                return redirect("/user_management/1")
+                return redirect("/user_management/page/1")
             elif pageNum > maxPages:
-                redirectRoute = "/user_management/" + str(maxPages)
+                redirectRoute = "/user_management/page/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -1022,7 +1022,12 @@ def userManagement(pageNum):
                 paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
-                return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList)
+                session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+                
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1030,6 +1035,59 @@ def userManagement(pageNum):
             # determine if it make sense to redirect the admin to the home page or the admin login page
             return redirect(url_for("home"))
             # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/delete_user/uid/<int:userID>", methods=['GET', 'POST'])
+def deleteUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+            
+            if userKey != None:
+                userDict.pop(userID)
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been deleted.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object from user.db")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
     else:
         return redirect(url_for("home"))
 
@@ -1786,6 +1844,100 @@ def deleteCard():
 
 """End of User payment method settings by Jason"""
 
+"""Trending & Recommendation for logged in users by Royston"""
+
+@app.route("/user_home")
+def search():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+
+            db.close() # remember to close your shelve files!
+            return render_template('users/general/user_home.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Trending & Recommendation for logged in users by Royston"""
+
+"""Trending for guest users by Royston"""
+
+@app.route("/guest_home")
+def search():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+            db.close() # remember to close your shelve files!
+            return render_template('users/general/guest_home.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Trending for guest users by Royston"""
+
 """Search Function by Royston"""
 
 @app.route("/search")
@@ -1864,17 +2016,16 @@ def purchaseHistory():
             purchaseID = userKey.get_purchaseID()
             print("PurchaseID exists?: ", purchaseID)
 
-            userDict = {}
-            db = shelve.open("user", "r")
-            #try:
-                #if purchaseID:
+            try:
+                if purchaseID:
+                    pass
 
-                #else:
-
-            #except:
-            #    db.close()
-            #    print("Error in displaying Purchase History")
-            #    return redirect(url_for("home"))
+                else:
+                    pass
+            except:
+                db.close()
+                print("Error in displaying Purchase History")
+                return redirect(url_for("home"))
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchasehistory.html')
@@ -2463,6 +2614,11 @@ def error403(e):
 @app.errorhandler(404)
 def error404(e):
     return render_template("errors/404.html"), 404
+
+# Method Not Allowed
+@app.errorhandler(405)
+def error405(e):
+    return render_template("errors/405.html"), 405
 
 # Payload Too Large
 @app.errorhandler(413)

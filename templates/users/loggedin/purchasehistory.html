@@ -20,5 +20,72 @@
         </div>
       </div>
     </div>
+    {% if maxPages > 5 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item ms-auto">
+                <a class="page-link" href="/purchasehistory/page/1" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            {% for key in paginationList %}
+                {% if key == pageNum %}
+                <li class="page-item active" aria-current="page"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item me-auto">
+                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% elif maxPages == 0 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item ms-auto">
+                <a class="page-link" href="/purchasehistory/page/0" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            <li class="page-item active" aria-current="page"><a class="page-link" href="/purchasehistory/page/0">0</a></li>
+            <li class="page-item me-auto">
+                <a class="page-link" href="/purchasehistory/page/0" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% elif maxPages <= 5 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item ms-auto">
+                <a class="page-link" href="/purchasehistory/page/1" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">Previous</span>
+                </a>
+            </li>
+            {% for key in paginationList %}
+                {% if key == pageNum %}
+                <li class="page-item active" aria-current="page"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="/purchasehistory/page/{{ key }}">{{ key }}</a></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item me-auto">
+                <a class="page-link" href="/purchasehistory/page/{{ maxPages }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
   </div>
 {% endblock %}
