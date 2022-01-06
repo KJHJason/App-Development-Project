@@ -2,9 +2,8 @@ import shelve
 import Student
 from Security import password_manager
 
-
 userDict = {}
-db = shelve.open("user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+db = shelve.open("user", "c")
 try:
     if 'Users' in db:
         userDict = db['Users']
