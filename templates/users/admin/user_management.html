@@ -6,7 +6,7 @@
 {% from "includes/_formHelper.html" import render_field %}
 
 {% if invalidEmail %}
-<div class="modal fade" id="invalidEmailModal" tabindex="-1" aria-labelledby="invalidEmailModalLabel" aria-hidden="true">
+<div class="modal fade" id="invalidEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="invalidEmailModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
         <div class="modal-header">
@@ -14,7 +14,45 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <h6>Inputted user's new email is invalid, please try again.</h6>
+            <h6 class="text-danger">Error: Inputted user's new email is invalid, please try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if sameEmail %}
+<div class="modal fade" id="sameEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sameEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="sameEmailModalLabel">User Account Recovery Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6 class="text-danger">Error: Inputted user's new email is the same as user's old email, please enter a new user email and try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if duplicateEmail %}
+<div class="modal fade" id="duplicateEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="duplicateEmailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="duplicateEmailLabel">User Account Recovery Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6 class="text-danger">Error: Inputted user's new email has been taken by another user, please enter a new user email and try again.</h6>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
@@ -293,6 +331,18 @@
         <script>
             var invalidEmailModal = new bootstrap.Modal(document.getElementById('invalidEmailModal'), {});
             invalidEmailModal.show();
+        </script>
+    {% endif %}
+    {% if sameEmail %}
+        <script>
+            var sameEmailModal = new bootstrap.Modal(document.getElementById('sameEmailModal'), {});
+            sameEmailModal.show();
+        </script>
+    {% endif %}
+    {% if duplicateEmail %}
+        <script>
+            var duplicateEmailModal = new bootstrap.Modal(document.getElementById('duplicateEmailModal'), {});
+            duplicateEmailModal.show();
         </script>
     {% endif %}
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
