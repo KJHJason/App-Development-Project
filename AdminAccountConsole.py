@@ -1,5 +1,5 @@
 from Admin import Admin
-from Security import password_manager, sanitise, validate_email
+from Security import hash_password, verify_password, sanitise, validate_email
 import shelve
 
 def validate_pwd_length(pwd, pwdMinimumLength):
@@ -9,8 +9,6 @@ def validate_pwd_length(pwd, pwdMinimumLength):
     else:
         print("Verdict: Password length accepted, within {} characters minimum requirement." .format(pwdMinimumLength))
         return True
-
-pwdManager = password_manager()
 
 cmd_menu = """
 Welcome to the admin console!
@@ -49,10 +47,10 @@ while True:
             pwdLengthValidate = validate_pwd_length(password, 6) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
 
             if pwdLengthValidate:
-                password = pwdManager.hash_password(password)
+                password = hash_password(password)
                 cfm_password = input("\nConfirm password for admin account: ")
 
-                pwdMatched = pwdManager.verify_password(password, cfm_password)
+                pwdMatched = verify_password(password, cfm_password)
 
                 if pwdMatched:
                     print("\nPassword for admin entered matched.")
@@ -156,10 +154,10 @@ while True:
                         password = input("\nEnter password for admin account: ")
                         pwdLengthValidate = validate_pwd_length(password, 6) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
                         if pwdLengthValidate:
-                            password = pwdManager.hash_password(password)
+                            password = hash_password(password)
                             cfm_password = input("\nConfirm password for admin account: ")
 
-                            pwdMatched = pwdManager.verify_password(password, cfm_password)
+                            pwdMatched = verify_password(password, cfm_password)
                             if pwdMatched:
                                 adminKey.set_password(password)
                                 db["Admins"] = adminDict

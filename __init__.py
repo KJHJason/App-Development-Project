@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import shelve, os, math, stripe
 import Student, Teacher, Admin, Forms
-from Security import password_manager, sanitise, validate_email
+from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -485,7 +485,7 @@ def userLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
+                password_matched = verify_password(passwordShelveData, passwordInput)
                 
                 # printing for debugging purposes
                 if password_matched:
@@ -640,7 +640,7 @@ def resetPassword(token):
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        hashedPassword = password_manager().hash_password(password)
+                        hashedPassword = hash_password(password)
                         userKey.set_password(hashedPassword)
                         db["Users"] = userDict
                         db.close()
@@ -710,7 +710,7 @@ def userSignUp():
                 
                 # If there were no duplicates and passwords entered were the same, create a new user
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-                    hashedPwd = password_manager().hash_password(passwordInput)
+                    hashedPwd = hash_password(passwordInput)
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the user
@@ -792,7 +792,7 @@ def teacherSignUp():
 
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                     print("User info validated.")
-                    hashedPwd = password_manager().hash_password(passwordInput)
+                    hashedPwd = hash_password(passwordInput)
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the teacher
@@ -967,7 +967,7 @@ def adminLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
+                password_matched = verify_password(passwordShelveData, passwordInput)
 
                 if password_matched:
                     print("Correct password!")
@@ -1254,8 +1254,8 @@ def adminChangePassword():
                 print("Current password:", currentStoredPassword)
                 print("Current password input:", currentPassword)
 
-                passwordVerification = password_manager().verify_password(currentStoredPassword, currentPassword)
-                oldPassword = password_manager().verify_password(currentStoredPassword, updatedPassword)
+                passwordVerification = verify_password(currentStoredPassword, currentPassword)
+                oldPassword = verify_password(currentStoredPassword, updatedPassword)
 
                 # printing message for debugging purposes
                 if passwordVerification:
@@ -1275,7 +1275,7 @@ def adminChangePassword():
                         return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        hashedPwd = password_manager().hash_password(updatedPassword)
+                        hashedPwd = hash_password(updatedPassword)
                         userKey.set_password(hashedPwd)
                         db['Admins'] = adminDict
                         print("Password updated")
@@ -1338,7 +1338,7 @@ def userManagement(pageNum):
                     userKey = userDict.get(userID)
                     if userKey != None:
                         # changing the password of the user
-                        hashedPwd = password_manager().hash_password(password)
+                        hashedPwd = hash_password(password)
                         userKey.set_password(hashedPwd)
                         userKey.set_email(email)
                         db["Users"] = userDict
@@ -1947,8 +1947,8 @@ def updatePassword():
                 print("Current password:", currentStoredPassword)
                 print("Current password input:", currentPassword)
 
-                passwordVerification = password_manager().verify_password(currentStoredPassword, currentPassword)
-                oldPassword = password_manager().verify_password(currentStoredPassword, updatedPassword)
+                passwordVerification = verify_password(currentStoredPassword, currentPassword)
+                oldPassword = verify_password(currentStoredPassword, updatedPassword)
 
                 # printing message for debugging purposes
                 if passwordVerification:
@@ -1968,7 +1968,7 @@ def updatePassword():
                         return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        hashedPwd = password_manager().hash_password(updatedPassword)
+                        hashedPwd = hash_password(updatedPassword)
                         userKey.set_password(hashedPwd)
                         db['Users'] = userDict
                         print("Password updated")
