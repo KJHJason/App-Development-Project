@@ -224,3 +224,13 @@
 .table_text {
   max-width: 180px;
 }
+
+.table_full_data_text {
+  color: #000;
+}
+
+.table_full_data_text:hover {
+  text-decoration: none;
+  cursor: text;
+  color: #000;
+}

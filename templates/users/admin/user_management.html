@@ -64,9 +64,9 @@
                                 {% for user in userList %}
                                     <tr>
                                         <td>{{ user.get_user_id() }}</td>
-                                        <td class="text-truncate table_text">{{ user.get_username() }}</td>
+                                        <td class="text-truncate table_text"><a href="javascript:void(0)" class="table_full_data_text" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_username() }}">{{ user.get_username() }}</a></td>
                                         <td>{{ user.get_acc_type() }}</td>
-                                        <td class="text-truncate table_text">{{ user.get_email() }}</td>
+                                        <td class="text-truncate table_text"><a href="javascript:void(0)" class="table_full_data_text" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }}">{{ user.get_email() }}</a></td>
                                         <td>{{ user.get_status() }}</td>
                                         <td>
                                             <form action="" method="POST">
@@ -292,4 +292,5 @@
             invalidEmailModal.show();
         </script>
     {% endif %}
+    <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
 {% endblock %}
