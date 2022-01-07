@@ -5,6 +5,25 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
+{% if invalidEmail %}
+<div class="modal fade" id="invalidEmailModal" tabindex="-1" aria-labelledby="invalidEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="invalidEmailModalLabel">User Account Recovery Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Inputted user's new email is invalid, please try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -31,7 +50,7 @@
                 <div class="container">
                     <div class="row">
                         <h6>There are {{ count }} users in CourseFinity.</h6>
-                        <div class="table-responsive-md">
+                        <div class="table-responsive-xl">
                             <table class="table">
                                 <tr>
                                     <td>User ID</td>
@@ -45,26 +64,28 @@
                                 {% for user in userList %}
                                     <tr>
                                         <td>{{ user.get_user_id() }}</td>
-                                        <td>{{ user.get_username() }}</td>
+                                        <td class="text-truncate table_text">{{ user.get_username() }}</td>
                                         <td>{{ user.get_acc_type() }}</td>
-                                        <td>{{ user.get_email() }}</td>
+                                        <td class="text-truncate table_text">{{ user.get_email() }}</td>
                                         <td>{{ user.get_status() }}</td>
                                         <td>
                                             <form action="" method="POST">
-                                                <div class="modal fade" id="resetPasswordModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="resetPasswordModalLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                <div class="modal fade" id="recoverAccountModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="recoverAccountModalLabel{{ user.get_user_id() }}" aria-hidden="true">
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title" id="resetPasswordModalLabel{{ user.get_user_id() }}">Reset User's Password</h5>
+                                                                <h5 class="modal-title" id="recoverAccountModalLabel{{ user.get_user_id() }}">Recover User's Account</h5>
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
                                                                 <h6>
-                                                                    Are you sure that you want to reset {{ user.get_username() }}'s password with the ID, {{ user.get_user_id() }}?
-                                                                    If so, please enter a password in the form below.
+                                                                    Are you sure that you want to reset {{ user.get_username() }}'s password and email with the ID, {{ user.get_user_id() }} for account recovery?
                                                                 </h6>
+                                                                <h6>If so, please enter the user's new email (that the user has control of) and a password in the form below.</h6>
                                                                 <input type="hidden" id="userID" name="userID" value="{{ user.get_user_id() }}">
+                                                                {{ render_field(form.email, class="form-control") }}
                                                                 {{ render_field(form.password, class="form-control") }}
+                                                                <h6 class="text-success">Note: A follow up email with instructions will be sent to the user.</h6>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
@@ -89,8 +110,8 @@
                                                                 <h6>Otherwise, please refrain from banning users for no valid reasons.</h6>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-success">Ban</button>
+                                                                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">Ban</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -102,7 +123,7 @@
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.get_user_id() }}">Ban</a></li>
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ user.get_user_id() }}">Reset Password</a></li>
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
                                             </div>
                                             {% elif user.get_status() == "Banned" %}
@@ -134,7 +155,7 @@
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#unbanUserModal{{ user.get_user_id() }}">Unban</a></li>
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ user.get_user_id() }}">Reset Password</a></li>
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
                                             </div>
                                             {% endif %}
@@ -167,7 +188,7 @@
                         </div>
                         {% if maxPages > 5 %}
                         <nav aria-label="Page navigation">
-                            <ul class="pagination">
+                            <ul class="pagination flex-wrap">
                                 <li class="page-item ms-auto">
                                     <a class="page-link" href="/user_management/page/1" aria-label="First Page">
                                     <span aria-hidden="true">&laquo;</span>
@@ -203,7 +224,7 @@
                         </nav>
                         {% elif maxPages == 0 %}
                         <nav aria-label="Page navigation">
-                            <ul class="pagination">
+                            <ul class="pagination flex-wrap">
                                 <li class="page-item ms-auto">
                                     <a class="page-link" href="/user_management/page/0" aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
@@ -221,7 +242,7 @@
                         </nav>
                         {% elif maxPages <= 5 %}
                         <nav aria-label="Page navigation">
-                            <ul class="pagination">
+                            <ul class="pagination flex-wrap">
                                 <li class="page-item ms-auto">
                                     <a class="page-link" href="/user_management/page/1" aria-label="First Page">
                                     <span aria-hidden="true">&laquo;</span>
@@ -262,4 +283,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if invalidEmail %}
+        <script>
+            var invalidEmailModal = new bootstrap.Modal(document.getElementById('invalidEmailModal'), {});
+            invalidEmailModal.show();
+        </script>
+    {% endif %}
 {% endblock %}

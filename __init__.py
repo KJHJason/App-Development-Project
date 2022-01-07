@@ -342,13 +342,14 @@ If you did not make this request, please ignore this email.
     mail.send(message)
 
 def send_admin_reset_email(email, password):
-    message = Message("Password Reset Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
+    message = Message("Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
 
-As per requested, we have helped you reset your password to the following,
+As per requested, we have helped you reset your email and password to the following,
+Updated email: {email}
 Updated password: {password}
 
-Please use the updated password to login and immediately change it due to security reasons.
+Please use your email and the updated password to login and immediately change the password due to security reasons.
 You can login using the following link:
 {url_for("userLogin", _external=True)}
 
@@ -1029,31 +1030,41 @@ def userManagement(pageNum):
             except:
                 print("Error in retrieving Users from user.db")
 
-            # for resetting the user's password
+            # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
             if request.method == "POST" and admin_reset_password_form.validate():
                 password = admin_reset_password_form.password.data
-                userID = int(request.form["userID"])
-                userKey = userDict.get(userID)
+                email = sanitise(admin_reset_password_form.email.data)
+                validEmail = validate_email(email)
 
                 # for redirecting the admin to the user management page that he/she was in
                 if "pageNum" in session:
                     pageNum = session["pageNum"]
                 else:
                     pageNum = 0
-
                 redirectURL = "/user_management/page/" + str(pageNum)
-                if userKey != None:
-                    # changing the password of the user
-                    hashedPwd = password_manager().hash_password(password)
-                    userKey.set_password(hashedPwd)
-                    db["Users"] = userDict
-                    db.close()
-                    send_admin_reset_email(userKey.get_email(), password) # sending an email to the user to notify them of the change
-                    print("User reset password successfully and email sent.")
-                    return redirect(redirectURL)
+
+                if validEmail:
+                    userID = int(request.form["userID"])
+                    userKey = userDict.get(userID)
+                    if userKey != None:
+                        # changing the password of the user
+                        hashedPwd = password_manager().hash_password(password)
+                        userKey.set_password(hashedPwd)
+                        userKey.set_email(email)
+                        db["Users"] = userDict
+                        db.close()
+                        send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                        print("User account recovered successfully and email sent.")
+                        return redirect(redirectURL)
+                    else:
+                        db.close()
+                        print("Error in retrieving user object.")
+                        return redirect(redirectURL)
                 else:
-                    print("Error in retrieving user object.")
+                    db.close()
+                    print("Inputted new user's email is invalid.")
+                    session["invalidEmail"] = True
                     return redirect(redirectURL)
             else:
                 userList = []
@@ -1085,7 +1096,12 @@ def userManagement(pageNum):
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form)
+                    if "invalidEmail" in session:
+                        invalidEmail = True
+                    else:
+                        invalidEmail = False
+
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
