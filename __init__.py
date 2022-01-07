@@ -529,6 +529,8 @@ def logout():
         session.pop("userSession", None)
     elif "adminSession" in session:
         session.pop("adminSession", None)
+        if "pageNum" in session:
+            session.pop("pageNum", None)
     else:
         return redirect(url_for("home"))
     
