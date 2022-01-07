@@ -57,7 +57,6 @@ def validate_session_get_userKey_open_file(userSession):
         print("Verdict: User ID not found.")
         return userKey, userFound, False
     
-
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
 def get_userID(userDict):
