@@ -33,6 +33,12 @@ app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
 app.config["MAIL_PASSWORD"] = os.environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
 mail = Mail(app)
 
+# paypal sdk configuration
+paypalrestsdk.configure({
+  "mode": "sandbox",
+  "client_id": "AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s",
+  "client_secret": os.environ.get("PAYPAL_SECRET") })
+
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address)
 
