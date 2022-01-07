@@ -1,6 +1,6 @@
 from __init__ import app, mail
 from PIL import Image
-from itsdangerous import TimedJSONWebSignatureSerializer as serializer
+from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
 import shelve, os
 from flask import url_for
@@ -283,12 +283,14 @@ def get_pagination_button_list(pageNum, maxPages):
     return paginationList
 
 # functions for reset password process via email
-def get_reset_token(userKey, expires_sec=600): # 10 mins
-    s = serializer(app.config["SECRET_KEY"], expires_sec)
-    return s.dumps({"user_id": userKey.get_user_id()}).decode("utf-8")
+# helpful resources: https://stackoverflow.com/questions/56699115/timedjsonwebsignatureserializer-vs-urlsafetimedserializer-when-should-i-use-wha
+# TimedJsonWebSignatureSerializer uses SHA512 by default
+def get_reset_token(emailKey, expires_sec=600): # 10 mins
+    s = jsonSerializer(app.config["SECRET_KEY"], expires_sec)
+    return s.dumps({"user_id": emailKey.get_user_id()}).decode("utf-8")
 
 def verify_reset_token(token):
-    s = serializer(app.config["SECRET_KEY"])
+    s = jsonSerializer(app.config["SECRET_KEY"])
     # try and except as if the token is invalid, it will raise an exception
     try:
         userID = s.loads(token)["user_id"] # get the token but if the token is invalid or expired, it will raise an exception
@@ -296,14 +298,48 @@ def verify_reset_token(token):
     except:
         return None
 
-def send_reset_email(email, email_key):
-    token = get_reset_token(email_key)
+def send_reset_email(email, emailKey):
+    token = get_reset_token(emailKey)
     message = Message("Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""To reset your password, visit the following link:
 {url_for("resetPassword", token=token, _external=True)}
 
 Do note that this link will expire in 10 minutes.
 If you did not make this request, please ignore this email.
+"""
+    mail.send(message)
+
+# useful notes for verifying emails: https://www.chargebee.com/blog/avoid-friction-trial-sign-process/
+# URLSafeTimedSerializer uses SHA1 by default
+def generate_verify_email_token(emailKey, expires_sec=259200): # 3 days
+    s = jsonSerializer(app.config["SECRET_KEY"], expires_sec)
+    return s.dumps({"user_id": emailKey.get_user_id()}).decode("utf-8")
+
+def verify_email_token(token):
+    s = jsonSerializer(app.config["SECRET_KEY"])
+    try:
+        userID = s.loads(token)["user_id"] # get the token but if the token is invalid or expired, it will raise an exception
+        return userID
+    except:
+        return None
+
+def send_verify_email(email, emailKey):
+    token = generate_verify_email_token(emailKey)
+    message = Message("Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+Welcome to CourseFinity!
+We would like you to verify your email for verifications purposes.
+
+Please click on this link to verify your email:
+{url_for("verifyEmail", token=token, _external=True)}
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Thank you.
+
+Sincerely,
+CourseFinity
 """
     mail.send(message)
 

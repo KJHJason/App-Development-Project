@@ -15,7 +15,7 @@ from JasonFunctions import *
 Flask Application (10%)
 Completed at least 4 functions (C, R, U and/or D) with excellent use of
 UI components, consistent layout and compellingly consideration to address
-the user’s needs.
+the user's needs.
 
 OOP Concepts (5%)
 Implemented 3 OOP concepts appropriately and correctly with strong
