@@ -2089,7 +2089,7 @@ def purchaseHistory():
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
-                for i in range:
+                for courseID in range(5):
                     courseID = userKey.get_courseID()
                     print("Course ID:", courseID)
                     title = userKey.get_title()
@@ -2162,6 +2162,8 @@ def purchaseReview():
         
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            
+
             
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchasereview.html')
