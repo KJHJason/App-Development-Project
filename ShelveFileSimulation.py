@@ -122,12 +122,14 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = ""
-price = "72.5"
+price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(title, description, thumbnail, price, courseType, status)
+course = Course(userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
+
+course.switch_zoomCondition() # Video = True
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("2", "Very Good", "Please make more.", "4")
@@ -172,11 +174,12 @@ title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = ""
 price = "69"
-courseType = "Video" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(title, description, thumbnail, price, courseType, status)
+course = Course(userID, title, description, thumbnail, price, status)
 course.add_tags("z","y","x","w","v")
+
+course.switch_videoCondition() # Video = True
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -212,7 +215,7 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-user.add_to_cart("0","Video") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
 save(user,None,None)
 

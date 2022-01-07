@@ -11,6 +11,21 @@ from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as serializer
 from flask_mail import Mail, Message
 
+"""Rubrics (for Excellent)"""
+"""Week 13 Progress Review (15%)
+Flask Application (10%)
+Completed at least 4 functions (C, R, U and/or D) with excellent use of 
+UI components, consistent layout and compellingly consideration to address
+the user’s needs.
+
+OOP Concepts (5%)
+Implemented 3 OOP concepts appropriately and correctly with strong
+justification in supporting the functionality of the flask application.
+ - Classes, Objects and Methods
+ - Inheritance & Polymorphism
+ - Persistence & Exceptions
+"""
+
 """Web app configurations"""
 
 # general Flask configurations
@@ -60,7 +75,7 @@ def get_key_and_validate(userSession, userDict):
             return userKey, userFound, False
     else:
         return "", userFound, False
-    
+
 
 # Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
 def validate_session_get_userKey_open_file(userSession):
@@ -75,7 +90,7 @@ def validate_session_get_userKey_open_file(userSession):
     except:
         print("File could not be found.")
         return userKey, False, False
-        
+
     userFound = False
     print("ID in session:", userSession)
     userKey = userDict.get(userSession)
@@ -90,7 +105,7 @@ def validate_session_get_userKey_open_file(userSession):
     else:
         print("Verdict: User ID not found.")
         return userKey, userFound, False
-    
+
 
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
@@ -116,7 +131,7 @@ def validate_session_open_file(userSession):
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
         return False, False
-        
+
     userFound = False
     print("User ID in session:", userSession)
     userKey = userDict.get(userSession)
@@ -220,7 +235,7 @@ def admin_validate_session_open_file(adminSession):
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
         return False, False
-        
+
     userFound = False
     print("Admin ID in session:", adminSession)
     adminKey = adminDict.get(adminSession)
@@ -251,7 +266,7 @@ def admin_get_key_and_validate(adminSession, adminDict):
             return adminKey, userFound, False
     else:
         return adminKey, userFound, False
-    
+
 # Use this function if you want to validate the session, check if the admin is active, and get the adminKey but not manipulating the data in the admin shelve files (usually this will be used for reading the admin account data or other data relevant to the admin)
 def admin_get_key_and_validate_open_file(adminSession):
     adminKey = ""
@@ -263,7 +278,7 @@ def admin_get_key_and_validate_open_file(adminSession):
     except:
         print("No files found.")
         return adminKey, False, False
-    
+
     userFound = False
     print("Admin ID in session:", adminSession)
     adminKey = adminDict.get(adminSession)
@@ -283,7 +298,7 @@ def admin_get_key_and_validate_open_file(adminSession):
 def paginate(contentList, pageNumber, itemPerPage):
     # mainly using list slicing manipulation
     numOfItemsSeen = pageNumber * itemPerPage # calculating how many items are alrd seen based on the page number given
-    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen. 
+    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen.
 
 # getting the numbers of pagination buttons to display
 def get_pagination_button_list(pageNum, maxPages):
@@ -297,23 +312,23 @@ def get_pagination_button_list(pageNum, maxPages):
         currentFromMax = maxPages - pageNum # calculating the difference from the user's current page to max number of pages
         if pageNum < 4: # if the user's current page number is 3 or less,
             paginationList.append(1)
-            paginationList.append(2)     
+            paginationList.append(2)
             paginationList.append(3)
             paginationList.append(4)
             paginationList.append(5)
         elif currentFromMax <= 2: # if the difference is 2 or less
             paginationList.append(maxPages - 4)
-            paginationList.append(maxPages - 3)     
+            paginationList.append(maxPages - 3)
             paginationList.append(maxPages - 2)
             paginationList.append(maxPages - 1)
             paginationList.append(maxPages )
         else:
             paginationList.append(pageNum - 2)
-            paginationList.append(pageNum - 1 )     
+            paginationList.append(pageNum - 1 )
             paginationList.append(pageNum)
             paginationList.append(pageNum + 1)
             paginationList.append(pageNum + 2)
-                
+
     return paginationList
 
 # functions for reset password process via email
@@ -341,10 +356,21 @@ If you did not make this request, please ignore this email.
 """
     mail.send(message)
 
-"""End of Useful Functions by Jason"""
+# Today's function is brought to you by our sponsor, Wei Ren!
+def ellipsis(text, textType):
+    if textType == "Title":
+        wordLimit = 30
 
-print("Remember:")
-import this
+    elif textType == "Description":
+        wordLimit = 130
+
+    if len(text) > wordLimit:
+        text = text[:wordLimit] + "..."
+
+    return text
+# Adds ellipsis to text to prevent overflow, feel free to add your own limits
+
+"""End of Useful Functions by Jason"""
 
 """General pages by INSERT_YOUR_NAME"""
 
@@ -363,7 +389,7 @@ def home():
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        
+
         if userFound and accActive:
             return render_template('users/admin/admin_home.html')
         else:
@@ -444,7 +470,7 @@ def userLogin():
                     break
                 else:
                     print("User email not found.")
-                    
+
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
                 passwordShelveData = email_key.get_password()
@@ -452,13 +478,13 @@ def userLogin():
                 print("Password Input:", passwordInput)
 
                 password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
-                
+
                 # printing for debugging purposes
                 if password_matched:
                     print("Correct password!")
                 else:
                     print("Password incorrect.")
-                    
+
             if email_found and password_matched:
                 print("User validated...")
                 print("Email in database:", emailShelveData)
@@ -497,7 +523,7 @@ def logout():
         session.pop("adminSession", None)
     else:
         return redirect(url_for("home"))
-    
+
     # sending a session data so that when it redirects the user to the homepage, jinja2 will render out a logout alert
     session["recentlyLoggedOut"] = True
     return redirect(url_for("home"))
@@ -547,7 +573,7 @@ def requestPasswordReset():
                     break
                 else:
                     print("User email not found.")
-                
+
             if email_found:
                 print("User email found...")
                 print("Email in database:", emailShelveData)
@@ -634,7 +660,7 @@ def userSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_signup_form = Forms.CreateSignUpForm(request.form)
         if request.method == 'POST' and create_signup_form.validate():
-            
+
             # Declaring the 2 variables below to prevent UnboundLocalError
             email_duplicates = False
             username_duplicates = False
@@ -673,7 +699,7 @@ def userSignUp():
                 # Checking duplicates for email and username
                 email_duplicates = check_duplicates(emailInput, userDict, "email")
                 username_duplicates = check_duplicates(usernameInput, userDict, "username")
-                
+
                 # If there were no duplicates and passwords entered were the same, create a new user
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                     hashedPwd = password_manager().hash_password(passwordInput)
@@ -688,7 +714,7 @@ def userSignUp():
 
                     userDict[userID] = user
                     db["Users"] = userDict
-                    
+
                     print(userDict)
 
                     db.close()
@@ -699,11 +725,11 @@ def userSignUp():
                     # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                     db.close()
                     print("Validation conditions were not met.")
-                    return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                    return render_template('users/guest/signup.html', form=create_signup_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched)
             else:
                 return render_template('users/guest/signup.html', form=create_signup_form, emailInvalid=True)
         else:
-            return render_template('users/guest/signup.html', form=create_signup_form)    
+            return render_template('users/guest/signup.html', form=create_signup_form)
     else:
         return redirect(url_for("home"))
 
@@ -715,7 +741,7 @@ def userSignUp():
 def teacherSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
-    
+
         if request.method == 'POST' and create_teacher_sign_up_form.validate():
             # Declaring the 2 variables below to prevent UnboundLocalError
             email_duplicates = False
@@ -770,14 +796,14 @@ def teacherSignUp():
 
                     userDict[userID] = user
                     db["Users"] = userDict
-                    
+
                     session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
 
                     print(userDict)
                     print("Teacher added.")
 
                     db.close()
-                    
+
                     session["userSession"] = userID
 
                     return redirect(url_for("signUpPayment"))
@@ -785,11 +811,11 @@ def teacherSignUp():
                     # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                     db.close()
                     print("Validation conditions were not met.")
-                    return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched) 
+                    return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, email_duplicates=email_duplicates, username_duplicates=username_duplicates, pwd_were_not_matched=pwd_were_not_matched)
             else:
-                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, invalidEmail=True) 
+                return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form, invalidEmail=True)
         else:
-            return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form) 
+            return render_template('users/guest/teacher_signup.html', form=create_teacher_sign_up_form)
     else:
         if "userSession" in session:
             return redirect(url_for("changeAccountType"))
@@ -803,7 +829,7 @@ def signUpPayment():
         if "teacher" in session:
             teacherID = session["teacher"]
             if teacherID == userSession:
-                
+
                 create_teacher_payment_form = Forms.CreateAddPaymentForm(request.form)
                 if request.method == 'POST' and create_teacher_payment_form.validate():
 
@@ -824,11 +850,11 @@ def signUpPayment():
                         db.close()
                         print("Error in retrieving Users from user.db")
                         return redirect(url_for("home"))
-                        
+
 
                     # retrieving the object from the shelve based on the user's email
                     teacherKey, userFound, accGoodStatus = get_key_and_validate(teacherID, userDict)
-                    
+
                     if userFound and accGoodStatus:
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
@@ -836,7 +862,7 @@ def signUpPayment():
 
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card_number(cardNo)
-                        
+
                         cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
                         cardType = get_card_type(cardNo)
                         cardCVVValid = validate_cvv(cardCVV, cardType)
@@ -926,7 +952,7 @@ def adminLogin():
                     break
                 else:
                     print("User email not found.")
-                    
+
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
                 passwordShelveData = email_key.get_password()
@@ -939,7 +965,7 @@ def adminLogin():
                     print("Correct password!")
                 else:
                     print("Password incorrect.")
-                    
+
             if email_found and password_matched:
                 print("Admin account validated...")
                 print("Email in database:", emailShelveData)
@@ -983,7 +1009,7 @@ def userManagement(pageNum):
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        
+
         if userFound and accActive:
             # add in your code here
             userDict = {}
@@ -1002,7 +1028,7 @@ def userManagement(pageNum):
             for users in userDict:
                 user = userDict.get(users)
                 userList.append(user)
-            
+
             maxItemsPerPage = 10 # declare the number of items that can be seen per pages
             userListLen = len(userList) # get the length of the userList
             maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
@@ -1142,9 +1168,9 @@ def userProfile():
                         print("File extension accepted and is within size limit.")
 
                         #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
-                        # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image 
-                        filename = secure_filename(filename) 
-                        
+                        # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
+                        filename = secure_filename(filename)
+
                         # constructing the file path so that the it will know where to store the image
                         filePath = construct_path(PROFILE_UPLOAD_PATH, filename)
 
@@ -1251,7 +1277,7 @@ def userProfile():
                 else:
                     recentChangeAccType = False
                     print("Recently changed account type to teacher?:", recentChangeAccType)
-                
+
                 return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType)
         else:
             db.close()
@@ -1271,7 +1297,7 @@ def updateUsername():
         create_update_username_form = Forms.CreateChangeUsername(request.form)
         if request.method == "POST" and create_update_username_form.validate():
             userSession = session["userSession"]
-            
+
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
             db = shelve.open("user", "c")
@@ -1281,7 +1307,7 @@ def updateUsername():
                 else:
                     db.close()
                     print("User data in shelve is empty.")
-                    session.clear() 
+                    session.clear()
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -1291,11 +1317,11 @@ def updateUsername():
 
             # retrieving the object from the shelve based on the user's user ID
             userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-            
+
             if userFound and accGoodStatus:
                 updatedUsername = sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
-                    
+
                 if updatedUsername != currentUsername:
                     # checking duplicates for username
                     for key in userDict:
@@ -1359,7 +1385,7 @@ def updateEmail():
                 else:
                     db.close()
                     print("User data in shelve is empty.")
-                    session.clear() 
+                    session.clear()
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -1369,11 +1395,11 @@ def updateEmail():
 
             # retrieving the object based on the shelve files using the user's user ID
             userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-            
+
             if userFound and accGoodStatus:
                 updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
                 currentEmail = userKey.get_email()
-                    
+
                 # Checking duplicates for email
                 if updatedEmail != currentEmail:
                     for key in userDict:
@@ -1396,7 +1422,7 @@ def updateEmail():
                         userKey.set_email(updatedEmail)
                         db['Users'] = userDict
                         print("Email updated")
-                        
+
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
                         session["email_updated"] = True
 
@@ -1434,7 +1460,7 @@ def updatePassword():
             passwordVerification = False
 
             # for jinja2
-            errorMessage = False 
+            errorMessage = False
 
             # Retrieving data from shelve and to write the data into it later
             userDict = {}
@@ -1445,7 +1471,7 @@ def updatePassword():
                 else:
                     db.close()
                     print("User data in shelve is empty.")
-                    session.clear() 
+                    session.clear()
                     # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
@@ -1455,7 +1481,7 @@ def updatePassword():
 
             # retrieving the object based on the shelve files using the user's user ID
             userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-            
+
             if userFound and accGoodStatus:
                 currentPassword = create_update_password_form.currentPassword.data
                 updatedPassword = create_update_password_form.updatePassword.data
@@ -1555,7 +1581,7 @@ def changeAccountType():
                     print("Account type updated to teacher.")
                     session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
                     return redirect(url_for("userProfile"))
-                else:    
+                else:
                     db.close()
                     return render_template("users/student/change_account_type.html")
             else:
@@ -1594,7 +1620,7 @@ def userPayment():
                 db.close()
                 print("User data in shelve is empty.")
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                session.clear() 
+                session.clear()
                 return redirect(url_for("home"))
         except:
             db.close()
@@ -1603,7 +1629,7 @@ def userPayment():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -1680,7 +1706,7 @@ def userPayment():
                 else:
                     cardUpdated = False
                     print("Card recently updated?:", cardUpdated)
-                
+
                 if "payment_added" in session:
                     cardAdded = True
                     session.pop("payment_added", None)
@@ -1717,7 +1743,7 @@ def userEditPayment():
             else:
                 db.close()
                 print("User data in shelve is empty.")
-                session.clear() 
+                session.clear()
                 # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
                 return redirect(url_for("home"))
         except:
@@ -1727,7 +1753,7 @@ def userEditPayment():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             accType = userKey.get_acc_type()
 
@@ -1805,7 +1831,7 @@ def deleteCard():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
             cardExist = bool(userKey.get_card_name())
@@ -1823,11 +1849,11 @@ def deleteCard():
                 db['Users'] = userDict
                 print("Payment added")
                 db.close()
-                
+
                 # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
                 session["card_deleted"] = True
                 return redirect(url_for("userPayment"))
-                
+
             else:
                 db.close()
                 return redirect(url_for("userProfile"))
@@ -1916,10 +1942,10 @@ def trending():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/general/guest_home.html')
         else:
@@ -1963,10 +1989,10 @@ def search():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/general/search.html')
         else:
@@ -1986,7 +2012,7 @@ def search():
 """"End of Search Function by Royston"""
 
 """Purchase History by Royston"""
-
+"""
 @app.route("/purchasehistory")
 def purchaseHistory():
     if "userSession" in session and "adminSession" not in session:
@@ -2010,7 +2036,7 @@ def purchaseHistory():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             purchaseID = userKey.get_purchaseID()
@@ -2071,7 +2097,7 @@ def purchaseHistory():
             # determine if it make sense to redirect the user to the home page or the login page
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-
+"""
 """End of Purchase History by Royston"""
 
 """Purchase Review by Royston"""
@@ -2099,10 +2125,10 @@ def purchaseReview():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchasereview.html')
         else:
@@ -2146,10 +2172,10 @@ def purchaseView():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchaseview.html')
         else:
@@ -2193,10 +2219,10 @@ def teacherCashOut():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/teacher/teacher_cashout.html')
         else:
@@ -2219,8 +2245,144 @@ def teacherCashOut():
 
 """Template Shopping Cart by Wei Ren"""
 
-@app.route("/shoppingCart/<string:pageNum>/")
+@app.route("/shopping_cart/<string:pageNum>/", methods = ["GET","POST"])
 def shoppingCart(pageNum):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        # userKey is the object (e.g. Student() or Teacher())
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            removeCourseForm = Forms.RemoveShoppingCartCourse(request.form)
+            shoppingCart = userKey.get_shoppingCart()
+
+            if request.method == "POST" and removeCourseForm.validate():                                    # D for Delete
+                courseID =  removeCourseForm.courseID.data
+                courseType = removeCourseForm.courseType.data
+
+                print("Removing course with Course ID, Type:", [courseID, courseType])
+
+                for course in shoppingCart:
+                    try:
+                        if course == [courseID,courseType]:
+                            shoppingCart.remove(course)
+                            userDict[userKey.get_user_id] = userKey
+                            db["Users"] = userDict
+                            db.close()
+                            break
+                    except IndexError:
+                        db.close()
+                        print("Error. Shopping cart courses are missing values.")
+
+                return redirect("/shopping_cart/"+pageNum)
+
+            # Render the page                                                                               # R for Read
+            else:
+                # Remember to validate
+                dbCourse = shelve.open("course", "c")
+                courseDict = dbCourse["Courses"]
+
+                # Initialise lists for jinja2 tags
+                ownerProfileImageList = []
+                ownerUsernameList = []
+                courseList = []
+                courseTypeList = []
+                subtotal = 0
+
+                for courseInfo in shoppingCart:
+                    # Getting course info
+                    print("Course Info [ID, Type]:", courseInfo)
+                    course = courseDict[courseInfo[0]]
+                    courseList.append(course)
+
+                    # Getting subtototal
+                    subtotal += float(course.get_price())
+
+                    # Getting course type chosen
+                    courseTypeList.append(courseInfo[1])
+
+                    # Getting course owner username
+                    ownerUsernameList.append(userDict[course.get_userID()].get_username())
+
+                    # Getting course owner profile
+                    userProfileImage = userDict[course.get_userID()].get_profile_image() # will return a filename, e.g. "0.png"
+                    userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+
+                    # checking if the user have uploaded a profile image before and if the image file exists
+                    if userProfileImage != "" and Path(userProfileImagePath).is_file():
+                        imagesrcPath = "/static/images/user/" + userProfileImage
+                    else:
+                        imagesrcPath = "/static/images/user/default.png"
+
+                    ownerProfileImageList.append(imagesrcPath)
+
+                maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+                courseListLen = len(courseList) # get the length of the userList
+                maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+                pageNum = int(pageNum)
+                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+                if pageNum < 0:
+                    return redirect("/shopping_cart/0")
+                elif courseListLen > 0 and pageNum == 0:
+                    return redirect("/shopping_cart/1")
+                elif pageNum > maxPages:
+                    redirectRoute = "/shopping_cart/" + str(maxPages)
+                    return redirect(redirectRoute)
+                else:
+                    # pagination algorithm starts here
+                    courseList = courseList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    pageNumForPagination = pageNum - 1 # minus for the paginate function
+                    paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+
+                    ownerProfileImageList = paginate(ownerProfileImageList[::-1], pageNumForPagination, maxItemsPerPage)
+                    ownerUsernameList = paginate(ownerUsernameList[::-1], pageNumForPagination, maxItemsPerPage)
+                    courseTypeList = paginate(courseTypeList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                    paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                    db.close() # remember to close your shelve files!
+                    dbCourse.close()
+                    return render_template('users/student/shopping_cart.html', individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal))
+
+        else:
+            db["Users"] = userDict  # Save changes
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # user is redirected to the home page, as they are not/no longer logged in
+            return redirect(url_for("home"))
+
+"""End of Template Shopping Cart by Wei Ren"""
+
+"""Template Checkout by Wei Ren"""
+
+@app.route("/checkout", methods = ["GET","POST"])
+def checkout():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -2245,49 +2407,18 @@ def shoppingCart(pageNum):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            # userKey is the object
-            # print(userKey) --> <Student.Student object at 0x00000294ABDCDE50>
-            shoppingCart = userKey.get_shoppingCart()
-
-            courseDb = shelve.open("course", "c")
-            if len(courseDb) == 1:
-                courseDict = courseDb["Courses"]
+            paymentForm = Forms.PaymentInfo(request.form)
+            if request.method == "POST" and paymentForm.validate():
+                return redirect(url_for('paymentComplete'))
             else:
-                courseDict = {}
-
-            courseList = []
-            for courseInfo in shoppingCart:
-                course = courseDict[courseInfo[0]]
-                courseList.append(course)
-
-            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(courseList) # get the length of the userList
-            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-            if pageNum < 0:
-                return redirect("/shopping_cart/0")
-            elif courseListLen > 0 and pageNum == 0:
-                print(len(courseDict))
-                print(len(courseList))
-                print(courseInfo[0])
-                return redirect("/shopping_cart/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/shopping_cart/" + str(maxPages)
-                return redirect(redirectRoute)
-            else:
-                # pagination algorithm starts here
-                courseList = courseList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                paginationList = get_pagination_button_list(pageNum, maxPages)
+                # Add choices as tuple (value, label)
+                # Do not append choices, it does not work
+                """PaymentForm.paymentMethod.choices = [('5','3')]
+                print(PaymentForm.paymentMethod.choices)"""
 
                 db.close() # remember to close your shelve files!
-                courseDb.close()
-                return render_template('users/student/shopping_cart.html', courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, userDict = userDict, userKey = userKey)
-
+                return render_template('users/student/payment_info.html', form = paymentForm)
         else:
-            db["Users"] = userDict  # Save changes
             db.close()
             print("User not found or is banned")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -2297,14 +2428,58 @@ def shoppingCart(pageNum):
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # user is redirected to the home page, as they are not/no longer logged in
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template Checkout by Wei Ren"""
+
+"""Template Payment Complete by Wei Ren"""
+
+@app.route("/payment_complete")
+def paymentComplete():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
             return redirect(url_for("home"))
 
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
 
+            db.close() # remember to close your shelve files!
+            return render_template('users/student/payment_complete.html')
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
 
-"""End of Template app.route by INSERT_YOUR_NAME"""
-
+"""End of Template Payment Complete by Wei Ren"""
 
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)

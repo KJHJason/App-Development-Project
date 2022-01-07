@@ -54,7 +54,7 @@ class Student(User):
     # Added by Wei Ren for Courses
     #e.g. add_to_cart(0,"Zoom")
     def add_to_cart(self, courseID,type):
-        self.__shoppingCart.append([str(courseID),type])
+        self.__shoppingCart.append([str(courseID),type])        # [[courseID, courseType], [courseID, courseType], ...]
     def remove_from_cart(self,courseID,type):
         self.__shoppingCart.remove([str(courseID),type])
 

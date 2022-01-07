@@ -1,0 +1,39 @@
+<!--Template by Wei Ren-->
+
+{% extends "user_base.html" %}
+{% block head %}
+
+{% endblock %}
+{% block title %}Payment Info | CourseFinity{% endblock %}
+
+{% block content %}
+
+{% from "includes/_formHelper.html" import render_field %}
+<form id="payment-form" method="post">
+    {{ render_field(form.cardName, class="form-control") }}
+    {{ render_field(form.cardNo, class="form-control") }}
+    {{ render_field(form.cardExpiry, class="form-control") }}
+    {{ render_field(form.cardCVV, class="form-control") }}
+    {{ render_field(form.savePaymentInfo, class="form-control") }}
+    {{ render_field(form.firstName, class="form-control") }}
+    {{ render_field(form.lastName, class="form-control") }}
+    {{ render_field(form.billAddress1, class="form-control") }}
+    {{ render_field(form.billAddress2, class="form-control") }}
+    {{ render_field(form.billAddress3, class="form-control") }}
+    {{ render_field(form.city, class="form-control") }}
+    {{ render_field(form.country, class="form-control") }}
+    {{ render_field(form.zipCode, class="form-control") }}
+    {{ render_field(form.countryCode, class="form-control") }}
+    {{ render_field(form.phoneNumber, class="form-control") }}
+    <p onclick="payment()">Pay and Checkout</p>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function payment() {
+        document.getElementById("payment-form").submit()
+    }
+</script>
+{% endblock %}
