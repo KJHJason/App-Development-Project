@@ -234,3 +234,7 @@
   cursor: text;
   color: #000;
 }
+
+.accepted_cards {
+  text-align: right;
+}
