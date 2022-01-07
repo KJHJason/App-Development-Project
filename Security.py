@@ -28,19 +28,6 @@ def verify_password(hashed, pwd):
     except:
         return False
 
-""" # for testing purposes
-pwdManager = PasswordManager()
-storing_hashed = pwdManager.hash_password("test123")
-print(storing_hashed)
-
-inputpwd = "test123"
-pwdMatched = pwdManager.verify_password(storing_hashed, inputpwd)
-
-if pwdMatched:
-    print("matched")
-else:
-    print("incorrect hash") """
-
 """End of Password hashing"""
 
 """Input sanitisation"""
