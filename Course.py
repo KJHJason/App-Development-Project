@@ -40,7 +40,8 @@ class Course():
         self.__description = description
         self.__thumbnail = thumbnail
         self.__price = price
-        self.__courseType = {"Zoom": False, "Video": False}  # Zoom or Video?
+        self.__videoCondition = False # Zoom or Video?
+        self.__zoomCondition = False
         self.__status = status  # Is course available?
         self.__overallRating = 0
         self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course?
@@ -55,10 +56,10 @@ class Course():
     def get_userID(self):
         return self.__userID
 
-    def set_title(self, name):
-        self.__name = name
+    def set_title(self, title):
+        self.__title = title
     def get_title(self):
-        return self.__name
+        return self.__title
 
     def set_description(self, description):
         self.__description = description
@@ -75,18 +76,22 @@ class Course():
     def get_price(self):
         return self.__price
 
-    def activate_zoom(self):
-        self.__courseType["Zoom"] = True
-    def deactivate_zoom(self):
-        self.__courseType["Zoom"] = False
+    def switch_videoCondition(self):
+        if self.__videoCondition: # if True:
+            self.__videoCondition = False
+        else:
+            self.__videoCondition = True
 
-    def activate_video(self):
-        self.__courseType["Video"] = True
-    def deactivate_video(self):
-        self.__courseType["Video"] = False
+    def switch_zoomCondition(self):
+        if self.__zoomCondition: # if True:
+            self.__zoomCondition = False
+        else:
+            self.__zoomCondition = True
 
-    def get_courseType(self):
-        return self.__courseType
+    def get_videoCondition(self):
+        return self.__videoCondition
+    def get_zoomCondition(self):
+        return self.__zoomCondition
 
     def set_status(self,status):
         self.__status = status

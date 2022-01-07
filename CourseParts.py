@@ -50,10 +50,10 @@ class ZoomPart(Part):
         return self.__timings
 
     def add_user_timing(self, userID, date, time):
-        for index in range(self.__timings):
-            if self.__timings[index] == [date, time]:
-                self.__userTimings[userID] = index  # As a way to index the timing; a format of [date, time, [userID, ...]] cannot be easily removed
-                break
+        for timing in self.__timings:
+            if timing == [date, time]:
+                self.__userTimings[userID] = {"date":timing[0],"time":timing[1]}  # As a way to index the timing; a format of [date, time, [userID, ...]] cannot be easily removed
+                break                                # Instead, {userID:[date, time]}
     def remove_user_timing(self, userID):
         self.__userTimings.pop(userID)
 

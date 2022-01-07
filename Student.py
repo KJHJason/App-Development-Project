@@ -52,10 +52,16 @@ class Student(User):
         print("student's name:", self.get_username(), "card name:", self.__card_name, "card number:", self.__card_no, "card expiry:", self.__card_expiry, "card cvv:", self.__card_cvv, "card type:", self.__card_type)
 
     # Added by Wei Ren for Courses
-    def add_to_card(self, courseID):
-        self.__shoppingCart.append(courseID)
-    def remove_from_card(self,courseID):
-        self.__shoppingCart.remove(courseID)
+    #e.g. add_to_cart(0,"Zoom")
+    def add_to_cart(self, courseID,type):
+        self.__shoppingCart.append([str(courseID),type])        # [[courseID, courseType], [courseID, courseType], ...]
+    def remove_from_cart(self,courseID,type):
+        self.__shoppingCart.remove([str(courseID),type])
+
+    def get_cartCourseType(self, courseID):
+        for course in self.__shoppingCart:
+            if course[0] == courseID:
+                return course[1]
 
     def get_shoppingCart(self):
         return self.__shoppingCart

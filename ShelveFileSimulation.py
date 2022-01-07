@@ -164,12 +164,14 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = ""
-price = "72.5"
+price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(title, description, thumbnail, price, courseType, status)
+course = Course(userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
+
+course.switch_zoomCondition() # Video = True
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("2", "Very Good", "Please make more.", "4")
@@ -214,11 +216,12 @@ title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = ""
 price = "69"
-courseType = "Video" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(title, description, thumbnail, price, courseType, status)
+course = Course(userID, title, description, thumbnail, price, status)
 course.add_tags("z","y","x","w","v")
+
+course.switch_videoCondition() # Video = True
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -232,6 +235,53 @@ course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the jou
 user.set_courseTeaching(course.get_courseID())
 
 save(user,None,course)
+
+
+
+"""Student 1"""
+
+#General
+userID = "0"
+username = "James"
+email = sanitise("CourseFinity123@gmail.com".lower())
+password = password_manager().hash_password("123!@#")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("James Oliver")
+user.set_card_no("0102030405060708")
+user.set_card_expiry("7/2022") ## Format Important
+user.set_card_cvv("123")
+user.set_card_type("visa") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+
+user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+
+save(user,None,None)
+
+"""Student 2"""
+
+#General
+userID = "1"
+username = "Daniel"
+email = sanitise("abc.net@gmail.com".lower())
+password = password_manager().hash_password("456$%^")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("Daniel Pang")
+user.set_card_no("8070605040302010")
+user.set_card_expiry("10/2023") ## Format Important
+user.set_card_cvv("321")
+user.set_card_type("mastercard") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+save(user,None,None)
+
+
 
 """Admin 1"""
 #General
@@ -263,4 +313,3 @@ adminDict[userID] = admin
 
 # Save dict to shelve
 save(None,admin,None)
-

@@ -11,6 +11,7 @@
 .card {
     max-width: 80vw;
     margin: 10vw;
+    margin-top:1vw;
 }
 
 .col-8 .card-body {
@@ -198,6 +199,11 @@
     text-decoration:none;
     transition:0.3s;
     color:#0a58ca;
+}
+
+#shopping-title {
+    /*Top-Bottom, Left-Right*/
+    margin:2.5em 10vw;
 }
 
 @media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
