@@ -21,6 +21,7 @@ Please select the following command number to continue:
 3. Deactivate an admin account
 4. Reactivate an admin account
 5. Delete an admin account
+6. View all admin accounts
 0. Exit
 
 Important Notes:
@@ -29,7 +30,7 @@ However, it may result in data corruption.
 Hence, please only force shut down the program if necessary.
 """
 
-# Command line 1-2 feature/operations done by Jason
+# Command line 1-2 and 6 feature/operations done by Jason
 # Command line 3-5 feature/operations done by Clarence
 
 while True:
@@ -57,7 +58,7 @@ while True:
                     print("\nPassword for admin entered matched.")
                     # Retrieving data from shelve for duplicate data checking
                     adminDict = {}
-                    db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                    db = shelve.open("admin", "c")
                     try:
                         if 'Admins' in db:
                             adminDict = db['Admins']
@@ -68,7 +69,7 @@ while True:
                             print("Error resolved: Created an empty admin account database")
                     except:
                         db.close()
-                        print("\nError in retrieving Admins from user.db")
+                        print("\nError in retrieving Admins from admin.db")
                     
                     email_duplicates = False
                     username_duplicates = False
@@ -126,7 +127,7 @@ while True:
             emailValidation = validate_email(email)
             if emailValidation:
                 adminDict = {}
-                db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open("admin", "c")
                 try:
                     if 'Admins' in db:
                         adminDict = db['Admins']
@@ -138,7 +139,7 @@ while True:
                         fileFound = False
                 except:
                     db.close()
-                    print("\nError in retrieving Admins from user.db")
+                    print("\nError in retrieving Admins from admin.db")
                     fileFound = False
 
                 if fileFound:
@@ -185,7 +186,7 @@ while True:
             emailValidation = validate_email(email)
             if emailValidation:
                 adminDict = {}
-                db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open("admin", "c")
                 try:
                     if 'Admins' in db:
                         adminDict = db['Admins']
@@ -197,7 +198,7 @@ while True:
                         fileFound = False
                 except:
                     db.close()
-                    print("\nError in retrieving Admins from user.db")
+                    print("\nError in retrieving Admins from admin.db")
                     fileFound = False
 
                 if fileFound:
@@ -231,7 +232,7 @@ while True:
             emailValidation = validate_email(email)
             if emailValidation:
                 adminDict = {}
-                db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open("admin", "c")
                 try:
                     if 'Admins' in db:
                         adminDict = db['Admins']
@@ -243,7 +244,7 @@ while True:
                         fileFound = False
                 except:
                     db.close()
-                    print("\nError in retrieving Admins from user.db")
+                    print("\nError in retrieving Admins from admin.db")
                     fileFound = False
 
                 if fileFound:
@@ -277,7 +278,7 @@ while True:
             emailValidation = validate_email(email)
             if emailValidation:
                 adminDict = {}
-                db = shelve.open("admin", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open("admin", "c")
                 try:
                     if 'Admins' in db:
                         adminDict = db['Admins']
@@ -289,7 +290,7 @@ while True:
                         fileFound = False
                 except:
                     db.close()
-                    print("\nError in retrieving Admins from user.db")
+                    print("\nError in retrieving Admins from admin.db")
                     fileFound = False
 
                 if fileFound:
@@ -317,6 +318,37 @@ while True:
         else:
             print("\nError: You cannot leave the input empty! Please try again.")
 
+    elif cmd_input == "6":
+        adminDict = {}
+        db = shelve.open("admin", "c")
+        try:
+            if 'Admins' in db:
+                adminDict = db['Admins']
+                print("\nRetrieved data from admin account database")
+                fileFound = True
+                db.close()
+            else:
+                db.close()
+                print("\nError: No admin account data in admin account database")
+                fileFound = False
+        except:
+            db.close()
+            print("\nError in retrieving Admins from admin.db")
+            fileFound = False
+        
+        if fileFound:
+            count = len(adminDict)
+            print(f"There are {count} admin accounts.\n")
+            for key in adminDict:
+                adminKey = adminDict[key]
+                adminID = adminKey.get_user_id()
+                username = adminKey.get_username()
+                email = adminKey.get_email()
+                status = adminKey.get_status()
+                print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status}\n")
+        else:
+            print("Error could not be resolved...\nSolution: Please create an admin account before reading all admin accounts.")
+            
     elif cmd_input == "0":
         print("\nThank you and have a nice day.")
         break

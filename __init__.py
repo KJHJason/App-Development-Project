@@ -1008,9 +1008,298 @@ def adminLogin():
 
 """End of Admin login by Jason"""
 
+"""Admin profile settings by Jason"""
+
+@app.route('/admin_profile', methods=["GET","POST"])
+def adminProfile():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+
+        userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+        
+        if userFound and accActive:
+            username = userKey.get_username()
+            email = userKey.get_email()
+
+            # checking sessions if any of the user's acc info has changed
+            if "username_changed" in session:
+                usernameChanged = True
+                session.pop("username_changed", None)
+                print("Username recently changed?:", usernameChanged)
+            else:
+                usernameChanged = False
+                print("Username recently changed?:", usernameChanged)
+
+            if "email_updated" in session:
+                emailChanged = True
+                session.pop("email_updated", None)
+                print("Email recently changed?:", emailChanged)
+            else:
+                emailChanged = False
+                print("Email recently changed?:", emailChanged)
+
+            if "password_changed" in session:
+                passwordChanged = True
+                session.pop("password_changed", None)
+                print("Password recently changed?:", passwordChanged)
+            else:
+                passwordChanged = False
+                print("Password recently changed?:", passwordChanged)
+
+            return render_template('users/admin/admin_profile.html', username=username, email=email, usernameChanged=usernameChanged, emailChanged=emailChanged, passwordChanged=passwordChanged)
+        else:
+           
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_username", methods=['GET', 'POST'])
+def adminChangeUsername():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_username_form = Forms.CreateChangeUsername(request.form)
+        if request.method == "POST" and create_update_username_form.validate():
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+            
+            if userFound and accActive:
+                updatedUsername = sanitise(create_update_username_form.updateUsername.data)
+                currentUsername = userKey.get_username()
+                    
+                if updatedUsername != currentUsername:
+                    # checking duplicates for username
+                    for key in adminDict:
+                        print("retrieving")
+                        usernameShelveData = adminDict[key].get_username()
+                        if updatedUsername == usernameShelveData:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username already taken.")
+                            username_duplicates = True
+                            break
+                        else:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username is unique.")
+                            username_duplicates = False
+
+                    if username_duplicates == False:
+
+                        # updating username of the user
+                        userKey.set_username(updatedUsername)
+                        db['Admins'] = adminDict
+                        print("Username updated")
+
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["username_changed"] = True
+
+                        db.close()
+                        return redirect(url_for("adminProfile"))
+                    else:
+                        return render_template('users/admin/change_username.html', form=create_update_username_form, username_duplicates=True)
+                else:
+                    print("Update username input same as user's current username")
+                    return render_template('users/admin/change_username.html', form=create_update_username_form, sameUsername=True)
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+        else:
+            return render_template('users/admin/change_username.html', form=create_update_username_form)
+
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_email", methods=['GET', 'POST'])
+def adminChangeEmail():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_email_form = Forms.CreateChangeEmail(request.form)
+        if request.method == "POST" and create_update_email_form.validate():
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+            
+            if userFound and accActive:
+                updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
+                currentEmail = userKey.get_email()
+                    
+                # Checking duplicates for email
+                if updatedEmail != currentEmail:
+                    for key in adminDict:
+                        print("retrieving")
+                        emailShelveData = adminDict[key].get_email()
+                        if updatedEmail == emailShelveData:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email already exists.")
+                            email_duplicates = True
+                            break
+                        else:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email is unique.")
+                            email_duplicates = False
+
+                    if email_duplicates == False:
+                        # updating email of the admin
+                        userKey.set_email(updatedEmail)
+                        db['Admins'] = adminDict
+                        print("Email updated")
+                        
+                        # sending a session data so that when it redirects the admin to the admin profile page, jinja2 will render out an alert of the change of email
+                        session["email_updated"] = True
+
+                        db.close()
+                        return redirect(url_for("adminProfile"))
+                    else:
+                        db.close()
+                        return render_template('users/admin/change_email.html', form=create_update_email_form, email_duplicates=True)
+                else:
+                    db.close()
+                    print("User updated email input is the same as their current email")
+                    return render_template('users/admin/change_email.html', form=create_update_email_form, sameEmail=True)
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+        else:
+            return render_template('users/admin/change_email.html', form=create_update_email_form)
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_password", methods=['GET', 'POST'])
+def adminChangePassword():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_password_form = Forms.CreateChangePasswordForm(request.form)
+        if request.method == "POST" and create_update_password_form.validate():
+
+            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
+            passwordNotMatched = True
+            passwordVerification = False
+
+            # for jinja2
+            errorMessage = False 
+
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+            
+            if userFound and accActive:
+                currentPassword = create_update_password_form.currentPassword.data
+                updatedPassword = create_update_password_form.updatePassword.data
+                confirmPassword = create_update_password_form.confirmPassword.data
+
+                # Retrieving current password of the user
+                currentStoredPassword = userKey.get_password()
+
+                # validation starts
+                print("Updated password input:", updatedPassword)
+                print("Confirm password input", confirmPassword)
+                if updatedPassword == confirmPassword:
+                    passwordNotMatched = False
+                    print("New and confirm password inputs matched")
+                else:
+                    print("New and confirm password inputs did not match")
+
+                print("Current password:", currentStoredPassword)
+                print("Current password input:", currentPassword)
+
+                passwordVerification = password_manager().verify_password(currentStoredPassword, currentPassword)
+                oldPassword = password_manager().verify_password(currentStoredPassword, updatedPassword)
+
+                # printing message for debugging purposes
+                if passwordVerification:
+                    print("User identity verified")
+                else:
+                    print("Current password input hash did not match with the one in the shelve database")
+
+                # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                if passwordVerification == False or passwordNotMatched:
+                    db.close()
+                    errorMessage = True
+                    return render_template('users/admin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                else:
+                    if oldPassword:
+                        db.close()
+                        print("User cannot change password to their current password!")
+                        return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
+                    else:
+                        # updating password of the user once validated
+                        hashedPwd = password_manager().hash_password(updatedPassword)
+                        userKey.set_password(hashedPwd)
+                        db['Admins'] = adminDict
+                        print("Password updated")
+                        db.close()
+
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["password_changed"] = True
+                        return redirect(url_for("adminProfile"))
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+                
+        else:
+            return render_template('users/admin/change_password.html', form=create_update_password_form)
+    else:
+        return redirect(url_for("home"))
+
+"""Admin profile settings by Jason"""
+
 """User Management for Admins by Jason"""
 
-# Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
 @app.route("/user_management/page/<int:pageNum>", methods=['GET', 'POST'])
 def userManagement(pageNum):
     if "adminSession" in session:
@@ -1667,16 +1956,16 @@ def updatePassword():
                 else:
                     print("Current password input hash did not match with the one in the shelve database")
 
-                if oldPassword:
+                # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                if passwordVerification == False or passwordNotMatched:
                     db.close()
-                    print("User cannot change password to their current password!")
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
+                    errorMessage = True
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
                 else:
-                    # if there any validation error, errorMessage will become True for jinja2 to render the error message
-                    if passwordVerification == False or passwordNotMatched:
+                    if oldPassword:
                         db.close()
-                        errorMessage = True
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                        print("User cannot change password to their current password!")
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
                         hashedPwd = password_manager().hash_password(updatedPassword)
@@ -2712,10 +3001,8 @@ def function():
         if userFound and accActive:
             # add in your code here
 
-            db.close() # remember to close the admin shelve file!
             return render_template('users/admin/page.html')
         else:
-            db.close()
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
