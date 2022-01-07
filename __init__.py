@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
-import shelve, os, math, stripe
+import shelve, os, math, paypalrestsdk
 import Student, Teacher, Admin, Forms
 from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -32,11 +32,6 @@ app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
 app.config["MAIL_PASSWORD"] = os.environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
 mail = Mail(app)
-
-# configuration for stripe
-app.config["STRIPE_PUBLIC_KEY"] = "pk_test_51KEdMeDAhmXMuuoGdCxxSocQCv1ebIYwuPH6POleG6C2yw8ry4ZCMWOM6Rjg82GaW9zdCHRIlBTpxtKmsmclhQmu00jcWOyARl"
-app.config["STRIPE_SECRET_KEY"] = os.environ.get("STRIPE_SECRET_KEY") # setting the secret key but hiding the secret key for the stripe account using system environment variables
-stripe.api_key = app.config["STRIPE_SECRET_KEY"]
 
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address)

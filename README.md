@@ -22,5 +22,5 @@ Libraries needed:
   <li>argon2-cffi Version 21.3.0 [pip install argon2-cffi]</li>
   <li>Pillow Version 8.4.0 [pip install --upgrade Pillow]</li>
   <li>Flask-mail Version 0.9.1 [pip install flask-mail]</li>
-  <li>Stripe Version 2.64.0 [pip install stripe]</li>
+  <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk]</li>
 </ol>	
