@@ -1,6 +1,6 @@
 import shelve
 import Student
-from Security import password_manager
+from Security import hash_password
 from __init__ import get_userID
 
 userDict = {}
@@ -20,7 +20,7 @@ noOfUser = int(input("How many user account to create?: "))
 startID = get_userID(userDict)
     
 for i in range(startID, noOfUser+startID):
-    hashedPwd = password_manager().hash_password("123123")
+    hashedPwd = hash_password("123123")
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
     user = Student.Student(i, username, email, hashedPwd)

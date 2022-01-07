@@ -1,0 +1,142 @@
+{% extends "admin_base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
+{% block title %}Profile Settings | CourseFinity{% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+{% if usernameChanged %}
+<div class="modal fade" id="usernameModal" tabindex="-1" aria-labelledby="usernameLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="usernameLabel">Username Changed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your username has succesfully been changed.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if emailChanged %}
+<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="emailLabel">Email Changed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your email has succesfully been changed.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if passwordChanged %}
+<div class="modal fade" id="PasswordModal" tabindex="-1" aria-labelledby="passwordLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="passwordLabel">Password Changed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your password has succesfully been changed.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="container container_margin">
+    <div class="row">
+        <div class="col-lg-3 merge-boxes">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
+                <h4><span class="fs-4">Admin Dashboard</span></h4>
+                <hr>
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item">
+                        <a href="/admin_profile" class="nav-link text-white active-custom">
+                            Account Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/user_management/page/1" class="nav-link text-white">
+                            User Management
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9 merge-boxes">
+            <div id="right-user">
+                <div class="container">
+                    <div class="row">
+                        <div class="table-responsive-xl">
+                            <table class="table">
+                                <tr>
+                                    <td><h6 class="margin-btm">Username:</h6></td>
+                                    <td>
+                                        <h6 class="margin-btm">{{ username }}</h6>
+                                        <a href="/admin_change_username">Change Username</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h6 class="margin-btm margin-top">Email:</h6></td>
+                                    <td>
+                                        <h6 class="margin-btm margin-top">{{ email }}</h6>
+                                        <a href="/admin_change_email">Change Email</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h6 class="margin-btm margin-top">Account Type:</h6></td>
+                                    <td><h6 class="margin-btm margin-top">Admin</h6></td>
+                                </tr>
+                                <tr>
+                                    <td><h6 class="margin-btm margin-top">Password:</h6></td>
+                                    <td><h6 class="margin-btm margin-top"><a href="/admin_change_password">Change Password</a></h6></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if usernameChanged %}
+        <script>
+            var usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'), {});
+            usernameModal.show();
+        </script>
+    {% endif %}
+    {% if emailChanged %}
+        <script>
+            var emailModal = new bootstrap.Modal(document.getElementById('emailModal'), {});
+            emailModal.show();
+        </script>
+    {% endif %}
+    {% if passwordChanged %}
+        <script>
+            var pwdModal = new bootstrap.Modal(document.getElementById('PasswordModal'), {});
+            pwdModal.show();
+        </script>
+    {% endif %}
+{% endblock %}

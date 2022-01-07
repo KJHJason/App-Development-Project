@@ -16,32 +16,17 @@ import html, re # importing html for escaping inputs and re for compiling regula
 # minimum requirement as of OWASP; Use Argon2id with a minimum configuration of 15 MiB of memory (15728KB), an iteration count of 2, and 1 degree of parallelism.
 # OWASP website: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-class password_manager:
-    def __init__(self):
-        self.hasher = PasswordHasher()
+def hash_password(pwd):
+    ph = PasswordHasher()
+    return ph.hash(pwd)
 
-    def hash_password(self, pwd):
-        return self.hasher.hash(pwd)
-
-    def verify_password(self, hashed, pwd):
-        # try and except as argon2 will raise an exception if the hashes are not matched
-        try:
-            return self.hasher.verify(hashed, pwd) # will return True if both the hash matches
-        except:
-            return False
-
-""" # for testing purposes
-pwdManager = PasswordManager()
-storing_hashed = pwdManager.hash_password("test123")
-print(storing_hashed)
-
-inputpwd = "test123"
-pwdMatched = pwdManager.verify_password(storing_hashed, inputpwd)
-
-if pwdMatched:
-    print("matched")
-else:
-    print("incorrect hash") """
+def verify_password(hashed, pwd):
+    ph = PasswordHasher()
+    # try and except as argon2 will raise an exception if the hashes are not matched
+    try:
+        return ph.verify(hashed, pwd) # will return True if both the hash matches
+    except:
+        return False
 
 """End of Password hashing"""
 

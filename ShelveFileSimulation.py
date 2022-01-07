@@ -14,7 +14,7 @@ from Admin import Admin
 from Teacher import Teacher
 from Student import Student
 from Course import Course
-from Security import password_manager, sanitise
+from Security import hash_password, sanitise
 
 
 import shelve
@@ -93,6 +93,48 @@ def save(*args):
            {courseID:Course()}
            {courseID:Course()}}
 """
+"""Student 1"""
+
+#General
+userID = "0"
+username = "James"
+email = sanitise("CourseFinity123@gmail.com".lower())
+password = hash_password("123!@#")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("James Oliver")
+user.set_card_no("0102030405060708")
+user.set_card_expiry("7/2022") ## Format Important
+user.set_card_cvv("123")
+user.set_card_type("visa") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+
+user.add_to_card("0") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+
+save(user,None,None)
+
+"""Student 2"""
+
+#General
+userID = "1"
+username = "Daniel"
+email = sanitise("abc.net@gmail.com".lower())
+password = hash_password("456$%^")
+user = Student(userID, username, email, password)
+
+#Card --> No Validation for Simulation
+user.set_card_name("Daniel Pang")
+user.set_card_no("8070605040302010")
+user.set_card_expiry("10/2023") ## Format Important
+user.set_card_cvv("321")
+user.set_card_type("mastercard") ## [visa, mastercard, american express]
+
+#Courses (Royston)
+
+save(user,None,None)
 
 """Teacher 1"""
 
@@ -100,7 +142,7 @@ def save(*args):
 userID = "2"
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
-password = password_manager().hash_password("789&*(")
+password = hash_password("789&*(")
 user = Teacher(userID, username, email, password)
 
 #Teacher
@@ -151,7 +193,7 @@ save(user,None,course)
 userID = "3"
 username = "Sara"
 email = sanitise("tourism@gmail.com".lower())
-password = password_manager().hash_password("0-=)_+")
+password = hash_password("0-=)_+")
 user = Teacher(userID, username, email, password)
 
 #Teacher
@@ -246,7 +288,7 @@ save(user,None,None)
 adminID = "0"
 username = "The Archivist"
 email = sanitise("O5-2@SCP.com".lower())
-password = password_manager().hash_password("27sb2we9djaksidu8a")
+password = hash_password("27sb2we9djaksidu8a")
 admin = Admin(adminID, username, email, password)
 
 #Admin
@@ -259,7 +301,7 @@ save(None,admin,None)
 adminID = "1"
 username = "Tamlin"
 email = sanitise("O5-13@SCP.com".lower())
-password = password_manager().hash_password("o4jru5fjr49f8ieri4")
+password = hash_password("o4jru5fjr49f8ieri4")
 admin = Admin(adminID, username, email, password)
 
 #Admin
@@ -271,4 +313,3 @@ adminDict[userID] = admin
 
 # Save dict to shelve
 save(None,admin,None)
-

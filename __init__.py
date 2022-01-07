@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
-import shelve, os, math, stripe
+import shelve, os, math, paypalrestsdk
 import Student, Teacher, Admin, Forms
-from Security import password_manager, sanitise, validate_email
+from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -14,7 +14,7 @@ from flask_mail import Mail, Message
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
 Flask Application (10%)
-Completed at least 4 functions (C, R, U and/or D) with excellent use of 
+Completed at least 4 functions (C, R, U and/or D) with excellent use of
 UI components, consistent layout and compellingly consideration to address
 the user’s needs.
 
@@ -48,10 +48,11 @@ app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
 app.config["MAIL_PASSWORD"] = os.environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
 mail = Mail(app)
 
-# configuration for stripe
-app.config["STRIPE_PUBLIC_KEY"] = "pk_test_51KEdMeDAhmXMuuoGdCxxSocQCv1ebIYwuPH6POleG6C2yw8ry4ZCMWOM6Rjg82GaW9zdCHRIlBTpxtKmsmclhQmu00jcWOyARl"
-app.config["STRIPE_SECRET_KEY"] = os.environ.get("STRIPE_SECRET_KEY") # setting the secret key but hiding the secret key for the stripe account using system environment variables
-stripe.api_key = app.config["STRIPE_SECRET_KEY"]
+# paypal sdk configuration
+paypalrestsdk.configure({
+  "mode": "sandbox",
+  "client_id": "AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s",
+  "client_secret": os.environ.get("PAYPAL_SECRET") })
 
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address)
@@ -370,11 +371,48 @@ def ellipsis(text, textType):
     return text
 # Adds ellipsis to text to prevent overflow, feel free to add your own limits
 
+def send_admin_reset_email(email, password):
+    message = Message("Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+As per requested, we have helped you reset your email and password to the following,
+Updated email: {email}
+Updated password: {password}
+
+Please use your email and the updated password to login and immediately change the password due to security reasons.
+You can login using the following link:
+{url_for("userLogin", _external=True)}
+
+Thank you and enjoy learning or teaching at CourseFinity!
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Sincerely,
+CourseFinity
+"""
+    mail.send(message)
+
+def send_admin_unban_email(email):
+    message = Message("You have been unbanned from CourseFinity", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+We have looked at your ban appeal application and we have unbanned your account.
+We are really sorry for the inconvenience caused and will do our part to investigate the mistake on our end.
+
+Thank you and enjoy learning or teaching at CourseFinity!
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Sincerely,
+CourseFinity
+"""
+    mail.send(message)
+
 """End of Useful Functions by Jason"""
 
 """General pages by INSERT_YOUR_NAME"""
 
-@app.route('/', methods=["GET","POST"])
+@app.route('/')
 def home():
     # checking sessions if the user had recently logged out
     if "recentlyLoggedOut" in session:
@@ -477,7 +515,7 @@ def userLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
+                password_matched = verify_password(passwordShelveData, passwordInput)
 
                 # printing for debugging purposes
                 if password_matched:
@@ -521,6 +559,8 @@ def logout():
         session.pop("userSession", None)
     elif "adminSession" in session:
         session.pop("adminSession", None)
+        if "pageNum" in session:
+            session.pop("pageNum", None)
     else:
         return redirect(url_for("home"))
 
@@ -632,7 +672,7 @@ def resetPassword(token):
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        hashedPassword = password_manager().hash_password(password)
+                        hashedPassword = hash_password(password)
                         userKey.set_password(hashedPassword)
                         db["Users"] = userDict
                         db.close()
@@ -702,7 +742,7 @@ def userSignUp():
 
                 # If there were no duplicates and passwords entered were the same, create a new user
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-                    hashedPwd = password_manager().hash_password(passwordInput)
+                    hashedPwd = hash_password(passwordInput)
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the user
@@ -784,7 +824,7 @@ def teacherSignUp():
 
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                     print("User info validated.")
-                    hashedPwd = password_manager().hash_password(passwordInput)
+                    hashedPwd = hash_password(passwordInput)
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the teacher
@@ -959,7 +999,7 @@ def adminLogin():
                 print("Password in database:", passwordShelveData)
                 print("Password Input:", passwordInput)
 
-                password_matched = password_manager().verify_password(passwordShelveData, passwordInput)
+                password_matched = verify_password(passwordShelveData, passwordInput)
 
                 if password_matched:
                     print("Correct password!")
@@ -1000,18 +1040,305 @@ def adminLogin():
 
 """End of Admin login by Jason"""
 
+"""Admin profile settings by Jason"""
+
+@app.route('/admin_profile', methods=["GET","POST"])
+def adminProfile():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+
+        userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            username = userKey.get_username()
+            email = userKey.get_email()
+
+            # checking sessions if any of the user's acc info has changed
+            if "username_changed" in session:
+                usernameChanged = True
+                session.pop("username_changed", None)
+                print("Username recently changed?:", usernameChanged)
+            else:
+                usernameChanged = False
+                print("Username recently changed?:", usernameChanged)
+
+            if "email_updated" in session:
+                emailChanged = True
+                session.pop("email_updated", None)
+                print("Email recently changed?:", emailChanged)
+            else:
+                emailChanged = False
+                print("Email recently changed?:", emailChanged)
+
+            if "password_changed" in session:
+                passwordChanged = True
+                session.pop("password_changed", None)
+                print("Password recently changed?:", passwordChanged)
+            else:
+                passwordChanged = False
+                print("Password recently changed?:", passwordChanged)
+
+            return render_template('users/admin/admin_profile.html', username=username, email=email, usernameChanged=usernameChanged, emailChanged=emailChanged, passwordChanged=passwordChanged)
+        else:
+
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_username", methods=['GET', 'POST'])
+def adminChangeUsername():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_username_form = Forms.CreateChangeUsername(request.form)
+        if request.method == "POST" and create_update_username_form.validate():
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+
+            if userFound and accActive:
+                updatedUsername = sanitise(create_update_username_form.updateUsername.data)
+                currentUsername = userKey.get_username()
+
+                if updatedUsername != currentUsername:
+                    # checking duplicates for username
+                    for key in adminDict:
+                        print("retrieving")
+                        usernameShelveData = adminDict[key].get_username()
+                        if updatedUsername == usernameShelveData:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username already taken.")
+                            username_duplicates = True
+                            break
+                        else:
+                            print("Username in database:", usernameShelveData)
+                            print("Username input:", updatedUsername)
+                            print("Verdict: Username is unique.")
+                            username_duplicates = False
+
+                    if username_duplicates == False:
+
+                        # updating username of the user
+                        userKey.set_username(updatedUsername)
+                        db['Admins'] = adminDict
+                        print("Username updated")
+
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["username_changed"] = True
+
+                        db.close()
+                        return redirect(url_for("adminProfile"))
+                    else:
+                        return render_template('users/admin/change_username.html', form=create_update_username_form, username_duplicates=True)
+                else:
+                    print("Update username input same as user's current username")
+                    return render_template('users/admin/change_username.html', form=create_update_username_form, sameUsername=True)
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+        else:
+            return render_template('users/admin/change_username.html', form=create_update_username_form)
+
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_email", methods=['GET', 'POST'])
+def adminChangeEmail():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_email_form = Forms.CreateChangeEmail(request.form)
+        if request.method == "POST" and create_update_email_form.validate():
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+
+            if userFound and accActive:
+                updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
+                currentEmail = userKey.get_email()
+
+                # Checking duplicates for email
+                if updatedEmail != currentEmail:
+                    for key in adminDict:
+                        print("retrieving")
+                        emailShelveData = adminDict[key].get_email()
+                        if updatedEmail == emailShelveData:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email already exists.")
+                            email_duplicates = True
+                            break
+                        else:
+                            print("Email in database:", emailShelveData)
+                            print("Email input:", updatedEmail)
+                            print("Verdict: User email is unique.")
+                            email_duplicates = False
+
+                    if email_duplicates == False:
+                        # updating email of the admin
+                        userKey.set_email(updatedEmail)
+                        db['Admins'] = adminDict
+                        print("Email updated")
+
+                        # sending a session data so that when it redirects the admin to the admin profile page, jinja2 will render out an alert of the change of email
+                        session["email_updated"] = True
+
+                        db.close()
+                        return redirect(url_for("adminProfile"))
+                    else:
+                        db.close()
+                        return render_template('users/admin/change_email.html', form=create_update_email_form, email_duplicates=True)
+                else:
+                    db.close()
+                    print("User updated email input is the same as their current email")
+                    return render_template('users/admin/change_email.html', form=create_update_email_form, sameEmail=True)
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+        else:
+            return render_template('users/admin/change_email.html', form=create_update_email_form)
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/admin_change_password", methods=['GET', 'POST'])
+def adminChangePassword():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        create_update_password_form = Forms.CreateChangePasswordForm(request.form)
+        if request.method == "POST" and create_update_password_form.validate():
+
+            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
+            passwordNotMatched = True
+            passwordVerification = False
+
+            # for jinja2
+            errorMessage = False
+
+            db = shelve.open("admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                else:
+                    db.close()
+                    print("Admin account data in shelve is empty.")
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Admins from admin.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
+
+            if userFound and accActive:
+                currentPassword = create_update_password_form.currentPassword.data
+                updatedPassword = create_update_password_form.updatePassword.data
+                confirmPassword = create_update_password_form.confirmPassword.data
+
+                # Retrieving current password of the user
+                currentStoredPassword = userKey.get_password()
+
+                # validation starts
+                print("Updated password input:", updatedPassword)
+                print("Confirm password input", confirmPassword)
+                if updatedPassword == confirmPassword:
+                    passwordNotMatched = False
+                    print("New and confirm password inputs matched")
+                else:
+                    print("New and confirm password inputs did not match")
+
+                print("Current password:", currentStoredPassword)
+                print("Current password input:", currentPassword)
+
+                passwordVerification = verify_password(currentStoredPassword, currentPassword)
+                oldPassword = verify_password(currentStoredPassword, updatedPassword)
+
+                # printing message for debugging purposes
+                if passwordVerification:
+                    print("User identity verified")
+                else:
+                    print("Current password input hash did not match with the one in the shelve database")
+
+                # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                if passwordVerification == False or passwordNotMatched:
+                    db.close()
+                    errorMessage = True
+                    return render_template('users/admin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                else:
+                    if oldPassword:
+                        db.close()
+                        print("User cannot change password to their current password!")
+                        return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
+                    else:
+                        # updating password of the user once validated
+                        hashedPwd = hash_password(updatedPassword)
+                        userKey.set_password(hashedPwd)
+                        db['Admins'] = adminDict
+                        print("Password updated")
+                        db.close()
+
+                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
+                        session["password_changed"] = True
+                        return redirect(url_for("adminProfile"))
+            else:
+                db.close()
+                print("Admin account is not found or is not active.")
+                # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+                session.clear()
+                return redirect(url_for("adminLogin"))
+
+        else:
+            return render_template('users/admin/change_password.html', form=create_update_password_form)
+    else:
+        return redirect(url_for("home"))
+
+"""Admin profile settings by Jason"""
+
 """User Management for Admins by Jason"""
 
-# Note to self: Add a feature to email to the user's email with the updated password that the admin has resetted to
-@app.route("/user_management/page/<int:pageNum>")
+@app.route("/user_management/page/<int:pageNum>", methods=['GET', 'POST'])
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-
         if userFound and accActive:
-            # add in your code here
             userDict = {}
             db = shelve.open("user", "c")
             try:
@@ -1024,36 +1351,78 @@ def userManagement(pageNum):
             except:
                 print("Error in retrieving Users from user.db")
 
-            userList = []
-            for users in userDict:
-                user = userDict.get(users)
-                userList.append(user)
+            # for resetting the user's password and updating the user's email for account recovery
+            admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
+            if request.method == "POST" and admin_reset_password_form.validate():
+                password = admin_reset_password_form.password.data
+                email = sanitise(admin_reset_password_form.email.data)
+                validEmail = validate_email(email)
 
-            maxItemsPerPage = 10 # declare the number of items that can be seen per pages
-            userListLen = len(userList) # get the length of the userList
-            maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+                # for redirecting the admin to the user management page that he/she was in
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
 
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
-            if pageNum < 0:
-                return redirect("/user_management/page/0")
-            elif userListLen > 0 and pageNum == 0:
-                return redirect("/user_management/page/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/user_management/page/" + str(maxPages)
-                return redirect(redirectRoute)
+                if validEmail:
+                    userID = int(request.form["userID"])
+                    userKey = userDict.get(userID)
+                    if userKey != None:
+                        # changing the password of the user
+                        hashedPwd = hash_password(password)
+                        userKey.set_password(hashedPwd)
+                        userKey.set_email(email)
+                        db["Users"] = userDict
+                        db.close()
+                        send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                        print("User account recovered successfully and email sent.")
+                        return redirect(redirectURL)
+                    else:
+                        db.close()
+                        print("Error in retrieving user object.")
+                        return redirect(redirectURL)
+                else:
+                    db.close()
+                    print("Inputted new user's email is invalid.")
+                    session["invalidEmail"] = True
+                    return redirect(redirectURL)
             else:
-                # pagination algorithm starts here
-                userList = userList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
-                paginationList = get_pagination_button_list(pageNum, maxPages)
+                userList = []
+                for users in userDict:
+                    user = userDict.get(users)
+                    userList.append(user)
 
-                session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
-                
-                previousPage = pageNum - 1
-                nextPage = pageNum + 1
+                maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+                userListLen = len(userList) # get the length of the userList
+                maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-                return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
+                if pageNum < 0:
+                    return redirect("/user_management/page/0")
+                elif userListLen > 0 and pageNum == 0:
+                    return redirect("/user_management/page/1")
+                elif pageNum > maxPages:
+                    redirectRoute = "/user_management/page/" + str(maxPages)
+                    return redirect(redirectRoute)
+                else:
+                    # pagination algorithm starts here
+                    userList = userList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    pageNumForPagination = pageNum - 1 # minus for the paginate function
+                    paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+                    paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                    session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+
+                    previousPage = pageNum - 1
+                    nextPage = pageNum + 1
+
+                    if "invalidEmail" in session:
+                        invalidEmail = True
+                    else:
+                        invalidEmail = False
+
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1064,7 +1433,7 @@ def userManagement(pageNum):
     else:
         return redirect(url_for("home"))
 
-@app.route("/delete_user/uid/<int:userID>", methods=['GET', 'POST'])
+@app.route("/delete_user/uid/<int:userID>", methods=['POST'])
 def deleteUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1072,9 +1441,9 @@ def deleteUser(userID):
         userFound, accActive = admin_validate_session_open_file(adminSession)
         # if there's a need to retrieve admin account details, use the function below instead of the one above
         # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
-        
+
         if userFound and accActive:
-            
+            # for redirecting the admin to the user management page that he/she was in
             if "pageNum" in session:
                 pageNum = session["pageNum"]
             else:
@@ -1098,7 +1467,7 @@ def deleteUser(userID):
                 return redirect(userManagement)
 
             userKey = userDict.get(userID)
-            
+
             if userKey != None:
                 userDict.pop(userID)
                 db['Users'] = userDict
@@ -1107,7 +1476,115 @@ def deleteUser(userID):
                 return redirect(redirectURL)
             else:
                 db.close()
-                print("Error in retrieving user object from user.db")
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/ban/uid/<int:userID>", methods=['POST'])
+def banUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+
+            if userKey != None:
+                userKey.set_status("Banned")
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been banned.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/unban/uid/<int:userID>", methods=['POST'])
+def unbanUser(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+            redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(userManagement)
+
+            userKey = userDict.get(userID)
+
+            if userKey != None:
+                userKey.set_status("Good")
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has been unbanned.")
+                send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                print("Successfully sent an email.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -1502,8 +1979,8 @@ def updatePassword():
                 print("Current password:", currentStoredPassword)
                 print("Current password input:", currentPassword)
 
-                passwordVerification = password_manager().verify_password(currentStoredPassword, currentPassword)
-                oldPassword = password_manager().verify_password(currentStoredPassword, updatedPassword)
+                passwordVerification = verify_password(currentStoredPassword, currentPassword)
+                oldPassword = verify_password(currentStoredPassword, updatedPassword)
 
                 # printing message for debugging purposes
                 if passwordVerification:
@@ -1511,19 +1988,19 @@ def updatePassword():
                 else:
                     print("Current password input hash did not match with the one in the shelve database")
 
-                if oldPassword:
+                # if there any validation error, errorMessage will become True for jinja2 to render the error message
+                if passwordVerification == False or passwordNotMatched:
                     db.close()
-                    print("User cannot change password to their current password!")
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
+                    errorMessage = True
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
                 else:
-                    # if there any validation error, errorMessage will become True for jinja2 to render the error message
-                    if passwordVerification == False or passwordNotMatched:
+                    if oldPassword:
                         db.close()
-                        errorMessage = True
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                        print("User cannot change password to their current password!")
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        hashedPwd = password_manager().hash_password(updatedPassword)
+                        hashedPwd = hash_password(updatedPassword)
                         userKey.set_password(hashedPwd)
                         db['Users'] = userDict
                         print("Password updated")
@@ -1870,100 +2347,6 @@ def deleteCard():
 
 """End of User payment method settings by Jason"""
 
-"""Trending & Recommendation for logged in users by Royston"""
-
-@app.route("/user_home")
-def trendingRecommendation():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/general/user_home.html')
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Trending & Recommendation for logged in users by Royston"""
-
-"""Trending for guest users by Royston"""
-
-@app.route("/guest_home")
-def trending():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/general/guest_home.html')
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Trending for guest users by Royston"""
-
 """Search Function by Royston"""
 
 @app.route("/search")
@@ -2012,7 +2395,7 @@ def search():
 """"End of Search Function by Royston"""
 
 """Purchase History by Royston"""
-"""
+
 @app.route("/purchasehistory")
 def purchaseHistory():
     if "userSession" in session and "adminSession" not in session:
@@ -2042,48 +2425,36 @@ def purchaseHistory():
             purchaseID = userKey.get_purchaseID()
             print("PurchaseID exists?: ", purchaseID)
 
-            #try:
-                #if purchaseID:
-                    #pass
+            if purchaseID == True:
+                for courseID in range(5):
+                    courseID = userKey.get_courseID()
+                    print("Course ID:", courseID)
+                    title = userKey.get_title()
+                    print("Course title:", title)
+                    description = userKey.get_description()
+                    print("Course Description:", description)
+                    thumbnail = userKey.get_thumbnail()
+                    print("Course Thumbnail:", thumbnail)
+                    price = userKey.get_price()
+                    print("Course Price:", price)
+                    courseType = userKey.get_courseType()
+                    print("Course Type:", courseType)
 
-                #else:
-                    #pass
-            #except:
-                #db.close()
-                #print("Error in displaying Purchase History")
-                #return redirect(url_for("home"))
+            else:
+                db.close()
+                print("Purchase History is Empty")
 
-            courseDict = {
-                0: {'name': 'Python 101', 'description': "lorem ipsum on deez python nuts", 'price': 420, "tag": "programming"},
-                1: {'name': 'Maths 101', 'description': "lorem ipsum on deez maths nuts", 'price': 69, "tag": "maths"},
-                2: {'name': 'Science 101', 'description': "lorem ipsum on deez science nuts", 'price': 1337, "tag": "science"}
-            }
-
-
-
-            print(courseDict[1]['name'])
-
-            coursePurchasedList = []
-            purchaseHistoryDict = {
-                0:courseDict[2]
-            }
-
-            for purchasedCourseID in purchaseHistoryDict:
-                coursePurchasedList.append(purchasedCourseID)
-
-            print(purchaseHistoryDict[0]) 
-            
             # pagination algorithm starts here
             purchaseHistoryList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
             pageNumForPagination = pageNum - 1 # minus for the paginate function
             paginatedUserList = paginate(purchaseHistoryList, pageNumForPagination, maxItemsPerPage)
             paginationList = get_pagination_button_list(pageNum, maxPages)
-            
+
             previousPage = pageNum - 1
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/admin/user_management.html', courseID=courseID, title=title, description=description, thumbnail=thumbnail, price=price, courseType=courseType, userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             db.close()
             print("User not found or is banned")
@@ -2097,7 +2468,7 @@ def purchaseHistory():
             # determine if it make sense to redirect the user to the home page or the login page
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-"""
+
 """End of Purchase History by Royston"""
 
 """Purchase Review by Royston"""
@@ -2128,6 +2499,8 @@ def purchaseReview():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+
+
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchasereview.html')
@@ -2487,7 +2860,7 @@ def paymentComplete():
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
-  
+
   - Using user shelve files --> shelve.open("user", "C") ONLY
   - Webpage will not have admin view
   - Use case: User features such as change_password.html, etc.
@@ -2516,10 +2889,10 @@ def function():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-        
+
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html')
         else:
@@ -2543,7 +2916,7 @@ def function():
 # Template for your app.route("") if
   - User session validity check needed (Logged in?)
   - User banned?
-  
+
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
   - If your feature might need to retrieve the user's account details
   - Webpage will not have admin view
@@ -2555,10 +2928,10 @@ def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userFound, accGoodStatus = validate_session_open_file(userSession) 
+        userFound, accGoodStatus = validate_session_open_file(userSession)
         # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         # userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
-        
+
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
@@ -2583,9 +2956,9 @@ def function():
 # Template for your app.route("") if [Note that this is similar to one above]
   - User session validity check needed (Logged in?)
   - User banned?
-  
+
   - Only READING from shelve (user data)
-  
+
   - Webpage will not have admin view
   - Use case: User pages (user_profile.html, etc)
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
@@ -2622,9 +2995,9 @@ def insertName():
   - User session validity check needed (Logged in?)
   - User banned?
   - Is user admin?
-  
+
   - NOT using shelve
-  
+
   - Webpage will have admin and user view
   e.g. General pages (about_us.html, etc) that check whether user/admin is logged in.
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
@@ -2635,7 +3008,7 @@ def insertName():
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        
+
         if userFound and accActive:
             return render_template('users/admin/page.html')
         else:
@@ -2654,7 +3027,7 @@ def insertName():
 
             if userFound and accGoodStatus:
                 # add in your code here (if any)
-                
+
                 return render_template('users/loggedin/page.html')
             else:
                 print("User not found or is banned.")
@@ -2675,9 +3048,9 @@ def insertName():
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
-  
+
   - Using CUSTOM shelve files --> shelve.open("<name of shelve here>", "C") ONLY
-  
+
   - Webpage will not have user view
   e.g. Admin pages
   - Use case: Admim pages
@@ -2691,7 +3064,7 @@ def function():
         userFound, accActive = admin_validate_session_open_file(adminSession)
         # if there's a need to retrieve admin account details, use the function below instead of the one above
         # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
-        
+
         if userFound and accActive:
             # add in your code here
             xDict = {}
@@ -2716,9 +3089,9 @@ def function():
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
-  
+
   - Using admin shelve files --> shelve.open("admin", "C") ONLY
-  
+
   - Webpage will not have user view
   e.g. Admin pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
@@ -2744,7 +3117,7 @@ def function():
             return redirect(url_for("home"))
 
         userKey, userFound, accActive = admin_get_key_and_validate(adminSession, adminDict)
-        
+
         if userFound and accActive:
             # add in your code here
 
@@ -2768,9 +3141,9 @@ def function():
 # Template for your app.route("") if
   - Admin session validity check needed (Logged in?)
   - Admin account active?
-  
+
   - Only READING from shelve (admin data)
-  
+
   - Webpage will not have user view
   - Use case: Admin pages
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
@@ -2782,14 +3155,12 @@ def function():
         print(adminSession)
 
         userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
-        
+
         if userFound and accActive:
             # add in your code here
 
-            db.close() # remember to close the admin shelve file!
             return render_template('users/admin/page.html')
         else:
-            db.close()
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
