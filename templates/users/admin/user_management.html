@@ -48,7 +48,11 @@
             <div id="right-user">
                 <div class="container">
                     <div class="row">
+                        {% if count == 0 %}
+                        <h6>There are no users in CourseFinity.</h6>
+                        {% else %}
                         <h6>There are {{ count }} users in CourseFinity.</h6>
+                        {% endif %}
                         <div class="table-responsive-xl">
                             <table class="table">
                                 <tr>

@@ -18,13 +18,13 @@ import html, re # importing html for escaping inputs and re for compiling regula
 
 def hash_password(pwd):
     ph = PasswordHasher()
-    return ph.hasher.hash(pwd)
+    return ph.hash(pwd)
 
 def verify_password(hashed, pwd):
     ph = PasswordHasher()
     # try and except as argon2 will raise an exception if the hashes are not matched
     try:
-        return ph.hasher.verify(hashed, pwd) # will return True if both the hash matches
+        return ph.verify(hashed, pwd) # will return True if both the hash matches
     except:
         return False
 
