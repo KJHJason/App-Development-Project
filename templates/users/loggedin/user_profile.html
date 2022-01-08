@@ -242,15 +242,27 @@
                             <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
                             <div class="mb-9">
                                 <form action="" method="POST" enctype="multipart/form-data">
+                                    <input type="hidden" name="submittedForm" value="image">
                                     <label for="imageFile" class="form-label">Upload Profile Image</label>
                                     <input class="form-control" type="file" id="imageFile" name="profileImage" oninput="filesize(this)" required>
                                     <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
                                 </form>
                             </div>
+                            {% if accType == "Teacher" %}
+                            <div class="border border-2 alert alert-light alert-dismissible fade show margin-card" role="alert">
+                                <h4>Did you know?</h4>
+                                <p>If you want to teach a subject that is not listed in the select option when uploading a video, you can contact us to get it added to the list of subjects!</p>
+                                <p>Additionally, if you require any assistance, feel free to contact us!</p>
+                                <form action="/contact_us" method="POST">
+                                    <button type="submit" class="btn button_colour btn-lg">Contact Us</button>
+                                </form>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
                             <div class="table-responsive">
-                                <table class="table">
+                                <table class="table margin-top">
                                     <tr>
                                         <td><h6>Username:</h6></td>
                                         <td>
@@ -278,29 +290,37 @@
                                         <td><h6>Password:</h6></td>
                                         <td><a href="/change_password">Change Password</a></td>
                                     </tr>
+                                    {% if accType == "Teacher" %}
+                                    <tr>
+                                        <td colspan="2">
+                                        <form action="" method="POST">
+                                            <div class="mb-3">
+                                                <label for="teacherBio" class="form-label">Bio:</label>
+                                                <input type="hidden" name="submittedForm" value="bio">
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="16" disabled>{{ teacherBio }}</textarea>
+                                                <div class="d-flex float-end">
+                                                    <button type="button" class="btn btn-primary margin-top" id="editBio" onclick="editBioNow()">Edit Bio</button>
+                                                    <button type="submit" class="btn btn-success margin-top" hidden id="saveBio">Save Bio</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                 </table>
                             </div>
-                            <div class="card user-tip">
-                                <div class="card-body">
-                                    {% if accType == "Student" %}
-                                    <h4>Did you know?</h4>
-                                    <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
-                                    <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
-                                    <p>Click on the button below or click on "Become a Teacher!" above!</p>
-                                    <form action="/change_account_type" method="GET">
-                                        <button type="submit" class="btn button_colour btn-lg">Change account type</button>
-                                    </form>
-                                    {% endif %}
-                                    {% if accType == "Teacher" %}
-                                    <h4>Did you know?</h4>
-                                    <p>If you want to teach a subject that is not listed in the select option when uploading a video, you can contact us to get it added to the list of subjects!</p>
-                                    <p>Additionally, if you require any assistance, feel free to contact us!</p>
-                                    <form action="#" method="POST">
-                                        <button type="submit" class="btn button_colour btn-lg">Contact Us</button>
-                                    </form>
-                                    {% endif %}
-                                </div>
+                            {% if accType == "Student" %}
+                            <div class="border border-2 alert alert-light alert-dismissible fade show margin-card" role="alert">
+                                <h4>Did you know?</h4>
+                                <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
+                                <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
+                                <p>Click on the button below or click on "Become a Teacher!" above!</p>
+                                <form action="/change_account_type" method="GET">
+                                    <button type="submit" class="btn button_colour btn-lg">Change account type</button>
+                                </form>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -375,6 +395,15 @@
         <script>
             var emailTokenInvalidModal = new bootstrap.Modal(document.getElementById('emailTokenInvalidModal'), {});
             emailTokenInvalidModal.show();
+        </script>
+    {% endif %}
+    {% if  accType == "Teacher" %}
+        <script>
+            function editBioNow() {
+                document.getElementById("editBio").setAttribute("hidden", null);
+                document.getElementById("saveBio").removeAttribute("hidden");
+                document.getElementById("teacherBio").removeAttribute("disabled");
+            }
         </script>
     {% endif %}
 {% endblock %}

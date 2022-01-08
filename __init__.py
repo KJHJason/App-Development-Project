@@ -1601,77 +1601,96 @@ def userProfile():
                 emailVerification = False
             else:
                 emailVerification = True
-
             if request.method == "POST":
-                if "profileImage" not in request.files:
-                    print("No file sent.")
+                typeOfFormSubmitted = request.form.get("submittedForm")
+                if typeOfFormSubmitted == "bio":
+                    teacherBioInput = sanitise(request.form.get("teacherBio"))
+                    userKey.set_bio(teacherBioInput)
+                    db['Users'] = userDict
+                    db.close()
+                    print("Teacher bio saved.")
                     return redirect(url_for("userProfile"))
-
-                file = request.files["profileImage"]
-                filename = file.filename
-
-                uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
-                print("Uploaded file size:", uploadedFileSize, "bytes")
-
-                withinFileLimit = allow_file_size(uploadedFileSize, app.config['MAX_PROFILE_IMAGE_FILESIZE'])
-
-                if filename != "":
-                    if file and allowed_image_file(filename) and withinFileLimit:
-                        # will only accept .png, .jpg, .jpeg
-                        print("File extension accepted and is within size limit.")
-
-                        #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
-                        # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
-                        filename = secure_filename(filename)
-
-                        # constructing the file path so that the it will know where to store the image
-                        filePath = construct_path(PROFILE_UPLOAD_PATH, filename)
-
-                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
-                        extensionType = get_extension(filename)
-                        userImageFileName = str(userSession) + extensionType
-                        newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
-
-                        # constructing a file path to see if the user has already uploaded an image and if the file exists
-                        userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
-
-                        # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                        # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
-                        # else it will just save normally and rename it to userID.png (e.g. 0.png)
-                        if Path(userOldImageFilePath).is_file():
-                            print("Removing existing image.")
-                            overwrite_file(file, userOldImageFilePath, filePath)
-                            os.rename(filePath, newFilePath) # afterwards, it will rename the image that the user uploaded to userID.png
-                            print("File renamed to", newFilePath, "and has been overwrited.")
-                        else:
-                            print("Saving image file.")
-                            file.save(filePath)
-                            os.rename(filePath, newFilePath) # rename the image that the user uploaded to userID.png
-                            print("File renamed to", newFilePath, "and has been saved.")
-
-                        # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
-                        resize_image(newFilePath, (500, 500))
-
-                        userKey.set_profile_image(userImageFileName)
-                        db['Users'] = userDict
-                        db.close()
-
-                        session["imageChanged"] = True
+                elif typeOfFormSubmitted == "image":
+                    if "profileImage" not in request.files:
+                        print("No file sent.")
                         return redirect(url_for("userProfile"))
+
+                    file = request.files["profileImage"]
+                    filename = file.filename
+
+                    uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                    print("Uploaded file size:", uploadedFileSize, "bytes")
+
+                    withinFileLimit = allow_file_size(uploadedFileSize, app.config['MAX_PROFILE_IMAGE_FILESIZE'])
+
+                    if filename != "":
+                        if file and allowed_image_file(filename) and withinFileLimit:
+                            # will only accept .png, .jpg, .jpeg
+                            print("File extension accepted and is within size limit.")
+
+                            #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
+                            # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
+                            filename = secure_filename(filename)
+
+                            # constructing the file path so that the it will know where to store the image
+                            filePath = construct_path(PROFILE_UPLOAD_PATH, filename)
+
+                            # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+                            extensionType = get_extension(filename)
+                            userImageFileName = str(userSession) + extensionType
+                            newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+
+                            # constructing a file path to see if the user has already uploaded an image and if the file exists
+                            userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
+
+                            # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                            # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
+                            # else it will just save normally and rename it to userID.png (e.g. 0.png)
+                            if Path(userOldImageFilePath).is_file():
+                                print("Removing existing image.")
+                                overwrite_file(file, userOldImageFilePath, filePath)
+                                os.rename(filePath, newFilePath) # afterwards, it will rename the image that the user uploaded to userID.png
+                                print("File renamed to", newFilePath, "and has been overwrited.")
+                            else:
+                                print("Saving image file.")
+                                file.save(filePath)
+                                os.rename(filePath, newFilePath) # rename the image that the user uploaded to userID.png
+                                print("File renamed to", newFilePath, "and has been saved.")
+
+                            # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                            resize_image(newFilePath, (500, 500))
+
+                            userKey.set_profile_image(userImageFileName)
+                            db['Users'] = userDict
+                            db.close()
+
+                            session["imageChanged"] = True
+                            return redirect(url_for("userProfile"))
+                        else:
+                            db.close()
+                            print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
+                            session["imageFailed"] = True
+                            return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
-                        session["imageFailed"] = True
+                        print("No selected file/the user sent a empty file without a filename")
                         return redirect(url_for("userProfile"))
                 else:
                     db.close()
-                    print("No selected file/the user sent a empty file without a filename")
+                    print("Form value tampered...")
                     return redirect(url_for("userProfile"))
             else:
                 db.close()
                 userUsername = userKey.get_username()
                 userEmail = userKey.get_email()
                 userAccType = userKey.get_acc_type()
+
+                if userAccType == "Teacher":
+                    teacherBio = userKey.get_bio()
+                else:
+                    teacherBio = ""
+
+                print(teacherBio)
 
                 userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
                 userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
@@ -1760,7 +1779,7 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
         else:
             db.close()
             print("User not found or is banned.")

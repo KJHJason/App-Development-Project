@@ -12,6 +12,7 @@ class Teacher(StudentAndTeacher):
     # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
         self.__shoppingCart = [] # Course IDs here
+        self.__bio = ""
     
     def set_purchaseID(self, purchaseID):
         self.__purchaseID = purchaseID
@@ -23,6 +24,8 @@ class Teacher(StudentAndTeacher):
         self.__joinDate = joinDate
     def set_earnings(self, earnings):
         self.__earnings = earnings
+    def set_bio(self, bio):
+        self.__bio = bio
     
     def get_purchaseID(self):
         return self.__purchaseID
@@ -34,6 +37,8 @@ class Teacher(StudentAndTeacher):
         return self.__joinDate
     def get_earnings(self):
         return self.__earnings
+    def get_bio(self):
+        return self.__bio
 
 # Added by Wei Ren for courses
     def get_coursesTeaching(self):
