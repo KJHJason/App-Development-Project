@@ -389,7 +389,7 @@ CourseFinity Team
     mail.send(message)
 
 # use this function for the contact us page
-# for this to work, please feed in a summary of the user's issue, the name of the user, the email of the user, and the main message/body content obtained from the body form
+# for this to work, please feed in the title of the user's issue, the name of the user, the email of the user, and the main message/body content obtained from the body form
 # please also check for cross site scripting and potential security risk by testing the form inputs
 # note: gmail is safe from cross site scripting
 def send_contact_us_email(issueTitle, name, email, bodyContent):
