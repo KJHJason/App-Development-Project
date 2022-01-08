@@ -1903,6 +1903,7 @@ def updateEmail():
                         # updating email of the user
                         userKey.set_email(updatedEmail)
                         userKey.set_email_verification("Not Verified")
+                        send_verify_email(updatedEmail, userSession)
                         db['Users'] = userDict
                         print("Email updated")
 
