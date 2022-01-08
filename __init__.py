@@ -494,58 +494,62 @@ def verifyEmail():
 
 @app.route("/verify_email/<token>")
 def verifyEmailToken(token):
-    validateToken = verify_email_token(token)
-    if validateToken != None:
-        
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
-                userDict = db['Users']
-            else:
+    if "adminSession" not in session:
+        validateToken = verify_email_token(token)
+        if validateToken != None:
+            
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
                 db.close()
-                print("No user data in user shelve files.")
-                # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
+                print("Error in retrieving Users from user.db")
                 return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
 
-        userKey = userDict.get(validateToken)
-        # checking if the user is banned
-        accGoodStatus = userKey.get_status()
-        if accGoodStatus == "Good":
-            emailVerification = userKey.get_email_verification()
-            if emailVerification == "Not Verified":
-                userKey.set_email_verification("Verified")
-                db["Users"] = userDict
-                db.close()
-                session["emailVerified"] = True
-                if "userSession" in session:
-                    return redirect(url_for("userProfile"))
+            userKey = userDict.get(validateToken)
+            # checking if the user is banned
+            accGoodStatus = userKey.get_status()
+            if accGoodStatus == "Good":
+                emailVerification = userKey.get_email_verification()
+                if emailVerification == "Not Verified":
+                    userKey.set_email_verification("Verified")
+                    db["Users"] = userDict
+                    db.close()
+                    session["emailVerified"] = True
+                    if "userSession" in session:
+                        return redirect(url_for("userProfile"))
+                    else:
+                        return redirect(url_for("userLogin"))
                 else:
-                    return redirect(url_for("userLogin"))
+                    db.close()
+                    session["emailFailed"] = True
+                    if "userSession" in session:
+                        return redirect(url_for("userProfile"))
+                    else:
+                        print("Email already verified")
+                        return redirect(url_for("userLogin"))
             else:
                 db.close()
-                session["emailFailed"] = True
-                if "userSession" in session:
-                    return redirect(url_for("userProfile"))
-                else:
-                    print("Email already verified")
-                    return redirect(url_for("userLogin"))
+                print("User account banned.")
+                return redirect(url_for("home"))
         else:
-            db.close()
-            print("User account banned.")
-            return redirect(url_for("home"))
+            session["emailTokenInvalid"] = True
+            print("Invalid/Expired Token.")
+            if "userSession" in session:
+                return redirect(url_for("userProfile"))
+            else:
+                return redirect(url_for("userLogin"))
     else:
-        session["emailTokenInvalid"] = True
-        print("Invalid/Expired Token.")
-        if "userSession" in session:
-            return redirect(url_for("userProfile"))
-        else:
-            return redirect(url_for("userLogin"))
+        print("Admin is logged in.")
+        return redirect(url_for("home"))
 
 """End of Email verification by Jason"""
 
