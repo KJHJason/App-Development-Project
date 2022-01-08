@@ -143,18 +143,37 @@
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
+                                                                <h6>Are you sure that you want to reset {{ user.get_username() }}'s password and email with the ID, {{ user.get_user_id() }} for account recovery?</h6>
+                                                                <h6 class="text-success">Note: A follow up email with instructions will be sent to the user.</h6>
+                                                                <h6 class="text-danger">Warning: Please only help recover the user's account after confirming the identity of the user and when requested by the user themselves.</h6>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" >Cancel</button>
+                                                                <button type="button" class="btn btn-success" data-bs-target="#recoverAccountModalConfirm{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal">Confirm</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal fade" id="recoverAccountModalConfirm{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="recoverAccountModalConfirmLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="recoverAccountModalConfirmLabel{{ user.get_user_id() }}">Confirm Recovery of User's Account</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
                                                                 <h6>
                                                                     Are you sure that you want to reset {{ user.get_username() }}'s password and email with the ID, {{ user.get_user_id() }} for account recovery?
                                                                 </h6>
                                                                 <h6>If so, please enter the user's new email (that the user has control of) and a password in the form below.</h6>
+                                                                <h6>User's old email: {{ user.get_email() }}</h6>
                                                                 <input type="hidden" id="userID" name="userID" value="{{ user.get_user_id() }}">
                                                                 {{ render_field(form.email, class="form-control") }}
                                                                 {{ render_field(form.password, class="form-control") }}
-                                                                <h6 class="text-success">Note: A follow up email with instructions will be sent to the user.</h6>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-success">Confirm</button>
+                                                                <button type="button" class="btn btn-danger" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
+                                                                <button type="submit" class="btn btn-success">Recover Account</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -176,7 +195,25 @@
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-success" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-danger">Ban</button>
+                                                                <button type="button" data-bs-target="#banUserModalConfirm{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal" class="btn btn-danger">Ban</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal fade" id="banUserModalConfirm{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="banUserModalConfirmLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="banUserModalConfirmLabel{{ user.get_user_id() }}">Ban User Confirmation</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6>Please confirm that you would like to ban {{ user.get_username() }} with the ID, {{ user.get_user_id() }}.</h6>
+                                                                <h6>Otherwise, please click back.</h6>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-danger" data-bs-target="#banUserModal{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal"">Back</button>
+                                                                <button type="submit" class="btn btn-success">Confirm Ban</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -208,7 +245,25 @@
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-success">Unban</button>
+                                                                <button type="button" data-bs-target="#unbanUserModalConfirm{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal" class="btn btn-success">Unban</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal fade" id="unbanUserModalConfirm{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="unbanUserModalConfirmLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="unbanUserModalConfirmLabel{{ user.get_user_id() }}">Unban User Confirmation</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6>Please confirm that you would like to unban {{ user.get_username() }} with the ID, {{ user.get_user_id() }}.</h6>
+                                                                <h6>Otherwise, please click back.</h6>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-danger" data-bs-target="#unbanUserModal{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal"">Back</button>
+                                                                <button type="submit" class="btn btn-success">Confirm Unban</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -236,10 +291,11 @@
                                                             </div>
                                                             <div class="modal-body">
                                                                 <h6>Are you sure that you want to delete this user with the ID, {{ user.get_user_id() }}?</h6>
+                                                                <h6 class="text-danger">Warning: There is no going back if you were to delete this user.</h6>
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                                                <button type="submit" class="btn btn-danger">Delete User</button>
+                                                                <button type="submit" class="btn btn-danger">Confirm Delete User</button>
                                                             </div>
                                                         </div>
                                                     </div>
