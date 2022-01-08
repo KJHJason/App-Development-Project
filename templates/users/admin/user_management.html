@@ -86,11 +86,29 @@
             <div id="right-user">
                 <div class="container">
                     <div class="row">
-                        {% if count == 0 %}
-                        <h6>There are no users in CourseFinity.</h6>
-                        {% else %}
-                        <h6>There are {{ count }} users in CourseFinity.</h6>
-                        {% endif %}
+                        <div class="col-md-6">
+                            {% if searched %}
+                                {% if count == 0 %}
+                                <h6>There are <span class="text-danger text-decoration-underline">no</span> such users in CourseFinity.</h6>
+                                {% else %}
+                                <h6>Search queried <span class="text-success text-decoration-underline">{{ count }}</span> such user in CourseFinity.</h6>
+                                {% endif %}
+                            {% else %}
+                                {% if count == 0 %}
+                                <h6>There are no users in CourseFinity.</h6>
+                                {% else %}
+                                <h6>There are {{ count }} users in CourseFinity.</h6>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <form action="/user_management/search/1/" method="GET" class="d-flex">
+                                <div class="input-group margin-btm">
+                                    <input class="form-control mr-2" type="search" placeholder="Search for user (using username)..." name="user" aria-label="Search">
+                                    <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
+                                </div>
+                            </form>
+                        </div>
                         <div class="table-responsive-xl">
                             <table class="table">
                                 <tr>
@@ -227,96 +245,193 @@
                                 {% endfor %}
                             </table>
                         </div>
-                        {% if maxPages > 5 %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination flex-wrap">
-                                <li class="page-item ms-auto">
-                                    <a class="page-link" href="/user_management/page/1" aria-label="First Page">
-                                    <span aria-hidden="true">&laquo;</span>
-                                    <span class="sr-only">First Page</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="/user_management/page/{{ previousPage }}" aria-label="Previous">
-                                        <span aria-hidden="true">&lt;</span>
+                        {% if searched == False %}
+                            {% if maxPages > 5 %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination flex-wrap">
+                                    <li class="page-item ms-auto">
+                                        <a class="page-link" href="/user_management/page/1" aria-label="First Page">
+                                        <span aria-hidden="true">&laquo;</span>
+                                        <span class="sr-only">First Page</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="/user_management/page/{{ previousPage }}" aria-label="Previous">
+                                            <span aria-hidden="true">&lt;</span>
+                                            <span class="sr-only">Previous</span>
+                                        </a>
+                                    </li>
+                                    {% for key in paginationList %}
+                                        {% if key == pageNum %}
+                                        <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="/user_management/page/{{ nextPage }}" aria-label="Next">
+                                            <span aria-hidden="true">&gt;</span>
+                                            <span class="sr-only">Next</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item me-auto">
+                                        <a class="page-link" href="/user_management/page/{{ maxPages }}" aria-label="Last Page">
+                                        <span aria-hidden="true">&raquo;</span>
+                                        <span class="sr-only">Last Page</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            {% elif maxPages == 0 %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination flex-wrap">
+                                    <li class="page-item ms-auto">
+                                        <a class="page-link" href="/user_management/page/0" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
                                         <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                                {% for key in paginationList %}
-                                    {% if key == pageNum %}
-                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
-                                    {% else %}
-                                    <li class="page-item"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
-                                    {% endif %}
-                                {% endfor %}
-                                <li class="page-item">
-                                    <a class="page-link" href="/user_management/page/{{ nextPage }}" aria-label="Next">
-                                        <span aria-hidden="true">&gt;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/0">0</a></li>
+                                    <li class="page-item me-auto">
+                                        <a class="page-link" href="/user_management/page/0" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
                                         <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                                <li class="page-item me-auto">
-                                    <a class="page-link" href="/user_management/page/{{ maxPages }}" aria-label="Last Page">
-                                    <span aria-hidden="true">&raquo;</span>
-                                    <span class="sr-only">Last Page</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                        {% elif maxPages == 0 %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination flex-wrap">
-                                <li class="page-item ms-auto">
-                                    <a class="page-link" href="/user_management/page/0" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                    <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                                <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/0">0</a></li>
-                                <li class="page-item me-auto">
-                                    <a class="page-link" href="/user_management/page/0" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                    <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                        {% elif maxPages <= 5 %}
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination flex-wrap">
-                                <li class="page-item ms-auto">
-                                    <a class="page-link" href="/user_management/page/1" aria-label="First Page">
-                                    <span aria-hidden="true">&laquo;</span>
-                                    <span class="sr-only">First Page</span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" href="/user_management/page/{{ previousPage }}" aria-label="Previous">
-                                        <span aria-hidden="true">&lt;</span>
-                                        <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-                                {% for key in paginationList %}
-                                    {% if key == pageNum %}
-                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
-                                    {% else %}
-                                    <li class="page-item"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
-                                    {% endif %}
-                                {% endfor %}
-                                <li class="page-item">
-                                    <a class="page-link" href="/user_management/page/{{ nextPage }}" aria-label="Next">
-                                        <span aria-hidden="true">&gt;</span>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                                <li class="page-item me-auto">
-                                    <a class="page-link" href="/user_management/page/{{ maxPages }}" aria-label="Last Page">
-                                    <span aria-hidden="true">&raquo;</span>
-                                    <span class="sr-only">Last Page</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            {% elif maxPages <= 5 %}
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination flex-wrap">
+                                    <li class="page-item ms-auto">
+                                        <a class="page-link" href="/user_management/page/1" aria-label="First Page">
+                                        <span aria-hidden="true">&laquo;</span>
+                                        <span class="sr-only">First Page</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="/user_management/page/{{ previousPage }}" aria-label="Previous">
+                                            <span aria-hidden="true">&lt;</span>
+                                            <span class="sr-only">Previous</span>
+                                        </a>
+                                    </li>
+                                    {% for key in paginationList %}
+                                        {% if key == pageNum %}
+                                        <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link" href="/user_management/page/{{ key }}">{{ key }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="/user_management/page/{{ nextPage }}" aria-label="Next">
+                                            <span aria-hidden="true">&gt;</span>
+                                            <span class="sr-only">Next</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item me-auto">
+                                        <a class="page-link" href="/user_management/page/{{ maxPages }}" aria-label="Last Page">
+                                        <span aria-hidden="true">&raquo;</span>
+                                        <span class="sr-only">Last Page</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            {% if maxPages > 5 %}
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination flex-wrap">
+                                        <li class="page-item ms-auto">
+                                            <a class="page-link" href="/user_management/search/1/{{submittedParameters}}" aria-label="First Page">
+                                            <span aria-hidden="true">&laquo;</span>
+                                            <span class="sr-only">First Page</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/user_management/search/{{ previousPage }}/{{submittedParameters}}" aria-label="Previous">
+                                                <span aria-hidden="true">&lt;</span>
+                                                <span class="sr-only">Previous</span>
+                                            </a>
+                                        </li>
+                                        {% for key in paginationList %}
+                                            {% if key == pageNum %}
+                                            <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/search/{{ key }}/{{submittedParameters}}">{{ key }}</a></li>
+                                            {% else %}
+                                            <li class="page-item"><a class="page-link" href="/user_management/search/{{ key }}/{{submittedParameters}}">{{ key }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="/user_management/search/{{ nextPage }}/{{submittedParameters}}" aria-label="Next">
+                                                <span aria-hidden="true">&gt;</span>
+                                                <span class="sr-only">Next</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item me-auto">
+                                            <a class="page-link" href="/user_management/search/{{ maxPages }}/{{submittedParameters}}" aria-label="Last Page">
+                                            <span aria-hidden="true">&raquo;</span>
+                                            <span class="sr-only">Last Page</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                {% elif maxPages == 0 %}
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination flex-wrap">
+                                        <li class="page-item ms-auto">
+                                            <a class="page-link" href="/user_management/search/0/" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                            <span class="sr-only">Previous</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/search/0/">0</a></li>
+                                        <li class="page-item me-auto">
+                                            <a class="page-link" href="/user_management/search/0/" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                            <span class="sr-only">Next</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                {% elif maxPages <= 5 %}
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination flex-wrap">
+                                        <li class="page-item ms-auto">
+                                            <a class="page-link" href="/user_management/search/1/{{submittedParameters}}" aria-label="First Page">
+                                            <span aria-hidden="true">&laquo;</span>
+                                            <span class="sr-only">First Page</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/user_management/search/{{ previousPage }}/{{submittedParameters}}" aria-label="Previous">
+                                                <span aria-hidden="true">&lt;</span>
+                                                <span class="sr-only">Previous</span>
+                                            </a>
+                                        </li>
+                                        {% for key in paginationList %}
+                                            {% if key == pageNum %}
+                                            <li class="page-item active" aria-current="page"><a class="page-link" href="/user_management/search/{{ key }}/{{submittedParameters}}">{{ key }}</a></li>
+                                            {% else %}
+                                            <li class="page-item"><a class="page-link" href="/user_management/search/{{ key }}/{{submittedParameters}}">{{ key }}</a></li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="/user_management/search/{{ nextPage }}/{{submittedParameters}}" aria-label="Next">
+                                                <span aria-hidden="true">&gt;</span>
+                                                <span class="sr-only">Next</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item me-auto">
+                                            <a class="page-link" href="/user_management/search/{{ maxPages }}/{{submittedParameters}}" aria-label="Last Page">
+                                            <span aria-hidden="true">&raquo;</span>
+                                            <span class="sr-only">Last Page</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            {% endif %}
+                            <div class="col">
+                                <a href="/user_management/page/1" class="float-start form-buttons margin-top margin-top2"><i class="fas fa-arrow-left"></i> Back</a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>

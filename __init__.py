@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename
-import shelve, os, math, paypalrestsdk
+import shelve, os, math, paypalrestsdk, difflib
 import Student, Teacher, Admin, Forms
 from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -200,11 +200,9 @@ def userLogin():
 @app.route('/logout')
 def logout():
     if "userSession" in session:
-        session.pop("userSession", None)
+        session.clear()
     elif "adminSession" in session:
-        session.pop("adminSession", None)
-        if "pageNum" in session:
-            session.pop("pageNum", None)
+        session.clear()
     else:
         return redirect(url_for("home"))
 
@@ -979,6 +977,11 @@ def adminChangePassword():
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
+
+        # removing session created when searching for users
+        if "searchedPageRoute" in session:
+            session.pop("searchedPageRoute", None)
+
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
         if userFound and accActive:
@@ -1092,7 +1095,158 @@ def userManagement(pageNum):
                     else:
                         duplicateEmail = False
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail)
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/user_management/search/<int:pageNum>/", methods=['GET', 'POST'])
+def userSearchManagement(pageNum):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        if userFound and accActive:
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                    print("Users found")
+                else:
+                    db["Users"] = userDict
+                    print("No user data in user shelve files.")
+            except:
+                print("Error in retrieving Users from user.db")
+
+            submittedParameters = "?user=" + str(request.args.get("user"))
+
+            # for resetting the user's password and updating the user's email for account recovery
+            admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
+            if request.method == "POST" and admin_reset_password_form.validate():
+                password = admin_reset_password_form.password.data
+                email = sanitise(admin_reset_password_form.email.data)
+                validEmail = validate_email(email)
+
+                # for redirecting the admin to the user management page that he/she was in
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+
+                redirectURL = "/user_management/search/" + str(pageNum) +"/" + submittedParameters
+
+                if validEmail:
+                    userID = int(request.form["userID"])
+                    userKey = userDict.get(userID)
+                    oldEmail = userKey.get_email()
+                    duplicateEmail = check_duplicates(email, userDict, "email")
+                    if oldEmail != email:
+                        if duplicateEmail == False:
+                            if userKey != None:
+                                # changing the password of the user
+                                hashedPwd = hash_password(password)
+                                userKey.set_password(hashedPwd)
+                                userKey.set_email(email)
+                                db["Users"] = userDict
+                                db.close()
+                                send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                print("User account recovered successfully and email sent.")
+                                return redirect(redirectURL)
+                            else:
+                                db.close()
+                                print("Error in retrieving user object.")
+                                return redirect(redirectURL)
+                        else:
+                            db.close()
+                            print("Inputted new user's email is not unique.")
+                            session["duplicateEmail"] = True
+                            return redirect(redirectURL)
+                    else:
+                        db.close()
+                        print("User's new email inputted is the same as the old email.")
+                        session["sameEmail"] = True
+                        return redirect(redirectURL)
+                else:
+                    db.close()
+                    print("Inputted new user's email is invalid.")
+                    session["invalidEmail"] = True
+                    return redirect(redirectURL)
+            else:
+                username = request.args.get("user")
+                print(username)
+
+                userList = []
+                usernameList = []
+                for users in userDict:
+                    user = userDict.get(users)
+                    usernameList.append(user.get_username())
+
+                try:
+                    matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.8, i.e. must match to a certain percentage else it will be ignored.
+                except:
+                    matchedUsernameList = []
+
+                print(matchedUsernameList)
+                for userKey in userDict:
+                    userObject = userDict.get(userKey)
+                    username = userObject.get_username()
+                    for key in matchedUsernameList:
+                        if username == key:
+                            userList.append(userObject)
+
+                maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+                userListLen = len(userList) # get the length of the userList
+                maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+
+                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
+                if pageNum < 0:
+                    redirectRoute = "/user_management/search/0/" + submittedParameters
+                    return redirect(redirectRoute)
+                elif userListLen > 0 and pageNum == 0:
+                    redirectRoute = "/user_management/search/1" + "/" + submittedParameters
+                    return redirect(redirectRoute)
+                elif pageNum > maxPages:
+                    redirectRoute = "/user_management/search/" + str(maxPages) +"/" + submittedParameters
+                    return redirect(redirectRoute)
+                else:
+                   # pagination algorithm starts here
+                    userList = userList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    pageNumForPagination = pageNum - 1 # minus for the paginate function
+                    paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
+                    paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                    session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+
+                    previousPage = pageNum - 1
+                    nextPage = pageNum + 1
+
+                    if "invalidEmail" in session:
+                        invalidEmail = True
+                        session.pop("invalidEmail", None)
+                    else:
+                        invalidEmail = False
+
+                    if "sameEmail" in session:
+                        sameEmail = True
+                        session.pop("sameEmail", None)
+                    else:
+                        sameEmail = False
+
+                    if "duplicateEmail" in session:
+                        duplicateEmail = True
+                        session.pop("duplicateEmail", None)
+                    else:
+                        duplicateEmail = False
+
+                    session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + submittedParameters
+
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=submittedParameters)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1114,11 +1268,14 @@ def deleteUser(userID):
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
-            if "pageNum" in session:
-                pageNum = session["pageNum"]
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
             else:
-                pageNum = 0
-            redirectURL = "/user_management/page/" + str(pageNum)
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
             db = shelve.open("user", "c")
@@ -1167,11 +1324,14 @@ def banUser(userID):
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
-            if "pageNum" in session:
-                pageNum = session["pageNum"]
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
             else:
-                pageNum = 0
-            redirectURL = "/user_management/page/" + str(pageNum)
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
             db = shelve.open("user", "c")
@@ -1220,11 +1380,14 @@ def unbanUser(userID):
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
-            if "pageNum" in session:
-                pageNum = session["pageNum"]
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
             else:
-                pageNum = 0
-            redirectURL = "/user_management/page/" + str(pageNum)
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
             db = shelve.open("user", "c")

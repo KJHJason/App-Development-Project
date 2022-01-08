@@ -1,7 +1,7 @@
 import shelve
 import Student
 from Security import hash_password
-from __init__ import get_userID
+from JasonFunctions import get_userID
 
 userDict = {}
 db = shelve.open("user", "c")
