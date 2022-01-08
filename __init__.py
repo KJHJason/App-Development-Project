@@ -1120,7 +1120,7 @@ def userManagement(pageNum):
                     else:
                         duplicateEmail = False
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False)
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False, parameter="")
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1149,7 +1149,8 @@ def userSearchManagement(pageNum):
             except:
                 print("Error in retrieving Users from user.db")
 
-            submittedParameters = "?user=" + str(request.args.get("user"))
+            parameter = str(request.args.get("user"))
+            parametersURL = "?user=" + parameter
 
             # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
@@ -1164,7 +1165,7 @@ def userSearchManagement(pageNum):
                 else:
                     pageNum = 0
 
-                redirectURL = "/user_management/search/" + str(pageNum) +"/" + submittedParameters
+                redirectURL = "/user_management/search/" + str(pageNum) +"/" + parametersURL
 
                 if validEmail:
                     userID = int(request.form["userID"])
@@ -1229,15 +1230,15 @@ def userSearchManagement(pageNum):
                 userListLen = len(userList) # get the length of the userList
                 maxPages = math.ceil(userListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
+                # redirecting for handling different situation where if the user manually keys in the url
                 if pageNum < 0:
-                    redirectRoute = "/user_management/search/0/" + submittedParameters
+                    redirectRoute = "/user_management/search/0/" + parametersURL
                     return redirect(redirectRoute)
                 elif userListLen > 0 and pageNum == 0:
-                    redirectRoute = "/user_management/search/1" + "/" + submittedParameters
+                    redirectRoute = "/user_management/search/1" + "/" + parametersURL
                     return redirect(redirectRoute)
                 elif pageNum > maxPages:
-                    redirectRoute = "/user_management/search/" + str(maxPages) +"/" + submittedParameters
+                    redirectRoute = "/user_management/search/" + str(maxPages) +"/" + parametersURL
                     return redirect(redirectRoute)
                 else:
                    # pagination algorithm starts here
@@ -1269,9 +1270,9 @@ def userSearchManagement(pageNum):
                     else:
                         duplicateEmail = False
 
-                    session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + submittedParameters
+                    session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + parametersURL
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=submittedParameters)
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=parametersURL, parameter=parameter)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
