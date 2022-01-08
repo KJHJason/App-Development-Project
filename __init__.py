@@ -2533,7 +2533,7 @@ def purchaseReview():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            
+            createReview = Forms.CreateReviewText(request.form)
 
 
 
