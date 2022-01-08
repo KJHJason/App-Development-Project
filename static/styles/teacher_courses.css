@@ -1,0 +1,9 @@
+.container {
+    display: flex;
+
+}
+
+.course_info {
+    text-align: bottom-right;
+    text-decoration: underline;
+}
