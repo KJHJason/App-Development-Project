@@ -477,7 +477,7 @@ def verifyEmail():
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
                 session["emailVerifySent"] = True
-                send_verify_email(email, userID)
+                send_another_verify_email(email, userID)
             else:
                 session["emailFailed"] = False
                 print("User's email already verified.")
@@ -1903,6 +1903,8 @@ def updateEmail():
                     if email_duplicates == False:
                         # updating email of the user
                         userKey.set_email(updatedEmail)
+                        userKey.set_email_verification("Not Verified")
+                        send_verify_changed_email(updatedEmail, currentEmail, userSession)
                         db['Users'] = userDict
                         print("Email updated")
 
