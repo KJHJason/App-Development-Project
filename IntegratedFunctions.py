@@ -299,7 +299,7 @@ def verify_reset_token(token):
 
 def send_reset_email(email, emailKey):
     token = get_reset_token(emailKey)
-    message = Message("Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
+    message = Message("[CourseFinity] Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
     
 To reset your password, visit the following link:
@@ -329,7 +329,7 @@ def verify_email_token(token):
 
 def send_verify_email(email, userID):
     token = generate_verify_email_token(userID)
-    message = Message("Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
+    message = Message("[CourseFinity] Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
 
 Welcome to CourseFinity!
@@ -347,8 +347,28 @@ CourseFinity Team
 """
     mail.send(message)
 
+def send_verify_changed_email(email, oldEmail, userID):
+    token = generate_verify_email_token(userID)
+    message = Message("[CourseFinity] Email Changed", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+You have recently updated your email from {oldEmail} to {email}.
+We would like you to verify your email for verifications purposes.
+
+Please click on this link to verify your email:
+{url_for("verifyEmailToken", token=token, _external=True)}
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Thank you.
+
+Sincerely,
+CourseFinity Team
+"""
+    mail.send(message)
+
 def send_admin_reset_email(email, password):
-    message = Message("Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
+    message = Message("[CourseFinity] Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
 
 As per requested, we have helped you reset your email and password to the following,
