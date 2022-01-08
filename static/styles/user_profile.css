@@ -235,6 +235,26 @@
   color: #000;
 }
 
+.verified_email {
+  color: #198754;
+}
+
+.verified_email:hover {
+  text-decoration: none;
+  cursor: text;
+  color: #198754;
+}
+
+.not_verified_email {
+  color: #dc3545;
+}
+
+.not_verified_email:hover {
+  color: #dc3545;
+  text-decoration: none;
+  cursor: text;
+}
+
 .accepted_cards {
   text-align: right;
 }

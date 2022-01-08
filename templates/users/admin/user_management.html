@@ -125,7 +125,13 @@
                                         <td>{{ user.get_user_id() }}</td>
                                         <td class="text-truncate table_text"><a href="javascript:void(0)" class="table_full_data_text" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_username() }}">{{ user.get_username() }}</a></td>
                                         <td>{{ user.get_acc_type() }}</td>
-                                        <td class="text-truncate table_text"><a href="javascript:void(0)" class="table_full_data_text" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }}">{{ user.get_email() }}</a></td>
+                                        <td class="text-truncate table_text">
+                                            {% if user.get_email_verification() == "Verified" %}
+                                            <a href="javascript:void(0)" class="verified_email" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }} (Verified)">{{ user.get_email() }}</a>
+                                            {% else %}
+                                            <a href="javascript:void(0)" class="not_verified_email" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }} (Not Verified)">{{ user.get_email() }}</a>
+                                            {% endif %}
+                                        </td>
                                         <td>{{ user.get_status() }}</td>
                                         <td>
                                             <form action="" method="POST">

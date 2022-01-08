@@ -437,7 +437,6 @@ def userSignUp():
                     print("User ID setted: ", userID)
 
                     user = Student.Student(userID, usernameInput, emailInput, hashedPwd)
-                    print(user)
 
                     userDict[userID] = user
                     db["Users"] = userDict
