@@ -112,7 +112,7 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-user.add_to_card("0") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
 save(user,None,None)
 
@@ -244,7 +244,7 @@ save(user,None,course)
 userID = "0"
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
-password = password_manager().hash_password("123!@#")
+password = hash_password("123!@#")
 user = Student(userID, username, email, password)
 
 #Card --> No Validation for Simulation
@@ -267,7 +267,7 @@ save(user,None,None)
 userID = "1"
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
-password = password_manager().hash_password("456$%^")
+password = hash_password("456$%^")
 user = Student(userID, username, email, password)
 
 #Card --> No Validation for Simulation

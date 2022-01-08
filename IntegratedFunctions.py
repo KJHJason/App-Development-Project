@@ -26,7 +26,7 @@ def get_key_and_validate(userSession, userDict):
             return userKey, userFound, False
     else:
         return "", userFound, False
-    
+
 
 # Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
 def validate_session_get_userKey_open_file(userSession):
@@ -41,7 +41,7 @@ def validate_session_get_userKey_open_file(userSession):
     except:
         print("File could not be found.")
         return userKey, False, False
-        
+
     userFound = False
     print("ID in session:", userSession)
     userKey = userDict.get(userSession)
@@ -56,7 +56,7 @@ def validate_session_get_userKey_open_file(userSession):
     else:
         print("Verdict: User ID not found.")
         return userKey, userFound, False
-    
+
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
 def get_userID(userDict):
@@ -81,7 +81,7 @@ def validate_session_open_file(userSession):
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
         return False, False
-        
+
     userFound = False
     print("User ID in session:", userSession)
     userKey = userDict.get(userSession)
@@ -185,7 +185,7 @@ def admin_validate_session_open_file(adminSession):
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
         return False, False
-        
+
     userFound = False
     print("Admin ID in session:", adminSession)
     adminKey = adminDict.get(adminSession)
@@ -216,7 +216,7 @@ def admin_get_key_and_validate(adminSession, adminDict):
             return adminKey, userFound, False
     else:
         return adminKey, userFound, False
-    
+
 # Use this function if you want to validate the session, check if the admin is active, and get the adminKey but not manipulating the data in the admin shelve files (usually this will be used for reading the admin account data or other data relevant to the admin)
 def admin_get_key_and_validate_open_file(adminSession):
     adminKey = ""
@@ -228,7 +228,7 @@ def admin_get_key_and_validate_open_file(adminSession):
     except:
         print("No files found.")
         return adminKey, False, False
-    
+
     userFound = False
     print("Admin ID in session:", adminSession)
     adminKey = adminDict.get(adminSession)
@@ -248,7 +248,7 @@ def admin_get_key_and_validate_open_file(adminSession):
 def paginate(contentList, pageNumber, itemPerPage):
     # mainly using list slicing manipulation
     numOfItemsSeen = pageNumber * itemPerPage # calculating how many items are alrd seen based on the page number given
-    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen. 
+    return contentList[numOfItemsSeen:numOfItemsSeen+itemPerPage] # then return the sliced list starting from the items already seen and adding the next few items to be seen.
 
 # getting the numbers of pagination buttons to display
 def get_pagination_button_list(pageNum, maxPages):
@@ -262,23 +262,23 @@ def get_pagination_button_list(pageNum, maxPages):
         currentFromMax = maxPages - pageNum # calculating the difference from the user's current page to max number of pages
         if pageNum < 4: # if the user's current page number is 3 or less,
             paginationList.append(1)
-            paginationList.append(2)     
+            paginationList.append(2)
             paginationList.append(3)
             paginationList.append(4)
             paginationList.append(5)
         elif currentFromMax <= 2: # if the difference is 2 or less
             paginationList.append(maxPages - 4)
-            paginationList.append(maxPages - 3)     
+            paginationList.append(maxPages - 3)
             paginationList.append(maxPages - 2)
             paginationList.append(maxPages - 1)
             paginationList.append(maxPages )
         else:
             paginationList.append(pageNum - 2)
-            paginationList.append(pageNum - 1 )     
+            paginationList.append(pageNum - 1 )
             paginationList.append(pageNum)
             paginationList.append(pageNum + 1)
             paginationList.append(pageNum + 2)
-                
+
     return paginationList
 
 # functions for reset password process via email
@@ -456,3 +456,86 @@ def send_contact_us_email(issueTitle, name, email, bodyContent):
     mail.send(message)
 
 """Done by Jason"""
+
+"""Done by Wei Ren"""
+
+# Adds ellipsis to text to prevent overflow, feel free to add your own limits
+def ellipsis(text, textType):
+    length = 0
+    count = 0
+    weight = {'a': 60,
+              'b': 60,
+              'c': 52,
+              'd': 60,
+              'e': 60,
+              'f': 30,
+              'g': 60,
+              'h': 60,
+              'i': 25,
+              'j': 25,
+              'k': 52,
+              'l': 25,
+              'm': 87,
+              'n': 60,
+              'o': 60,
+              'p': 60,
+              'q': 60,
+              'r': 35,
+              's': 52,
+              't': 30,
+              'u': 60,
+              'v': 52,
+              'w': 77,
+              'x': 52,
+              'y': 52,
+              'z': 52,
+              'A': 70,
+              'B': 70,
+              'C': 77,
+              'D': 77,
+              'E': 70,
+              'F': 65,
+              'G': 82,
+              'H': 77,
+              'I': 30,
+              'J': 55,
+              'K': 70,
+              'L': 60,
+              'M': 87,
+              'N': 77,
+              'O': 82,
+              'P': 70,
+              'Q': 82,
+              'R': 77,
+              'S': 70,
+              'T': 65,
+              'U': 77,
+              'V': 70,
+              'W': 100,
+              'X': 70,
+              'Y': 70,
+              'Z': 65,
+              ' ': 27}
+    if textType == "Title":
+        wordLimit = 30*weight['A']
+
+    elif textType == "Description":
+        wordLimit = 130*weight['A']
+    else:
+        return None # You never know.
+    for character in list(text):
+        currentLength = length
+        if character in weight:
+            length += weight[character]
+        else:
+            length += 61 # Average value
+        if currentLength < wordLimit and length > wordLimit:
+            text = text[:count] + "..."
+            break
+        else:
+            count += 1
+
+    return text
+# Weights taken here: https://gist.github.com/imaurer/d330e68e70180c985b380f25e195b90c
+
+"""Done by Wei Ren"""

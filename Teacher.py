@@ -5,19 +5,33 @@ class Teacher(StudentAndTeacher):
     def __init__(self, userID, username, email, password):
         super().__init__(userID, username, email, password, "Teacher", "Good")
         self.__earnings = 0
-        self.__purchaseID = ""
-        self.__reviewID = ""
+        self.__purchaseIDs = []
+        self.__reviewIDs = []
         self.__viewed = ""
         self.__joinDate = ""
     # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
         self.__shoppingCart = [] # Course IDs here
         self.__bio = ""
+        self.__shoppingCart = [] # Course IDs & Type here
+        self.__purchasedCourses = [] # Course IDs & Type here
     
-    def set_purchaseID(self, purchaseID):
-        self.__purchaseID = purchaseID
-    def set_reviewID(self, reviewID):
-        self.__reviewID = reviewID
+    def add_purchaseID(self, purchaseID):
+        self.__purchaseIDs.append(purchaseID)
+    def add_reviewID(self, reviewID):
+        self.__reviewIDs.append(reviewID)
+
+    def remove_purchaseID(self, purchaseID):
+        if purchaseID in self.__purchaseIDs:
+            self.__purchaseID.remove(purchaseID)
+        else:
+            return False
+    def remove_reviewID(self, reviewID):
+        if reviewID in self.__reviewIDs:
+            self.__reviewIDs.remove(reviewID)
+        else:
+            return False
+
     def set_viewed(self, viewed):
         self.__viewed = viewed
     def set_joinDate(self, joinDate):
@@ -54,8 +68,38 @@ class Teacher(StudentAndTeacher):
 
     def get_cartCourseType(self, courseID):
         for course in self.__shoppingCart:
-            if course[0] == courseID:
-                return course[1]
+            if course[0] == courseID and course[1] == "Video":
+                video = True
+            elif course[0] == courseID and course[1] == "Zoom":
+                zoom = True
+        if video and zoom:
+            return "Both"
+        elif video:
+            return "Video"
+        elif zoom:
+            return "Zoom"
+
+    def get_purchasesCourseType(self,courseID):
+        for course in self.__purchasedCourses:
+            if course[0] == courseID and course[1] == "Video":
+                video = True
+            elif course[0] == courseID and course[1] == "Zoom":
+                zoom = True
+            if video and zoom:
+                return "Both"
+            elif video:
+                return "Video"
+            elif zoom:
+                return "Zoom"
+            else:
+                return None
 
     def get_shoppingCart(self):
         return self.__shoppingCart
+
+    def get_purchases(self):
+        return self.__purchases
+
+    def addCartToPurchases(self):
+        for course in self.__shoppingCart:
+            self.__purchasedCourse.append(course)

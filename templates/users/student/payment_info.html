@@ -14,7 +14,10 @@
     {{ render_field(form.cardNo, class="form-control") }}
     {{ render_field(form.cardExpiry, class="form-control") }}
     {{ render_field(form.cardCVV, class="form-control") }}
-    {{ render_field(form.savePaymentInfo, class="form-control") }}
+    <div class="form-check">
+        {{ form.savePaymentInfo(class="form-check-input") }}
+        {{ form.savePaymentInfo.label(class="form-check-label") }}
+    </div>
     {{ render_field(form.firstName, class="form-control") }}
     {{ render_field(form.lastName, class="form-control") }}
     {{ render_field(form.billAddress1, class="form-control") }}
