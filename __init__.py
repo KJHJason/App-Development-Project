@@ -1213,7 +1213,7 @@ def userSearchManagement(pageNum):
                     usernameList.append(user.get_username())
 
                 try:
-                    matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.8, i.e. must match to a certain percentage else it will be ignored.
+                    matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.85, i.e. must match to a certain percentage else it will be ignored.
                 except:
                     matchedUsernameList = []
 
