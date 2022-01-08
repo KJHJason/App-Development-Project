@@ -1,7 +1,4 @@
-from wtforms import Form, validators, ValidationError
-from wtforms import StringField, RadioField, SelectField, TextAreaField, EmailField
-from wtforms import DateField, HiddenField, FormField, IntegerField, PasswordField
-from wtforms import BooleanField
+from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, HiddenField, FormField, IntegerField, PasswordField, BooleanField
 
 """WTForms by Jason"""
 
