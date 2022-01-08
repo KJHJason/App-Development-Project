@@ -8,7 +8,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from flask_mail import Mail
-from JasonFunctions import *
+from IntegratedFunctions import *
 
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
