@@ -476,7 +476,7 @@ def verifyEmail():
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
                 session["emailVerifySent"] = True
-                send_verify_email(email, userID)
+                send_another_verify_email(email, userID)
             else:
                 session["emailFailed"] = False
                 print("User's email already verified.")

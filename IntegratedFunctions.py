@@ -367,6 +367,25 @@ CourseFinity Team
 """
     mail.send(message)
 
+def send_another_verify_email(email, userID):
+    token = generate_verify_email_token(userID)
+    message = Message("[CourseFinity] Verify Email", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.body = f"""Hello,
+
+We would like you to verify your email for verifications purposes.
+
+Please click on this link to verify your email:
+{url_for("verifyEmailToken", token=token, _external=True)}
+
+Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
+
+Thank you.
+
+Sincerely,
+CourseFinity Team
+"""
+    mail.send(message)
+
 def send_admin_reset_email(email, password):
     message = Message("[CourseFinity] Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
