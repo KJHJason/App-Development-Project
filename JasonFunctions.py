@@ -2,7 +2,7 @@ from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
-import shelve, os
+import shelve, os, uuid
 from flask import url_for
 
 """Done by Jason"""
@@ -300,11 +300,16 @@ def verify_reset_token(token):
 def send_reset_email(email, emailKey):
     token = get_reset_token(emailKey)
     message = Message("Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""To reset your password, visit the following link:
+    message.body = f"""Hello,
+    
+To reset your password, visit the following link:
 {url_for("resetPassword", token=token, _external=True)}
 
 Do note that this link will expire in 10 minutes.
-If you did not make this request, please ignore this email.
+If you did not make this request, please disregard this email.
+
+Sincerely,
+CourseFinity Team
 """
     mail.send(message)
 
@@ -338,7 +343,7 @@ Please contact us if you have any questions or concerns. Our customer support ca
 Thank you.
 
 Sincerely,
-CourseFinity
+CourseFinity Team
 """
     mail.send(message)
 
@@ -359,10 +364,14 @@ Thank you and enjoy learning or teaching at CourseFinity!
 Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
 
 Sincerely,
-CourseFinity
+CourseFinity Team
 """
     mail.send(message)
 
+# Sending a follow up email if user has submitted a ban appeal and is accepted.
+# However, I am not sending a ban email notification as users who have followed the rules should not be worried about getting banned.
+# Hence, upon logging in, if the user is mistakenly banned, he/she will receive a "You have banned" alert from the login and will proceed to contact CourseFinity support email instead.
+# If the user knows that they have violated the rules and receives a ban email, they may go on other platform or create another account immediately after the knowledge of their ban. (In a way, without sending a ban email notification, it is delaying their time for actions)
 def send_admin_unban_email(email):
     message = Message("You have been unbanned from CourseFinity", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
@@ -375,7 +384,35 @@ Thank you and enjoy learning or teaching at CourseFinity!
 Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
 
 Sincerely,
-CourseFinity
+CourseFinity Team
+"""
+    mail.send(message)
+
+# use this function for the contact us page
+# for this to work, please feed in a summary of the user's issue, the name of the user, the email of the user, and the main message/body content obtained from the body form
+# please also check for cross site scripting and potential security risk by testing the form inputs
+# note: gmail is safe from cross site scripting
+def send_contact_us_email(issueTitle, name, email, bodyContent):
+    id = str(uuid.uuid4())
+    title = "[CourseFinity] Support Request - " + issueTitle + " #" + id
+    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello {name},</p>
+
+<p>Thanks for contacting CourseFinity support! We have received your request (#{id}) and will respond back as soon as we are able to.</p>
+
+<p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
+
+<p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("home", _external=True)}</a> for solutions to common problems.</p>
+
+<p>You can refer to what you have wrote to the Support Team below:<br>
+{bodyContent}</p>
+
+<p>Please reply to this email if you have any further questions or concerns.</p>
+
+<p>Thank you.</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
 """
     mail.send(message)
 
