@@ -986,7 +986,6 @@ def adminChangeEmail():
                     if email_duplicates == False:
                         # updating email of the admin
                         userKey.set_email(updatedEmail)
-                        userKey.set_email_verification("Not Verified")
                         db['Admins'] = adminDict
                         print("Email updated")
 
@@ -1903,6 +1902,7 @@ def updateEmail():
                     if email_duplicates == False:
                         # updating email of the user
                         userKey.set_email(updatedEmail)
+                        userKey.set_email_verification("Not Verified")
                         db['Users'] = userDict
                         print("Email updated")
 
