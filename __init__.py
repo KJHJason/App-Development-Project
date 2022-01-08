@@ -94,6 +94,31 @@ def home():
             userFound, accGoodStatus = validate_session_open_file(userSession)
 
             if userFound and accGoodStatus:
+                #def recommend(most_watched_category):
+                   #recommendationList = []
+                   #videoCat = [[]]
+                   #Nested array, for each category id, example category math, there will be the video ids of those videos that belong to that category
+                   #curShownFeed = 0
+                   #recommendationList.append(most_watched_category + 1)
+                   #recommendationList.append(most_watched_category - 1)
+                   #vids = []
+                   #For each video ID, maintain an array that shows if the video has been bought before by the user, or course has been recommended before by the user,
+                   #This is so that the algorithm does not double recommend
+                   #For each course in the purchase history, mark the course id in the vis[id] = 1
+
+                   #while len().recommendationList and curShownFeed < 4:
+                    #   curTop = recommendationList.pop(0)
+                    #   for vids in videoCat[curTop]:
+                    #           if !vis[vids] and curShownFeed < 4:
+                    #               ++curShownFeed
+                    #               recommend(vids)
+                    #               vis[vids] = 1
+
+
+#Vid id for discrete math 673, math cat 0
+#videoCat[0][673]
+                        
+
                 return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded)
             else:
                 print("User not found or is banned.")
@@ -2067,7 +2092,7 @@ def search():
 """Purchase History by Royston"""
 
 @app.route("/purchasehistory")
-def purchaseHistory():
+def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -2092,39 +2117,72 @@ def purchaseHistory():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            purchaseHistoryList = []
+            showCourse = ""
             purchaseID = userKey.get_purchaseID()
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
-                for courseID in range(5):
-                    courseID = userKey.get_courseID()
-                    print("Course ID:", courseID)
-                    title = userKey.get_title()
-                    print("Course title:", title)
-                    description = userKey.get_description()
-                    print("Course Description:", description)
-                    thumbnail = userKey.get_thumbnail()
-                    print("Course Thumbnail:", thumbnail)
-                    price = userKey.get_price()
-                    print("Course Price:", price)
-                    courseType = userKey.get_courseType()
-                    print("Course Type:", courseType)
+                try:
+                    historyDict = {}
+                    dbCourse = shelve.open("course", "r")
+                    historyDict = dbCourse[""]
+                    for courseID in purchaseHistoryList(5):
+                        history = dbCourse[courseID]
+
+                        purchaseHistoryList = [3,4,5,6,7,9]
+
+                        #id will be an integer
+
+                        video = {id :
+                            {historyDict : {"Title":history.get_title(),
+                            "Description":history.get_description(),
+                            "Thumbnail":history.get_thumbnail(),
+                            "VideoCheck":history.get_courseType()["Video"],
+                            "ZoomCheck":history.get_courseType()["Zoom"],
+                            "Price":history.get_price(),
+                            "Owner":history.get_owner()}
+                            }
+                        }
+                    for i in purchaseHistoryList:
+                        showCourse(video[i])
+                    
+                    db.close()
+
+                except:
+                    print("Unable to open up course shelve")
 
             else:
                 db.close()
                 print("Purchase History is Empty")
+                return redirect(url_for("purchasehistory"))
 
-            # pagination algorithm starts here
-            purchaseHistoryList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-            pageNumForPagination = pageNum - 1 # minus for the paginate function
-            paginatedUserList = paginate(purchaseHistoryList, pageNumForPagination, maxItemsPerPage)
-            paginationList = get_pagination_button_list(pageNum, maxPages)
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(purchaseHistoryList) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/shopping_cart/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/shopping_cart/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/shopping_cart/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                purchaseHistoryList = paginate(purchaseHistoryList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
 
             previousPage = pageNum - 1
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', courseID=courseID, title=title, description=description, thumbnail=thumbnail, price=price, courseType=courseType, userList=paginatedUserList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/admin/user_management.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             db.close()
             print("User not found or is banned")
@@ -2169,6 +2227,7 @@ def purchaseReview():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            
 
 
 
@@ -2218,6 +2277,45 @@ def purchaseView():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            purchaseHistoryList = []
+            showCourse = ""
+            purchaseID = userKey.get_purchaseID()
+            print("PurchaseID exists?: ", purchaseID)
+
+            if purchaseID == True:
+                try:
+                    historyDict = {}
+                    dbCourse = shelve.open("course", "r")
+                    historyDict = dbCourse[""]
+                    for courseID in purchaseHistoryList(5):
+                        history = dbCourse[courseID]
+
+                        purchaseHistoryList = [3,4,5,6,7,9]
+
+                        #id will be an integer
+
+                        video = {id :
+                            {historyDict : {"Title":history.get_title(),
+                            "Description":history.get_description(),
+                            "Thumbnail":history.get_thumbnail(),
+                            "VideoCheck":history.get_courseType()["Video"],
+                            "ZoomCheck":history.get_courseType()["Zoom"],
+                            "Price":history.get_price(),
+                            "Owner":history.get_owner()}
+                            }
+                        }
+                    for i in purchaseHistoryList:
+                        showCourse(video[i])
+                    
+                    db.close()
+
+                except:
+                    print("Unable to open up course shelve")
+
+            else:
+                db.close()
+                print("Nothing to view here.")
+                return redirect(url_for("purchaseview"))
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchaseview.html')
@@ -2265,6 +2363,7 @@ def teacherCashOut():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+
 
             db.close() # remember to close your shelve files!
             return render_template('users/teacher/teacher_cashout.html')
