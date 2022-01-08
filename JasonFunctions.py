@@ -310,9 +310,9 @@ If you did not make this request, please ignore this email.
 
 # useful notes for verifying emails: https://www.chargebee.com/blog/avoid-friction-trial-sign-process/
 # URLSafeTimedSerializer uses SHA1 by default
-def generate_verify_email_token(emailKey, expires_sec=259200): # 3 days
+def generate_verify_email_token(userID, expires_sec=86400): # 1 day
     s = jsonSerializer(app.config["SECRET_KEY"], expires_sec)
-    return s.dumps({"user_id": emailKey.get_user_id()}).decode("utf-8")
+    return s.dumps({"user_id": userID}).decode("utf-8")
 
 def verify_email_token(token):
     s = jsonSerializer(app.config["SECRET_KEY"])
@@ -322,8 +322,8 @@ def verify_email_token(token):
     except:
         return None
 
-def send_verify_email(email, emailKey):
-    token = generate_verify_email_token(emailKey)
+def send_verify_email(email, userID):
+    token = generate_verify_email_token(userID)
     message = Message("Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
     message.body = f"""Hello,
 
@@ -331,7 +331,7 @@ Welcome to CourseFinity!
 We would like you to verify your email for verifications purposes.
 
 Please click on this link to verify your email:
-{url_for("verifyEmail", token=token, _external=True)}
+{url_for("verifyEmailToken", token=token, _external=True)}
 
 Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
 

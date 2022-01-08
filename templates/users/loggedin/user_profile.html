@@ -120,6 +120,85 @@
 </div>
 {% endif %}
 
+{% if emailSent %}
+<div class="modal fade" id="emailSentModal" tabindex="-1" aria-labelledby="emailSentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="emailSentModalLabel">Verification Email Sent</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>We have sent you a verification link to verify your email.</h6>
+            <h6>Please make sure to check your email spam folder as well.</h6>
+            <h6>Do note that the link will expire in 1 day.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if emailAlreadyVerified %}
+<div class="modal fade" id="emailAlreadyVerifiedModal" tabindex="-1" aria-labelledby="emailAlreadyVerifiedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="emailAlreadyVerifiedModalLabel">Email Already Verified</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>You have already verified your email address. There is no need to verify it again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if emailVerified %}
+<div class="modal fade" id="emailVerifiedModal" tabindex="-1" aria-labelledby="emailVerifiedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="emailVerifiedModalLabel">Email Verified</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Your email address has been verified!</h6>
+            <h6>Please do not hesitate to contact us at <a href="mailto:support@coursefinity.com">support@coursefinity.com</a> if you have any questions.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if emailTokenInvalid %}
+<div class="modal fade" id="emailTokenInvalidModal" tabindex="-1" aria-labelledby="emailTokenInvalidModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="emailTokenInvalidModalLabel">Email Verification Link Expired</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>Email verification link is invalid or has expired. Please generate a new link and try again later.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container container_margin">
     <div class="row">
         <div class="col-lg-3 merge-boxes">
@@ -150,6 +229,12 @@
         <div class="col-lg-9 merge-boxes">
             <div id="right-user">
                 <div class="container res_padding_remove">
+                    {% if emailVerification == False %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <h6>Looks like you have not verified your email, please verify by clicking <a class="text-danger fw-bold" href="/generate_verify_email_token">here</a></h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
                     <div class="row">
                         <div class="col-md-5 image-center">
                             <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
@@ -266,6 +351,30 @@
         <script>
             var RecentChangeAccTypeModal = new bootstrap.Modal(document.getElementById('RecentChangeAccTypeModal'), {});
             RecentChangeAccTypeModal.show();
+        </script>
+    {% endif %}
+    {% if emailSent %}
+        <script>
+            var emailSentModal = new bootstrap.Modal(document.getElementById('emailSentModal'), {});
+            emailSentModal.show();
+        </script>
+    {% endif %}
+    {% if emailAlreadyVerified %}
+        <script>
+            var emailAlreadyVerifiedModal = new bootstrap.Modal(document.getElementById('emailAlreadyVerifiedModal'), {});
+            emailAlreadyVerifiedModal.show();
+        </script>
+    {% endif %}
+    {% if emailVerified %}
+        <script>
+            var emailVerifiedModal = new bootstrap.Modal(document.getElementById('emailVerifiedModal'), {});
+            emailVerifiedModal.show();
+        </script>
+    {% endif %}
+    {% if emailTokenInvalid %}
+        <script>
+            var emailTokenInvalidModal = new bootstrap.Modal(document.getElementById('emailTokenInvalidModal'), {});
+            emailTokenInvalidModal.show();
         </script>
     {% endif %}
 {% endblock %}

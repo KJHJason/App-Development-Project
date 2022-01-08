@@ -36,6 +36,7 @@ app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
 app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 1 * 1024 * 1024 # 1MiB
 
 # configuration for email
+# Make sure to enable access for less secure apps
 app.config["MAIL_SERVER"] = "smtp.googlemail.com" # using gmail
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
@@ -218,7 +219,26 @@ def userLogin():
                 print("Password Input:", passwordInput)
                 return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
-            return render_template('users/guest/login.html', form=create_login_form, passwordUpdated=passwordUpdated)
+            # for notifying if they have verified their email from the link in their email
+            if "emailVerified" in session:
+                emailVerified = True
+                session.pop("emailVerified", None)
+            else:
+                emailVerified = False
+            # for notifying if the email verification link has expired/is invalid
+            if "emailTokenInvalid" in session:
+                emailTokenInvalid = True
+                session.pop("emailTokenInvalid", None)
+            else:
+                emailTokenInvalid = False
+            # for notifying if they have already verified their email (traversal attack)
+            if "emailFailed" in session:
+                emailAlreadyVerified = True
+                session.pop("emailFailed", None)
+            else:
+                emailAlreadyVerified = False
+
+            return render_template('users/guest/login.html', form=create_login_form, passwordUpdated=passwordUpdated, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, emailAlreadyVerified=emailAlreadyVerified)
     else:
         return redirect(url_for("home"))
 
@@ -361,6 +381,7 @@ def resetPassword(token):
 """End of Reset Password by Jason"""
 
 """Student signup process by Jason"""
+
 @app.route('/signup', methods=['GET', 'POST'])
 def userSignUp():
     if "userSession" not in session and "adminSession" not in session:
@@ -425,6 +446,7 @@ def userSignUp():
 
                     db.close()
                     print("User added.")
+                    send_verify_email(emailInput, userID)
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -440,6 +462,93 @@ def userSignUp():
         return redirect(url_for("home"))
 
 """End of Student signup process by Jason"""
+
+"""Email verification by Jason"""
+
+@app.route("/generate_verify_email_token")
+def verifyEmail():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
+        email = userKey.get_email()
+        userID = userKey.get_user_id()
+        if userFound and accGoodStatus:
+            emailVerified = userKey.get_email_verification()
+            if emailVerified == "Not Verified":
+                session["emailVerifySent"] = True
+                send_verify_email(email, userID)
+            else:
+                session["emailFailed"] = False
+                print("User's email already verified.")
+            return redirect(url_for("userProfile"))
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the login page
+            session.clear()
+            return redirect(url_for("userLogin"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
+
+@app.route("/verify_email/<token>")
+def verifyEmailToken(token):
+    validateToken = verify_email_token(token)
+    if validateToken != None:
+        
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                userDict = db['Users']
+            else:
+                db.close()
+                print("No user data in user shelve files.")
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        userKey = userDict.get(validateToken)
+        # checking if the user is banned
+        accGoodStatus = userKey.get_status()
+        if accGoodStatus == "Good":
+            emailVerification = userKey.get_email_verification()
+            if emailVerification == "Not Verified":
+                userKey.set_email_verification("Verified")
+                db["Users"] = userDict
+                db.close()
+                session["emailVerified"] = True
+                if "userSession" in session:
+                    return redirect(url_for("userProfile"))
+                else:
+                    return redirect(url_for("userLogin"))
+            else:
+                db.close()
+                session["emailFailed"] = True
+                if "userSession" in session:
+                    return redirect(url_for("userProfile"))
+                else:
+                    print("Email already verified")
+                    return redirect(url_for("userLogin"))
+        else:
+            db.close()
+            print("User account banned.")
+            return redirect(url_for("home"))
+    else:
+        session["emailTokenInvalid"] = True
+        print("Invalid/Expired Token.")
+        if "userSession" in session:
+            return redirect(url_for("userProfile"))
+        else:
+            return redirect(url_for("userLogin"))
+
+"""End of Email verification by Jason"""
 
 """Teacher's signup process by Jason"""
 
@@ -509,9 +618,8 @@ def teacherSignUp():
                     print("Teacher added.")
 
                     db.close()
-
+                    send_verify_email(emailInput, userID)
                     session["userSession"] = userID
-
                     return redirect(url_for("signUpPayment"))
                 else:
                     # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
@@ -1485,6 +1593,12 @@ def userProfile():
         userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            emailVerified = userKey.get_email_verification()
+            if emailVerified == "Not Verified":
+                emailVerification = False
+            else:
+                emailVerification = True
+
             if request.method == "POST":
                 if "profileImage" not in request.files:
                     print("No file sent.")
@@ -1614,7 +1728,36 @@ def userProfile():
                     recentChangeAccType = False
                     print("Recently changed account type to teacher?:", recentChangeAccType)
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType)
+                # email verification notifications checking
+                # for notifying if the token has been sent to their email
+                if "emailVerifySent" in session:
+                    emailSent = True
+                    session.pop("emailVerifySent", None)
+                else:
+                    emailSent = False
+                
+                # for notifying if they have already verified their email (traversal attack)
+                if "emailFailed" in session:
+                    emailAlreadyVerified = True
+                    session.pop("emailFailed", None)
+                else:
+                    emailAlreadyVerified = False
+
+                # for notifying if they have verified their email from the link in their email
+                if "emailVerified" in session:
+                    emailVerified = True
+                    session.pop("emailVerified", None)
+                else:
+                    emailVerified = False
+
+                # for notifying if the email verification link has expired/is invalid
+                if "emailTokenInvalid" in session:
+                    emailTokenInvalid = True
+                    session.pop("emailTokenInvalid", None)
+                else:
+                    emailTokenInvalid = False
+
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
         else:
             db.close()
             print("User not found or is banned.")
