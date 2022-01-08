@@ -29,6 +29,7 @@ User --> Teacher (Object) 1
 
 from Rating import Rating
 from CourseParts import ZoomPart, VideoPart
+from IntegratedFunctions import ellipsis
 
 class Course():
     course_no = -1
@@ -61,10 +62,16 @@ class Course():
     def get_title(self):
         return self.__title
 
+    def get_shortTitle(self):
+        return ellipsis(self.__title,"Title")
+
     def set_description(self, description):
         self.__description = description
     def get_description(self):
         return self.__description
+
+    def get_shortDescription(self):
+        return ellipsis(self.__description,"Description")
 
     def set_thumbnail(self, thumbnail):
         self.__thumbnail = thumbnail

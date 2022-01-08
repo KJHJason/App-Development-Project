@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from werkzeug.utils import secure_filename
 import shelve, os, math, paypalrestsdk, difflib
 import Student, Teacher, Admin, Forms
+from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
@@ -2400,7 +2401,7 @@ def search():
 """"End of Search Function by Royston"""
 
 """Purchase History by Royston"""
-
+"""
 @app.route("/purchasehistory")
 def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
@@ -2506,7 +2507,7 @@ def purchaseHistory(pageNum):
             # determine if it make sense to redirect the user to the home page or the login page
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-
+"""
 """End of Purchase History by Royston"""
 
 """Purchase Review by Royston"""
@@ -2861,6 +2862,75 @@ def checkout():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             paymentForm = Forms.PaymentInfo(request.form)
             if request.method == "POST" and paymentForm.validate():
+                try:
+                    dbPayment = shelve.open("payment","c")
+                    if "Payment" in dbPayment:
+                        paymentDict = dbPayment['Payment']
+                    else:
+                        print("dbPayment has no entries.")
+                        paymentDict = {}
+                except IndexError:
+                    print("Error in retrieving Payment from payment.db")
+
+                # If someone wants to save any changes made
+                if paymentForm.savePaymentInfo.data == True:                                            # U for Update
+
+                    cardValid = True
+                    cardCVVValid = True
+                    cardExpiryValid = True
+
+                    if userKey.get_card_name() != paymentForm.cardName.data:
+                        cardName = sanitise(paymentForm.cardName.data)
+
+                    if userKey.get_card_no() != paymentForm.cardNumber.data:
+                        cardNumber = sanitise(paymentForm.cardNumber.data)
+                        cardValid = validate_card_number(cardNumber)
+
+                    if userKey.get_card_cvv() != paymentForm.cardCVV.data:
+                        cardCVV = sanitise(paymentForm.cardCVV.data)
+                        cardType = get_card_type(cardNumber)
+                        cardCVVValid = validate_cvv(cardCVV, cardType)
+
+                    if userKey.get_card_expiry() != paymentForm.cardExpiry.data:
+                        cardExpiry = sanitise(paymentForm.cardExpiry.data)
+                        cardExpiryValid = validate_expiry_date(cardExpiry)
+
+                    if cardValid and cardCVVValid and cardExpiryValid:
+                        userKey.set_card_name(cardName)
+                        userKey.set_card_no(cardNumber)
+                        userKey.set_card_cvv(cardCVV)
+                        userKey.set_card_expiry(cardExpiry)
+
+                    userID = userKey.get_user_id()
+
+                    # Create payment object                                                             # 'C' for Create
+                    payment = Payment(userID,
+                                      cardName,
+                                      cardNumber,
+                                      cardExpiry,
+                                      cardCVV,
+                                      paymentForm.firstName.data,
+                                      paymentForm.lastName.data,
+                                      paymentForm.billAddress1.data,
+                                      paymentForm.billAddress2.data,
+                                      paymentForm.billAddress3.data,
+                                      paymentForm.city.data,
+                                      paymentForm.country.data,
+                                      paymentForm.zipCode.data,
+                                      paymentForm.countryCode.data)
+
+                    # Add purchase ID to declare user can access course
+                    userKey.add_purchaseID(payment.get_paymentID())
+
+                    userDict[userID] = userKey
+                    paymentDict[payment.get_paymentID()] = payment
+
+                # Make changes permanent only after all processes are finished with no interrupt errors
+                db["Users"] = userDict
+                dbPayment["Payments"] = paymentDict
+
+                db.close()
+                dbPayment.close()
                 return redirect(url_for('paymentComplete'))
             else:
                 # Add choices as tuple (value, label)
@@ -2885,53 +2955,6 @@ def checkout():
             # return redirect(url_for("userLogin"))
 
 """End of Template Checkout by Wei Ren"""
-
-"""Template Payment Complete by Wei Ren"""
-
-@app.route("/payment_complete")
-def paymentComplete():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/student/payment_complete.html')
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Template Payment Complete by Wei Ren"""
 
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
