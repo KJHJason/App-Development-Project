@@ -858,6 +858,7 @@ def adminProfile():
         if userFound and accActive:
             username = userKey.get_username()
             email = userKey.get_email()
+            admin_id = userKey.get_user_id()
 
             # checking sessions if any of the user's acc info has changed
             if "username_changed" in session:
@@ -884,7 +885,7 @@ def adminProfile():
                 passwordChanged = False
                 print("Password recently changed?:", passwordChanged)
 
-            return render_template('users/admin/admin_profile.html', username=username, email=email, usernameChanged=usernameChanged, emailChanged=emailChanged, passwordChanged=passwordChanged)
+            return render_template('users/admin/admin_profile.html', username=username, email=email, usernameChanged=usernameChanged, emailChanged=emailChanged, passwordChanged=passwordChanged, admin_id=admin_id)
         else:
 
             print("Admin account is not found or is not active.")
@@ -1347,25 +1348,27 @@ def userSearchManagement(pageNum):
             else:
                 username = request.args.get("user")
                 print(username)
-
                 userList = []
-                usernameList = []
-                for users in userDict:
-                    user = userDict.get(users)
-                    usernameList.append(user.get_username())
+                if username in userDict: # if admin searches for the user using the user id
+                    userList.append(userDict.get(username))
+                else: # if the admin searches for the user using the user's username
+                    usernameList = []
+                    for users in userDict:
+                        user = userDict.get(users)
+                        usernameList.append(user.get_username())
 
-                try:
-                    matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.85, i.e. must match to a certain percentage else it will be ignored.
-                except:
-                    matchedUsernameList = []
+                    try:
+                        matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.8) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.8, i.e. must match to a certain percentage else it will be ignored.
+                    except:
+                        matchedUsernameList = []
 
-                print(matchedUsernameList)
-                for userKey in userDict:
-                    userObject = userDict.get(userKey)
-                    username = userObject.get_username()
-                    for key in matchedUsernameList:
-                        if username == key:
-                            userList.append(userObject)
+                    print(matchedUsernameList)
+                    for userKey in userDict:
+                        userObject = userDict.get(userKey)
+                        username = userObject.get_username()
+                        for key in matchedUsernameList:
+                            if username == key:
+                                userList.append(userObject)
 
                 maxItemsPerPage = 10 # declare the number of items that can be seen per pages
                 userListLen = len(userList) # get the length of the userList
@@ -1713,6 +1716,7 @@ def userProfile():
                 db.close()
                 userUsername = userKey.get_username()
                 userEmail = userKey.get_email()
+                user_id = userKey.get_user_id()
 
                 if accType == "Teacher":
                     teacherBio = userKey.get_bio()
@@ -1808,7 +1812,7 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, user_id=user_id)
         else:
             db.close()
             print("User not found or is banned.")

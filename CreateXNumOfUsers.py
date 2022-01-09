@@ -1,15 +1,11 @@
-import shelve
-import Student
+import shelve, Student, uuid
 from Security import hash_password
 
 def get_userID(userDict):
-    userIDShelveData = 0 # initialise to 0 as the shelve files can be missing or new which will have no data
-    for key in userDict:
-        print("retrieving")
-        userIDShelveData = int(userDict[key].get_user_id())
-        print("ID in database:", userIDShelveData)
-        userIDShelveData += 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
-    return userIDShelveData
+    generatedID = str(uuid.uuid4())
+    if generatedID in userDict:
+        get_userID(userDict) # using recursion if there is a collision to generate a new unique ID
+    return generatedID
 
 userDict = {}
 db = shelve.open("user", "c")
@@ -24,17 +20,17 @@ except:
     print("Error in retrieving Users from user.db")
 
 noOfUser = int(input("How many user account to create?: "))
-
-startID = get_userID(userDict)
     
-for i in range(startID, noOfUser+startID):
+for i in range(noOfUser):
     hashedPwd = hash_password("123123")
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
-    user = Student.Student(i, username, email, hashedPwd)
-    userDict[i] = user
-    print(f"User created with the ID, {i}.")
+    uid = get_userID(userDict)
+    user = Student.Student(uid, username, email, hashedPwd)
+    userDict[uid] = user
+    db["Users"] = userDict
+    print(f"User created with the ID, {uid}.")
 
-db["Users"] = userDict
+
 db.close()
 print(f"{noOfUser} users created successfully.")
