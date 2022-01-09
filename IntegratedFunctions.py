@@ -459,7 +459,6 @@ def send_contact_us_email(issueTitle, name, email, bodyContent):
 
 Please refer to the user's problem below:
 (Warning: Please do NOT click on suspicious looking links that were sent by the user!)
-
 {bodyContent}
 
 User's info:
