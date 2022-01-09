@@ -55,6 +55,35 @@ paypalrestsdk.configure({
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address)
 
+# vimeo api configurations
+client = vimeo.VimeoClient(
+    # client token, key, and secret all generated from vimeo
+    token='07a47abd7e0f7f411e29ad80d340fc9a',
+    key='8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
+    secret='XFoR6Qxy8PwnteSjWdoKNJto7D+hmTdORm+NB3D+6soSPSlrUx4DuZKVgfPZwPSYngaTFe6kJ2TKkhmAEgaswbEMiMH0rQVMbmS4ddCoJpNgIbuveVYzP2n8TzQihOx3'
+)
+
+""" # Uploading of videos
+file_name = '{path_to_a_video_on_the_file_system}'
+uri = client.upload(file_name, data={
+    'name': 'Untitled',
+    'description': 'The description goes here.'
+})
+
+print ('Your video URI is: %s' % (uri))
+
+# Error handling while video transcodes
+response = client.get(uri + '?fields=transcode.status').json()
+if response['transcode']['status'] == 'complete':
+    print ('Your video finished transcoding.')
+elif response['transcode']['status'] == 'in_progress':
+    print ('Your video is still transcoding.')
+else:
+    print ('Your video encountered an error during transcoding.')
+
+response = client.get(uri + '?fields=link').json()
+print("Your video link is: " + response['link']) """
+
 """End of Web app configurations"""
 
 """General pages by INSERT_YOUR_NAME"""
@@ -2984,37 +3013,6 @@ def checkout():
             # return redirect(url_for("userLogin"))
 
 """End of Template Checkout by Wei Ren"""
-
-"""Vimeo API by Clarence"""
-client = vimeo.VimeoClient(
-    # client token, key, and secret all generated from vimeo
-    token='07a47abd7e0f7f411e29ad80d340fc9a',
-    key='8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
-    secret='XFoR6Qxy8PwnteSjWdoKNJto7D+hmTdORm+NB3D+6soSPSlrUx4DuZKVgfPZwPSYngaTFe6kJ2TKkhmAEgaswbEMiMH0rQVMbmS4ddCoJpNgIbuveVYzP2n8TzQihOx3'
-)
-
-# Uploading of videos
-file_name = '{path_to_a_video_on_the_file_system}'
-uri = client.upload(file_name, data={
-    'name': 'Untitled',
-    'description': 'The description goes here.'
-})
-
-print ('Your video URI is: %s' % (uri))
-
-# Error handling while video transcodes
-response = client.get(uri + '?fields=transcode.status').json()
-if response['transcode']['status'] == 'complete':
-    print ('Your video finished transcoding.')
-elif response['transcode']['status'] == 'in_progress':
-    print ('Your video is still transcoding.')
-else:
-    print ('Your video encountered an error during transcoding.')
-
-response = client.get(uri + '?fields=link').json()
-print("Your video link is: " + response['link'])
-
-"""End of Vimeo API by Clarence"""
 
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
