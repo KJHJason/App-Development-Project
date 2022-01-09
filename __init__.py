@@ -2078,10 +2078,17 @@ def changeAccountType():
         if userFound and accGoodStatus:
             if accType == "Student":
                 if request.method == "POST":
-                    # updating the user's account type to teacher if the user pressed on the "Become a teacher" button and confirmed his/her intention by clicking on confirm on the bootstrap 5 modal
-                    userKey.set_acc_type("Teacher")
+                    # changing the user's account type to teacher by deleting the student object and creating a new teacher object, and hence, changing the user ID as a whole.
+                    username = userKey.get_username()
+                    password = userKey.get_password()
+                    email = userKey.get_email()
+                    userID = get_userID(userDict)
+                    userDict.pop(userSession)
+                    user = Teacher.Teacher(userID, username, email, password)
+                    userDict[userID] = user
                     db["Users"] = userDict
                     db.close()
+                    session["userSession"] = userID
                     print("Account type updated to teacher.")
                     session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
                     return redirect(url_for("userProfile"))
