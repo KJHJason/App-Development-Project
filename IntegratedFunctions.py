@@ -61,6 +61,7 @@ def validate_session_get_userKey_open_file(userSession):
 
 # generate a user ID using UUID v4 as compared to UUID v1 due to security reasons since UUID v1 generate based on the time + Host MAC address + random component to generate the unique ID but have a 1 in 16384 to have a collision
 # However, UUID v4 is completely random but has a very small chance for collision but it is very unlikely to happen
+# useful resource: https://stackoverflow.com/questions/53096198/prevent-uuid-collision-in-python-same-process
 def get_userID(userDict):
     generatedID = uuid.uuid4()
     if generatedID in userDict:
