@@ -245,9 +245,7 @@ def userLogin():
 
 @app.route('/logout')
 def logout():
-    if "userSession" in session:
-        session.clear()
-    elif "adminSession" in session:
+    if "userSession" in session or "adminSession" in session:
         session.clear()
     else:
         return redirect(url_for("home"))
