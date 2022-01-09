@@ -2,7 +2,7 @@ from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
-import shelve, os, uuid
+import shelve, os, uuid, string, random
 from flask import url_for
 
 """Done by Jason"""
@@ -454,6 +454,14 @@ def send_contact_us_email(issueTitle, name, email, bodyContent):
 <b>CourseFinity Team</b></p>
 """
     mail.send(message)
+
+def generate_password():
+    combinations = string.digits + "!@#$%^&*()" + string.ascii_lowercase + string.ascii_uppercase
+    lengthOfPass = 15
+
+    # using random.sample to pick a unique k from the combinations, aka the population, until it meets the lengthOfPass. Hence, if the lengthOfPass exceeds the number of combinations, it will raise a ValueError exception.
+    generatedPassword = "".join(random.sample(combinations, lengthOfPass)) # join the generated list for the password
+    return generatedPassword
 
 """Done by Jason"""
 

@@ -1137,7 +1137,7 @@ def userManagement(pageNum):
             # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
             if request.method == "POST" and admin_reset_password_form.validate():
-                password = admin_reset_password_form.password.data
+                password = generate_password()
                 email = sanitise(admin_reset_password_form.email.data)
                 validEmail = validate_email(email)
 
@@ -1267,7 +1267,7 @@ def userSearchManagement(pageNum):
             # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
             if request.method == "POST" and admin_reset_password_form.validate():
-                password = admin_reset_password_form.password.data
+                password = generate_password()
                 email = sanitise(admin_reset_password_form.email.data)
                 validEmail = validate_email(email)
 

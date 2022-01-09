@@ -55,7 +55,6 @@ class CreateResetPasswordForm(Form):
 
 class AdminResetPasswordForm(Form):
     email = EmailField("Enter user's new email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
-    password = PasswordField("Enter a new password:", [validators.Length(min=6, max=15), validators.DataRequired()])
 
 """End of WTForms by Jason"""
 

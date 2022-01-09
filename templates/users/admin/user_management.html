@@ -169,7 +169,6 @@
                                                                 <h6>User's old email: {{ user.get_email() }}</h6>
                                                                 <input type="hidden" id="userID" name="userID" value="{{ user.get_user_id() }}">
                                                                 {{ render_field(form.email, class="form-control") }}
-                                                                {{ render_field(form.password, class="form-control") }}
                                                             </div>
                                                             <div class="modal-footer">
                                                                 <button type="button" class="btn btn-danger" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}" data-bs-toggle="modal" data-bs-dismiss="modal">Back</button>
