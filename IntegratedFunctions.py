@@ -429,10 +429,10 @@ CourseFinity Team
     mail.send(message)
 
 # use this function for the contact us page
-# for this to work, please feed in the title of the user's issue, the name of the user, the email of the user, and the main message/body content obtained from the body form
+# for this to work, please feed in the title of the user's issue, the user ID of the user, the name of the user, the email of the user, and the main message/body content obtained from the body form
 # please also check for cross site scripting and potential security risk by testing the form inputs
 # note: gmail is safe from cross site scripting and it is currently using the home url as placeholder as the FAQ page is not done yet.
-def send_contact_us_email(issueTitle, name, email, bodyContent):
+def send_contact_us_email(issueTitle, userID, name, email, bodyContent):
     id = str(uuid.uuid4())
     title = "[CourseFinity] Support Request - " + issueTitle + " #" + id
     message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
@@ -463,6 +463,7 @@ Please refer to the user's problem below:
 {bodyContent}
 
 User's info:
+User ID: {userID}
 Name: {name}
 Email: {email}
 
