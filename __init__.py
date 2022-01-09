@@ -58,9 +58,9 @@ limiter = Limiter(app, key_func=get_remote_address)
 # vimeo api configurations
 client = vimeo.VimeoClient(
     # client token, key, and secret all generated from vimeo
-    token='07a47abd7e0f7f411e29ad80d340fc9a',
-    key='8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
-    secret='XFoR6Qxy8PwnteSjWdoKNJto7D+hmTdORm+NB3D+6soSPSlrUx4DuZKVgfPZwPSYngaTFe6kJ2TKkhmAEgaswbEMiMH0rQVMbmS4ddCoJpNgIbuveVYzP2n8TzQihOx3'
+    token = '07a47abd7e0f7f411e29ad80d340fc9a',
+    key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
+    secret = os.environ.get("VIMEO_SECRET")
 )
 
 """ # Uploading of videos
