@@ -230,13 +230,7 @@
 }
 
 .table_full_data_text {
-  color: #000;
-}
-
-.table_full_data_text:hover {
-  text-decoration: none;
-  cursor: text;
-  color: #000;
+  max-width: 200px;
 }
 
 .verified_email {
@@ -245,7 +239,6 @@
 
 .verified_email:hover {
   text-decoration: none;
-  cursor: text;
   color: #198754;
 }
 
@@ -255,10 +248,20 @@
 
 .not_verified_email:hover {
   color: #dc3545;
-  text-decoration: none;
-  cursor: text;
 }
 
 .accepted_cards {
   text-align: right;
+}
+
+.tooltip_value {
+  display: none;
+}
+
+.user_id_text {
+  max-width: 200px;
+}
+
+.username_text {
+  color: #000;
 }

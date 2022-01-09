@@ -122,15 +122,22 @@
                                 </tr>
                                 {% for user in userList %}
                                     <tr>
-                                        <td>{{ user.get_user_id() }}</td>
-                                        <td class="text-truncate table_text"><a href="javascript:void(0)" class="table_full_data_text" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_username() }}">{{ user.get_username() }}</a></td>
+                                        <td class="user_id_text text-break">
+                                            <a href="javascript:userIDCopyToClipBoard('{{ user.get_user_id() }}')" id="userIDTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_user_id() }}</a>
+                                            <span class="tooltip_value" id="userIDTooltipValue{{ user.get_user_id() }}">{{ user.get_user_id() }}</span>
+                                        </td>
+                                        <td class="text-truncate"><a href="javascript:usernameCopyToClipBoard('{{ user.get_user_id() }}')" id="usernameTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_username() }}</a></td>
+                                        <span class="tooltip_value" id="usernameTooltipValue{{ user.get_user_id() }}">{{ user.get_username() }}</span>
                                         <td>{{ user.get_acc_type() }}</td>
-                                        <td class="text-truncate table_text">
+                                        <td class="text-truncate table_full_data_text">
                                             {% if user.get_email_verification() == "Verified" %}
-                                            <a href="javascript:void(0)" class="verified_email" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }} (Verified)">{{ user.get_email() }}</a>
+                                            <a href="javascript:emailCopyToClipBoard('{{ user.get_user_id() }}')" class="verified_email" id="userEmailTooltip{{ user.get_user_id() }}" onmouseover="emailTooltipMouseOut('{{ user.get_user_id() }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard">{{ user.get_email() }}</a>
+                                            <h6 class="text-success">({{ user.get_email_verification() }})</h6>
                                             {% else %}
-                                            <a href="javascript:void(0)" class="not_verified_email" data-bs-toggle="tooltip" data-bs-placement="left" title="{{ user.get_email() }} (Not Verified)">{{ user.get_email() }}</a>
+                                            <a href="javascript:emailCopyToClipBoard('{{ user.get_user_id() }}')" class="not_verified_email" id="userEmailTooltip{{ user.get_user_id() }}" onmouseover="emailTooltipMouseOut('{{ user.get_user_id() }}')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard">{{ user.get_email() }}</a>
+                                            <h6 class="text-danger">({{ user.get_email_verification() }})</h6>
                                             {% endif %}
+                                            <span class="tooltip_value" id="emailTooltipValue{{ user.get_user_id() }}">{{ user.get_email() }}</span>
                                         </td>
                                         <td>{{ user.get_status() }}</td>
                                         <td>
@@ -522,4 +529,42 @@
         </script>
     {% endif %}
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
+    <script>
+        function emailCopyToClipBoard(userID) {
+            var copiedText = document.getElementById('emailTooltipValue' + userID);
+            navigator.clipboard.writeText(copiedText.innerText);
+            var tooltipEl = document.getElementById('userEmailTooltip' + userID);
+            // using jquery to change the tooltip title so that the admin knows that they have copied
+            $(tooltipEl).attr('title', 'Copied to Clipboard!').tooltip('_fixTitle').tooltip('show')
+        }
+        function emailTooltipMouseOut(userID) {
+            var tooltipEl = document.getElementById('userEmailTooltip' + userID);
+            // using jquery to reset the tooltip title
+            $(tooltipEl).attr('title', 'Copy to Clipboard').tooltip('_fixTitle').tooltip('show')
+        }
+        function usernameCopyToClipBoard(userID) {
+            var copiedText = document.getElementById('usernameTooltipValue' + userID);
+            navigator.clipboard.writeText(copiedText.innerText);
+            var tooltipEl = document.getElementById('usernameTooltip' + userID);
+            // using jquery to change the tooltip title so that the admin knows that they have copied
+            $(tooltipEl).attr('title', 'Copied to Clipboard!').tooltip('_fixTitle').tooltip('show')
+        }
+        function usernameTooltipMouseOut(userID) {
+            var tooltipEl = document.getElementById('usernameTooltip' + userID);
+            // using jquery to reset the tooltip title
+            $(tooltipEl).attr('title', 'Copy to Clipboard').tooltip('_fixTitle').tooltip('show')
+        }
+        function userIDCopyToClipBoard(userID) {
+            var copiedText = document.getElementById('userIDTooltipValue' + userID);
+            navigator.clipboard.writeText(copiedText.innerText);
+            var tooltipEl = document.getElementById('userIDTooltip' + userID);
+            // using jquery to change the tooltip title so that the admin knows that they have copied
+            $(tooltipEl).attr('title', 'Copied to Clipboard!').tooltip('_fixTitle').tooltip('show')
+        }
+        function usernameTooltipMouseOut(userID) {
+            var tooltipEl = document.getElementById('userIDTooltip' + userID);
+            // using jquery to reset the tooltip title
+            $(tooltipEl).attr('title', 'Copy to Clipboard').tooltip('_fixTitle').tooltip('show')
+        }
+    </script>
 {% endblock %}
