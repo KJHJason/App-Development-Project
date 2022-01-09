@@ -21,11 +21,12 @@ def get_key_and_validate(userSession, userDict):
         userFound = True
         userAccStatus = userKey.get_status()
         if userAccStatus == "Good":
-            return userKey, userFound, True
+            accType = userKey.get_acc_type()
+            return userKey, userFound, True, accType
         else:
-            return userKey, userFound, False
+            return userKey, userFound, False, ""
     else:
-        return "", userFound, False
+        return "", userFound, False, ""
 
 
 # Use this function if you want to validate the session, check if the user is banned, and get the userKey but not manipulating the data in the user shelve files (usually this will be used for reading the user account data or other data relevant to the user)
@@ -40,7 +41,7 @@ def validate_session_get_userKey_open_file(userSession):
         db.close()
     except:
         print("File could not be found.")
-        return userKey, False, False
+        return userKey, False, False, ""
 
     userFound = False
     print("ID in session:", userSession)
@@ -50,12 +51,13 @@ def validate_session_get_userKey_open_file(userSession):
         userFound = True
         userAccStatus = userKey.get_status()
         if userAccStatus == "Good":
-            return userKey, userFound, True
+            accType = userKey.get_acc_type()
+            return userKey, userFound, True, accType
         else:
-            return userKey, userFound, False
+            return userKey, userFound, False, ""
     else:
         print("Verdict: User ID not found.")
-        return userKey, userFound, False
+        return userKey, userFound, False, ""
 
 # use this function if you just want to get the next possible userID based on the user shelve files
 # (provided you have already opened the user shelve files previously)
@@ -80,7 +82,7 @@ def validate_session_open_file(userSession):
     except:
         print("File could not be found.")
         # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the guest homepage
-        return False, False
+        return False, False, ""
 
     userFound = False
     print("User ID in session:", userSession)
@@ -90,11 +92,12 @@ def validate_session_open_file(userSession):
         userFound = True
         accStatus = userKey.get_status()
         if accStatus == "Good":
-            return userFound, True
+            accType = userKey.get_acc_type()
+            return userFound, True, accType
         else:
-            return userFound, False
+            return userFound, False, ""
     else:
-        return userFound, False
+        return userFound, False, ""
 
 # use this function to check for any duplicates data in the user shelve files
 def check_duplicates(userInput, userDict, infoToCheck):

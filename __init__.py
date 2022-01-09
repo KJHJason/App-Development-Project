@@ -93,7 +93,7 @@ def home():
             else:
                 teacherPaymentAdded = False
 
-            userFound, accGoodStatus = validate_session_open_file(userSession)
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
             if userFound and accGoodStatus:
                 #def recommend(most_watched_category):
@@ -121,7 +121,7 @@ def home():
 #videoCat[0][673]
                         
 
-                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded)
+                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -468,7 +468,7 @@ def verifyEmail():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
         email = userKey.get_email()
         userID = userKey.get_user_id()
         if userFound and accGoodStatus:
@@ -645,32 +645,29 @@ def signUpPayment():
         if "teacher" in session:
             teacherID = session["teacher"]
             if teacherID == userSession:
+                # Retrieving data from shelve and to set the teacher's payment method info data
+                userDict = {}
+                db = shelve.open("user", "c")
+                try:
+                    if 'Users' in db:
+                        # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                        userDict = db['Users']
+                    else:
+                        db.close()
+                        print("No user data in user shelve files.")
+                        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                        session.clear()
+                        return redirect(url_for("home"))
+                except:
+                    db.close()
+                    print("Error in retrieving Users from user.db")
+                    return redirect(url_for("home"))
+
+                # retrieving the object from the shelve based on the user's email
+                teacherKey, userFound, accGoodStatus, accType = get_key_and_validate(teacherID, userDict)
 
                 create_teacher_payment_form = Forms.CreateAddPaymentForm(request.form)
                 if request.method == 'POST' and create_teacher_payment_form.validate():
-
-                    # Retrieving data from shelve and to set the teacher's payment method info data
-                    userDict = {}
-                    db = shelve.open("user", "c")
-                    try:
-                        if 'Users' in db:
-                            # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
-                            userDict = db['Users']
-                        else:
-                            db.close()
-                            print("No user data in user shelve files.")
-                            # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                            session.clear()
-                            return redirect(url_for("home"))
-                    except:
-                        db.close()
-                        print("Error in retrieving Users from user.db")
-                        return redirect(url_for("home"))
-
-
-                    # retrieving the object from the shelve based on the user's email
-                    teacherKey, userFound, accGoodStatus = get_key_and_validate(teacherID, userDict)
-
                     if userFound and accGoodStatus:
                         # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
 
@@ -705,9 +702,10 @@ def signUpPayment():
                                 session["teacherPaymentAdded"] = True
                                 return redirect(url_for("home"))
                             else:
-                                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True)
+                                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
                         else:
-                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid)
+                            db.close()
+                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
                     else:
                         db.close()
                         print("User not found or is banned.")
@@ -715,7 +713,8 @@ def signUpPayment():
                         session.clear()
                         return redirect(url_for("home"))
                 else:
-                    return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form)
+                    db.close()
+                    return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, accType=accType)
             else:
                 # clear the teacher session if the logged in user somehow have a teacher session, it will then redirect them to the home page
                 session.pop("teacher", None)
@@ -1594,7 +1593,7 @@ def userProfile():
             print("Error in retrieving Users from user.db")
             return redirect(url_for("home"))
 
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             emailVerified = userKey.get_email_verification()
@@ -1684,9 +1683,8 @@ def userProfile():
                 db.close()
                 userUsername = userKey.get_username()
                 userEmail = userKey.get_email()
-                userAccType = userKey.get_acc_type()
 
-                if userAccType == "Teacher":
+                if accType == "Teacher":
                     teacherBio = userKey.get_bio()
                 else:
                     teacherBio = ""
@@ -1780,7 +1778,7 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = userAccType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
         else:
             db.close()
             print("User not found or is banned.")
@@ -1796,30 +1794,29 @@ def userProfile():
 @app.route("/change_username", methods=["GET","POST"])
 def updateUsername():
     if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear()
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object from the shelve based on the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
         create_update_username_form = Forms.CreateChangeUsername(request.form)
         if request.method == "POST" and create_update_username_form.validate():
-            userSession = session["userSession"]
-
-            # Retrieving data from shelve and to write the data into it later
-            userDict = {}
-            db = shelve.open("user", "c")
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db.close()
-                    print("User data in shelve is empty.")
-                    session.clear()
-                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                    return redirect(url_for("home"))
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
-
-            # retrieving the object from the shelve based on the user's user ID
-            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
             if userFound and accGoodStatus:
                 updatedUsername = sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
@@ -1854,17 +1851,21 @@ def updateUsername():
                         db.close()
                         return redirect(url_for("userProfile"))
                     else:
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True)
+                        db.close()
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType)
                 else:
+                    db.close()
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType)
             else:
+                db.close()
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
         else:
-            return render_template('users/loggedin/change_username.html', form=create_update_username_form)
+            db.close()
+            return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -1874,36 +1875,34 @@ def updateUsername():
 @app.route("/change_email", methods=["GET","POST"])
 def updateEmail():
     if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear()
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
         create_update_email_form = Forms.CreateChangeEmail(request.form)
         if request.method == "POST" and create_update_email_form.validate():
-            userSession = session["userSession"]
-
-            # Retrieving data from shelve and to write the data into it later
-            userDict = {}
-            db = shelve.open("user", "c")
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db.close()
-                    print("User data in shelve is empty.")
-                    session.clear()
-                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                    return redirect(url_for("home"))
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
-
-            # retrieving the object based on the shelve files using the user's user ID
-            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
-
             if userFound and accGoodStatus:
                 updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
                 currentEmail = userKey.get_email()
-
-                # Checking duplicates for email
                 if updatedEmail != currentEmail:
+                    # Checking duplicates for email
                     for key in userDict:
                         print("retrieving")
                         emailShelveData = userDict[key].get_email()
@@ -1934,18 +1933,20 @@ def updateEmail():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True)
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True)
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType)
             else:
+                db.close()
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
         else:
-            return render_template('users/loggedin/change_email.html', form=create_update_email_form)
+            db.close()
+            return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -1955,36 +1956,34 @@ def updateEmail():
 @app.route("/change_password", methods=["GET","POST"])
 def updatePassword():
     if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear()
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         create_update_password_form = Forms.CreateChangePasswordForm(request.form)
         if request.method == "POST" and create_update_password_form.validate():
-            userSession = session["userSession"]
-
             # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
             passwordNotMatched = True
             passwordVerification = False
 
             # for jinja2
             errorMessage = False
-
-            # Retrieving data from shelve and to write the data into it later
-            userDict = {}
-            db = shelve.open("user", "c")
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db.close()
-                    print("User data in shelve is empty.")
-                    session.clear()
-                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                    return redirect(url_for("home"))
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
-
-            # retrieving the object based on the shelve files using the user's user ID
-            userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
 
             if userFound and accGoodStatus:
                 currentPassword = create_update_password_form.currentPassword.data
@@ -2019,12 +2018,12 @@ def updatePassword():
                 if passwordVerification == False or passwordNotMatched:
                     db.close()
                     errorMessage = True
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType)
                 else:
                     if oldPassword:
                         db.close()
                         print("User cannot change password to their current password!")
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True)
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType)
                     else:
                         # updating password of the user once validated
                         hashedPwd = hash_password(updatedPassword)
@@ -2037,12 +2036,14 @@ def updatePassword():
                         session["password_changed"] = True
                         return redirect(url_for("userProfile"))
             else:
+                db.close()
                 print("User not found is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
                 session.clear()
                 return redirect(url_for("home"))
         else:
-            return render_template('users/loggedin/change_password.html', form=create_update_password_form)
+            db.close()
+            return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -2071,7 +2072,7 @@ def changeAccountType():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         accType = userKey.get_acc_type()
         print("Account type:", accType)
 
@@ -2094,7 +2095,7 @@ def changeAccountType():
                     return redirect(url_for("userProfile"))
                 else:
                     db.close()
-                    return render_template("users/student/change_account_type.html")
+                    return render_template("users/student/change_account_type.html", accType=accType)
             else:
                 db.close()
                 print("User is not a student.")
@@ -2139,12 +2140,11 @@ def userPayment():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
-            accType = userKey.get_acc_type()
 
             if cardExist == False:
                 create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
@@ -2181,9 +2181,9 @@ def userPayment():
                             db.close()
                             return redirect(url_for("userPayment"))
                         else:
-                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True)
+                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -2228,6 +2228,7 @@ def userPayment():
 
                 return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded, accType=accType)
         else:
+            db.close()
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
@@ -2263,11 +2264,9 @@ def userEditPayment():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
-            accType = userKey.get_acc_type()
-
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
             cardName = userKey.get_card_name()
@@ -2301,6 +2300,7 @@ def userEditPayment():
 
                         return redirect(url_for("userPayment"))
                     else:
+                        db.close()
                         return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
                 else:
                     db.close()
@@ -2341,7 +2341,7 @@ def deleteCard():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
@@ -2405,13 +2405,13 @@ def search():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
 
             db.close() # remember to close your shelve files!
-            return render_template('users/general/search.html')
+            return render_template('users/general/search.html', accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2452,7 +2452,7 @@ def purchaseHistory(pageNum):
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
@@ -2521,7 +2521,7 @@ def purchaseHistory(pageNum):
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/admin/user_management.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2562,7 +2562,7 @@ def purchaseReview():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
@@ -2571,7 +2571,7 @@ def purchaseReview():
 
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html')
+            return render_template('users/loggedin/purchasereview.html', accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2612,7 +2612,7 @@ def purchaseView():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
@@ -2657,7 +2657,7 @@ def purchaseView():
                 return redirect(url_for("purchaseview"))
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html')
+            return render_template('users/loggedin/purchaseview.html', accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2698,14 +2698,14 @@ def teacherCashOut():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
 
 
             db.close() # remember to close your shelve files!
-            return render_template('users/teacher/teacher_cashout.html')
+            return render_template('users/teacher/teacher_cashout.html', accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2749,7 +2749,7 @@ def shoppingCart(pageNum):
 
         # retrieving the object based on the shelve files using the user's user ID
         # userKey is the object (e.g. Student() or Teacher())
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
@@ -2842,7 +2842,7 @@ def shoppingCart(pageNum):
 
                     db.close() # remember to close your shelve files!
                     dbCourse.close()
-                    return render_template('users/student/shopping_cart.html', individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal))
+                    return render_template('users/student/shopping_cart.html', individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal), accType=accType)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -2884,7 +2884,7 @@ def checkout():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
@@ -2967,7 +2967,7 @@ def checkout():
                 print(PaymentForm.paymentMethod.choices)"""
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info.html', form = paymentForm)
+                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -3018,13 +3018,13 @@ def function():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/page.html', accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -3060,12 +3060,12 @@ def function():
 
         userFound, accGoodStatus = validate_session_open_file(userSession)
         # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
-        # userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
+        # userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/page.html', accType=accType)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3098,12 +3098,12 @@ def insertName():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStatus:
             # add in your code below
 
-            return render_template('users/loggedin/page.html')
+            return render_template('users/loggedin/page.html', accType=accType)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3153,12 +3153,12 @@ def insertName():
         if "userSession" in session:
             userSession = session["userSession"]
 
-            userFound, accGoodStatus = validate_session_open_file(userSession)
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
             if userFound and accGoodStatus:
                 # add in your code here (if any)
 
-                return render_template('users/loggedin/page.html')
+                return render_template('users/loggedin/page.html', accType=accType)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
