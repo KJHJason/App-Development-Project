@@ -23,5 +23,5 @@ Libraries needed:
   <li>Pillow Version 8.4.0 [pip install --upgrade Pillow]</li>
   <li>Flask-mail Version 0.9.1 [pip install flask-mail]</li>
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk]</li>
-  <li>Python Vimeo Version 1.1.0 [pip install PyVimeo]</li>
+  <li>PyVimeo Version 1.1.0 [pip install PyVimeo]</li>
 </ol>	
