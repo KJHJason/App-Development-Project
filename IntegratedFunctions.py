@@ -63,7 +63,7 @@ def validate_session_get_userKey_open_file(userSession):
 # However, UUID v4 is completely random but has a very small chance for collision but it is very unlikely to happen
 # useful resource: https://stackoverflow.com/questions/53096198/prevent-uuid-collision-in-python-same-process
 def get_userID(userDict):
-    generatedID = uuid.uuid4()
+    generatedID = str(uuid.uuid4())
     if generatedID in userDict:
         get_userID(userDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
