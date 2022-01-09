@@ -58,7 +58,7 @@ limiter = Limiter(app, key_func=get_remote_address)
 # vimeo api configurations
 client = vimeo.VimeoClient(
     # client token, key, and secret all generated from vimeo
-    token = '07a47abd7e0f7f411e29ad80d340fc9a',
+    token = os.envrion.get("VIMEO_TOKEN"),
     key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
     secret = os.environ.get("VIMEO_SECRET")
 )
@@ -3029,6 +3029,8 @@ def checkout():
   - Webpage will not have admin view
   - Use case: User features such as change_password.html, etc.
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+"""Template Teacher Page by Clarence"""
 
 @app.route("/")
 def function():
