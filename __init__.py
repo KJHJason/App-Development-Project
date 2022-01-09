@@ -1158,6 +1158,7 @@ def userManagement(pageNum):
                                 hashedPwd = hash_password(password)
                                 userKey.set_password(hashedPwd)
                                 userKey.set_email(email)
+                                userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
                                 send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
@@ -1289,6 +1290,7 @@ def userSearchManagement(pageNum):
                                 hashedPwd = hash_password(password)
                                 userKey.set_password(hashedPwd)
                                 userKey.set_email(email)
+                                userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
                                 send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
