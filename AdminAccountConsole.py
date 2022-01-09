@@ -29,6 +29,7 @@ Hence, please only force shut down the program if necessary.
 """
 
 # Command line 1-2 and 6 feature/operations done by Jason
+# Note that UUID v4 is not used for id generation for the admins as there will not be hundreds or millions of admins if deployed. Hence, using a incremental admin id generation.
 # Command line 3-5 feature/operations done by Clarence
 
 while True:
