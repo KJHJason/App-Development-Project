@@ -2117,7 +2117,7 @@ def changeAccountType():
                     username = userKey.get_username()
                     password = userKey.get_password()
                     email = userKey.get_email()
-                    userID = get_userID(userDict)
+                    userID = userSession
                     cardExists = bool(userKey.get_card_name())
                     if cardExists:
                         cardName = userKey.get_card_name()
@@ -2136,7 +2136,7 @@ def changeAccountType():
                             imageExtension = get_extension(profileImageFilename)
                         else:
                             profileImagePathExists = False
-                    userDict.pop(userSession)
+                    userDict.pop(userID)
                     user = Teacher.Teacher(userID, username, email, password)
                     userDict[userID] = user
                     if cardExists:
