@@ -58,7 +58,7 @@ limiter = Limiter(app, key_func=get_remote_address)
 # vimeo api configurations
 client = vimeo.VimeoClient(
     # client token, key, and secret all generated from vimeo
-    token = os.envrion.get("VIMEO_TOKEN"),
+    token = os.environ.get("VIMEO_TOKEN"),
     key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
     secret = os.environ.get("VIMEO_SECRET")
 )
@@ -2118,9 +2118,39 @@ def changeAccountType():
                     password = userKey.get_password()
                     email = userKey.get_email()
                     userID = get_userID(userDict)
+                    cardExists = bool(userKey.get_card_name())
+                    if cardExists:
+                        cardName = userKey.get_card_name()
+                        cardNumber = userKey.get_card_no()
+                        cardExpiry = userKey.get_card_expiry()
+                        cardCVV = userKey.get_card_cvv()
+                        cardType = userKey.get_card_type()
+                    profileImageExists = bool(userKey.get_profile_image())
+                    print("Does user have profile image:", profileImageExists)
+                    if profileImageExists:
+                        profileImageFilename = userKey.get_profile_image()
+                        imagePath = construct_path(PROFILE_UPLOAD_PATH, profileImageFilename)
+                        if Path(imagePath).is_file():
+                            profileImagePathExists = True
+                            print("Profile image exists:", profileImagePathExists)
+                            imageExtension = get_extension(profileImageFilename)
+                        else:
+                            profileImagePathExists = False
                     userDict.pop(userSession)
                     user = Teacher.Teacher(userID, username, email, password)
                     userDict[userID] = user
+                    if cardExists:
+                        user.set_card_name(cardName)
+                        user.set_card_no(cardNumber)
+                        user.set_card_expiry(cardExpiry)
+                        user.set_card_cvv(cardCVV)
+                        user.set_card_type(cardType)
+                    if profileImageExists and profileImagePathExists:
+                        newImageFilename = userID + imageExtension
+                        newImagePath = construct_path(PROFILE_UPLOAD_PATH, newImageFilename)
+                        os.rename(imagePath, newImagePath)
+                        print("renamed successfully")
+                        user.set_profile_image(newImageFilename)
                     db["Users"] = userDict
                     db.close()
                     session["userSession"] = userID
