@@ -91,18 +91,18 @@
                                 <tr>
                                     <tr>
                                         <td><h6>Admin ID:</h6></td>
-                                        <td>{{ admin_id }}</td>
+                                        <td><h6 id="tooltipValueUID"><a href="javascript:copyToClipBoard('UID')" onmouseout="tooltipMouseOut('UID')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementUID"  class="profile_copy_text">{{ admin_id }}</a></h6></td>
                                     </tr>
                                     <td><h6 class="margin-btm">Username:</h6></td>
                                     <td>
-                                        <h6 class="margin-btm">{{ username }}</h6>
+                                        <h6 class="margin-btm" id="tooltipValueUsername"><a href="javascript:copyToClipBoard('Username')" onmouseout="tooltipMouseOut('Username')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementUsername" class="profile_copy_text">{{ username }}</a></h6>
                                         <a href="/admin_change_username">Change Username</a>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td><h6 class="margin-btm margin-top">Email:</h6></td>
                                     <td>
-                                        <h6 class="margin-btm margin-top">{{ email }}</h6>
+                                        <h6 class="margin-btm margin-top" id="tooltipValueEmail"><a href="javascript:copyToClipBoard('Email')" onmouseout="tooltipMouseOut('Email')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementEmail" class="profile_copy_text">{{ email }}</a></h6>
                                         <a href="/admin_change_email">Change Email</a>
                                     </td>
                                 </tr>
@@ -143,4 +143,6 @@
             pwdModal.show();
         </script>
     {% endif %}
+    <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>
 {% endblock %}

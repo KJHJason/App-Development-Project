@@ -2128,6 +2128,8 @@ def changeAccountType():
                     password = userKey.get_password()
                     email = userKey.get_email()
                     userID = userSession
+
+                    # retrieving the user's payment info if the user has saved one
                     cardExists = bool(userKey.get_card_name())
                     if cardExists:
                         cardName = userKey.get_card_name()
@@ -2135,6 +2137,8 @@ def changeAccountType():
                         cardExpiry = userKey.get_card_expiry()
                         cardCVV = userKey.get_card_cvv()
                         cardType = userKey.get_card_type()
+
+                    # retrieving the user's profile image filename if the user has uploaded one
                     profileImageExists = bool(userKey.get_profile_image())
                     print("Does user have profile image:", profileImageExists)
                     if profileImageExists:
@@ -2145,17 +2149,23 @@ def changeAccountType():
                             print("Profile image exists:", profileImagePathExists)
                         else:
                             profileImagePathExists = False
+
                     userDict.pop(userID)
                     user = Teacher.Teacher(userID, username, email, password)
                     userDict[userID] = user
+
+                    # setting the user's payment method if the user has saved their payment method before
                     if cardExists:
                         user.set_card_name(cardName)
                         user.set_card_no(cardNumber)
                         user.set_card_expiry(cardExpiry)
                         user.set_card_cvv(cardCVV)
                         user.set_card_type(cardType)
+
+                    # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
                         user.set_profile_image(profileImageFilename)
+                        
                     db["Users"] = userDict
                     db.close()
                     session["userSession"] = userID

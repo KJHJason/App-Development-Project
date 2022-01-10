@@ -265,19 +265,19 @@
                                 <table class="table margin-top">
                                     <tr>
                                         <td><h6>User ID:</h6></td>
-                                        <td><h6>{{ user_id }}</h6></td>
+                                        <td><h6 id="tooltipValueUID"><a href="javascript:copyToClipBoard('UID')" onmouseout="tooltipMouseOut('UID')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementUID"  class="profile_copy_text">{{ user_id }}</a></h6></td>
                                     </tr>
                                     <tr>
                                         <td><h6>Username:</h6></td>
                                         <td>
-                                            <h6 class="margin-btm">{{ username }}</h6>
+                                            <h6 class="margin-btm" id="tooltipValueUsername"><a href="javascript:copyToClipBoard('Username')" onmouseout="tooltipMouseOut('Username')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementUsername" class="profile_copy_text">{{ username }}</a></h6>
                                             <a href="/change_username">Change Username</a>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td><h6>Email:</h6></td>
                                         <td>
-                                            <h6 class="margin-btm">{{ email }}</h6>
+                                            <h6 class="margin-btm" id="tooltipValueEmail"><a href="javascript:copyToClipBoard('Email')" onmouseout="tooltipMouseOut('Email')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementEmail" class="profile_copy_text">{{ email }}</a></h6>
                                             <a href="/change_email">Change Email</a>
                                         </td>
                                     </tr>
@@ -343,72 +343,67 @@
     </script>
     {% if usernameChanged %}
         <script>
-            var usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'), {});
+            var usernameModal = new bootstrap.Modal(document.getElementById("usernameModal"), {});
             usernameModal.show();
         </script>
     {% endif %}
     {% if emailChanged %}
         <script>
-            var emailModal = new bootstrap.Modal(document.getElementById('emailModal'), {});
+            var emailModal = new bootstrap.Modal(document.getElementById("emailModal"), {});
             emailModal.show();
         </script>
     {% endif %}
     {% if passwordChanged %}
         <script>
-            var pwdModal = new bootstrap.Modal(document.getElementById('PasswordModal'), {});
+            var pwdModal = new bootstrap.Modal(document.getElementById("PasswordModal"), {});
             pwdModal.show();
         </script>
     {% endif %}
     {% if imageChanged %}
         <script>
-            var imageChangedModal = new bootstrap.Modal(document.getElementById('imageChangedModal'), {});
+            var imageChangedModal = new bootstrap.Modal(document.getElementById("imageChangedModal"), {});
             imageChangedModal.show();
         </script>
     {% endif %}
     {% if imageFailed %}
         <script>
-            var imageFailedModal = new bootstrap.Modal(document.getElementById('imageFailedModal'), {});
+            var imageFailedModal = new bootstrap.Modal(document.getElementById("imageFailedModal"), {});
             imageFailedModal.show();
         </script>
     {% endif %}
     {% if RecentChangeAccType %}
         <script>
-            var RecentChangeAccTypeModal = new bootstrap.Modal(document.getElementById('RecentChangeAccTypeModal'), {});
+            var RecentChangeAccTypeModal = new bootstrap.Modal(document.getElementById("RecentChangeAccTypeModal"), {});
             RecentChangeAccTypeModal.show();
         </script>
     {% endif %}
     {% if emailSent %}
         <script>
-            var emailSentModal = new bootstrap.Modal(document.getElementById('emailSentModal'), {});
+            var emailSentModal = new bootstrap.Modal(document.getElementById("emailSentModal"), {});
             emailSentModal.show();
         </script>
     {% endif %}
     {% if emailAlreadyVerified %}
         <script>
-            var emailAlreadyVerifiedModal = new bootstrap.Modal(document.getElementById('emailAlreadyVerifiedModal'), {});
+            var emailAlreadyVerifiedModal = new bootstrap.Modal(document.getElementById("emailAlreadyVerifiedModal"), {});
             emailAlreadyVerifiedModal.show();
         </script>
     {% endif %}
     {% if emailVerified %}
         <script>
-            var emailVerifiedModal = new bootstrap.Modal(document.getElementById('emailVerifiedModal'), {});
+            var emailVerifiedModal = new bootstrap.Modal(document.getElementById("emailVerifiedModal"), {});
             emailVerifiedModal.show();
         </script>
     {% endif %}
     {% if emailTokenInvalid %}
         <script>
-            var emailTokenInvalidModal = new bootstrap.Modal(document.getElementById('emailTokenInvalidModal'), {});
+            var emailTokenInvalidModal = new bootstrap.Modal(document.getElementById("emailTokenInvalidModal"), {});
             emailTokenInvalidModal.show();
         </script>
     {% endif %}
     {% if  accType == "Teacher" %}
-        <script>
-            function editBioNow() {
-                document.getElementById("editBio").setAttribute("hidden", null);
-                document.getElementById("saveBio").removeAttribute("hidden");
-                document.getElementById("teacherBio").removeAttribute("disabled");
-            }
-        </script>
+        <script src="{{ url_for('static', filename='scripts/user_profile.js') }}"></script>
     {% endif %}
+    <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>
 {% endblock %}
