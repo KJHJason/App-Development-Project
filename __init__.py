@@ -1290,9 +1290,19 @@ def userSearchManagement(pageNum):
             except:
                 print("Error in retrieving Users from user.db")
 
-            parameter = str(request.args.get("user"))
-            parametersURL = "?user=" + parameter
+            parameter = str(sanitise(request.args.get("user")))
+            # if user types in something such as a js script with bad intention, it will return "False"
+            if parameter == "False":
+                parameter = "Not accepted"
+                redirectUser = True
+            else:
+                redirectUser = False
 
+            parametersURL = "?user=" + parameter
+            if redirectUser:
+                # redirect the admin instead so that they know that the inputs are being sanitised and will stop
+                redirectURL = "/user_management/search/" + str(pageNum) +"/" + parametersURL
+                return redirect(redirectURL)
             # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
             if request.method == "POST" and admin_reset_password_form.validate():
@@ -2133,7 +2143,6 @@ def changeAccountType():
                         if Path(imagePath).is_file():
                             profileImagePathExists = True
                             print("Profile image exists:", profileImagePathExists)
-                            imageExtension = get_extension(profileImageFilename)
                         else:
                             profileImagePathExists = False
                     userDict.pop(userID)
@@ -2146,11 +2155,7 @@ def changeAccountType():
                         user.set_card_cvv(cardCVV)
                         user.set_card_type(cardType)
                     if profileImageExists and profileImagePathExists:
-                        newImageFilename = userID + imageExtension
-                        newImagePath = construct_path(PROFILE_UPLOAD_PATH, newImageFilename)
-                        os.rename(imagePath, newImagePath)
-                        print("renamed successfully")
-                        user.set_profile_image(newImageFilename)
+                        user.set_profile_image(profileImageFilename)
                     db["Users"] = userDict
                     db.close()
                     session["userSession"] = userID
