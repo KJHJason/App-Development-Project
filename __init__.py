@@ -2639,7 +2639,7 @@ def purchaseHistory(pageNum):
             else:
                 db.close()
                 print("Purchase History is Empty")
-                return redirect(url_for("purchasehistory"))
+                return redirect(url_for("purchaseHistory"))
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
             courseListLen = len(purchaseHistoryList) # get the length of the userList
@@ -2647,11 +2647,11 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/purchasehistory/0")
+                return redirect("/purchaseHistory/0")
             elif courseListLen > 0 and pageNum == 0:
-                return redirect("/purchasehistory/1")
+                return redirect("/purchaseHistory/1")
             elif pageNum > maxPages:
-                redirectRoute = "/purchasehistory/" + str(maxPages)
+                redirectRoute = "/purchaseHistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -2666,7 +2666,7 @@ def purchaseHistory(pageNum):
             nextPage = pageNum + 1
 
             db.close() # remember to close your shelve files!
-            return render_template('users/admin/user_management.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType)
+            return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType)
         else:
             db.close()
             print("User not found or is banned")
@@ -2690,48 +2690,54 @@ def purchaseReview():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict,)
+        # userFound, accGoodStatus = validate_session_open_file(userSession)
+        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
             reviewID = userKey.get_reviewID()
             print("ReviewID exists?: ", reviewID)
             reviewDict = {}
-            db = shelve.open("course", "c")
+            db = shelve.open("review", "c")
 
-            try:                            
-                reviewDict = db["Courses"]
-
+            try:         
+                reviewDict = db["Review"]
                 createReview = Forms.CreateReviewText(request.form)
                 if request.method == 'POST' and createReview.validate():
-                    reviewID = createReview.reviewID.data
+                    reviewID = createReview.review.data
+                    reviewDict.append(reviewID)
+                    reviewDict["Review"] = db
+                    db.close()
+                    dbCourse = {}
+                    db = shelve.open("course","c")
+                    try:
+                        if "Courses" in db:
+                            dbCourse = db["Courses"]
+                        
+                        else:
+                            db["Courses"] = dbCourse
+
+                    except:
+                        print("Error in retrieving course from course.db")
+                        db.close()
+                        return render_template('users/loggedin/purchasereview.html')
+
+                else:
+                    print("Review creation failed")
+                    db.close()
+                    return render_template('users/loggedin/purchasereview.html')
+
             except:
                 print("Error in retrieving review from review.db")
                 db.close()
+                return render_template('users/loggedin/purchasereview.html')
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID = reviewID)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse)
         else:
-            db.close()
-            print("User not found or is banned")
+            print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
@@ -2857,6 +2863,8 @@ def teacherCashOut():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            joinDate = userKey.get_joinDate
+            print("When did user joined?", joinDate)
 
 
             db.close() # remember to close your shelve files!
