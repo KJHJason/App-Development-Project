@@ -15,68 +15,30 @@ from Teacher import Teacher
 from Student import Student
 from Course import Course
 from Security import hash_password, sanitise
-
+from IntegratedFunctions import get_userID
 
 import shelve
-#       (userObject, adminObject, courseObject)   --> Not saving: use "None"
-def save(*args):
-    userObject = args[0]
-    adminObject = args[1]
-    courseObject = args[2]
-    if userObject != None:
-        # Open shelve
-        userBase = shelve.open("user", "c")
 
-        # Pull out dictionary from shelve
-        if len(userBase) == 0:
-            userDict = {}
-        else:
-            userDict = userBase["Users"]
+# Open shelve
+userBase = shelve.open("user", "c")
+adminBase = shelve.open("admin", "c")
+courseBase = shelve.open("course", "c")
 
-        # Get corresponding userID for updating/adding to dictionary
-        userDict[userObject.get_user_id()] = userObject
+# Pull out dictionary from shelve
+if len(userBase) == 0:
+    userDict = {}
+else:
+    userDict = userBase["Users"]
+if len(adminBase) == 0:
+    adminDict = {}
+else:
+    adminDict = adminBase["Admins"]
+if len(courseBase) == 0:
+    courseDict = {}
+else:
+    courseDict = courseBase["Courses"]
 
-        # Overwrite entire shelve with updated dictionary
-        userBase["Users"] = userDict
 
-        # Make sure to close!
-        userBase.close()
-    if adminObject != None:
-        # Open shelve
-        adminBase = shelve.open("admin", "c")
-
-        # Pull out dictionary from shelve
-        if len(adminBase) == 0:
-            adminDict = {}
-        else:
-            adminDict = adminBase["Admins"]
-
-        # Get corresponding userID for updating/adding to dictionary
-        adminDict[adminObject.get_user_id()] = adminObject
-
-        # Overwrite entire shelve with updated dictionary
-        adminBase["Admins"] = adminDict
-
-        # Make sure to close!
-        adminBase.close()
-    if courseObject != None:
-        # Open shelve
-        courseBase = shelve.open("course", "c")
-
-        # Pull out dictionary from shelve
-        if len(courseBase) == 0:
-            courseDict = {}
-        else:
-            courseDict = courseBase["Courses"]
-
-        # Get corresponding userID for updating/adding to dictionary
-        courseDict[courseObject.get_courseID()] = courseObject
-
-        # Overwrite entire shelve with updated dictionary
-        courseBase["Courses"] = courseDict
-
-        # Make sure to close!
-        courseBase.close()
 
 """
 {"Users":{userID:User()}
@@ -96,7 +58,7 @@ def save(*args):
 """Student 1"""
 
 #General
-userID = "0"
+userID = get_userID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
 password = hash_password("123!@#")
@@ -114,12 +76,13 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 
 user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
-save(user,None,None)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
 
 """Student 2"""
 
 #General
-userID = "1"
+userID = get_userID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
 password = hash_password("456$%^")
@@ -134,12 +97,13 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
 
-save(user,None,None)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
 
 """Teacher 1"""
 
 #General
-userID = "2"
+userID = get_userID(userDict)
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
 password = hash_password("789&*(")
@@ -185,12 +149,14 @@ course.get_part(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
 
-save(user,None,course)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
+courseDict[course.get_courseID()] = course
 
 """Teacher 2"""
 
 #General
-userID = "3"
+userID = get_userID(userDict)
 username = "Sara"
 email = sanitise("tourism@gmail.com".lower())
 password = hash_password("0-=)_+")
@@ -234,14 +200,16 @@ course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the jou
 
 user.set_courseTeaching(course.get_courseID())
 
-save(user,None,course)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
+courseDict[course.get_courseID()] = course
 
 
 
 """Student 1"""
 
 #General
-userID = "0"
+userID = get_userID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
 password = hash_password("123!@#")
@@ -259,12 +227,13 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 
 user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
-save(user,None,None)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
 
 """Student 2"""
 
 #General
-userID = "1"
+userID = get_userID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
 password = hash_password("456$%^")
@@ -279,13 +248,14 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
 
-save(user,None,None)
+# Get corresponding userID for updating/adding to dictionary
+userDict[user.get_user_id()] = user
 
 
 
 """Admin 1"""
 #General
-adminID = "0"
+adminID = get_userID(userDict)
 username = "The Archivist"
 email = sanitise("O5-2@SCP.com".lower())
 password = hash_password("27sb2we9djaksidu8a")
@@ -294,11 +264,12 @@ admin = Admin(adminID, username, email, password)
 #Admin
 
 
-save(None,admin,None)
+# Get corresponding userID for updating/adding to dictionary
+adminDict[admin.get_user_id()] = admin
 
 """Admin 2"""
 #General
-adminID = "1"
+adminID = get_userID(userDict)
 username = "Tamlin"
 email = sanitise("O5-13@SCP.com".lower())
 password = hash_password("o4jru5fjr49f8ieri4")
@@ -311,5 +282,19 @@ admin = Admin(adminID, username, email, password)
 adminDict = {}
 adminDict[userID] = admin
 
-# Save dict to shelve
-save(None,admin,None)
+# Get corresponding userID for updating/adding to dictionary
+adminDict[admin.get_user_id()] = admin
+
+
+
+
+
+# Overwrite entire shelve with updated dictionary
+userBase["Users"] = userDict
+adminBase["Admins"] = adminDict
+courseBase["Courses"] = courseDict
+
+# Make sure to close!
+userBase.close()
+adminBase.close()
+courseBase.close()

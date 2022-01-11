@@ -14,6 +14,10 @@
     margin-top:1vw;
 }
 
+.card:nth-last-of-type(1) {
+    margin-bottom:5vw;
+}
+
 .col-8 .card-body {
     display: flex;
     flex-direction: column;
@@ -206,6 +210,26 @@
     margin:2.5em 10vw;
 }
 
+/*Not a shopping card, but a shopping cart.*/
+.empty-cart {
+    margin:1em auto;
+    display:block;
+    text-align:center;
+    font-size:2vw;
+}
+
+.fa-cart-plus {
+    color: rgba(0,0,0,0.25);
+    font-size: 12.5vw;
+    margin-bottom: 0.1em;
+}
+
+.fa-cart-plus:hover {
+    color:#729aca;
+    cursor:pointer;
+}
+
+/*For responsiveness*/
 @media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
     .layer-1 {
         margin:2.5vw;
@@ -262,5 +286,11 @@
     }
     .layer-2 a:hover {
         font-size:max(1.1em, 15px);
+    }
+}
+
+@media only screen and (max-width:350px) {
+    .fa-cart-plus {
+        font-size:25vw;
     }
 }

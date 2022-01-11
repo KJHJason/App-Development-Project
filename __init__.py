@@ -2925,7 +2925,7 @@ def shoppingCart(pageNum):
                             db["Users"] = userDict
                             db.close()
                             break
-                    except IndexError:
+                    except:
                         db.close()
                         print("Error. Shopping cart courses are missing values.")
 
@@ -2934,8 +2934,16 @@ def shoppingCart(pageNum):
             # Render the page                                                                               # R for Read
             else:
                 # Remember to validate
-                dbCourse = shelve.open("course", "c")
-                courseDict = dbCourse["Courses"]
+                try:
+                    dbCourse = shelve.open("course","c")
+                    if "Courses" in dbCourse:
+                        courseDict = dbCourse['Courses']
+                    else:
+                        print("dbCourse has no entries.")
+                        courseDict = {}
+                except:
+                    print("Error in retrieving Course from course.db")
+
 
                 # Initialise lists for jinja2 tags
                 ownerProfileImageList = []
@@ -2974,7 +2982,6 @@ def shoppingCart(pageNum):
                 maxItemsPerPage = 5 # declare the number of items that can be seen per pages
                 courseListLen = len(courseList) # get the length of the userList
                 maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-                pageNum = int(pageNum)
                 # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
                 if pageNum < 0:
                     return redirect("/shopping_cart/0")
@@ -2989,6 +2996,9 @@ def shoppingCart(pageNum):
                     pageNumForPagination = pageNum - 1 # minus for the paginate function
                     paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
 
+                    previousPage = pageNum - 1
+                    nextPage = pageNum + 1
+
                     ownerProfileImageList = paginate(ownerProfileImageList[::-1], pageNumForPagination, maxItemsPerPage)
                     ownerUsernameList = paginate(ownerUsernameList[::-1], pageNumForPagination, maxItemsPerPage)
                     courseTypeList = paginate(courseTypeList[::-1], pageNumForPagination, maxItemsPerPage)
@@ -2997,7 +3007,7 @@ def shoppingCart(pageNum):
 
                     db.close() # remember to close your shelve files!
                     dbCourse.close()
-                    return render_template('users/student/shopping_cart.html', individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal), accType=accType)
+                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal), accType=accType)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -3052,7 +3062,7 @@ def checkout():
                     else:
                         print("dbPayment has no entries.")
                         paymentDict = {}
-                except IndexError:
+                except:
                     print("Error in retrieving Payment from payment.db")
 
                 # If someone wants to save any changes made
@@ -3088,10 +3098,10 @@ def checkout():
 
                     # Create payment object                                                             # 'C' for Create
                     payment = Payment(userID,
-                                      cardName,
-                                      cardNumber,
-                                      cardExpiry,
-                                      cardCVV,
+                                      userKey.get_card_name(),
+                                      userKey.get_card_no(),
+                                      userKey.get_card_expiry(),
+                                      userKey.get_card_cvv(),
                                       paymentForm.firstName.data,
                                       paymentForm.lastName.data,
                                       paymentForm.billAddress1.data,
@@ -3119,8 +3129,9 @@ def checkout():
                 # Add choices as tuple (value, label)
                 # Do not append choices, it does not work
                 """PaymentForm.paymentMethod.choices = [('5','3')]
-                print(PaymentForm.paymentMethod.choices)"""
-
+                print(paymentForm.paymentMethod.choices)"""
+                print(paymentForm.paymentMethod.choices)
+                print(paymentForm.paymentMethod)
                 db.close() # remember to close your shelve files!
                 return render_template('users/student/payment_info.html', form = paymentForm, accType=accType)
         else:

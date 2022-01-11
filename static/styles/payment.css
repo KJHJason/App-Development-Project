@@ -1,0 +1,16 @@
+.form-check-inline {
+    display:flex;
+    align-items: center;
+}
+
+#payment-form {
+    margin:3vw 10vw 5vw;
+}
+
+img.form-check-label {
+    width:75%;
+}
+
+img.form-check-label:last-of-type {
+    margin-left:0.5em;
+}

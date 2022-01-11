@@ -2,7 +2,7 @@
 
 {% extends "user_base.html" %}
 {% block head %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/payment.css') }}">
 {% endblock %}
 {% block title %}Payment Info | CourseFinity{% endblock %}
 
@@ -10,25 +10,43 @@
 
 {% from "includes/_formHelper.html" import render_field %}
 <form id="payment-form" method="post">
-    {{ render_field(form.cardName, class="form-control") }}
-    {{ render_field(form.cardNo, class="form-control") }}
-    {{ render_field(form.cardExpiry, class="form-control") }}
-    {{ render_field(form.cardCVV, class="form-control") }}
-    <div class="form-check">
-        {{ form.savePaymentInfo(class="form-check-input") }}
-        {{ form.savePaymentInfo.label(class="form-check-label") }}
+    <!-- Credit/Debit, or PayPal? -->
+    {{ form.paymentMethod.label(class="form-check-label") }}
+    <div id="paymentMethod" class="row">
+        <div class="form-check form-check-inline col-3">
+            <input id="paymentMethod-0" class="form-check-input" name="paymentMethod" type="radio" value="Card">
+            <img class="form-check-label" src="{{ url_for('static', filename='images/payment/amex_mastercard_visa.svg') }}" alt="Choice 1: Credit/Debit Card">
+        </div>
+        <div class="form-check form-check-inline col-3">
+            <input id="paymentMethod-1" class="form-check-input" name="paymentMethod" type="radio" value="PayPal">
+            <img class="form-check-label" src="{{ url_for('static', filename='images/payment/paypal.svg') }}" alt="Choice 1: Credit/Debit Card">
+        </div>
     </div>
-    {{ render_field(form.firstName, class="form-control") }}
-    {{ render_field(form.lastName, class="form-control") }}
-    {{ render_field(form.billAddress1, class="form-control") }}
-    {{ render_field(form.billAddress2, class="form-control") }}
-    {{ render_field(form.billAddress3, class="form-control") }}
-    {{ render_field(form.city, class="form-control") }}
-    {{ render_field(form.country, class="form-control") }}
-    {{ render_field(form.zipCode, class="form-control") }}
-    {{ render_field(form.countryCode, class="form-control") }}
-    {{ render_field(form.phoneNumber, class="form-control") }}
-    <p onclick="payment()">Pay and Checkout</p>
+    <div id="option-1">
+        <!--SVGs from https://www.americanexpress.com/en-us/business/merchant/supplies/details/?pid=WebDL-->
+        {{ render_field(form.cardName, class="form-control") }}
+        {{ render_field(form.cardNumber, class="form-control") }}
+        {{ render_field(form.cardExpiry, class="form-control") }}
+        {{ render_field(form.cardCVV, class="form-control") }}
+        <div class="form-check">
+            {{ form.savePaymentInfo(class="form-check-input") }}
+            {{ form.savePaymentInfo.label(class="form-check-label") }}
+        </div>
+        {{ render_field(form.firstName, class="form-control") }}
+        {{ render_field(form.lastName, class="form-control") }}
+        {{ render_field(form.billAddress1, class="form-control") }}
+        {{ render_field(form.billAddress2, class="form-control") }}
+        {{ render_field(form.billAddress3, class="form-control") }}
+        {{ render_field(form.city, class="form-control") }}
+        {{ render_field(form.country, class="form-control") }}
+        {{ render_field(form.zipCode, class="form-control") }}
+        {{ render_field(form.countryCode, class="form-control") }}
+        {{ render_field(form.phoneNumber, class="form-control") }}
+        <p onclick="payment()">Pay and Checkout</p>
+    </div>
+    <div>
+        
+    </div>
 </form>
 
 {% endblock %}
@@ -39,4 +57,7 @@
         document.getElementById("payment-form").submit()
     }
 </script>
+<!--Paypal API-->
+<script src="https://www.paypal.com/sdk/js?client-id=AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s"></script>
+<script src="{{ url_for('static', filename='scripts/payment.js') }}"></script>
 {% endblock %}
