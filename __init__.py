@@ -2610,6 +2610,7 @@ def purchaseHistory(pageNum):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            courseID = ""
             purchaseHistoryList = []
             showCourse = ""
             purchaseID = userKey.get_purchaseID()
@@ -2639,15 +2640,14 @@ def purchaseHistory(pageNum):
                         showCourse(video[i])
                     
                     db.close()
-                    return redirect("/purchasehistory/" + str(pageNum))
 
                 except:
                     print("Unable to open up course shelve")
+                    db.close()
 
             else:
                 db.close()
                 print("Purchase History is Empty")
-                return redirect("/purchasehistory/" + str(pageNum))
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
             courseListLen = len(purchaseHistoryList) # get the length of the userList
