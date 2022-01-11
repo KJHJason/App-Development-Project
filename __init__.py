@@ -3206,7 +3206,7 @@ def function():
                 imagesrcPath = "/static/images/user/" + userProfileImage
             else:
                 imagesrcPath = "/static/images/user/default.png"
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3252,7 +3252,7 @@ def teacherPage(teacherUID):
             if userFound and accGoodStatus:
                 # add in your code here (if any)
 
-                return render_template('users/loggedin/teacher_page.html', accType=accType)
+                return render_template('users/teacher/teacher_page.html', accType=accType)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3261,7 +3261,7 @@ def teacherPage(teacherUID):
                 # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/guest/teacher_page.html")
+            return render_template("users/teacher/teacher_page.html")
 
 """End of teacher_page app.route by Clarence"""
 

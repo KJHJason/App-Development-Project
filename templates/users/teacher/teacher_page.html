@@ -1,0 +1,86 @@
+{% extends "user_base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/teacher_page.css') }}">
+{% endblock %}
+
+{% block title %}Teacher Page | CourseFinity{% endblock %}
+
+{% block content %}
+    <!-- content -->
+    <div id="pfp_bio">
+        <div class="row" id="bio">
+            <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
+            <div class="col-sm">
+                <!--insert bio variable here-->
+            </div>
+        </div>
+    </div>
+    <div class="container" id="featured&latest_content">
+        <h2>Featured Courses</h2>
+        <div class="row">
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Discrete Math</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing elit</p>
+            </div>
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Competitive Programming</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing
+                    elit</p>
+            </div>
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Dynamic Programming</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing
+                    elit</p>
+            </div>
+        </div>
+        <h2>Recent Courses</h2>
+        <div class="row">
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Discrete Math</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing
+                    elit</p>
+            </div>
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Competitive Programming</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing
+                    elit</p>
+            </div>
+            <div class="col-md">
+                <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
+                <a href="#">
+                    <h4>Dynamic Programming</h4>
+                </a>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
+                    adipiscing
+                    elit</p>
+            </div>
+        </div>
+        <a class="float-end" href="teacher_courses.html">See All Courses</a>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}
