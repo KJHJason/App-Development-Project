@@ -3186,6 +3186,85 @@ def checkout():
 
 """End of Template Checkout by Wei Ren"""
 
+"""Template app.route(") by Clarence"""
+
+@app.route("/teacher_page")
+def function():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
+            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+
+            # checking if the user have uploaded a profile image before and if the image file exists
+            if userProfileImage != "" and Path(userProfileImagePath).is_file():
+                imagesrcPath = "/static/images/user/" + userProfileImage
+            else:
+                imagesrcPath = "/static/images/user/default.png"
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+        
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by Clarence"""
+
+"""teacher_page app.route()  by Clarence"""
+
+@app.route('/teacher_page/<teacherUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def teacherPage(teacherUID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/teacher_page.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            redirect(url_for("teacher_page/teacherUID"))
+            redirectURL = "/teacher_page/" + teacherUID
+            return redirect(redirectURL)
+            
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+
+                return render_template('users/loggedin/teacher_page.html', accType=accType)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return render_template("users/guest/teacher_page.html")
+
+"""End of teacher_page app.route by Clarence"""
+
 
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
@@ -3198,8 +3277,6 @@ def checkout():
   - Webpage will not have admin view
   - Use case: User features such as change_password.html, etc.
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
-
-"""Template Teacher Page by Clarence"""
 
 @app.route("/")
 def function():
