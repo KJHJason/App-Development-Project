@@ -2881,6 +2881,10 @@ def teacherCashOut():
 
 """Template Shopping Cart by Wei Ren"""
 
+@app.route("/shopping_cart", methods = ["GET","POST"])
+def shoppingCartDefault():
+    redirect("/shopping_cart/1")
+
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
 def shoppingCart(pageNum):
     if "userSession" in session and "adminSession" not in session:
@@ -3226,7 +3230,7 @@ def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userFound, accGoodStatus = validate_session_open_file(userSession)
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
         # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         # userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
@@ -3316,7 +3320,7 @@ def insertName():
             # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
             return redirect(url_for("home"))
             # return redirect(url_for("adminLogin"))
-            # render_template("users/guest/page.html)
+            # return render_template("users/guest/page.html)
     else:
         if "userSession" in session:
             userSession = session["userSession"]
@@ -3337,7 +3341,7 @@ def insertName():
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
             return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-            # render_template("users/guest/page.html)
+            # return render_template("users/guest/page.html)
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
