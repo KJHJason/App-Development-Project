@@ -52,7 +52,26 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <h6 class="text-danger">Error: Inputted user's new email has been taken by another user, please enter a new user email and try again.</h6>
+            <h6 class="text-danger">Error: Inputted user's new email has been taken by another user, please enter a new and unique email and try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if duplicateUsername %}
+<div class="modal fade" id="duplicateUsernameModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="duplicateUsernameModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="duplicateUsernameModalLabel">Failed to Change User's Username</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6 class="text-danger">Error: Inputted user's new username has been taken by another user, please enter a new and unique username and try again.</h6>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
@@ -185,6 +204,29 @@
                                                     </div>
                                                 </div>
                                             </form>
+                                            <form action="/change_username/uid/{{ user.get_user_id() }}" method="POST">
+                                                <div class="modal fade" id="usernameChangeModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="usernameChangeModalLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="usernameChangeModalLabel{{ user.get_user_id() }}">Changer User's Username</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6>Are you sure that you would like to change {{ user.get_username() }}'s username? If so, please enter a new username below.</h6>
+                                                                <h6>Note: Only change the user's username if it violates the community guidelines, otherwise, refrain from changing a user's username.</h6>
+                                                                <label for="username" class="form-label">Enter a username:</label>
+                                                                <input type="text" name="username" id="username" class="form-control">
+                                                                <h6 class="text-danger">Warning: There is no going back after clicking confirm.</h6>
+                                                            </div>
+                                                                <div class="modal-footer">
+                                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-success">Confirm Change of Username</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
                                             {% if user.get_status() == "Good" %}
                                             <form action="/ban/uid/{{ user.get_user_id() }}" method="POST">
                                                 <div class="modal fade" id="banUserModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="banUserModalLabel{{ user.get_user_id() }}" aria-hidden="true">
@@ -230,6 +272,7 @@
                                                     Actions
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.get_user_id() }}">Ban</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
@@ -280,6 +323,7 @@
                                                     Actions
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#unbanUserModal{{ user.get_user_id() }}">Unban</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
@@ -526,6 +570,12 @@
         <script>
             var duplicateEmailModal = new bootstrap.Modal(document.getElementById('duplicateEmailModal'), {});
             duplicateEmailModal.show();
+        </script>
+    {% endif %}
+    {% if duplicateUsername %}
+        <script>
+            var duplicateUsernameModal = new bootstrap.Modal(document.getElementById('duplicateUsernameModal'), {});
+            duplicateUsernameModal.show();
         </script>
     {% endif %}
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>

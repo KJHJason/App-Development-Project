@@ -1261,7 +1261,13 @@ def userManagement(pageNum):
                     else:
                         duplicateEmail = False
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False, parameter="")
+                    if "duplicateUsername" in session:
+                        duplicateUsername = True
+                        session.pop("duplicateUsername", None)
+                    else:
+                        duplicateUsername = False
+
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False, duplicateUsername=duplicateUsername, parameter="")
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1368,7 +1374,7 @@ def userSearchManagement(pageNum):
                         usernameList.append(user.get_username())
 
                     try:
-                        matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.8) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by defualt and set the cutoff of 0.8, i.e. must match to a certain percentage else it will be ignored.
+                        matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.85, i.e. must match to a certain percentage else it will be ignored.
                     except:
                         matchedUsernameList = []
 
@@ -1424,9 +1430,15 @@ def userSearchManagement(pageNum):
                     else:
                         duplicateEmail = False
 
+                    if "duplicateUsername" in session:
+                        duplicateUsername = True
+                        session.pop("duplicateUsername", None)
+                    else:
+                        duplicateUsername = False
+
                     session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + parametersURL
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=parametersURL, parameter=parameter)
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=parametersURL, duplicateUsername=duplicateUsername, parameter=parameter)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1437,14 +1449,12 @@ def userSearchManagement(pageNum):
     else:
         return redirect(url_for("home"))
 
-@app.route("/delete_user/uid/<int:userID>", methods=['POST'])
+@app.route("/delete_user/uid/<userID>", methods=['POST'])
 def deleteUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        # if there's a need to retrieve admin account details, use the function below instead of the one above
-        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
@@ -1471,7 +1481,7 @@ def deleteUser(userID):
             except:
                 db.close()
                 print("Error in retrieving Users from user.db")
-                return redirect(userManagement)
+                return redirect(url_for("userManagement"))
 
             userKey = userDict.get(userID)
 
@@ -1493,14 +1503,12 @@ def deleteUser(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/ban/uid/<int:userID>", methods=['POST'])
+@app.route("/ban/uid/<userID>", methods=['POST'])
 def banUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        # if there's a need to retrieve admin account details, use the function below instead of the one above
-        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
@@ -1527,7 +1535,7 @@ def banUser(userID):
             except:
                 db.close()
                 print("Error in retrieving Users from user.db")
-                return redirect(userManagement)
+                return redirect(url_for("userManagement"))
 
             userKey = userDict.get(userID)
 
@@ -1549,14 +1557,12 @@ def banUser(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/unban/uid/<int:userID>", methods=['POST'])
+@app.route("/unban/uid/<userID>", methods=['POST'])
 def unbanUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
         print(adminSession)
         userFound, accActive = admin_validate_session_open_file(adminSession)
-        # if there's a need to retrieve admin account details, use the function below instead of the one above
-        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
 
         if userFound and accActive:
             # for redirecting the admin to the user management page that he/she was in
@@ -1583,7 +1589,7 @@ def unbanUser(userID):
             except:
                 db.close()
                 print("Error in retrieving Users from user.db")
-                return redirect(userManagement)
+                return redirect(url_for("userManagement"))
 
             userKey = userDict.get(userID)
 
@@ -1595,6 +1601,68 @@ def unbanUser(userID):
                 send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
                 print("Successfully sent an email.")
                 return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+@app.route("/change_username/uid/<userID>", methods=['POST'])
+def changeUserUsername(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
+            else:
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("userManagement"))
+
+            userKey = userDict.get(userID)
+
+            if userKey != None:
+                username = sanitise(request.form["username"])
+                duplicate_username = check_duplicates(username, userDict, "username")
+                if duplicate_username == False:
+                    userKey.set_username(username)
+                    db['Users'] = userDict
+                    db.close()
+                    print("Username successfully changed.")
+                    return redirect(redirectURL)
+                else:
+                    db.close()
+                    print("Duplicate username.")
+                    session["duplicateUsername"] = True
+                    return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
