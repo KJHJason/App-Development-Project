@@ -5,8 +5,6 @@ class Student(StudentAndTeacher):
         super().__init__(userID, username, email, password, "Student", "Good")
         self.__purchaseIDs = []
         self.__reviewIDs = []
-        self.__purchaseID = []
-        self.__reviewID = []
         self.__viewed = ""
     # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs & Type here
@@ -31,13 +29,8 @@ class Student(StudentAndTeacher):
     def set_viewed(self, viewed):
         self.__viewed = viewed
 
-    def get_purchaseID(self):
-        return self.__purchaseID
-    def get_reviewID(self):
-        return self.__reviewID
     def get_viewed(self):
         return self.__viewed
-
     # Added by Wei Ren for Courses
     #e.g. add_to_cart(0,"Zoom")
     def add_to_cart(self, courseID,type):

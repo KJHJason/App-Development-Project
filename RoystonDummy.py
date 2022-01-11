@@ -1,3 +1,4 @@
+"""
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import shelve, os, math, stripe
@@ -26,3 +27,22 @@ for purchasedCourseID in purchaseHistoryDict:
     coursePurchasedList.append(purchasedCourseID)
 
 print(purchaseHistoryDict[0]) 
+"""
+
+import shelve
+
+reviewDict = {}
+db = shelve.open("review","c")
+try:
+    reviewDict = db["Reviews"]
+except:
+    print("Error in accessing review from review.db")
+    db.close()
+
+
+
+
+
+
+db.close()
+

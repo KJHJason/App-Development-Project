@@ -41,12 +41,6 @@ class Teacher(StudentAndTeacher):
     def set_bio(self, bio):
         self.__bio = bio
     
-    def get_purchaseID(self):
-        return self.__purchaseID
-    def get_reviewID(self):
-        return self.__reviewID
-    def get_viewed(self):
-        return self.__viewed
     def get_joinDate(self):
         return self.__joinDate
     def get_earnings(self):
