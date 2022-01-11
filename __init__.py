@@ -2537,7 +2537,7 @@ def deleteCard():
 
 """Search Function by Royston"""
 
-@app.route("/search/page/<int:pageNum>")
+@app.route("/search/<int:pageNum>")
 def search():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2613,7 +2613,7 @@ def purchaseHistory(pageNum):
             courseID = ""
             purchaseHistoryList = []
             showCourse = ""
-            purchaseID = userKey.get_purchaseID()
+            purchaseID = bool(userKey.get_purchaseID())
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
@@ -2789,7 +2789,7 @@ def purchaseView():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             purchaseHistoryList = []
             showCourse = ""
-            purchaseID = userKey.get_purchaseID()
+            purchaseID = bool(userKey.get_purchaseID())
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
