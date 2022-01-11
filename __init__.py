@@ -2577,7 +2577,7 @@ def search():
 
 """Purchase History by Royston"""
 
-@app.route("/purchasehistory/page/<int:pageNum>")
+@app.route("/purchasehistory/<int:pageNum>")
 def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2632,6 +2632,7 @@ def purchaseHistory(pageNum):
                         showCourse(video[i])
                     
                     db.close()
+                    return redirect("/purchasehistory/" + str(pageNum))
 
                 except:
                     print("Unable to open up course shelve")
@@ -2639,7 +2640,7 @@ def purchaseHistory(pageNum):
             else:
                 db.close()
                 print("Purchase History is Empty")
-                return redirect(url_for("purchaseHistory"))
+                return redirect("/purchasehistory/" + str(pageNum))
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
             courseListLen = len(purchaseHistoryList) # get the length of the userList
@@ -2647,11 +2648,11 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/purchaseHistory/0")
+                return redirect("/purchasehistory/0")
             elif courseListLen > 0 and pageNum == 0:
-                return redirect("/purchaseHistory/1")
+                return redirect("/purchasehistory/1")
             elif pageNum > maxPages:
-                redirectRoute = "/purchaseHistory/" + str(maxPages)
+                redirectRoute = "/purchasehistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -2662,11 +2663,11 @@ def purchaseHistory(pageNum):
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
-            previousPage = pageNum - 1
-            nextPage = pageNum + 1
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
 
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType)
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType)
         else:
             db.close()
             print("User not found or is banned")
