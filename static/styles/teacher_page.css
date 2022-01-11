@@ -3,3 +3,32 @@
     background-color:#273C4D;
     opacity: 0.6;
 }
+
+.image{
+    height: auto;
+    width: 100%;
+    text-align:center;
+}
+
+h2{
+  margin-top:50px;
+  margin-bottom:50px;
+}
+
+.col-md img{
+  height:auto;
+  width:100%;
+  margin-bottom:15px;
+  border-radius:10px;
+}
+
+.col-md p{
+  margin-bottom:100px;
+}
+
+#user-icon-setting {
+  height: 200px;
+  width: 200px;
+  margin: 5px 0;
+  border-radius: 50%;
+}
