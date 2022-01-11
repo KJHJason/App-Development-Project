@@ -7,3 +7,9 @@
     text-align: bottom-right;
     text-decoration: underline;
 }
+
+.image{
+    height: 100%;
+    width: auto;
+    text-align:center;
+}
