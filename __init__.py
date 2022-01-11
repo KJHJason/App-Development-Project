@@ -2881,7 +2881,7 @@ def teacherCashOut():
 
 """Template Shopping Cart by Wei Ren"""
 
-@app.route("/shopping_cart/<string:pageNum>/", methods = ["GET","POST"])
+@app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
 def shoppingCart(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
