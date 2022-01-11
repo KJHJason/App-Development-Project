@@ -24,19 +24,10 @@ userBase = shelve.open("user", "c")
 adminBase = shelve.open("admin", "c")
 courseBase = shelve.open("course", "c")
 
-# Pull out dictionary from shelve
-if len(userBase) == 0:
-    userDict = {}
-else:
-    userDict = userBase["Users"]
-if len(adminBase) == 0:
-    adminDict = {}
-else:
-    adminDict = adminBase["Admins"]
-if len(courseBase) == 0:
-    courseDict = {}
-else:
-    courseDict = courseBase["Courses"]
+# Remove all prior entries
+userDict = {}
+adminDict = {}
+courseDict = {}
 
 
 
@@ -74,10 +65,11 @@ user.set_card_type("visa") ## [visa, mastercard, american express]
 #Courses (Royston)
 
 
-user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+user.add_to_cart(0,"Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user
+print(user.get_shoppingCart())
 
 """Student 2"""
 
@@ -206,53 +198,6 @@ courseDict[course.get_courseID()] = course
 
 
 
-"""Student 1"""
-
-#General
-userID = get_userID(userDict)
-username = "James"
-email = sanitise("CourseFinity123@gmail.com".lower())
-password = hash_password("123!@#")
-user = Student(userID, username, email, password)
-
-#Card --> No Validation for Simulation
-user.set_card_name("James Oliver")
-user.set_card_no("0102030405060708")
-user.set_card_expiry("7/2022") ## Format Important
-user.set_card_cvv("123")
-user.set_card_type("visa") ## [visa, mastercard, american express]
-
-#Courses (Royston)
-
-
-user.add_to_cart("0","Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
-
-# Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
-
-"""Student 2"""
-
-#General
-userID = get_userID(userDict)
-username = "Daniel"
-email = sanitise("abc.net@gmail.com".lower())
-password = hash_password("456$%^")
-user = Student(userID, username, email, password)
-
-#Card --> No Validation for Simulation
-user.set_card_name("Daniel Pang")
-user.set_card_no("8070605040302010")
-user.set_card_expiry("10/2023") ## Format Important
-user.set_card_cvv("321")
-user.set_card_type("mastercard") ## [visa, mastercard, american express]
-
-#Courses (Royston)
-
-# Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
-
-
-
 """Admin 1"""
 #General
 adminID = get_userID(userDict)
@@ -279,8 +224,7 @@ admin = Admin(adminID, username, email, password)
 
 
 # Save Object to dict
-adminDict = {}
-adminDict[userID] = admin
+adminDict[adminID] = admin
 
 # Get corresponding userID for updating/adding to dictionary
 adminDict[admin.get_user_id()] = admin

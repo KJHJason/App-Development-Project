@@ -123,6 +123,13 @@ def home():
             else:
                 teacherPaymentAdded = False
 
+            # checking if the user recently completed a purchase
+            if "paymentComplete" in session:
+                paymentComplete = True
+                session.pop("paymentComplete", None)
+            else:
+                paymentComplete = False
+
             userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
             if userFound and accGoodStatus:
@@ -151,7 +158,7 @@ def home():
 #videoCat[0][673]
                         
 
-                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType)
+                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType, paymentComplete=paymentComplete)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -2878,6 +2885,12 @@ def teacherCashOut():
 """End of Teacher Cashout System by Royston"""
 
 
+"""Template Redirect Shopping Cart by Jason because Opera is bad"""
+@app.route("/shopping_cart", methods = ["GET","POST"])
+def shoppingCartDefault():
+    return redirect("/shopping_cart/1")
+"""End of Redirect Shopping Cart by Jason because Opera is bad"""
+
 
 """Template Shopping Cart by Wei Ren"""
 
@@ -2929,7 +2942,7 @@ def shoppingCart(pageNum):
                         db.close()
                         print("Error. Shopping cart courses are missing values.")
 
-                return redirect("/shopping_cart/"+pageNum)
+                return redirect("/shopping_cart/"+str(pageNum))
 
             # Render the page                                                                               # R for Read
             else:
@@ -3094,44 +3107,50 @@ def checkout():
                         userKey.set_card_cvv(cardCVV)
                         userKey.set_card_expiry(cardExpiry)
 
-                    userID = userKey.get_user_id()
+                userID = userKey.get_user_id()
 
-                    # Create payment object                                                             # 'C' for Create
-                    payment = Payment(userID,
-                                      userKey.get_card_name(),
-                                      userKey.get_card_no(),
-                                      userKey.get_card_expiry(),
-                                      userKey.get_card_cvv(),
-                                      paymentForm.firstName.data,
-                                      paymentForm.lastName.data,
-                                      paymentForm.billAddress1.data,
-                                      paymentForm.billAddress2.data,
-                                      paymentForm.billAddress3.data,
-                                      paymentForm.city.data,
-                                      paymentForm.country.data,
-                                      paymentForm.zipCode.data,
-                                      paymentForm.countryCode.data)
+                # Create payment object                                                             # 'C' for Create
+                payment = Payment(userID,
+                                  paymentForm.cardName.data,
+                                  paymentForm.cardNumber.data,
+                                  paymentForm.cardExpiry.data,
+                                  paymentForm.cardCVV.data,
+                                  paymentForm.firstName.data,
+                                  paymentForm.lastName.data,
+                                  paymentForm.billAddress1.data,
+                                  paymentForm.billAddress2.data,
+                                  paymentForm.billAddress3.data,
+                                  paymentForm.city.data,
+                                  paymentForm.country.data,
+                                  paymentForm.zipCode.data,
+                                  paymentForm.countryCode.data,
+                                  paymentForm.phoneNumber.data)
 
-                    # Add purchase ID to declare user can access course
-                    userKey.add_purchaseID(payment.get_paymentID())
+                # Add purchase ID to declare user can access course
+                userKey.add_purchaseID(payment.get_paymentID())
 
-                    userDict[userID] = userKey
-                    paymentDict[payment.get_paymentID()] = payment
+                # Remove courses from cart
+                userKey.addCartToPurchases()
+                print(userKey.get_shoppingCart())
+
+                userDict[userID] = userKey
+                paymentDict[payment.get_paymentID()] = payment
 
                 # Make changes permanent only after all processes are finished with no interrupt errors
                 db["Users"] = userDict
                 dbPayment["Payments"] = paymentDict
 
+                session["paymentComplete"] = True
+
                 db.close()
                 dbPayment.close()
-                return redirect(url_for('paymentComplete'))
+                return redirect(url_for('home'))
             else:
                 # Add choices as tuple (value, label)
                 # Do not append choices, it does not work
                 """PaymentForm.paymentMethod.choices = [('5','3')]
                 print(paymentForm.paymentMethod.choices)"""
-                print(paymentForm.paymentMethod.choices)
-                print(paymentForm.paymentMethod)
+
                 db.close() # remember to close your shelve files!
                 return render_template('users/student/payment_info.html', form = paymentForm, accType=accType)
         else:
@@ -3149,6 +3168,7 @@ def checkout():
             # return redirect(url_for("userLogin"))
 
 """End of Template Checkout by Wei Ren"""
+
 
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)

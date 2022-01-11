@@ -81,4 +81,5 @@ class Student(StudentAndTeacher):
 
     def addCartToPurchases(self):
         for course in self.__shoppingCart:
-            self.__purchasedCourse.append(course)
+            self.__purchasedCourses.append(course)
+        self.__shoppingCart = []

@@ -6,7 +6,7 @@ class Payment():
         self.__userID = userID
 
         self.__class__.paymentID += 1
-        self.__purchaseID = self.__class__.paymentID
+        self.__paymentID = self.__class__.paymentID
 
         self.__cardName = cardName
         self.__cardNumber = cardNumber
@@ -26,6 +26,7 @@ class Payment():
         
         self.__countryCode = countryCode
         self.__phoneNumber = phoneNumber
+        self.__fullNumber = countryCode + phoneNumber
 
     def get_pending(self):
         return self.__pending
@@ -111,4 +112,7 @@ class Payment():
         return self.__phoneNumber
     def set_phoneNumber(self,phoneNumber):
         self.__phoneNumber = phoneNumber
+
+    def get_fullNumber(self,fullNumber):
+        return(self.__countryCode + self.__phoneNumber)
 

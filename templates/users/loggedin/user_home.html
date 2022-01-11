@@ -24,6 +24,27 @@
 </div>
 {% endif %}
 
+{% if paymentComplete %}
+<div class="modal fade" id="paymentCompleteModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentCompleteModalLabel">Payment Method Added</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your purchase is successful.</h6>
+                <h6>For more info on courses, check your purchase history.</h6>
+                <h6>Have fun learning!</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container">
     <h2>Trending</h2>
     <div class="row">
@@ -81,6 +102,12 @@
         <script>
             var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
             addedCardModal.show();
+        </script>
+    {% endif %}
+    {% if paymentComplete %}
+        <script>
+            var paymentCompleteModal = new bootstrap.Modal(document.getElementById('paymentCompleteModal'), {});
+            paymentCompleteModal.show();
         </script>
     {% endif %}
 {% endblock %}

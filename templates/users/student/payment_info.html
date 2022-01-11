@@ -2,7 +2,7 @@
 
 {% extends "user_base.html" %}
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/payment.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/payment_info.css') }}">
 {% endblock %}
 {% block title %}Payment Info | CourseFinity{% endblock %}
 
@@ -10,19 +10,21 @@
 
 {% from "includes/_formHelper.html" import render_field %}
 <form id="payment-form" method="post">
+    <p>Payment Method</p>
     <!-- Credit/Debit, or PayPal? -->
     {{ form.paymentMethod.label(class="form-check-label") }}
     <div id="paymentMethod" class="row">
         <div class="form-check form-check-inline col-3">
-            <input id="paymentMethod-0" class="form-check-input" name="paymentMethod" type="radio" value="Card">
+            <input id="paymentMethod-0" class="form-check-input" name="paymentMethod" type="radio" value="Card" onclick="Credit()">
             <img class="form-check-label" src="{{ url_for('static', filename='images/payment/amex_mastercard_visa.svg') }}" alt="Choice 1: Credit/Debit Card">
         </div>
         <div class="form-check form-check-inline col-3">
-            <input id="paymentMethod-1" class="form-check-input" name="paymentMethod" type="radio" value="PayPal">
+            <input id="paymentMethod-1" class="form-check-input" name="paymentMethod" type="radio" value="PayPal" onclick="PayPal()">
             <img class="form-check-label" src="{{ url_for('static', filename='images/payment/paypal.svg') }}" alt="Choice 1: Credit/Debit Card">
         </div>
     </div>
     <div id="option-1">
+        <p>Billing Information</p>
         <!--SVGs from https://www.americanexpress.com/en-us/business/merchant/supplies/details/?pid=WebDL-->
         {{ render_field(form.cardName, class="form-control") }}
         {{ render_field(form.cardNumber, class="form-control") }}
@@ -44,10 +46,11 @@
         {{ render_field(form.phoneNumber, class="form-control") }}
         <p onclick="payment()">Pay and Checkout</p>
     </div>
-    <div>
-        
-    </div>
 </form>
+<div id="option-2">
+
+</div>
+
 
 {% endblock %}
 
@@ -59,5 +62,5 @@
 </script>
 <!--Paypal API-->
 <script src="https://www.paypal.com/sdk/js?client-id=AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s"></script>
-<script src="{{ url_for('static', filename='scripts/payment.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/payment_info.js') }}"></script>
 {% endblock %}
