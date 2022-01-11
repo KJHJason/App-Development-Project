@@ -5,6 +5,8 @@ class Student(StudentAndTeacher):
         super().__init__(userID, username, email, password, "Student", "Good")
         self.__purchaseIDs = []
         self.__reviewIDs = []
+        self.__purchaseID = []
+        self.__reviewID = []
         self.__viewed = ""
     # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs & Type here
