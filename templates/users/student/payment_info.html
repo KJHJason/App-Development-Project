@@ -26,10 +26,10 @@
     <div id="option-1">
         <p>Billing Information</p>
         <!--SVGs from https://www.americanexpress.com/en-us/business/merchant/supplies/details/?pid=WebDL-->
-        {{ render_field(form.cardName, class="form-control") }}
-        {{ render_field(form.cardNumber, class="form-control") }}
-        {{ render_field(form.cardExpiry, class="form-control") }}
-        {{ render_field(form.cardCVV, class="form-control") }}
+        {{ render_field(form.cardName, class="form-control", value=cardName) }}
+        {{ render_field(form.cardNumber, class="form-control", value=cardNumber) }}
+        {{ render_field(form.cardExpiry, class="form-control", value=cardExpiry) }}
+        {{ render_field(form.cardCVV, class="form-control", value=cardCVV) }}
         <div class="form-check">
             {{ form.savePaymentInfo(class="form-check-input") }}
             {{ form.savePaymentInfo.label(class="form-check-label") }}

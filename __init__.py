@@ -2903,9 +2903,9 @@ def shoppingCartDefault():
 
 """Template Shopping Cart by Wei Ren"""
 
-@app.route("/shopping_cart", methods = ["GET","POST"])
+"""@app.route("/shopping_cart", methods = ["GET","POST"])
 def shoppingCartDefault():
-    redirect("/shopping_cart/1")
+    redirect("/shopping_cart/1")"""
 
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
 def shoppingCart(pageNum):
@@ -3163,9 +3163,13 @@ def checkout():
                 # Do not append choices, it does not work
                 """PaymentForm.paymentMethod.choices = [('5','3')]
                 print(paymentForm.paymentMethod.choices)"""
+                cardName = userKey.get_card_name()
+                cardNumber = userKey.get_card_no()
+                cardExpiry = userKey.get_card_expiry()
+                cardCVV = userKey.get_card_cvv()
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType)
+                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry =cardExpiry)
         else:
             db.close()
             print("User not found or is banned")
