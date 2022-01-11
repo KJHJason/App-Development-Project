@@ -2530,7 +2530,7 @@ def deleteCard():
 
 """Search Function by Royston"""
 
-@app.route("/search")
+@app.route("/search/page/<int:pageNum>")
 def search():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2576,8 +2576,8 @@ def search():
 """"End of Search Function by Royston"""
 
 """Purchase History by Royston"""
-"""
-@app.route("/purchasehistory")
+
+@app.route("/purchasehistory/page/<int:pageNum>")
 def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2616,8 +2616,6 @@ def purchaseHistory(pageNum):
                     for courseID in purchaseHistoryList(5):
                         history = dbCourse[courseID]
 
-                        purchaseHistoryList = [3,4,5,6,7,9]
-
                         #id will be an integer
 
                         video = {id :
@@ -2649,11 +2647,11 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/shopping_cart/0")
+                return redirect("/purchasehistory/0")
             elif courseListLen > 0 and pageNum == 0:
-                return redirect("/shopping_cart/1")
+                return redirect("/purchasehistory/1")
             elif pageNum > maxPages:
-                redirectRoute = "/shopping_cart/" + str(maxPages)
+                redirectRoute = "/purchasehistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -2682,7 +2680,7 @@ def purchaseHistory(pageNum):
             # determine if it make sense to redirect the user to the home page or the login page
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-"""
+
 """End of Purchase History by Royston"""
 
 """Purchase Review by Royston"""
@@ -2709,16 +2707,28 @@ def purchaseReview():
             return redirect(url_for("home"))
 
         # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict,)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            createReview = Forms.CreateReviewText(request.form)
 
+            reviewID = userKey.get_reviewID()
+            print("ReviewID exists?: ", reviewID)
+            reviewDict = {}
+            db = shelve.open("course", "c")
 
+            try:                            
+                reviewDict = db["Courses"]
+
+                createReview = Forms.CreateReviewText(request.form)
+                if request.method == 'POST' and createReview.validate():
+                    reviewID = createReview.reviewID.data
+            except:
+                print("Error in retrieving review from review.db")
+                db.close()
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID = reviewID)
         else:
             db.close()
             print("User not found or is banned")
@@ -2775,8 +2785,6 @@ def purchaseView():
                     historyDict = dbCourse[""]
                     for courseID in purchaseHistoryList(5):
                         history = dbCourse[courseID]
-
-                        purchaseHistoryList = [3,4,5,6,7,9]
 
                         #id will be an integer
 
