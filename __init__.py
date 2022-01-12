@@ -2578,17 +2578,31 @@ def search():
 
             if userFound and accGoodStatus:
                 # add in your code here (if any)
-                try:
-                    courseDict = {}
-                    db = shelve.open("course", "r")
-                    courseDict = db["Courses"]
 
-                except:
-                    pass
+                courseDict = {}
+                courseTitleList = []
+                for title in courseDict:
+                    try:
+                        db = shelve.open("course", "r")
+                        if title in db:
+                            courseDict = db["Course"]
+                        else:
+                            db.close()
+                            return redirect("home")
+                    except:
+                        print("Error in obtaining course.db data")
+                        return redirect("home")
+                    
+                    searchInput = request.args.get("q")
+                    for title in courseDict:
+                        courseTitle = courseDict.get(title)
+                        courseTitleList.append(courseTitle.get_title())
+                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                    for key in matchedCourseTitleList:
+                        if courseTitle == key:
+                            pass
 
-
-
-                return render_template('users/general/search.html', accType=accType, courseDict=courseDict)
+                return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
