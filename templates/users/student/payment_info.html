@@ -29,7 +29,7 @@
         {{ render_field(form.cardName, class="form-control", value=cardName) }}
 
         {{ render_field(form.cardNumber, class="form-control", value=cardNumber) }}
-                {% if cardValid == False %}
+        {% if cardValid == False %}
             <div class="text-danger warning_alert"><h6><strong>Invalid Card Number</strong></h6></div>
         {% endif %}
 

@@ -3104,6 +3104,7 @@ def checkout():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             paymentForm = Forms.PaymentInfo(request.form)
             if request.method == "POST" and paymentForm.validate():
+                print("paymentForm posted successfully.")
                 try:
                     dbPayment = shelve.open("payment","c")
                     if "Payment" in dbPayment:
@@ -3122,12 +3123,12 @@ def checkout():
 
                 cardCVV = sanitise(paymentForm.cardCVV.data)
                 cardType = get_card_type(cardNumber)
-                cardCVVValid = True#validate_cvv(cardCVV, cardType)
+                cardCVVValid = validate_cvv(cardCVV, cardType)
 
                 cardExpiry = sanitise(paymentForm.cardExpiry.data)
                 cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                if cardValid and cardCVVValid and cardExpiryValid:
+                if True:#cardValid and cardCVVValid and cardExpiryValid:
 
                     # If someone wants to save any changes made
                     if paymentForm.savePaymentInfo.data == True:                                            # U for Update
