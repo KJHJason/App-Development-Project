@@ -22,7 +22,7 @@ class StudentAndTeacher(User):
         self.__card_type = card_type
     def set_email_verification(self, verify_email):
         self.__email_verification = verify_email
-    
+
     def set_purchaseID(self, purchaseID):
         self.__purchaseID = purchaseID
     def set_reviewID(self, reviewID):
@@ -40,7 +40,7 @@ class StudentAndTeacher(User):
         return self.__card_type
     def get_email_verification(self):
         return self.__email_verification
-    
+
     def get_purchaseID(self):
         return self.__purchaseID
     def get_reviewID(self):

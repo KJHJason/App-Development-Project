@@ -59,7 +59,6 @@ user = Student(userID, username, email, password)
 user.set_card_name("James Oliver")
 user.set_card_no("0102030405060708")
 user.set_card_expiry("7/2022") ## Format Important
-user.set_card_cvv("123")
 user.set_card_type("visa") ## [visa, mastercard, american express]
 
 #Courses (Royston)
@@ -84,7 +83,6 @@ user = Student(userID, username, email, password)
 user.set_card_name("Daniel Pang")
 user.set_card_no("8070605040302010")
 user.set_card_expiry("10/2023") ## Format Important
-user.set_card_cvv("321")
 user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
@@ -109,7 +107,6 @@ user.set_joinDate("2022-04-01") ## wtforms default datefield format = YYYY-MM-DD
 user.set_card_name("Avery Tim")
 user.set_card_no("1122334455667788")
 user.set_card_expiry("4/2024") ## Format Important
-user.set_card_cvv("543")
 user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
@@ -162,7 +159,6 @@ user.set_joinDate("2020-05-02") ## wtforms default datefield format = YYYY-MM-DD
 user.set_card_name("Sara Louise")
 user.set_card_no("987654321234567")
 user.set_card_expiry("9/2023") ## Format Important
-user.set_card_cvv("934")
 user.set_card_type("american express") ## [visa, mastercard, american express]
 
 #Courses (Royston)
