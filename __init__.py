@@ -2552,49 +2552,54 @@ def deleteCard():
 
 """Search Function by Royston"""
 
-@app.route("/search/page/<int:pageNum>")
+@app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
 def search():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
 
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/general/search.html', accType=accType)
+        if userFound and accActive:
+            return render_template('users/admin/page.html')
         else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
             return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+            # return render_template("users/guest/page.html)
     else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+                try:
+                    courseDict = {}
+                    db = shelve.open("course", "r")
+                    courseDict = db["Courses"]
+                
+                except:
+                    pass
+
+
+
+                return render_template('users/general/search.html', accType=accType, courseDict=courseDict)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
+            # return render_template("users/guest/page.html)
 
 """"End of Search Function by Royston"""
 
