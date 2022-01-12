@@ -1,26 +1,21 @@
 {% extends "user_base.html" %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/teacher_page.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/teacher_courses.css') }}">
 {% endblock %}
 
 {% block title %}Teacher Page | CourseFinity{% endblock %}
 
 {% block content %}
     <!-- content -->
-    <div id="pfp_bio">
-        <div class="row">
-            <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
-            <div id="bio" class="col-9">
-                <!--insert bio variable here-->
-                <p>
-                    ~Insert bio~
-                </p>
-            </div>
-        </div>
-    </div>
-    <div class="container" id="featured&latest_content">
-        <h2>Featured Courses</h2>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="teacher_page.html">Profile</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Recent Courses</li>
+        </ol>
+    </nav>
+
+    <div class="container">
         <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
@@ -29,27 +24,31 @@
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
                     adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
                 <a href="#">
                     <h4>Competitive Programming</h4>
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                    adipiscing
-                    elit</p>
+                    adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
                 <a href="#">
                     <h4>Dynamic Programming</h4>
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                    adipiscing
-                    elit</p>
+                    adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
         </div>
-        <h2>Recent Courses</h2>
         <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
@@ -57,31 +56,33 @@
                     <h4>Discrete Math</h4>
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                    adipiscing
-                    elit</p>
+                    adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
                 <a href="#">
                     <h4>Competitive Programming</h4>
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                    adipiscing
-                    elit</p>
+                    adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md">
                 <a href="#"><img class="image" src="../static/images/user_home/placeholder.jpg" alt=""></a>
                 <a href="#">
                     <h4>Dynamic Programming</h4>
                 </a>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                    adipiscing
-                    elit</p>
+                    adipiscing elit</p>
+                <a class="float-end course_info" href="#">View Course Info...</a>
             </div>
         </div>
-        <a class="float-end" href="/<teacherUID>/teacher_courses">See All Courses</a>
     </div>
-
 {% endblock %}
 
 {% block extra_js %}
