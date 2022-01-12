@@ -25,7 +25,7 @@ for i in range(noOfUser):
     hashedPwd = hash_password("123123")
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
-    uid = get_userID(userDict)
+    uid = generate_ID(userDict)
     user = Student.Student(uid, username, email, hashedPwd)
     userDict[uid] = user
     db["Users"] = userDict
