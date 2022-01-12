@@ -3114,34 +3114,29 @@ def checkout():
                 except:
                     print("Error in retrieving Payment from payment.db")
 
-                # If someone wants to save any changes made
-                if paymentForm.savePaymentInfo.data == True:                                            # U for Update
+                #Credit Validation
+                cardName = sanitise(paymentForm.cardName.data)
 
-                    cardValid = True
-                    cardCVVValid = True
-                    cardExpiryValid = True
+                cardNumber = sanitise(paymentForm.cardNumber.data)
+                cardValid = validate_card_number(cardNumber)
 
-                    if userKey.get_card_name() != paymentForm.cardName.data:
-                        cardName = sanitise(paymentForm.cardName.data)
+                cardCVV = sanitise(paymentForm.cardCVV.data)
+                cardType = get_card_type(cardNumber)
+                cardCVVValid = True#validate_cvv(cardCVV, cardType)
 
-                    if userKey.get_card_no() != paymentForm.cardNumber.data:
-                        cardNumber = sanitise(paymentForm.cardNumber.data)
-                        cardValid = validate_card_number(cardNumber)
+                cardExpiry = sanitise(paymentForm.cardExpiry.data)
+                cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                    if userKey.get_card_cvv() != paymentForm.cardCVV.data:
-                        cardCVV = sanitise(paymentForm.cardCVV.data)
-                        cardType = get_card_type(cardNumber)
-                        cardCVVValid = validate_cvv(cardCVV, cardType)
+                if cardValid and cardCVVValid and cardExpiryValid:
 
-                    if userKey.get_card_expiry() != paymentForm.cardExpiry.data:
-                        cardExpiry = sanitise(paymentForm.cardExpiry.data)
-                        cardExpiryValid = validate_expiry_date(cardExpiry)
-
-                    if cardValid and cardCVVValid and cardExpiryValid:
+                    # If someone wants to save any changes made
+                    if paymentForm.savePaymentInfo.data == True:                                            # U for Update
                         userKey.set_card_name(cardName)
                         userKey.set_card_no(cardNumber)
-                        userKey.set_card_cvv(cardCVV)
                         userKey.set_card_expiry(cardExpiry)
+
+                else:
+                    return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry=cardExpiry, cardValid=cardValid, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
 
                 userID = userKey.get_user_id()
 
@@ -3150,7 +3145,6 @@ def checkout():
                                   paymentForm.cardName.data,
                                   paymentForm.cardNumber.data,
                                   paymentForm.cardExpiry.data,
-                                  paymentForm.cardCVV.data,
                                   paymentForm.firstName.data,
                                   paymentForm.lastName.data,
                                   paymentForm.billAddress1.data,
@@ -3189,10 +3183,9 @@ def checkout():
                 cardName = userKey.get_card_name()
                 cardNumber = userKey.get_card_no()
                 cardExpiry = userKey.get_card_expiry()
-                cardCVV = userKey.get_card_cvv()
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry =cardExpiry)
+                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardExpiry =cardExpiry, cardValid=True, cardCVVValid=True, cardExpiryValid=True)
         else:
             db.close()
             print("User not found or is banned")
