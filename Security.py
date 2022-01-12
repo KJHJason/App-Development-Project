@@ -33,7 +33,7 @@ def verify_password(hashed, pwd):
 """Input sanitisation"""
 
 def sanitise(userInput):
-    userInput = html.escape(userInput, quote=True) # quote = True so that the characters (") and (') are escaped/translated
+    userInput = html.escape(userInput, quote=False) # quote = False so that the characters (") and (') are not escaped/translated
     userInput = userInput.strip()
 
     if len(userInput) != 0: # checking the length of the string if it's empty or not (Just in case as this should have been validated when using wtforms)
