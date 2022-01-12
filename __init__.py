@@ -3253,7 +3253,47 @@ def teacherPage(teacherUID):
 
 """End of teacher_page app.route by Clarence"""
 
+"""teacher_page app.route()  by Clarence"""
 
+@app.route('/<teacherUID>/teacher_courses', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def teacherCourses(teacherUID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/teacher_courses.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            redirect(url_for("teacherUID/teacher_courses"))
+            redirectURL = teacherUID+ "/teacher_courses/"
+            return redirect(redirectURL)
+            
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+
+                return render_template('users/teacher/teacher_courses.html', accType=accType)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return render_template("users/teacher/teacher_courses.html")
+
+"""End of teacher_page app.route by Clarence"""
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
