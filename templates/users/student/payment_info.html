@@ -27,9 +27,21 @@
         <p>Billing Information</p>
         <!--SVGs from https://www.americanexpress.com/en-us/business/merchant/supplies/details/?pid=WebDL-->
         {{ render_field(form.cardName, class="form-control", value=cardName) }}
+
         {{ render_field(form.cardNumber, class="form-control", value=cardNumber) }}
+        {% if cardValid == False %}
+            <div class="text-danger warning_alert"><h6><strong>Invalid Card Number</strong></h6></div>
+        {% endif %}
+
         {{ render_field(form.cardExpiry, class="form-control", value=cardExpiry) }}
+        {% if cardExpiryValid == False %}
+            <div class="text-danger warning_alert"><h6><strong>Invalid Card Expiry Date</strong></h6></div>
+        {% endif %}
+
         {{ render_field(form.cardCVV, class="form-control", value=cardCVV) }}
+        {% if cardCVVValid == False %}
+            <div class="text-danger warning_alert"><h6><strong>Invalid CVV</strong></h6></div>
+        {% endif %}
         <div class="form-check">
             {{ form.savePaymentInfo(class="form-check-input") }}
             {{ form.savePaymentInfo.label(class="form-check-label") }}

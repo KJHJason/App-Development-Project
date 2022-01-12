@@ -89,6 +89,7 @@ print("Your video link is: " + response['link']) """
 """General pages by INSERT_YOUR_NAME"""
 
 @app.route('/')
+@limiter.limit("30/second") # to prevent ddos attacks
 def home():
     # checking sessions if the user had recently logged out
     if "recentlyLoggedOut" in session:
@@ -156,7 +157,7 @@ def home():
 
 #Vid id for discrete math 673, math cat 0
 #videoCat[0][673]
-                        
+
 
                 return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType, paymentComplete=paymentComplete)
             else:
@@ -281,6 +282,7 @@ def userLogin():
         return redirect(url_for("home"))
 
 @app.route('/logout')
+@limiter.limit("30/second") # to prevent ddos attacks
 def logout():
     if "userSession" in session or "adminSession" in session:
         session.clear()
@@ -296,6 +298,7 @@ def logout():
 """Reset Password by Jason"""
 
 @app.route('/reset_password', methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def requestPasswordReset():
     if "userSession" not in session and "adminSession" not in session:
         create_request_form = Forms.RequestResetPasswordForm(request.form)
@@ -364,6 +367,7 @@ def requestPasswordReset():
         return redirect(url_for("home"))
 
 @app.route("/reset_password/<token>", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def resetPassword(token):
     if "userSession" not in session and "adminSession" not in session:
         validateToken = verify_reset_token(token)
@@ -419,6 +423,7 @@ def resetPassword(token):
 """Student signup process by Jason"""
 
 @app.route('/signup', methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_signup_form = Forms.CreateSignUpForm(request.form)
@@ -501,6 +506,7 @@ def userSignUp():
 """Email verification by Jason"""
 
 @app.route("/generate_verify_email_token")
+@limiter.limit("30/second") # to prevent ddos attacks
 def verifyEmail():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -529,11 +535,12 @@ def verifyEmail():
             return redirect(url_for("userLogin"))
 
 @app.route("/verify_email/<token>")
+@limiter.limit("30/second") # to prevent ddos attacks
 def verifyEmailToken(token):
     if "adminSession" not in session:
         validateToken = verify_email_token(token)
         if validateToken != None:
-            
+
             userDict = {}
             db = shelve.open("user", "c")
             try:
@@ -592,6 +599,7 @@ def verifyEmailToken(token):
 """Teacher's signup process by Jason"""
 
 @app.route('/teacher_signup', methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def teacherSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
@@ -676,6 +684,7 @@ def teacherSignUp():
             return redirect(url_for("home"))
 
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def signUpPayment():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -713,21 +722,18 @@ def signUpPayment():
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card_number(cardNo)
 
-                        cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
                         cardType = get_card_type(cardNo)
-                        cardCVVValid = validate_cvv(cardCVV, cardType)
 
                         cardExpiry = sanitise(create_teacher_payment_form.cardExpiry.data)
                         cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                        if cardValid and cardExpiryValid and cardCVVValid:
+                        if cardValid and cardExpiryValid:
                             if cardType != False: # checking if the card type is supported
                                 # setting the teacher's payment method which in a way editing the teacher's object
                                 teacherKey.set_card_name(cardName)
                                 teacherKey.set_card_no(cardNo)
                                 cardExpiry = cardExpiryStringFormatter(cardExpiry)
                                 teacherKey.set_card_expiry(cardExpiry)
-                                teacherKey.set_card_cvv(cardCVV)
                                 teacherKey.set_card_type(cardType)
                                 teacherKey.display_card_info()
                                 db['Users'] = userDict
@@ -742,7 +748,7 @@ def signUpPayment():
                                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
                         else:
                             db.close()
-                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
+                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType)
                     else:
                         db.close()
                         print("User not found or is banned.")
@@ -855,6 +861,7 @@ def adminLogin():
 """Admin profile settings by Jason"""
 
 @app.route('/admin_profile', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def adminProfile():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -903,6 +910,7 @@ def adminProfile():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_username", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangeUsername():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -976,6 +984,7 @@ def adminChangeUsername():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_email", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangeEmail():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1049,6 +1058,7 @@ def adminChangeEmail():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_password", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangePassword():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1146,6 +1156,7 @@ def adminChangePassword():
 """User Management for Admins by Jason"""
 
 @app.route("/user_management/page/<int:pageNum>", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1286,6 +1297,7 @@ def userManagement(pageNum):
         return redirect(url_for("home"))
 
 @app.route("/user_management/search/<int:pageNum>/", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userSearchManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1457,6 +1469,7 @@ def userSearchManagement(pageNum):
         return redirect(url_for("home"))
 
 @app.route("/delete_user/uid/<userID>", methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def deleteUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1511,6 +1524,7 @@ def deleteUser(userID):
         return redirect(url_for("home"))
 
 @app.route("/ban/uid/<userID>", methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def banUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1565,6 +1579,7 @@ def banUser(userID):
         return redirect(url_for("home"))
 
 @app.route("/unban/uid/<userID>", methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def unbanUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1621,6 +1636,7 @@ def unbanUser(userID):
         return redirect(url_for("home"))
 
 @app.route("/change_username/uid/<userID>", methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def changeUserUsername(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1687,6 +1703,7 @@ def changeUserUsername(userID):
 """User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userProfile():
     if "userSession" in session and "adminSession" not in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
@@ -1875,7 +1892,7 @@ def userProfile():
                     session.pop("emailVerifySent", None)
                 else:
                     emailSent = False
-                
+
                 # for notifying if they have already verified their email (traversal attack)
                 if "emailFailed" in session:
                     emailAlreadyVerified = True
@@ -1911,6 +1928,7 @@ def userProfile():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_username", methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def updateUsername():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -1992,6 +2010,7 @@ def updateUsername():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_email", methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def updateEmail():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2073,6 +2092,7 @@ def updateEmail():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_password", methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def updatePassword():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2170,6 +2190,7 @@ def updatePassword():
             return redirect(url_for("userLogin"))
 
 @app.route('/change_account_type', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def changeAccountType():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2210,7 +2231,6 @@ def changeAccountType():
                         cardName = userKey.get_card_name()
                         cardNumber = userKey.get_card_no()
                         cardExpiry = userKey.get_card_expiry()
-                        cardCVV = userKey.get_card_cvv()
                         cardType = userKey.get_card_type()
 
                     # retrieving the user's profile image filename if the user has uploaded one
@@ -2234,13 +2254,14 @@ def changeAccountType():
                         user.set_card_name(cardName)
                         user.set_card_no(cardNumber)
                         user.set_card_expiry(cardExpiry)
-                        user.set_card_cvv(cardCVV)
                         user.set_card_type(cardType)
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
                         user.set_profile_image(profileImageFilename)
-                        
+
+                    # add in other saved attributes of the student object
+
                     db["Users"] = userDict
                     db.close()
                     session["userSession"] = userID
@@ -2272,6 +2293,7 @@ def changeAccountType():
 """User payment method settings by Jason"""
 
 @app.route('/payment_method', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userPayment():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2309,21 +2331,18 @@ def userPayment():
                     cardNo = sanitise(create_add_payment_form.cardNo.data)
                     cardValid = validate_card_number(cardNo)
 
-                    cardCVV = sanitise(create_add_payment_form.cardCVV.data)
                     cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
-                    cardCVVValid = validate_cvv(cardCVV, cardType)
 
                     cardExpiry = sanitise(create_add_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                    if cardValid and cardExpiryValid and cardCVVValid:
+                    if cardValid and cardExpiryValid:
                         if cardType != False:
                             # setting the user's payment method
                             userKey.set_card_name(cardName)
                             userKey.set_card_no(cardNo)
                             cardExpiry = cardExpiryStringFormatter(cardExpiry)
                             userKey.set_card_expiry(cardExpiry)
-                            userKey.set_card_cvv(cardCVV)
                             userKey.set_card_type(cardType)
                             userKey.display_card_info()
                             db['Users'] = userDict
@@ -2337,7 +2356,7 @@ def userPayment():
                         else:
                             return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -2394,6 +2413,7 @@ def userPayment():
             return redirect(url_for("userLogin"))
 
 @app.route('/edit_payment', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def userEditPayment():
     if "userSession" in session and "adminSession" not in session:
         # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
@@ -2434,18 +2454,13 @@ def userEditPayment():
             if cardExist:
                 create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
                 if request.method == "POST" and create_edit_payment_form.validate():
-                    cardCVV = sanitise(create_edit_payment_form.cardCVV.data)
-                    cardCVVValid = validate_cvv(cardCVV, cardType.lower())
-
                     cardExpiry = sanitise(create_edit_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
-                    if cardCVVValid and cardExpiryValid:
+                    if cardExpiryValid:
                         # changing the user's payment info
-                        userKey.set_card_cvv(cardCVV)
                         cardExpiry = cardExpiryStringFormatter(cardExpiry)
                         userKey.set_card_expiry(cardExpiry)
                         db['Users'] = userDict
-                        print("Changed CVV:", cardCVV)
                         print("Payment edited")
                         db.close()
 
@@ -2455,7 +2470,7 @@ def userEditPayment():
                         return redirect(url_for("userPayment"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid)
                 else:
                     db.close()
                     return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType)
@@ -2474,6 +2489,7 @@ def userEditPayment():
             return redirect(url_for("userLogin"))
 
 @app.route('/delete_card', methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
 def deleteCard():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2507,7 +2523,6 @@ def deleteCard():
                 userKey.set_card_name("")
                 userKey.set_card_no("")
                 userKey.set_card_expiry("")
-                userKey.set_card_cvv("")
                 userKey.set_card_type("")
                 userKey.display_card_info()
 
@@ -2537,54 +2552,61 @@ def deleteCard():
 
 """Search Function by Royston"""
 
-@app.route("/search/<int:pageNum>")
+@app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
 def search():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
 
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/general/search.html', accType=accType)
+        if userFound and accActive:
+            return render_template('users/admin/page.html')
         else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
             return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+            # return render_template("users/guest/page.html)
     else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+                try:
+                    courseDict = {}
+                    db = shelve.open("course", "r")
+                    courseDict = db["Courses"]
+
+                except:
+                    pass
+
+
+
+                return render_template('users/general/search.html', accType=accType, courseDict=courseDict)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
+            # return render_template("users/guest/page.html)
 
 """"End of Search Function by Royston"""
 
 """Purchase History by Royston"""
 
 @app.route("/purchasehistory/<int:pageNum>")
+@limiter.limit("30/second") # to prevent ddos attacks
 def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2638,7 +2660,7 @@ def purchaseHistory(pageNum):
                         }
                     for i in purchaseHistoryList:
                         showCourse(video[i])
-                    
+
                     db.close()
 
                 except:
@@ -2694,6 +2716,7 @@ def purchaseHistory(pageNum):
 """Purchase Review by Royston"""
 
 @app.route("/purchasereview")
+@limiter.limit("30/second") # to prevent ddos attacks
 def purchaseReview():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2710,7 +2733,7 @@ def purchaseReview():
             reviewDict = {}
             db = shelve.open("review", "c")
 
-            try:         
+            try:
                 reviewDict = db["Review"]
                 createReview = Forms.CreateReviewText(request.form)
                 if request.method == 'POST' and createReview.validate():
@@ -2723,7 +2746,7 @@ def purchaseReview():
                     try:
                         if "Courses" in db:
                             dbCourse = db["Courses"]
-                        
+
                         else:
                             db["Courses"] = dbCourse
 
@@ -2762,6 +2785,7 @@ def purchaseReview():
 """Purchase View by Royston"""
 
 @app.route("/purchaseview")
+@limiter.limit("30/second") # to prevent ddos attacks
 def purchaseView():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2814,7 +2838,7 @@ def purchaseView():
                         }
                     for i in purchaseHistoryList:
                         showCourse(video[i])
-                    
+
                     db.close()
 
                 except:
@@ -2846,6 +2870,7 @@ def purchaseView():
 """Teacher Cashout System by Royston"""
 
 @app.route("/teacher_cashout")
+@limiter.limit("30/second") # to prevent ddos attacks
 def teacherCashOut():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2896,6 +2921,7 @@ def teacherCashOut():
 
 """Template Redirect Shopping Cart by Jason because Opera is bad"""
 @app.route("/shopping_cart", methods = ["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCartDefault():
     return redirect("/shopping_cart/1")
 """End of Redirect Shopping Cart by Jason because Opera is bad"""
@@ -2908,6 +2934,7 @@ def shoppingCartDefault():
     redirect("/shopping_cart/1")"""
 
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCart(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3054,6 +3081,7 @@ def shoppingCart(pageNum):
 """Template Checkout by Wei Ren"""
 
 @app.route("/checkout", methods = ["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
 def checkout():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3081,6 +3109,7 @@ def checkout():
             # insert your C,R,U,D operation here to deal with the user shelve data files
             paymentForm = Forms.PaymentInfo(request.form)
             if request.method == "POST" and paymentForm.validate():
+                print("paymentForm posted successfully.")
                 try:
                     dbPayment = shelve.open("payment","c")
                     if "Payment" in dbPayment:
@@ -3091,34 +3120,29 @@ def checkout():
                 except:
                     print("Error in retrieving Payment from payment.db")
 
-                # If someone wants to save any changes made
-                if paymentForm.savePaymentInfo.data == True:                                            # U for Update
+                #Credit Validation
+                cardName = sanitise(paymentForm.cardName.data)
 
-                    cardValid = True
-                    cardCVVValid = True
-                    cardExpiryValid = True
+                cardNumber = sanitise(paymentForm.cardNumber.data)
+                cardValid = validate_card_number(cardNumber)
 
-                    if userKey.get_card_name() != paymentForm.cardName.data:
-                        cardName = sanitise(paymentForm.cardName.data)
+                cardCVV = sanitise(paymentForm.cardCVV.data)
+                cardType = get_card_type(cardNumber)
+                cardCVVValid = validate_cvv(cardCVV, cardType)
 
-                    if userKey.get_card_no() != paymentForm.cardNumber.data:
-                        cardNumber = sanitise(paymentForm.cardNumber.data)
-                        cardValid = validate_card_number(cardNumber)
+                cardExpiry = sanitise(paymentForm.cardExpiry.data)
+                cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                    if userKey.get_card_cvv() != paymentForm.cardCVV.data:
-                        cardCVV = sanitise(paymentForm.cardCVV.data)
-                        cardType = get_card_type(cardNumber)
-                        cardCVVValid = validate_cvv(cardCVV, cardType)
+                if True:#cardValid and cardCVVValid and cardExpiryValid:
 
-                    if userKey.get_card_expiry() != paymentForm.cardExpiry.data:
-                        cardExpiry = sanitise(paymentForm.cardExpiry.data)
-                        cardExpiryValid = validate_expiry_date(cardExpiry)
-
-                    if cardValid and cardCVVValid and cardExpiryValid:
+                    # If someone wants to save any changes made
+                    if paymentForm.savePaymentInfo.data == True:                                            # U for Update
                         userKey.set_card_name(cardName)
                         userKey.set_card_no(cardNumber)
-                        userKey.set_card_cvv(cardCVV)
                         userKey.set_card_expiry(cardExpiry)
+
+                else:
+                    return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry=cardExpiry, cardValid=cardValid, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
 
                 userID = userKey.get_user_id()
 
@@ -3127,7 +3151,6 @@ def checkout():
                                   paymentForm.cardName.data,
                                   paymentForm.cardNumber.data,
                                   paymentForm.cardExpiry.data,
-                                  paymentForm.cardCVV.data,
                                   paymentForm.firstName.data,
                                   paymentForm.lastName.data,
                                   paymentForm.billAddress1.data,
@@ -3166,10 +3189,9 @@ def checkout():
                 cardName = userKey.get_card_name()
                 cardNumber = userKey.get_card_no()
                 cardExpiry = userKey.get_card_expiry()
-                cardCVV = userKey.get_card_cvv()
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry =cardExpiry)
+                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardExpiry =cardExpiry, cardValid=True, cardCVVValid=True, cardExpiryValid=True)
         else:
             db.close()
             print("User not found or is banned")
@@ -3189,6 +3211,7 @@ def checkout():
 """Template app.route(") by Clarence"""
 
 @app.route("/teacher_page")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3212,7 +3235,7 @@ def function():
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             return redirect(url_for("home"))
-        
+
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3226,6 +3249,7 @@ def function():
 """teacher_page app.route()  by Clarence"""
 
 @app.route('/teacher_page/<teacherUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
 def teacherPage(teacherUID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -3242,7 +3266,7 @@ def teacherPage(teacherUID):
             redirect(url_for("teacher_page/teacherUID"))
             redirectURL = "/teacher_page/" + teacherUID
             return redirect(redirectURL)
-            
+
     else:
         if "userSession" in session:
             userSession = session["userSession"]
@@ -3265,7 +3289,46 @@ def teacherPage(teacherUID):
 
 """End of teacher_page app.route by Clarence"""
 
+"""teacher_page app.route()  by Clarence"""
 
+@app.route('/<teacherUID>/teacher_courses', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
+def teacherCourses(teacherUID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/teacher_courses.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            return redirect("/" + teacherUID + "/teacher_courses")
+
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+
+                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return render_template("users/teacher/teacher_courses.html")
+
+"""End of teacher_page app.route by Clarence"""
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
@@ -3279,6 +3342,7 @@ def teacherPage(teacherUID):
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3336,6 +3400,7 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3376,6 +3441,7 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
 def insertName():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3415,6 +3481,7 @@ def insertName():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
 def insertName():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -3469,6 +3536,7 @@ def insertName():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -3509,6 +3577,7 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -3561,6 +3630,7 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
+@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]

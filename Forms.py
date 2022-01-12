@@ -4,20 +4,17 @@ from wtforms import Form, validators, ValidationError, StringField, RadioField, 
 
 # Research notes for the different types of credit cards:
 # https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
-# https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
 
 # Research note for email length:
 # https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
 
 class CreateEditPaymentForm(Form):
     cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
-    cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
     cardNo = StringField("Card Number:", [validators.Length(min=14, max=19), validators.DataRequired()])
     cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
-    cardCVV = StringField("CVV:", [validators.Length(min=3, max=4), validators.DataRequired()])
 
 class CreateLoginForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])

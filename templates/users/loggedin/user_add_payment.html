@@ -98,10 +98,6 @@
                                             {{ render_field(form.cardExpiry, class="form-control", placeholder="04/22 or 4/2022") }}
                                             {% if cardExpiryValid == False %}<div class="text-danger"><h6><strong>Invalid Card Expiry Date</strong></h6></div>{% endif %}
                                         </div>
-                                        <div class="col-md-6 margin-top margin-top2">
-                                            {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}
-                                            {% if cardCVVValid == False %}<div class="text-danger"><h6><strong>Invalid CVV</strong></h6></div>{% endif %}
-                                        </div>
                                     </div>
                                     <button type="submit" class="btn btn-success margin-top margin-top2 float-end">Save</button>
                                 </form>

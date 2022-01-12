@@ -1,6 +1,6 @@
 class Payment():
     paymentID = -1
-    def __init__(self,userID, cardName, cardNumber, cardCVV, cardExpiry, firstName, lastName, billingAddress1, billingAddress2, billingAddress3, city, country, zipCode, countryCode, phoneNumber):
+    def __init__(self,userID, cardName, cardNumber, cardExpiry, firstName, lastName, billingAddress1, billingAddress2, billingAddress3, city, country, zipCode, countryCode, phoneNumber):
         self.__pending = True
 
         self.__userID = userID
@@ -10,7 +10,6 @@ class Payment():
 
         self.__cardName = cardName
         self.__cardNumber = cardNumber
-        self.__cardCVV = cardCVV
         self.__cardExpiry = cardExpiry
         
         self.firstName = firstName
@@ -52,11 +51,6 @@ class Payment():
         return self.__cardNumber
     def set_cardNumber(self,cardNumber):
         self.__cardNumber = cardNumber
-
-    def get_cardCVV(self):
-        return self.__cardCVV
-    def set_cardCVV(self,cardCVV):
-        self.__cardCVV = cardCVV
 
     def get_cardExpiry(self):
         return self.__cardExpiry

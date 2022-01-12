@@ -42,10 +42,6 @@
                         {{ render_field(form.cardExpiry, class="form-control", placeholder="04/22 or 4/2022") }}
                         {% if cardExpiryValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid Card Expiry Date</strong></h6></div>{% endif %}
                     </div>
-                    <div class="col-md-6 text-white">
-                        {{ render_field(form.cardCVV, class="form-control", placeholder="123") }}
-                        {% if cardCVVValid == False %}<div class="text-danger warning_alert"><h6><strong>Invalid CVV</strong></h6></div>{% endif %}
-                    </div>
                     <div class="col-md-12">
                         <a href="/user_profile" class="float-start text-white">Skip <i class="fas fa-arrow-right"></i></a>
                         <button type="submit" class="btn btn-colour text-white float-end">Save</button>

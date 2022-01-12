@@ -1,5 +1,4 @@
 #pfp_bio{
-    display:flex;
     background-color:#273C4D;
     opacity: 0.6;
 }
@@ -27,8 +26,16 @@ h2{
 }
 
 #user-icon-setting {
-  height: 200px;
-  width: 200px;
-  margin: 5px 0;
+  height: 80px;
+  width: 100px;
+  margin: 10px;
   border-radius: 50%;
+}
+
+#bio{
+    display: inline-block;
+    margin: auto;
+    width: 80%;
+    height: 50%;
+    border: 2px solid black;
 }
