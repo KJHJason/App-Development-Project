@@ -1,10 +1,10 @@
 import shelve, Student, uuid
 from Security import hash_password
 
-def get_userID(userDict):
+def generate_ID(inputDict):
     generatedID = str(uuid.uuid4())
-    if generatedID in userDict:
-        get_userID(userDict) # using recursion if there is a collision to generate a new unique ID
+    if generatedID in inputDict:
+        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
 userDict = {}

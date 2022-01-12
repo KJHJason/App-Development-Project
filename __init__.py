@@ -474,7 +474,7 @@ def userSignUp():
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the user
-                    userID = get_userID(userDict)
+                    userID = generate_ID(userDict)
                     print("User ID setted: ", userID)
 
                     user = Student.Student(userID, usernameInput, emailInput, hashedPwd)
@@ -650,7 +650,7 @@ def teacherSignUp():
                     print("Hashed password:", hashedPwd)
 
                     # setting user ID for the teacher
-                    userID = get_userID(userDict)
+                    userID = generate_ID(userDict)
                     print("User ID setted: ", userID)
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
@@ -3018,10 +3018,10 @@ def shoppingCart(pageNum):
                     courseTypeList.append(courseInfo[1])
 
                     # Getting course owner username
-                    ownerUsernameList.append(userDict[course.get_userID()].get_username())
+                    ownerUsernameList.append(userDict[course.generate_ID()].get_username())
 
                     # Getting course owner profile
-                    userProfileImage = userDict[course.get_userID()].get_profile_image() # will return a filename, e.g. "0.png"
+                    userProfileImage = userDict[course.generate_ID()].get_profile_image() # will return a filename, e.g. "0.png"
                     userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                     # checking if the user have uploaded a profile image before and if the image file exists

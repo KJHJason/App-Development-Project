@@ -59,13 +59,13 @@ def validate_session_get_userKey_open_file(userSession):
         print("Verdict: User ID not found.")
         return userKey, userFound, False, ""
 
-# generate a user ID using UUID v4 as compared to UUID v1 due to security reasons since UUID v1 generate based on the time + Host MAC address + random component to generate the unique ID but have a 1 in 16384 to have a collision
+# generate a unique ID using UUID v4 as compared to UUID v1 due to security reasons since UUID v1 generate based on the time + Host MAC address + random component to generate the unique ID but have a 1 in 16384 to have a collision
 # However, UUID v4 is completely random but has a very small chance for collision but it is very unlikely to happen
 # useful resource: https://stackoverflow.com/questions/53096198/prevent-uuid-collision-in-python-same-process
-def get_userID(userDict):
+def generate_ID(inputDict):
     generatedID = str(uuid.uuid4())
-    if generatedID in userDict:
-        get_userID(userDict) # using recursion if there is a collision to generate a new unique ID
+    if generatedID in inputDict:
+        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
 # use the function below if you just want to validate the session and check if the user is banned but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
