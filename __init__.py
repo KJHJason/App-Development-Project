@@ -3301,9 +3301,7 @@ def teacherCourses(teacherUID):
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
             # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            redirect(url_for("teacherUID/teacher_courses"))
-            redirectURL = teacherUID+ "/teacher_courses/"
-            return redirect(redirectURL)
+            return redirect("/" + teacherUID + "/teacher_courses")
             
     else:
         if "userSession" in session:
@@ -3314,7 +3312,7 @@ def teacherCourses(teacherUID):
             if userFound and accGoodStatus:
                 # add in your code here (if any)
 
-                return render_template('users/teacher/teacher_courses.html', accType=accType)
+                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage

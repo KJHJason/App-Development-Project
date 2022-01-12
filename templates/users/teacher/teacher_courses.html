@@ -4,13 +4,13 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/teacher_courses.css') }}">
 {% endblock %}
 
-{% block title %}Teacher Page | CourseFinity{% endblock %}
+{% block title %}Teacher Courses | CourseFinity{% endblock %}
 
 {% block content %}
     <!-- content -->
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="teacher_page.html">Profile</a></li>
+            <li class="breadcrumb-item"><a href="/{{ teacherUID }}/teacher_page">Profile</a></li>
             <li class="breadcrumb-item active" aria-current="page">Recent Courses</li>
         </ol>
     </nav>
