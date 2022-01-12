@@ -4,7 +4,7 @@ import shelve, os, math, paypalrestsdk, difflib
 import Student, Teacher, Admin, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
-from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+from CardValidation import validate_card_number, get_card_type, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -713,21 +713,18 @@ def signUpPayment():
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card_number(cardNo)
 
-                        cardCVV = sanitise(create_teacher_payment_form.cardCVV.data)
                         cardType = get_card_type(cardNo)
-                        cardCVVValid = validate_cvv(cardCVV, cardType)
 
                         cardExpiry = sanitise(create_teacher_payment_form.cardExpiry.data)
                         cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                        if cardValid and cardExpiryValid and cardCVVValid:
+                        if cardValid and cardExpiryValid:
                             if cardType != False: # checking if the card type is supported
                                 # setting the teacher's payment method which in a way editing the teacher's object
                                 teacherKey.set_card_name(cardName)
                                 teacherKey.set_card_no(cardNo)
                                 cardExpiry = cardExpiryStringFormatter(cardExpiry)
                                 teacherKey.set_card_expiry(cardExpiry)
-                                teacherKey.set_card_cvv(cardCVV)
                                 teacherKey.set_card_type(cardType)
                                 teacherKey.display_card_info()
                                 db['Users'] = userDict
@@ -742,7 +739,7 @@ def signUpPayment():
                                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
                         else:
                             db.close()
-                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
+                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType)
                     else:
                         db.close()
                         print("User not found or is banned.")
@@ -2210,7 +2207,6 @@ def changeAccountType():
                         cardName = userKey.get_card_name()
                         cardNumber = userKey.get_card_no()
                         cardExpiry = userKey.get_card_expiry()
-                        cardCVV = userKey.get_card_cvv()
                         cardType = userKey.get_card_type()
 
                     # retrieving the user's profile image filename if the user has uploaded one
@@ -2234,13 +2230,14 @@ def changeAccountType():
                         user.set_card_name(cardName)
                         user.set_card_no(cardNumber)
                         user.set_card_expiry(cardExpiry)
-                        user.set_card_cvv(cardCVV)
                         user.set_card_type(cardType)
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
                         user.set_profile_image(profileImageFilename)
                         
+                    # add in other saved attributes of the student object
+                    
                     db["Users"] = userDict
                     db.close()
                     session["userSession"] = userID
@@ -2309,21 +2306,18 @@ def userPayment():
                     cardNo = sanitise(create_add_payment_form.cardNo.data)
                     cardValid = validate_card_number(cardNo)
 
-                    cardCVV = sanitise(create_add_payment_form.cardCVV.data)
                     cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
-                    cardCVVValid = validate_cvv(cardCVV, cardType)
 
                     cardExpiry = sanitise(create_add_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
 
-                    if cardValid and cardExpiryValid and cardCVVValid:
+                    if cardValid and cardExpiryValid:
                         if cardType != False:
                             # setting the user's payment method
                             userKey.set_card_name(cardName)
                             userKey.set_card_no(cardNo)
                             cardExpiry = cardExpiryStringFormatter(cardExpiry)
                             userKey.set_card_expiry(cardExpiry)
-                            userKey.set_card_cvv(cardCVV)
                             userKey.set_card_type(cardType)
                             userKey.display_card_info()
                             db['Users'] = userDict
@@ -2337,7 +2331,7 @@ def userPayment():
                         else:
                             return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, cardCVVValid=cardCVVValid, accType=accType)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -2434,18 +2428,13 @@ def userEditPayment():
             if cardExist:
                 create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
                 if request.method == "POST" and create_edit_payment_form.validate():
-                    cardCVV = sanitise(create_edit_payment_form.cardCVV.data)
-                    cardCVVValid = validate_cvv(cardCVV, cardType.lower())
-
                     cardExpiry = sanitise(create_edit_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
-                    if cardCVVValid and cardExpiryValid:
+                    if cardExpiryValid:
                         # changing the user's payment info
-                        userKey.set_card_cvv(cardCVV)
                         cardExpiry = cardExpiryStringFormatter(cardExpiry)
                         userKey.set_card_expiry(cardExpiry)
                         db['Users'] = userDict
-                        print("Changed CVV:", cardCVV)
                         print("Payment edited")
                         db.close()
 
@@ -2455,7 +2444,7 @@ def userEditPayment():
                         return redirect(url_for("userPayment"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid)
                 else:
                     db.close()
                     return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType)
@@ -2507,7 +2496,6 @@ def deleteCard():
                 userKey.set_card_name("")
                 userKey.set_card_no("")
                 userKey.set_card_expiry("")
-                userKey.set_card_cvv("")
                 userKey.set_card_type("")
                 userKey.display_card_info()
 

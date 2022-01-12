@@ -1,4 +1,3 @@
-import re # for compiling the regular expression for the card's CVV
 from datetime import date
 # importing date module from the datetime library as I am only using it for getting the current date and to convert a string to a date object to validate the credit card expiry date
 
@@ -12,11 +11,6 @@ from datetime import date
 # Research notes for the different types of credit cards: 
 # https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
 # https://www.creditcardinsider.com/learn/anatomy-of-a-credit-card/
-# https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
-
-# helpful resources for validating CVV
-# https://www.geeksforgeeks.org/how-to-validate-cvv-number-using-regular-expression/
-# https://developers.google.com/edu/python/regular-expressions
 
 # # helpful resources for validating the card expiry date:
 # https://www.geeksforgeeks.org/comparing-dates-python/
@@ -52,32 +46,6 @@ def get_card_type(cardNumber):
     except:
         print("Card number input must only contain numbers!")
         return False
-
-# function to validate card's CVV based on the card type
-def validate_cvv(cardCVV, cardType):
-    # try and except as in the __init__.py, I validated the sanitise the CVV so if it return False for some reason (empty strings, etc.), it will go to the except block and return False
-    if cardType != "american express":
-        try:
-            # for 3 digits CVV cards
-            regex3D = re.compile(r"^[0-9]{3}$") # compile the regex so that it does not have to rewrite the regex
-
-            if(re.match(regex3D, cardCVV)):
-                return True
-            else:
-                return False
-        except:
-            return False # if the cardCVV variable contained a string with letters, it will return False
-    else:
-        # for 4 digits CVV cards/American Express cards if it is accepted in CourseFinity in the future
-        try:
-            regex4D = re.compile(r"^[0-9]{4}$") # compile the regex so that it does not have to rewrite the regex
-
-            if(re.match(regex4D, cardCVV)):
-                return True
-            else:
-                return False
-        except:
-            return False # if the cardCVV variable contained a string with letters, it will return False
 
 # main function to validate credit cards using the Luhn's algorithm, aka the modulus 10 or mod 10 algorithm
 def validate_card_number(cardNumber):
