@@ -79,8 +79,7 @@ while True:
                     for key in adminDict:
                         print("\nretrieving usernames")
                         usernameShelveData = adminDict[key].get_username()
-                        adminIDShelveData = int(adminDict[key].get_user_id())
-                        adminIDShelveData += 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
+                        adminIDShelveData = key + 1 # add 1 to get the next possible user ID if there is/are user data in the user shelve files
                         if username == usernameShelveData:
                             print("Error: Username already taken.")
                             username_duplicates = True
@@ -345,7 +344,7 @@ while True:
                 username = adminKey.get_username()
                 email = adminKey.get_email()
                 status = adminKey.get_status()
-                print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status}\n")
+                print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status}")
         else:
             print("Error could not be resolved...\nSolution: Please create an admin account before reading all admin accounts.")
             
