@@ -1771,6 +1771,8 @@ def userProfile():
                 typeOfFormSubmitted = request.form.get("submittedForm")
                 if typeOfFormSubmitted == "bio":
                     teacherBioInput = sanitise(request.form.get("teacherBio"))
+                    if teacherBioInput == False:
+                        teacherBioInput = ""
                     userKey.set_bio(teacherBioInput)
                     db['Users'] = userDict
                     db.close()

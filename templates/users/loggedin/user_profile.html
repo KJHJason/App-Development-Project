@@ -297,9 +297,14 @@
                                             <div class="mb-3">
                                                 <label for="teacherBio" class="form-label">Bio:</label>
                                                 <input type="hidden" name="submittedForm" value="bio">
-                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="16" disabled>{{ teacherBio }}</textarea>
+                                                {% if teacherBio == "" %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" disabled>Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)</textarea>
+                                                {% else %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" disabled>{{ teacherBio }}</textarea>
+                                                {% endif %}
                                                 <div class="d-flex float-end">
                                                     <button type="button" class="btn btn-primary margin-top" id="editBio" onclick="editBioNow()">Edit Bio</button>
+                                                    <button type="button" class="btn btn-danger margin-top" hidden id="cancleSaveBio" onclick="cancelBio()">Cancel</button>
                                                     <button type="submit" class="btn btn-success margin-top" hidden id="saveBio">Save Bio</button>
                                                 </div>
                                             </div>

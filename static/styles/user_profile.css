@@ -265,3 +265,11 @@
 .username_text, .profile_copy_text {
   color: #000;
 }
+
+#teacherBio {
+  resize: vertical;
+}
+
+#cancleSaveBio {
+  margin-right: 10px;
+}
