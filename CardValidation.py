@@ -13,6 +13,7 @@ from datetime import date
 # https://support.cybersource.com/s/article/What-are-the-number-formats-for-different-credit-cards
 # https://www.creditcardinsider.com/learn/anatomy-of-a-credit-card/
 # https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
+# https://en.wikipedia.org/wiki/Payment_card_number
 
 # helpful resources for validating CVV
 # https://www.geeksforgeeks.org/how-to-validate-cvv-number-using-regular-expression/
@@ -33,19 +34,44 @@ def date_int_list(dateInput):
 
 # function to recognise a card type by the card number
 def get_card_type(cardNumber):
+    # tuples for additional validation on the card type
+    visaElectronINNTuple = ("4026", "417500", "4508", "4844", "4913", "4917")
+    mastercardINNTuple = ("51", "52", "53", "54", "55")
+    amexINNTuple = ("34", "37")
     try:
         cardLength = len(cardNumber)
         cardNoList = int_list(cardNumber)
+
         firstDigit = cardNoList[0] # getting the first digit of the credit card number
+        secondDigit = cardNoList[1] # getting the second digit of the credit card number
+
+        firstTwoDigits = str(firstDigit) + str(secondDigit)
+        firstFourDigits = str(firstDigit) + str(secondDigit) + cardNumber[2:4]
+
         if (firstDigit == 4) and (cardLength == 13 or cardLength == 16):
             # Visa cards starts with the number 4
-            return "visa"
+            firstSixDigits = firstFourDigits + cardNumber[4:6]
+            if firstFourDigits in visaElectronINNTuple:
+                return "visa electron"
+            elif firstSixDigits in visaElectronINNTuple:
+                return "visa electron"
+            else:
+                return "visa"
         elif (firstDigit == 5 or firstDigit == 2) and (cardLength == 16):
             # MasterCard 5-series starts with the number 5 and MasterCard 2-series starts with the number 2
-            return "mastercard"
+            if firstTwoDigits in mastercardINNTuple:
+                return "mastercard"
+            else:
+                if int(firstFourDigits) >= 2221 and int(firstFourDigits) <= 2720:
+                    return "mastercard"
+                else:
+                    return False
         elif firstDigit == 3 and cardLength == 15:
             # American Express cards starts with the number 3
-            return "american express"
+            if firstTwoDigits in amexINNTuple:
+                return "american express"
+            else:
+                return False
         else:
             print("Card type not accepted!")
             return False
