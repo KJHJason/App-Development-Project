@@ -26,6 +26,7 @@ User --> Teacher (Object) 1
 '''
 
 """Made by Wei Ren"""
+"""Edited by Clarence"""
 
 from Rating import Rating
 from CourseParts import ZoomPart, VideoPart

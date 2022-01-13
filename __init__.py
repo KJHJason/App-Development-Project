@@ -3429,7 +3429,7 @@ def teacherPage(teacherUID):
             if userFound and accGoodStatus:
                 # add in your code here (if any)
 
-                return render_template('users/teacher/teacher_page.html', accType=accType)
+                return render_template('users/teacher/teacher_page.html', accType=accType, teacherUID=teacherUID)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage

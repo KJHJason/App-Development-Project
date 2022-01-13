@@ -1,5 +1,5 @@
 """Made by Wei Ren"""
-
+"""Edited by Clarence"""
 class Part():
     def __init__(self, title, description, thumbnail):
         self.__title = title
