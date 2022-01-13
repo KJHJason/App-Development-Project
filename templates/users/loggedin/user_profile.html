@@ -293,8 +293,8 @@
                                     {% if accType == "Teacher" %}
                                     <tr>
                                         <td colspan="2">
-                                        <form action="" method="POST">
-                                            <div class="mb-3">
+                                            {% if teacherBio == "" %}
+                                            <div class="mb-3" id="originalTextarea">
                                                 <label for="teacherBio" class="form-label">Bio:</label>
                                                 <input type="hidden" name="submittedForm" value="bio">
                                                 {% if teacherBio == "" %}
@@ -303,9 +303,35 @@
                                                 <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" disabled>{{ teacherBio }}</textarea>
                                                 {% endif %}
                                                 <div class="d-flex float-end">
-                                                    <button type="button" class="btn btn-primary margin-top" id="editBio" onclick="editBioNow()">Edit Bio</button>
-                                                    <button type="button" class="btn btn-danger margin-top" hidden id="cancleSaveBio" onclick="cancelBio()">Cancel</button>
-                                                    <button type="submit" class="btn btn-success margin-top" hidden id="saveBio">Save Bio</button>
+                                                    <button type="button" class="btn btn-primary margin-top" onclick="editBioNow()">Edit Bio</button>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <div class="mb-3" id="originalTextarea">
+                                                <label for="teacherBio" class="form-label">Bio:</label>
+                                                <input type="hidden" name="submittedForm" value="bio">
+                                                {% if teacherBio == "" %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" disabled>{{ teacherBio }})</textarea>
+                                                {% else %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" disabled>{{ teacherBio }}</textarea>
+                                                {% endif %}
+                                                <div class="d-flex float-end">
+                                                    <button type="button" class="btn btn-primary margin-top" onclick="editBioNow()">Edit Bio</button>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        <form action="" method="POST" id="editedTextarea" hidden>
+                                            <div class="mb-3">
+                                                <label for="teacherBio" class="form-label">Bio:</label>
+                                                <input type="hidden" name="submittedForm" value="bio">
+                                                {% if teacherBio == "" %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15">Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)</textarea>
+                                                {% else %}
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15">{{ teacherBio }}</textarea>
+                                                {% endif %}
+                                                <div class="d-flex float-end">
+                                                    <button type="button" class="btn btn-danger margin-top cancleSaveBio" onclick="cancelBio()">Cancel</button>
+                                                    <button type="submit" class="btn btn-success margin-top">Save Bio</button>
                                                 </div>
                                             </div>
                                         </form>
@@ -336,12 +362,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // to set a cookie to contain the file size value upon submission
-        function filesize(element) {
-            document.cookie = `filesize = ${element.files[0].size}`; // using string interpolation to get the value of the image file size and element.files[0] for the first file's size
-        }
-    </script>
     {% if usernameChanged %}
         <script>
             var usernameModal = new bootstrap.Modal(document.getElementById("usernameModal"), {});
@@ -402,9 +422,7 @@
             emailTokenInvalidModal.show();
         </script>
     {% endif %}
-    {% if  accType == "Teacher" %}
-        <script src="{{ url_for('static', filename='scripts/user_profile.js') }}"></script>
-    {% endif %}
+    <script src="{{ url_for('static', filename='scripts/user_profile.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>
 {% endblock %}
