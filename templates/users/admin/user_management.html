@@ -123,7 +123,7 @@
                         <div class="col-md-6">
                             <form action="/user_management/search/1/" method="GET" class="d-flex">
                                 <div class="input-group margin-btm">
-                                    <input class="form-control mr-2" type="search" placeholder="Search for user (using username or user ID)..." name="user" aria-label="Search" value="{{ parameter }}">
+                                    <input class="form-control mr-2" type="search" placeholder="Search for user (using username or user ID)..." name="user" aria-label="Search" value="{{ parameter }}" required>
                                     <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
                                 </div>
                             </form>
@@ -135,10 +135,11 @@
                                     <td>Username</td>
                                     <td>Account Type</td>
                                     <td>Email</td>
-                                    <td>Status</td>
-                                    <td></td>
-                                    <td></td>
+                                    <td colspan="3">Status</td>
                                 </tr>
+                                {% if notAllowed %}
+                                <td colspan="7"><h6 class="text-center text-danger fw-bold">Search input not accepted!</h6></td>
+                                {% endif %}
                                 {% for user in userList %}
                                     <tr>
                                         <td class="user_id_text text-break">
@@ -357,7 +358,11 @@
                                 {% endfor %}
                             </table>
                         </div>
-                        {% if searched == False %}
+                        {% if notAllowed %}
+                        <div class="col">
+                            <a href="{{ redirectURL }}" class="float-start form-buttons margin-top margin-top2"><i class="fas fa-arrow-left"></i> Back</a>
+                        </div>
+                        {% elif searched == False %}
                             {% if maxPages > 5 %}
                             <nav aria-label="Page navigation">
                                 <ul class="pagination flex-wrap">

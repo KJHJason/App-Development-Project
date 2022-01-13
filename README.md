@@ -24,4 +24,5 @@ Libraries needed:
   <li>Flask-mail Version 0.9.1 [pip install flask-mail]</li>
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk]</li>
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo]</li>
+  <li>shortuuid Version 1.0.8 [pip install shortuuid]</li>
 </ol>	

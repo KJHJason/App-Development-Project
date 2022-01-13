@@ -7,6 +7,15 @@ def generate_ID(inputDict):
         generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
+def getLatestTestI(userDict):
+    try:
+        latestID = list(userDict.keys())[-1]
+        userObject = userDict.get(latestID)
+        username = userObject.get_username()[-1]
+        return (int(username) + 1)
+    except:
+        return 0 # meaning that there is no users in the user db yet
+
 userDict = {}
 db = shelve.open("user", "c")
 try:
@@ -21,7 +30,9 @@ except:
 
 noOfUser = int(input("How many user account to create?: "))
     
-for i in range(noOfUser):
+getLatestTestI = int(getLatestTestI(userDict))
+print(getLatestTestI)
+for i in range(getLatestTestI, noOfUser+getLatestTestI):
     hashedPwd = hash_password("123123")
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
@@ -29,7 +40,7 @@ for i in range(noOfUser):
     user = Student.Student(uid, username, email, hashedPwd)
     userDict[uid] = user
     db["Users"] = userDict
-    print(f"User created with the ID, {uid}.")
+    print(f"User, {username}, created with the ID, {uid}.")
 
 
 db.close()

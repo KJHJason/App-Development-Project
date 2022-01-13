@@ -2,7 +2,7 @@ from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
-import shelve, os, uuid, string, random
+import shelve, os, uuid, string, random, shortuuid
 from flask import url_for
 
 """Done by Jason"""
@@ -301,16 +301,44 @@ def verify_reset_token(token):
 def send_reset_email(email, emailKey):
     token = get_reset_token(emailKey)
     message = Message("[CourseFinity] Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
+    message.html = f"""<p>Hello,</p>
     
-To reset your password, visit the following link:
-{url_for("resetPassword", token=token, _external=True)}
+<p>To reset your password, visit the following link:<br>
+<a href="{url_for("resetPassword", token=token, _external=True)}" target="_blank">{url_for("resetPassword", token=token, _external=True)}</a></p>
 
-Do note that this link will expire in 10 minutes.
-If you did not make this request, please disregard this email.
+<p>Do note that this link will expire in 10 minutes.<br>
+If you did not make this request, please disregard this email.</p>
 
-Sincerely,
-CourseFinity Team
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+def send_email_change_notification(oldEmail, newEmail):
+    message = Message("[CourseFinity] Email Changed", sender="CourseFinity123@gmail.com", recipients=[oldEmail])
+    message.html = f"""<p>Hello,</p>
+    
+<p>You have recently changed your email from {oldEmail} to {newEmail}</p>
+
+<p>If you did not make this change, your account may have been compromised.<br>
+Please contact us if you require assistance with account recovery by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+def send_password_change_notification(email):
+    message = Message("[CourseFinity] Password Changed", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello,</p>
+    
+<p>You have recently changed your password.</p>
+
+<p>If you did not make this change, your account may have been compromised.<br>
+Please contact us if you require assistance with account recovery by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
 """
     mail.send(message)
 
@@ -331,120 +359,15 @@ def verify_email_token(token):
 def send_verify_email(email, userID):
     token = generate_verify_email_token(userID)
     message = Message("[CourseFinity] Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
+    message.html = f"""<p>Hello,</p>
 
-Welcome to CourseFinity!
-We would like you to verify your email for verifications purposes.
+<p>Welcome to CourseFinity!<br>
+We would like you to verify your email for verifications purposes.</p>
 
-Please click on this link to verify your email:
-{url_for("verifyEmailToken", token=token, _external=True)}
+<p>Please click on this link to verify your email:<br>
+<a href="{url_for("verifyEmailToken", token=token, _external=True)}" target="_blank">{url_for("verifyEmailToken", token=token, _external=True)}</a></p>
 
-Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
-
-Thank you.
-
-Sincerely,
-CourseFinity Team
-"""
-    mail.send(message)
-
-def send_verify_changed_email(email, oldEmail, userID):
-    token = generate_verify_email_token(userID)
-    message = Message("[CourseFinity] Email Changed", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
-
-You have recently updated your email from {oldEmail} to {email}.
-We would like you to verify your email for verifications purposes.
-
-Please click on this link to verify your email:
-{url_for("verifyEmailToken", token=token, _external=True)}
-
-Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
-
-Thank you.
-
-Sincerely,
-CourseFinity Team
-"""
-    mail.send(message)
-
-def send_another_verify_email(email, userID):
-    token = generate_verify_email_token(userID)
-    message = Message("[CourseFinity] Verify Email", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
-
-We would like you to verify your email for verifications purposes.
-
-Please click on this link to verify your email:
-{url_for("verifyEmailToken", token=token, _external=True)}
-
-Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
-
-Thank you.
-
-Sincerely,
-CourseFinity Team
-"""
-    mail.send(message)
-
-def send_admin_reset_email(email, password):
-    message = Message("[CourseFinity] Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
-
-As per requested, we have helped you reset your email and password to the following,
-Updated email: {email}
-Updated password: {password}
-
-Please use your email and the updated password to login and immediately change the password due to security reasons.
-You can login using the following link:
-{url_for("userLogin", _external=True)}
-
-Thank you and enjoy learning or teaching at CourseFinity!
-
-Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
-
-Sincerely,
-CourseFinity Team
-"""
-    mail.send(message)
-
-# Sending a follow up email if user has submitted a ban appeal and is accepted.
-# However, I am not sending a ban email notification as users who have followed the rules should not be worried about getting banned.
-# Hence, upon logging in, if the user is mistakenly banned, he/she will receive a "You have banned" alert from the login and will proceed to contact CourseFinity support email instead.
-# If the user knows that they have violated the rules and receives a ban email, they may go on other platform or create another account immediately after the knowledge of their ban. (In a way, without sending a ban email notification, it is delaying their time for actions)
-def send_admin_unban_email(email):
-    message = Message("You have been unbanned from CourseFinity", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.body = f"""Hello,
-
-We have looked at your ban appeal application and we have unbanned your account.
-We are really sorry for the inconvenience caused and will do our part to investigate the mistake on our end.
-
-Thank you and enjoy learning or teaching at CourseFinity!
-
-Please contact us if you have any questions or concerns. Our customer support can be reached by replying to this email, or contacting support@coursefinity.com
-
-Sincerely,
-CourseFinity Team
-"""
-    mail.send(message)
-
-# use this function for the contact us page
-# for this to work, please feed in the title of the user's issue, the user ID of the user, the name of the user, the email of the user, and the main message/body content obtained from the body form
-# please also check for cross site scripting and potential security risk by testing the form inputs
-# note: gmail is safe from cross site scripting and it is currently using the home url as placeholder as the FAQ page is not done yet.
-def send_contact_us_email(issueTitle, userID, name, email, bodyContent):
-    id = str(uuid.uuid4())
-    title = "[CourseFinity] Support Request - " + issueTitle + " #" + id
-    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello {name},</p>
-
-<p>Thanks for contacting CourseFinity support! We have received your request (#{id}) and will respond back as soon as we are able to.</p>
-
-<p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
-
-<p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("home", _external=True)}</a> for solutions to common problems.</p>
-
-<p>Please reply to this email if you have any further questions or concerns.</p>
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
 
 <p>Thank you.</p>
 
@@ -453,26 +376,151 @@ def send_contact_us_email(issueTitle, userID, name, email, bodyContent):
 """
     mail.send(message)
 
-    # sending another email for a copy of the user's problem to the admin to refer
-    title = "[CourseFinity] Support Ticket - " + issueTitle + " #" + id
-    message = Message(title, sender="CourseFinity123@gmail.com", recipients=["CourseFinity123@gmail.com"])
-    message.body = f"""Hello,
+def send_verify_changed_email(email, oldEmail, userID):
+    token = generate_verify_email_token(userID)
+    message = Message("[CourseFinity] Verify Updated Email", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello,</p>
 
-Please refer to the user's problem below:
-(Warning: Please do NOT click on suspicious looking links that were sent by the user!)
-{bodyContent}
+<p>You have recently updated your email from {oldEmail} to {email}<br>
+We would like you to verify your email for verifications purposes.</p>
 
-User's info:
-User ID: {userID}
-Name: {name}
-Email: {email}
+<p>Please click on this link to verify your email:<br>
+<a href="{url_for("verifyEmailToken", token=token, _external=True)}" target="_blank">{url_for("verifyEmailToken", token=token, _external=True)}</a></p>
 
-Afterwards, please reply to the email with the ticket #{id} in the sent emails folder.
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
 
-Thank you and have a nice day.
-This email was auto-generated by the system. Please do not reply to this email.
+<p>Thank you.</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
 """
     mail.send(message)
+
+def send_another_verify_email(email, userID):
+    token = generate_verify_email_token(userID)
+    message = Message("[CourseFinity] Verify Email", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello,</p>
+
+<p>We would like you to verify your email for verifications purposes.</p>
+
+<p>Please click on this link to verify your email:<br>
+<a href="{url_for("verifyEmailToken", token=token, _external=True)}" target="_blank">{url_for("verifyEmailToken", token=token, _external=True)}</a></p>
+
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Thank you.</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+def send_admin_reset_email(email, password):
+    message = Message("[CourseFinity] Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello,</p>
+
+<p>As per requested, we have helped you reset your email and password to the following,<br>
+Updated email: {email}<br>
+Updated password: {password}</p>
+
+<p>Please use your email and the updated password to login and immediately change the password due to security reasons.<br>
+You can login using the following link:<br>
+{url_for("userLogin", _external=True)}</p>
+
+<p>Thank you and enjoy learning or teaching at CourseFinity!</p>
+
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+# Sending a follow up email if user has submitted a ban appeal and is accepted.
+# However, I am not sending a ban email notification as users who have followed the rules should not be worried about getting banned.
+# Hence, upon logging in, if the user is mistakenly banned, he/she will receive a "You have banned" alert from the login and will proceed to contact CourseFinity support email instead.
+# If the user knows that they have violated the rules and receives a ban email, they may go on other platform or create another account immediately after the knowledge of their ban. (In a way, without sending a ban email notification, it is delaying their time for actions)
+def send_admin_unban_email(email):
+    message = Message("[CouseFinity] Ban Appeal Successful", sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello,</p>
+
+<p>We have looked at your ban appeal application and we have unbanned your account.<br>
+We are really sorry for the inconvenience caused and will do our part to investigate the mistake on our end.</p>
+
+<p>Thank you and enjoy learning or teaching at CourseFinity!</p>
+
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+# use this to send the creation of support ticket notification email to be sent to the user
+# for Wei Ren
+def send_contact_us_email(issueTitle, name, email):
+    ticketID = str(shortuuid.ShortUUID().random(length=6)) # generates a 6 characters ID using shortuuid library
+    title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
+    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello {name},</p>
+
+<p>Thanks for contacting CourseFinity support! We have received your request (#{ticketID}) and will respond back as soon as we are able to.</p>
+
+<p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
+
+<p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("faq", _external=True)}</a> for solutions to common problems.</p>
+
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+
+<p>Thank you.</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+# old function for contact us page which works by sending the user the ticket email and sending the email to CourseFinity123@gmail.com from CourseFinity123@gmail.com a copy (which is not ideal)
+# def send_contact_us_email(issueTitle, userID, name, email, bodyContent):
+#     ticketID = str(shortuuid.ShortUUID().random(length=6)) # generates a 6 characters ID using shortuuid
+#     title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
+#     message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
+#     message.html = f"""<p>Hello {name},</p>
+
+# <p>Thanks for contacting CourseFinity support! We have received your request (#{ticketID}) and will respond back as soon as we are able to.</p>
+
+# <p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
+
+# <p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("home", _external=True)}</a> for solutions to common problems.</p>
+
+# <p>Please reply to this email if you have any further questions or concerns.</p>
+
+# <p>Thank you.</p>
+
+# <p>Sincerely,<br>
+# <b>CourseFinity Team</b></p>
+# """
+#     mail.send(message)
+
+#     # sending another email for a copy of the user's problem to the admin to refer
+#     title = "[CourseFinity for Support Team] Support Ticket - " + issueTitle + " #" + id
+#     message = Message(title, sender="CourseFinity123@gmail.com", recipients=["CourseFinity123@gmail.com"])
+#     message.body = f"""Hello,
+
+# Please refer to the user's problem below:
+# (Warning: Please do NOT click on suspicious looking links that were sent by the user!)
+# {bodyContent}
+
+# User's info:
+# User ID: {userID}
+# Name: {name}
+# Email: {email}
+
+# Afterwards, please reply to the email with the ticket #{id} in the sent emails folder.
+
+# Thank you and have a nice day.
+# This email was auto-generated by the system. Please do not reply to this email.
+# """
+#     mail.send(message)
 
 def generate_password():
     combinations = string.digits + "!@#$%^&*()" + string.ascii_lowercase + string.ascii_uppercase

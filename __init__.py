@@ -173,7 +173,7 @@ def home():
 """User login and logout by Jason"""
 
 @app.route('/login', methods=['GET', 'POST'])
-@limiter.limit("2/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
+@limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def userLogin():
     if "userSession" not in session and "adminSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
@@ -772,7 +772,7 @@ def signUpPayment():
 """Admin login by Jason"""
 
 @app.route('/admin_login', methods=['GET', 'POST'])
-@limiter.limit("1/second") # to prevent attackers from trying to crack passwords by sending too many automated requests from their ip address
+@limiter.limit("5/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def adminLogin():
     if "adminSession" not in session and "userSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
@@ -1316,18 +1316,12 @@ def userSearchManagement(pageNum):
                 print("Error in retrieving Users from user.db")
 
             parameter = str(sanitise(request.args.get("user")))
-            # if user types in something such as a js script with bad intention, it will return "False"
+            # if user types in something such as a js script with bad intention or empty value form submission by tempering with the html required attribute via inspect element, it will return "False"
             if parameter == "False":
-                parameter = "Not accepted"
-                redirectUser = True
-            else:
-                redirectUser = False
+                # redirect the admin instead so that they know that the inputs are not accepted due to security reasons
+                return redirect(url_for("userSearchManagementError"))
 
             parametersURL = "?user=" + parameter
-            if redirectUser:
-                # redirect the admin instead so that they know that the inputs are being sanitised and will stop
-                redirectURL = "/user_management/search/" + str(pageNum) +"/" + parametersURL
-                return redirect(redirectURL)
             # for resetting the user's password and updating the user's email for account recovery
             admin_reset_password_form = Forms.AdminResetPasswordForm(request.form)
             if request.method == "POST" and admin_reset_password_form.validate():
@@ -1381,23 +1375,32 @@ def userSearchManagement(pageNum):
                     session["invalidEmail"] = True
                     return redirect(redirectURL)
             else:
-                username = request.args.get("user")
-                print(username)
+                query = request.args.get("user")
+                print(query)
                 userList = []
-                if username in userDict: # if admin searches for the user using the user id
-                    userList.append(userDict.get(username))
+                if query in userDict: # if admin searches for the user using the user id
+                    print("Query is a user's ID.")
+                    userList.append(userDict.get(query))
+                if validate_email(query):
+                    print("Query is an email.")
+                    for key in userDict:
+                        userKey = userDict[key]
+                        if userKey.get_email() == query:
+                            userList.append(userKey)
+                            break
                 else: # if the admin searches for the user using the user's username
+                    print("Query is a username")
                     usernameList = []
                     for users in userDict:
                         user = userDict.get(users)
                         usernameList.append(user.get_username())
 
                     try:
-                        matchedUsernameList = difflib.get_close_matches(username, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.85, i.e. must match to a certain percentage else it will be ignored.
+                        matchedUsernameList = difflib.get_close_matches(query, usernameList, len(usernameList), 0.85) # return a list of closest matched username with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.85, i.e. must match to a certain percentage else it will be ignored.
                     except:
                         matchedUsernameList = []
 
-                    print(matchedUsernameList)
+                    print("Matched user (in a list):", matchedUsernameList)
                     for userKey in userDict:
                         userObject = userDict.get(userKey)
                         username = userObject.get_username()
@@ -1458,6 +1461,34 @@ def userSearchManagement(pageNum):
                     session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + parametersURL
 
                     return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=parametersURL, duplicateUsername=duplicateUsername, parameter=parameter)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+# if the user tempers with the html search input and removed the require attribute or if the user tries to XSS the site.
+@app.route("/user_management/search/not_allowed")
+@limiter.limit("30/second") # to prevent ddos attacks
+def userSearchManagementError():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
+            else:
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
+            return render_template('users/admin/user_management.html', notAllowed = True, searched=True, redirectURL=redirectURL)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1818,7 +1849,6 @@ def userProfile():
                 db.close()
                 userUsername = userKey.get_username()
                 userEmail = userKey.get_email()
-                user_id = userKey.get_user_id()
 
                 if accType == "Teacher":
                     teacherBio = userKey.get_bio()
@@ -1914,7 +1944,7 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, user_id=user_id)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2062,12 +2092,13 @@ def updateEmail():
                         userKey.set_email_verification("Not Verified")
                         send_verify_changed_email(updatedEmail, currentEmail, userSession)
                         db['Users'] = userDict
+                        db.close()
                         print("Email updated")
 
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
                         session["email_updated"] = True
 
-                        db.close()
+                        send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
@@ -2167,12 +2198,15 @@ def updatePassword():
                         # updating password of the user once validated
                         hashedPwd = hash_password(updatedPassword)
                         userKey.set_password(hashedPwd)
+                        userEmail = userKey.get_email()
                         db['Users'] = userDict
                         print("Password updated")
                         db.close()
 
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
                         session["password_changed"] = True
+
+                        send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
@@ -3365,7 +3399,51 @@ def checkout():
 
 """End of Template Checkout by Wei Ren"""
 
-"""Template app.route(") by Clarence"""
+"""Contact Us by Wei Ren"""
+
+@app.route("/contact_us")
+@limiter.limit("30/second") # to prevent ddos attacks
+def contactUs():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/page.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+            # return render_template("users/guest/page.html)
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+
+                return render_template('users/loggedin/page.html', accType=accType)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+            # return render_template("users/guest/page.html)
+
+"""End of Contact Us by Wei Ren"""
+
+"""Teacher's Channel Page by Clarence"""
 
 @app.route("/teacher_page")
 @limiter.limit("30/second") # to prevent ddos attacks
@@ -3400,10 +3478,6 @@ def function():
             # determine if it make sense to redirect the user to the home page or the login page
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-
-"""End of Template app.route by Clarence"""
-
-"""teacher_page app.route()  by Clarence"""
 
 @app.route('/teacher_page/<teacherUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
@@ -3444,9 +3518,9 @@ def teacherPage(teacherUID):
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
             return render_template("users/teacher/teacher_page.html")
 
-"""End of teacher_page app.route by Clarence"""
+"""End of Teacher's Channel Page by Clarence"""
 
-"""teacher_page app.route()  by Clarence"""
+"""Teacher's Courses Page by Clarence"""
 
 @app.route('/<teacherUID>/teacher_courses', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
@@ -3485,7 +3559,52 @@ def teacherCourses(teacherUID):
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
             return render_template("users/teacher/teacher_courses.html")
 
-"""End of teacher_page app.route by Clarence"""
+"""End of Teacher's Courses Page by Clarence"""
+
+"""General Pages"""
+
+@app.route("/faq")
+@limiter.limit("30/second") # to prevent ddos attacks
+def faq():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/page.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+            # return render_template("users/guest/page.html)
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+
+                return render_template('users/loggedin/page.html', accType=accType)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+            # return render_template("users/guest/page.html)
+
+"""End of Genral Pages"""
+
 # 7 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
