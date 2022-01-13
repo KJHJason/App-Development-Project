@@ -15,7 +15,7 @@ from Teacher import Teacher
 from Student import Student
 from Course import Course
 from Security import hash_password, sanitise
-from IntegratedFunctions import get_userID
+from IntegratedFunctions import generate_ID
 
 import shelve
 
@@ -49,7 +49,7 @@ courseDict = {}
 """Student 1"""
 
 #General
-userID = get_userID(userDict)
+userID = generate_ID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
 password = hash_password("123!@#")
@@ -73,7 +73,7 @@ print(user.get_shoppingCart())
 """Student 2"""
 
 #General
-userID = get_userID(userDict)
+userID = generate_ID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
 password = hash_password("456$%^")
@@ -93,7 +93,7 @@ userDict[user.get_user_id()] = user
 """Teacher 1"""
 
 #General
-userID = get_userID(userDict)
+userID = generate_ID(userDict)
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
 password = hash_password("789&*(")
@@ -145,7 +145,7 @@ courseDict[course.get_courseID()] = course
 """Teacher 2"""
 
 #General
-userID = get_userID(userDict)
+userID = generate_ID(userDict)
 username = "Sara"
 email = sanitise("tourism@gmail.com".lower())
 password = hash_password("0-=)_+")
@@ -196,7 +196,7 @@ courseDict[course.get_courseID()] = course
 
 """Admin 1"""
 #General
-adminID = get_userID(userDict)
+adminID = generate_ID(userDict)
 username = "The Archivist"
 email = sanitise("O5-2@SCP.com".lower())
 password = hash_password("27sb2we9djaksidu8a")
@@ -210,7 +210,7 @@ adminDict[admin.get_user_id()] = admin
 
 """Admin 2"""
 #General
-adminID = get_userID(userDict)
+adminID = generate_ID(userDict)
 username = "Tamlin"
 email = sanitise("O5-13@SCP.com".lower())
 password = hash_password("o4jru5fjr49f8ieri4")

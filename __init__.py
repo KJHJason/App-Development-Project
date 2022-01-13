@@ -2563,60 +2563,57 @@ def search(pageNum):
         if userFound and accActive:
             courseDict = {}
             courseTitleList = []
-            for title in courseDict:
-                try:
-                    db = shelve.open("course", "r")
-                    if title in db:
-                        courseDict = db["Course"]
-                    else:
-                        db.close()
-                        return redirect("home")
+            try:
+                db = shelve.open("course", "r")
+                courseDict = db["Course"]
 
-                except:
-                    print("Error in obtaining course.db data")
-                    return redirect(url_for("home"))
-                
-                searchInput = request.args.get("q")
-                print("searchInput")
-                titleList = []
-                for courseID in courseDict:
-                    courseTitle = courseDict.get(courseID).get_title()
-                    courseTitleList.append(courseTitle)
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
-                print("matchedCourseTitleList")
-                for courseID in courseDict:
-                    courseObject = courseDict.get(courseID)
-                    titleCourse = courseObject.get_title
-                    for key in matchedCourseTitleList:
-                        if titleCourse == key:
-                            titleList.append(courseObject)
-                
-                maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                courseListLen = len(courseTitleList) # get the length of the userList
-                maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-                pageNum = int(pageNum)
-                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-                if pageNum < 0:
-                    return redirect("/search/0")
-                elif courseListLen > 0 and pageNum == 0:
-                    return redirect("/search/1")
-                elif pageNum > maxPages:
-                    redirectRoute = "/search/" + str(maxPages)
-                    return redirect(redirectRoute)
-                else:
-                    # pagination algorithm starts here
-                    courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                    pageNumForPagination = pageNum - 1 # minus for the paginate function
-                    paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                    courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
+            except:
+                print("Error in obtaining course.db data")
+                return redirect(url_for("home"))
 
-                    paginationList = get_pagination_button_list(pageNum, maxPages)
+            searchInput = request.args.get("q")
+            print("searchInput")
+            titleList = []
+            for courseID in courseDict:
+                courseTitle = courseDict.get(courseID).get_title()
+                courseTitleList.append(courseTitle)
+            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+            print("matchedCourseTitleList")
+            for courseID in courseDict:
+                courseObject = courseDict.get(courseID)
+                titleCourse = courseObject.get_title
+                for key in matchedCourseTitleList:
+                    if titleCourse == key:
+                        titleList.append(courseObject)
 
-                    previousPage = pageNum - 1
-                    nextPage = pageNum + 1
+            db.close()
+            
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(courseTitleList) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/search/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/search/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/search/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
 
-                    db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList)
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close()
+                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -2662,6 +2659,8 @@ def search(pageNum):
                         for key in matchedCourseTitleList:
                             if titleCourse == key:
                                 titleList.append(courseObject)
+                            
+                    db.close()
 
                     
                     maxItemsPerPage = 5 # declare the number of items that can be seen per pages
@@ -2722,6 +2721,8 @@ def search(pageNum):
                         for key in matchedCourseTitleList:
                             if titleCourse == key:
                                 titleList.append(courseObject)
+                            
+                    db.close()
                     
                     maxItemsPerPage = 5 # declare the number of items that can be seen per pages
                     courseListLen = len(courseTitleList) # get the length of the userList
@@ -2787,22 +2788,24 @@ def purchaseHistory(pageNum):
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
-            purchaseHistoryList = []
+            purchaseHistoryList = userKey.get_purchases()
+            historyList = {}
             showCourse = ""
-            purchaseID = bool(userKey.get_purchaseID())
+            purchaseID = bool(userKey.get_purchases())
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
                 try:
                     historyDict = {}
                     dbCourse = shelve.open("course", "r")
-                    historyDict = dbCourse[""]
+                    historyDict = dbCourse["Courses"]
                 except:
                     print("Unable to open up course shelve")
                     db.close()
                     
-                for courseID in purchaseHistoryList(5):
-                    history = dbCourse[courseID]
+                for courseID in purchaseHistoryList:
+                    history = dbCourse(courseID.get_courseID)
+            
 
                     #id will be an integer
 
@@ -2818,8 +2821,9 @@ def purchaseHistory(pageNum):
                     }
                 for i in purchaseHistoryList:
                     showCourse(video[i])
+                    historyList.append(showCourse)
 
-                    db.close()
+                db.close()
             else:
                 db.close()
                 print("Purchase History is Empty")
@@ -3171,10 +3175,10 @@ def shoppingCart(pageNum):
                     courseTypeList.append(courseInfo[1])
 
                     # Getting course owner username
-                    ownerUsernameList.append(userDict[course.generate_ID()].get_username())
+                    ownerUsernameList.append(userDict[course.get_userID()].get_username())
 
                     # Getting course owner profile
-                    userProfileImage = userDict[course.generate_ID()].get_profile_image() # will return a filename, e.g. "0.png"
+                    userProfileImage = userDict[course.get_userID()].get_profile_image() # will return a filename, e.g. "0.png"
                     userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                     # checking if the user have uploaded a profile image before and if the image file exists

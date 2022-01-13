@@ -92,7 +92,7 @@ class Teacher(StudentAndTeacher):
         return self.__shoppingCart
 
     def get_purchases(self):
-        return self.__purchases
+        return self.__purchasedCourses
 
     def addCartToPurchases(self):
         for course in self.__shoppingCart:
