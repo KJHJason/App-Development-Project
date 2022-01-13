@@ -13,7 +13,7 @@ class CreateEditPaymentForm(Form):
 
 class CreateAddPaymentForm(Form):
     cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
-    cardNo = StringField("Card Number:", [validators.Length(min=14, max=19), validators.DataRequired()])
+    cardNo = StringField("Card Number:", [validators.Length(min=13, max=19), validators.DataRequired()])
     cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
 
 class CreateLoginForm(Form):

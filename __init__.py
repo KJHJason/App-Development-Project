@@ -4,7 +4,7 @@ import shelve, os, math, paypalrestsdk, difflib
 import Student, Teacher, Admin, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
-from CardValidation import validate_card_number, get_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -722,7 +722,7 @@ def signUpPayment():
                         cardNo = sanitise(create_teacher_payment_form.cardNo.data)
                         cardValid = validate_card_number(cardNo)
 
-                        cardType = get_card_type(cardNo)
+                        cardType = get_credit_card_type(cardNo, cardValid)
 
                         cardExpiry = sanitise(create_teacher_payment_form.cardExpiry.data)
                         cardExpiryValid = validate_expiry_date(cardExpiry)
@@ -2365,7 +2365,7 @@ def userPayment():
                     cardNo = sanitise(create_add_payment_form.cardNo.data)
                     cardValid = validate_card_number(cardNo)
 
-                    cardType = get_card_type(cardNo) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
+                    cardType = get_credit_card_type(cardNo, cardValid) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
 
                     cardExpiry = sanitise(create_add_payment_form.cardExpiry.data)
                     cardExpiryValid = validate_expiry_date(cardExpiry)
@@ -3318,7 +3318,7 @@ def checkout():
                 cardValid = validate_card_number(cardNumber)
 
                 cardCVV = sanitise(paymentForm.cardCVV.data)
-                cardType = get_card_type(cardNumber)
+                cardType = get_credit_card_type(cardNumber, cardValid)
                 cardCVVValid = validate_cvv(cardCVV, cardType)
 
                 cardExpiry = sanitise(paymentForm.cardExpiry.data)

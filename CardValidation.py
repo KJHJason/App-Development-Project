@@ -14,6 +14,7 @@ from datetime import date
 # https://www.creditcardinsider.com/learn/anatomy-of-a-credit-card/
 # https://www.experian.com/blogs/ask-experian/what-is-a-credit-card-cvv/
 # https://en.wikipedia.org/wiki/Payment_card_number
+# https://baymard.com/checkout-usability/credit-card-patterns
 
 # helpful resources for validating CVV
 # https://www.geeksforgeeks.org/how-to-validate-cvv-number-using-regular-expression/
@@ -33,50 +34,61 @@ def date_int_list(dateInput):
     return cardMonth, cardYear
 
 # function to recognise a card type by the card number
-def get_card_type(cardNumber):
-    # tuples for additional validation on the card type
-    visaElectronINNTuple = ("4026", "417500", "4508", "4844", "4913", "4917")
-    mastercardINNTuple = ("51", "52", "53", "54", "55")
-    amexINNTuple = ("34", "37")
-    try:
-        cardLength = len(cardNumber)
-        cardNoList = int_list(cardNumber)
+def get_credit_card_type(cardNumber, isCardValid):
+    if isCardValid:
+        # tuples for additional validation on the card type
+        visaElectronINNTuple = ("4026", "417500", "4405", "4508", "4844", "4913", "4917")
+        mastercardINNTuple = ("51", "52", "53", "54", "55")
+        amexINNTuple = ("34", "37")
+        try:
+            cardLength = len(cardNumber)
+            cardNoList = int_list(cardNumber)
 
-        firstDigit = cardNoList[0] # getting the first digit of the credit card number
-        secondDigit = cardNoList[1] # getting the second digit of the credit card number
+            firstDigit = cardNoList[0] # getting the first digit of the credit card number
+            secondDigit = cardNoList[1] # getting the second digit of the credit card number
 
-        firstTwoDigits = str(firstDigit) + str(secondDigit)
-        firstFourDigits = str(firstDigit) + str(secondDigit) + cardNumber[2:4]
+            firstTwoDigits = str(firstDigit) + str(secondDigit)
+            firstFourDigits = str(firstDigit) + str(secondDigit) + cardNumber[2:4]
 
-        if (firstDigit == 4) and (cardLength == 13 or cardLength == 16):
-            # Visa cards starts with the number 4
-            firstSixDigits = firstFourDigits + cardNumber[4:6]
-            if firstFourDigits in visaElectronINNTuple:
-                return "visa electron"
-            elif firstSixDigits in visaElectronINNTuple:
-                return "visa electron"
-            else:
-                return "visa"
-        elif (firstDigit == 5 or firstDigit == 2) and (cardLength == 16):
-            # MasterCard 5-series starts with the number 5 and MasterCard 2-series starts with the number 2
-            if firstTwoDigits in mastercardINNTuple:
-                return "mastercard"
-            else:
-                if int(firstFourDigits) >= 2221 and int(firstFourDigits) <= 2720:
+            if (firstDigit == 4) and (cardLength == 13 or cardLength == 16):
+                # Visa cards starts with the number 4
+                print("First validation done: Visa")
+                firstSixDigits = firstFourDigits + cardNumber[4:6]
+                if firstFourDigits in visaElectronINNTuple:
+                    print("Final validation done: Visa Electron (based on first 4 digits)")
+                    return "visa electron"
+                elif firstSixDigits in visaElectronINNTuple:
+                    print("Final validation done: Visa Electron (based on first 6 digits)")
+                    return "visa electron"
+                else:
+                    print("Final validation done: Visa (First digit is 4)")
+                    return "visa"
+            elif (firstDigit == 5 or firstDigit == 2) and (cardLength == 16):
+                # MasterCard 5-series starts with the number 5 and MasterCard 2-series starts with the number 2
+                if firstTwoDigits in mastercardINNTuple:
+                    print("Final validation done: mastercard (first two digits is between 51 and 55)")
                     return "mastercard"
                 else:
+                    if int(firstFourDigits) >= 2221 and int(firstFourDigits) <= 2720:
+                        print("Final validation done: mastercard (first four digits is between 2221 and 2720)")
+                        return "mastercard"
+                    else:
+                        return False
+            elif firstDigit == 3 and cardLength == 15:
+                # American Express cards starts with the number 3
+                if firstTwoDigits in amexINNTuple:
+                    print("Final validation done: amex (first two digits is 34 or 37)")
+                    return "american express"
+                else:
                     return False
-        elif firstDigit == 3 and cardLength == 15:
-            # American Express cards starts with the number 3
-            if firstTwoDigits in amexINNTuple:
-                return "american express"
             else:
+                print("Card type not accepted!")
                 return False
-        else:
-            print("Card type not accepted!")
+        except:
+            print("Card number input must only contain numbers!")
             return False
-    except:
-        print("Card number input must only contain numbers!")
+    else:
+        print("Skipping card type check due to invalid card type!")
         return False
 
 # function to validate card's CVV based on the card type
@@ -129,8 +141,10 @@ def validate_card_number(cardNumber):
                 totalSum += number
         isValid = totalSum % 10
         if isValid == 0:
+            print("Card number is valid")
             return True
         else:
+            print("Card number is not valid")
             return False
     except:
         print("Card number input must only contain numbers!") # if the string contained any letters, it will raise a runtime error. Hence, using try and except to handle this error.
