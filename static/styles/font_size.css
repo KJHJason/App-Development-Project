@@ -9,7 +9,7 @@ h3, h4 {
 h5 {
 	font-size: 1.5em;
 }
-p, h6, a, .cookiealert, .contact_details li, label, td {
+p, h6, a, .cookiealert, li, label, td {
 	font-size: 1em;
 }
 
@@ -23,7 +23,7 @@ p, h6, a, .cookiealert, .contact_details li, label, td {
 	h5, .about_company a i {
 		font-size: 3.5vw;
 	}
-	p, h6, a, .cookiealert, .contact_details li, label, td {
+	p, h6, a, .cookiealert, li, label, td {
 		font-size: 3.5vw;
 	}
 }
@@ -38,7 +38,7 @@ p, h6, a, .cookiealert, .contact_details li, label, td {
 	h5, .about_company a i  {
 		font-size: 5.5vw;
 	}
-	p, h6, a, .cookiealert, .contact_details li, label, td {
+	p, h6, a, .cookiealert, li, label, td {
 		font-size: 5vw;
 	}
 }
