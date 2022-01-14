@@ -118,9 +118,8 @@ thumbnail = ""
 price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
-courseID = 0
 
-course = Course(userID, title, description, thumbnail, price, status, courseID)
+course = Course(userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
