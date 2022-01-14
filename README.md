@@ -25,4 +25,5 @@ Libraries needed:
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk]</li>
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo]</li>
   <li>shortuuid Version 1.0.8 [pip install shortuuid]</li>
+  <li>dicebear Version 0.1.2 [pip install dicebear]</li>
 </ol>	

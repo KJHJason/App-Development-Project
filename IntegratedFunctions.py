@@ -3,7 +3,9 @@ from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
 import shelve, os, uuid, string, random, shortuuid
+from pathlib import Path
 from flask import url_for
+from src import Avatar
 
 """Done by Jason"""
 
@@ -172,6 +174,14 @@ def allow_file_size(fileSize, maximumFileSize):
         return True
     else:
         return False
+
+# function for retrieving user's profile picture using dicebear library
+def get_user_profile_pic(username, profileFileName, profileFilePath):
+    if profileFileName != "" and Path(profileFilePath).is_file():
+        imagesrcPath = "/static/images/user/" + profileFileName
+    else:
+        imagesrcPath = Avatar(type="initials", seed=username)
+    return imagesrcPath
 
 # use the function below if you just want to validate the session and check if the admin is active but there is no need to manipulate the data in the admin shelve data files and also assuming that the admin must be logged in, meaning the admin shelve data must be present in the directory
 def admin_validate_session_open_file(adminSession):

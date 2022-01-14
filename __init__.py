@@ -1863,10 +1863,7 @@ def userProfile():
                 userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                 # checking if the user have uploaded a profile image before and if the image file exists
-                if userProfileImage != "" and Path(userProfileImagePath).is_file():
-                    imagesrcPath = "/static/images/user/" + userProfileImage
-                else:
-                    imagesrcPath = "/static/images/user/default.png"
+                imagesrcPath = get_user_profile_pic(userUsername, userProfileImage, userProfileImagePath)
 
                 # checking sessions if any of the user's acc info has changed
                 if "username_changed" in session:
@@ -3211,17 +3208,15 @@ def shoppingCart(pageNum):
                     courseTypeList.append(courseInfo[1])
 
                     # Getting course owner username
-                    ownerUsernameList.append(userDict[course.get_userID()].get_username())
+                    courseOwnerUsername = userDict[course.get_userID()].get_username()
+                    ownerUsernameList.append(courseOwnerUsername)
 
                     # Getting course owner profile
                     userProfileImage = userDict[course.get_userID()].get_profile_image() # will return a filename, e.g. "0.png"
                     userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                     # checking if the user have uploaded a profile image before and if the image file exists
-                    if userProfileImage != "" and Path(userProfileImagePath).is_file():
-                        imagesrcPath = "/static/images/user/" + userProfileImage
-                    else:
-                        imagesrcPath = "/static/images/user/default.png"
+                    imagesrcPath = get_user_profile_pic(courseOwnerUsername, userProfileImage, userProfileImagePath)
 
                     ownerProfileImageList.append(imagesrcPath)
 
@@ -3462,10 +3457,7 @@ def function():
             userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
             # checking if the user have uploaded a profile image before and if the image file exists
-            if userProfileImage != "" and Path(userProfileImagePath).is_file():
-                imagesrcPath = "/static/images/user/" + userProfileImage
-            else:
-                imagesrcPath = "/static/images/user/default.png"
+            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
             return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("User not found or is banned.")
