@@ -2621,7 +2621,7 @@ def search(pageNum):
                     print("Error in obtaining course.db data")
                     return redirect(url_for("home"))
                 
-                searchInput = request.args.get("q")
+                searchInput = request.args.get("searchingtext")
                 print(searchInput)
                 titleList = []
                 for courseID in courseDict:
