@@ -129,11 +129,11 @@ course.switch_zoomCondition() # Video = True
 course.add_rating("2", "Very Good", "Please make more.", "4")
 
 # def __init__(self, title, description, thumbnail, **kwargs):
-course.add_scheduleZoomPart("Step 1: See Documentation","We learn Flask Documentation","")
-course.get_part(0).set_timing("2022-07-03","15:30")
+course.add_scheduleZoomLesson("Step 1: See Documentation","We learn Flask Documentation","")
+course.get_Lesson(0).set_timing("2022-07-03","15:30")
 
-course.add_scheduleZoomPart("Step 2: Practice","At least 5 Codeforces a Week","")
-course.get_part(1).set_timing("2022-07-10","15:30")
+course.add_scheduleZoomLesson("Step 2: Practice","At least 5 Codeforces a Week","")
+course.get_Lesson(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
 
@@ -182,9 +182,9 @@ course.switch_videoCondition() # Video = True
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
 
 # def __init__(self, title, description, thumbnail, videoData):
-course.add_scheduleVideoPart("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
+course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
 
-course.add_scheduleVideoPart("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
+course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 
 
 user.set_courseTeaching(course.get_courseID())
