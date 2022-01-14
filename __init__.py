@@ -3290,42 +3290,22 @@ def checkout():
 @app.route("/contact_us")
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/page.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("adminLogin"))
-            # return render_template("users/guest/page.html)
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+        userFound, accGoodStanding, accType = general_page_open_file(userSession)
 
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-
-                return render_template('users/loggedin/page.html', accType=accType)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        if userFound and accGoodStanding:
+            return render_template('users/general/contact_us.html', accType=accType)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-            # return render_template("users/guest/page.html)
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/contact_us.html", accType="Guest")
+    else:
+        return render_template("users/general/contact_us.html", accType="Guest")
 
 """End of Contact Us by Wei Ren"""
 
@@ -3465,6 +3445,46 @@ def cookiePolicy():
             return render_template("users/general/cookie_policy.html", accType="Guest")
     else:
         return render_template("users/general/cookie_policy.html", accType="Guest")
+
+@app.route('/terms_and_conditions')
+@limiter.limit("30/second") # to prevent ddos attacks
+def termsAndConditions():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userFound, accGoodStanding, accType = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            return render_template('users/general/terms_and_conditions.html', accType=accType)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/terms_and_conditions.html", accType="Guest")
+    else:
+        return render_template("users/general/terms_and_conditions.html", accType="Guest")
+
+@app.route('/terms_and_conditions')
+@limiter.limit("30/second") # to prevent ddos attacks
+def privacyPolicy():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userFound, accGoodStanding, accType = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            return render_template('users/general/privacy_policy.html', accType=accType)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/privacy_policy.html", accType="Guest")
+    else:
+        return render_template("users/general/privacy_policy.html", accType="Guest")
 
 @app.route("/faq")
 @limiter.limit("30/second") # to prevent ddos attacks
