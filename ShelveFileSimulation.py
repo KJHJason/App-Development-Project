@@ -219,11 +219,13 @@ admin = Admin(adminID, username, email, password)
 #Admin
 
 
+# Get corresponding userID for updating/adding to dictionary
+adminDict[admin.get_user_id()] = admin
+
 # Save Object to dict
 adminDict[adminID] = admin
 
-# Get corresponding userID for updating/adding to dictionary
-adminDict[admin.get_user_id()] = admin
+
 
 
 

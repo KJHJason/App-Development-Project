@@ -3330,7 +3330,7 @@ def checkout():
                         userKey.set_card_expiry(cardExpiry)
 
                 else:
-                    return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry=cardExpiry, cardValid=cardValid, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
+                    return render_template('users/student/payment_info_v2.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry=cardExpiry, cardValid=cardValid, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
 
                 userID = userKey.get_user_id()
 
@@ -3379,7 +3379,7 @@ def checkout():
                 cardExpiry = userKey.get_card_expiry()
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardExpiry =cardExpiry, cardValid=True, cardCVVValid=True, cardExpiryValid=True)
+                return render_template('users/student/payment_info_v2.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardExpiry =cardExpiry, cardValid=True, cardCVVValid=True, cardExpiryValid=True)
         else:
             db.close()
             print("User not found or is banned")

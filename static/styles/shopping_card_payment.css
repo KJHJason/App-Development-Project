@@ -1,4 +1,4 @@
-/* {/*Check for ghost elements; very contrasting colours
+/* {/*Check for ghost elements; very contrasting colours*
   background: #000 !important;
   color: #0f0 !important;
   outline: solid #f00 1px !important;
@@ -8,13 +8,13 @@
     display:none;
 }
 
-.col-8 {
+.card .col-8 {
     padding-right:0px;
 }
 
 .card {
     max-width: 80vw;
-    margin: 10vw;
+    margin: 5vw;
     margin-top:1vw;
 }
 
@@ -210,7 +210,7 @@
 
 #shopping-title {
     /*Top-Bottom, Left-Right*/
-    margin:2.5em 10vw;
+    margin:2.5em 5vw;
 }
 
 /*Not a shopping card, but a shopping cart.*/
@@ -231,6 +231,18 @@
     color:#729aca;
     cursor:pointer;
 }
+
+/*For payment*/
+#paypal-button-container {
+    text-align:center;
+    margin:1vw;
+    margin-top:calc(1vw + 3rem);/*Centered with footer*/
+}
+
+#paypal-button-container div {
+    width:25%;
+}
+
 
 /*For responsiveness*/
 @media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
