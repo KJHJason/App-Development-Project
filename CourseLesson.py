@@ -1,6 +1,6 @@
 """Made by Wei Ren"""
 """Edited by Clarence"""
-class Part():
+class Lesson():
     def __init__(self, title, description, thumbnail):
         self.__title = title
         self.__description = description
@@ -23,7 +23,7 @@ class Part():
 
 
 # Video Data
-class VideoPart(Part):
+class VideoLesson(Lesson):
     def __init__(self, title, description, thumbnail, videoData):
         super().__init__(title, description, thumbnail)
         self.__videoData = videoData
@@ -35,7 +35,7 @@ class VideoPart(Part):
 
 # Zoom Link --> To be changed
 # Different timings for different students for different courses
-class ZoomPart(Part):
+class ZoomLesson(Lesson):
     def __init__(self, title, description, thumbnail):
         super().__init__(title, description, thumbnail)
         self.__timings = []
