@@ -3466,7 +3466,7 @@ def termsAndConditions():
     else:
         return render_template("users/general/terms_and_conditions.html", accType="Guest")
 
-@app.route('/terms_and_conditions')
+@app.route('/privacy_policy')
 @limiter.limit("30/second") # to prevent ddos attacks
 def privacyPolicy():
     if "adminSession" in session or "userSession" in session:
