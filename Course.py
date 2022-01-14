@@ -29,7 +29,7 @@ User --> Teacher (Object) 1
 """Edited by Clarence"""
 
 from Rating import Rating
-from CourseParts import ZoomPart, VideoPart
+from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
 
 class Course():
@@ -132,25 +132,25 @@ class Course():
             total += rating.get_rating()
             return (total/len(self.__ratings))
 
-    def add_scheduleVideoPart(self, title, description, thumbnail, videoData):
-        videoPart = VideoPart(title, description, thumbnail, videoData)
-        self.__schedule.append(videoPart)
-    def remove_scheduleVideoPart(self, title, description):
-        for VideoPart in self.__schedule:
-            if VideoPart.get_title() == title and VideoPart.get_description() == description:
-                self.__schedule.remove(VideoPart)
+    def add_scheduleVideoLesson(self, title, description, thumbnail, videoData):
+        videoLesson = VideoLesson(title, description, thumbnail, videoData)
+        self.__schedule.append(videoLesson)
+    def remove_scheduleVideoLesson(self, title, description):
+        for VideoLesson in self.__schedule:
+            if VideoLesson.get_title() == title and VideoLesson.get_description() == description:
+                self.__schedule.remove(VideoLesson)
                 break
 
-    def add_scheduleZoomPart(self, title, description, thumbnail):
-        zoomPart = ZoomPart(title, description, thumbnail)
-        self.__schedule.append(zoomPart)
-    def remove_scheduleZoomPart(self, title, description):
-        for ZoomPart in self.__schedule:
-            if ZoomPart.get_title() == title and ZoomPart.get_description() == description:
-                self.__schedule.remove(ZoomPart)
+    def add_scheduleZoomLesson(self, title, description, thumbnail):
+        zoomLesson = ZoomLesson(title, description, thumbnail)
+        self.__schedule.append(zoomLesson)
+    def remove_scheduleZoomLesson(self, title, description):
+        for ZoomLesson in self.__schedule:
+            if ZoomLesson.get_title() == title and ZoomLesson.get_description() == description:
+                self.__schedule.remove(ZoomLesson)
 
     def get_schedule(self):
         return self.__schedule
 
-    def get_part(self, part):
-        return self.__schedule[int(part)]
+    def get_lesson(self, lesson):
+        return self.__schedule[int(lesson)]

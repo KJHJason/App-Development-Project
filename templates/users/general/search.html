@@ -6,6 +6,12 @@
 <div class="container">
     <h2>You Searched For "{{ searchInput }}"</h2>
 
+    {% if titleList == None %}
+    <div>
+        <h4>No searched item found</h4>
+    </div>
+    {% endif %}
+
     {% for key in titleList %}
     <div class="row no-gutters layer-2">
         <div class="col-4">
@@ -40,7 +46,6 @@
                             {% elif courseTypeList[index] != "Zoom" and courseTypeList[index] != "Both" %}
                             <a href="{{ link_zoom }}" class="unselected">Live Zoom</a>
                             {% endif %}
-
                         {% endif %}
                     </div>
                     <div class="information col">

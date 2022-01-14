@@ -1,0 +1,48 @@
+.form-check-inline {
+    display:flex;
+    align-items: center;
+}
+
+#payment-form {
+    width:40%;
+    margin:3vw auto 5vw;
+}
+
+img.form-check-label {
+    width:75%;
+}
+
+img.form-check-label:last-of-type {
+    margin-left:0.5em;
+}
+
+#option-1, #option-2 {
+    margin-top:3vw;
+}
+
+#option-2 {
+    display:none;
+}
+
+#pay {
+    text-align:center;
+    padding:1vw;
+    margin-top:2vw;
+    border: 2px solid black;
+    transition:0.3s;
+    background-color:white;
+}
+
+#pay:hover {
+    cursor:pointer;
+    font-weight:bold;
+    filter:invert(1);
+}
+
+#paypal-button-container {
+    text-align:center;
+}
+
+#paypal-button-container div {
+    width:25%;
+}

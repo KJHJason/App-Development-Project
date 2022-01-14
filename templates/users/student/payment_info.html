@@ -56,11 +56,12 @@
         {{ render_field(form.zipCode, class="form-control") }}
         {{ render_field(form.countryCode, class="form-control") }}
         {{ render_field(form.phoneNumber, class="form-control") }}
-        <p onclick="payment()">Pay and Checkout</p>
+        <p onclick="payment()" id="pay">Pay and Checkout</p>
     </div>
 </form>
 <div id="option-2">
-
+    <!-- Set up a container element for the button -->
+    <div id="paypal-button-container"></div>
 </div>
 
 
@@ -73,6 +74,8 @@
     }
 </script>
 <!--Paypal API-->
-<script src="https://www.paypal.com/sdk/js?client-id=AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s&debug=true"></script>
+<!--Format for PayPal link: Include the PayPal JavaScript SDK; replace "test" with your own sandbox Business account app client ID -->
+<!--<script src="https://www.paypal.com/sdk/js?client-id=test"></script>-->
 <script src="{{ url_for('static', filename='scripts/payment_info.js') }}"></script>
 {% endblock %}
