@@ -1,4 +1,11 @@
+{% if accType == "Guest" %}
+{% extends "guest_base.html" %}
+{% elif accType == "Student" or accType == "Teacher"%}
 {% extends "user_base.html" %}
+{% elif accType == "Admin" %}
+{% extends "admin_base.html" %}
+{% endif %}
+
 {% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/policy.css') }}">{% endblock %}
 {% block title %}Cookie Policy | CourseFinity{% endblock %}
 

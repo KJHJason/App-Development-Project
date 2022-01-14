@@ -54,10 +54,13 @@ def validate_session_get_userKey_open_file(userSession):
         userAccStatus = userKey.get_status()
         if userAccStatus == "Good":
             accType = userKey.get_acc_type()
+            db.close()
             return userKey, userFound, True, accType
         else:
+            db.close()
             return userKey, userFound, False, ""
     else:
+        db.close()
         print("Verdict: User ID not found.")
         return userKey, userFound, False, ""
 
@@ -69,6 +72,54 @@ def generate_ID(inputDict):
     if generatedID in inputDict:
         generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
+
+# function to retrieve the acc type and validate the session which will mainly be used on general pages
+def general_page_open_file(userID):
+    try:
+        adminDict = {}
+        db = shelve.open("admin", "r")
+        adminDict = db['Admins']
+        print("File found.")
+        db.close()
+        fileFound = True
+    except:
+        print("File could not be found.")
+        fileFound = False
+
+    if fileFound:
+        print("Admin ID in session:", userID)
+        adminKey = adminDict.get(userID)
+        if adminKey != None:
+            print("Verdict: Admin ID Matched.")
+            userFound = True
+            accStatus = adminKey.get_status()
+            if accStatus == "Active":
+                accType = adminKey.get_acc_type()
+                return userFound, True, accType
+            else:
+                return userFound, False, ""
+    try:
+        userDict = {}
+        db = shelve.open("user", "r")
+        userDict = db['Users']
+        print("File found.")
+        db.close()
+    except:
+        print("File could not be found.")
+        return False, False, ""
+
+    userFound = False
+    print("User ID in session:", userID)
+    userKey = userDict.get(userID)
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        accStatus = userKey.get_status()
+        if accStatus == "Good":
+            accType = userKey.get_acc_type()
+            return userFound, True, accType
+        else:
+            return userFound, False, ""
 
 # use the function below if you just want to validate the session and check if the user is banned but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
 def validate_session_open_file(userSession):
