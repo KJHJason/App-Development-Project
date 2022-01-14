@@ -482,8 +482,6 @@ def userSignUp():
                     userDict[userID] = user
                     db["Users"] = userDict
 
-                    print(userDict)
-
                     db.close()
                     print("User added.")
                     send_verify_email(emailInput, userID)
@@ -3448,6 +3446,35 @@ def teacherCourses(teacherUID):
 
 """General Pages"""
 
+@app.route('/cookie_policy')
+@limiter.limit("30/second") # to prevent ddos attacks
+def insertName():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/cookie_policy.html')
+        else:
+            print("Admin account is not found or is not active.")
+            session.clear()
+            return render_template("users/guest/cookie_policy.html")
+    else:
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+            if userFound and accGoodStatus:
+                return render_template('users/loggedin/cookie_policy.html', accType=accType)
+            else:
+                print("User not found or is banned.")
+                session.clear()
+                return render_template("users/guest/cookie_policy.html")
+        else:
+            return render_template("users/guest/cookie_policy.html")
+
 @app.route("/faq")
 @limiter.limit("30/second") # to prevent ddos attacks
 def faq():
@@ -3658,7 +3685,7 @@ def insertName():
             # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
             return redirect(url_for("home"))
             # return redirect(url_for("adminLogin"))
-            # return render_template("users/guest/page.html)
+            # return render_template("users/guest/page.html")
     else:
         if "userSession" in session:
             userSession = session["userSession"]
@@ -3679,7 +3706,7 @@ def insertName():
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
             return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
-            # return render_template("users/guest/page.html)
+            # return render_template("users/guest/page.html")
 
 """End of Template app.route by INSERT_YOUR_NAME"""
 '''
