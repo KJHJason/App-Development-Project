@@ -111,8 +111,6 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 
 #Courses (Royston)
 
-
-
 #Courses Teaching (Wei Ren)
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
@@ -120,8 +118,9 @@ thumbnail = ""
 price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
+courseID = 0
 
-course = Course(userID, title, description, thumbnail, price, status)
+course = Course(userID, title, description, thumbnail, price, status, courseID)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
@@ -137,6 +136,8 @@ course.add_scheduleZoomPart("Step 2: Practice","At least 5 Codeforces a Week",""
 course.get_part(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
+
+course.get_courseID().get_title()
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user
