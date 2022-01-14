@@ -22,6 +22,10 @@
     margin-bottom:5vw;
 }
 
+.card .row:first-of-type {
+    align-items:center;
+}
+
 .col-8 .card-body {
     display: flex;
     flex-direction: column;
@@ -236,76 +240,31 @@
 #paypal-button-container {
     text-align:center;
     margin:1vw;
-    margin-top:calc(1vw + 3rem);/*Centered with footer*/
 }
 
 #paypal-button-container div {
-    width:25%;
+    width:33%;
 }
 
+.subtotal {
+    text-align:center;
+    margin-top:2em;
+}
+
+#paypal-container {
+    position: sticky;
+    top: 2.5em;
+}
 
 /*For responsiveness*/
-@media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
-    .layer-1 {
-        margin:2.5vw;
-    }
-    .layer-2 {
-        position:relative;
-        margin:auto;
-    }
-    .layer-1 .selection, .layer-2 .information, .layer-2 .col-4{
-        display:none;
-    }
-    .layer-2 .col-8 {
-        width:100%;
-    }
-    .layer-2 .row {
-    align-items:stretch;/*Default Value*/
-    }
-    .layer-1 .col-8 .card-body:nth-of-type(2n+1) {
-        display:none;
-    }
-    .layer-1 .information {
-        width:50%;
-        padding:0px;/*Fit text better*/
-    }
-    .layer-1 .col-4, .layer-1 .col-8 {
-        width:50%;
-    }
-    .layer-1 .col-4 {
-        display:flex;
-        justify-content: center;
-    }
-    .information p, .information a {
-        font-size:min(1.25em,3vw);
-    }
-    .col-8 .card-body {
-        display: contents;
-    }
-    .card {
-        align-items: center;
-        padding:2.5vw;
-    }
-    .selection{
-        margin:5px;
-    }
+@media only screen and (max-width: 1175px) {/*No Bootstrap deconstruction this time*/
+
 }
 
 @media only screen and (max-width: 400px) {
-    .layer-2 .selection {
-        display: flex;
-        flex-direction: column;
-    }
-    .layer-2 .selection a, .layer-2 .selection p {
-        width:100%;
-    }
-    .layer-2 a:hover {
-        font-size:max(1.1em, 15px);
-    }
+
 }
 
 @media only screen and (max-width:350px) {
-    .fa-cart-plus {
-        font-size:25vw;
-    }
+
 }
