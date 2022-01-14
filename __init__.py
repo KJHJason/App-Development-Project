@@ -2594,59 +2594,7 @@ def search(pageNum):
         userFound, accActive = admin_validate_session_open_file(adminSession)
 
         if userFound and accActive:
-            courseDict = {}
-            courseTitleList = []
-            try:
-                db = shelve.open("course", "r")
-                courseDict = db["Course"]
-
-            except:
-                print("Error in obtaining course.db data")
-                return redirect(url_for("home"))
-
-            searchInput = request.args.get("q")
-            print("searchInput")
-            titleList = []
-            for courseID in courseDict:
-                courseTitle = courseDict.get(courseID).get_title()
-                courseTitleList.append(courseTitle)
-            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
-            print("matchedCourseTitleList")
-            for courseID in courseDict:
-                courseObject = courseDict.get(courseID)
-                titleCourse = courseObject.get_title
-                for key in matchedCourseTitleList:
-                    if titleCourse == key:
-                        titleList.append(courseObject)
-
-            db.close()
-            
-            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(courseTitleList) # get the length of the userList
-            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-            if pageNum < 0:
-                return redirect("/search/0")
-            elif courseListLen > 0 and pageNum == 0:
-                return redirect("/search/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/search/" + str(maxPages)
-                return redirect(redirectRoute)
-            else:
-                # pagination algorithm starts here
-                courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
-
-                paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                previousPage = pageNum - 1
-                nextPage = pageNum + 1
-
-                db.close()
-                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList)
+            return render_template('users/admin/page.html')
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -2665,123 +2613,66 @@ def search(pageNum):
                 # add in your code here (if any)
                 courseDict = {}
                 courseTitleList = []
-                for title in courseDict:
-                    try:
-                        db = shelve.open("course", "r")
-                        if title in db:
-                            courseDict = db["Course"]
-                        else:
-                            db.close()
-                            return redirect("home")
+                try:
+                    db = shelve.open("course", "r")
+                    courseDict = db["Courses"]
 
-                    except:
-                        print("Error in obtaining course.db data")
-                        return redirect(url_for("home"))
-                    
-                    searchInput = request.args.get("q")
-                    print("searchInput")
-                    titleList = []
-                    for courseID in courseDict:
-                        courseTitle = courseDict.get(courseID).get_title()
-                        courseTitleList.append(courseTitle)
+                except:
+                    print("Error in obtaining course.db data")
+                    return redirect(url_for("home"))
+                
+                searchInput = request.args.get("searchingtext")
+                print(searchInput)
+                titleList = []
+                for courseID in courseDict:
+                    courseTitle = courseDict.get(courseID).get_title()
+                    courseTitleList.append(courseTitle)
+                try:
                     matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
-                    print("matchedCourseTitleList")
-                    for courseID in courseDict:
-                        courseObject = courseDict.get(courseID)
-                        titleCourse = courseObject.get_title
-                        for key in matchedCourseTitleList:
-                            if titleCourse == key:
-                                titleList.append(courseObject)
-                            
+                except:
+                    matchedCourseTitleList = []
+                print(matchedCourseTitleList)
+                for courseID in courseDict:
+                    courseObject = courseDict.get(courseID)
+                    titleCourse = courseObject.get_title
+                    for key in matchedCourseTitleList:
+                        if titleCourse == key:
+                            titleList.append(courseObject)
+                        
+                db.close()
+
+                
+                maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+                courseListLen = len(courseTitleList) # get the length of the userList
+                maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+                pageNum = int(pageNum)
+                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+                if pageNum < 0:
+                    return redirect("/search/0")
+                elif courseListLen > 0 and pageNum == 0:
+                    return redirect("/search/1")
+                elif pageNum > maxPages:
+                    redirectRoute = "/search/" + str(maxPages)
+                    return redirect(redirectRoute)
+                else:
+                    # pagination algorithm starts here
+                    courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    pageNumForPagination = pageNum - 1 # minus for the paginate function
+                    paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                    courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                    paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                    previousPage = pageNum - 1
+                    nextPage = pageNum + 1
+
                     db.close()
-
-                    
-                    maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                    courseListLen = len(courseTitleList) # get the length of the userList
-                    maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-                    pageNum = int(pageNum)
-                    # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-                    if pageNum < 0:
-                        return redirect("/search/0")
-                    elif courseListLen > 0 and pageNum == 0:
-                        return redirect("/search/1")
-                    elif pageNum > maxPages:
-                        redirectRoute = "/search/" + str(maxPages)
-                        return redirect(redirectRoute)
-                    else:
-                        # pagination algorithm starts here
-                        courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                        pageNumForPagination = pageNum - 1 # minus for the paginate function
-                        paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                        courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
-
-                        paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                        previousPage = pageNum - 1
-                        nextPage = pageNum + 1
-
-                        db.close()
-                        return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList, maxPages=maxPages)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                courseDict = {}
-                courseTitleList = []
-                for title in courseDict:
-                    try:
-                        db = shelve.open("course", "r")
-                        if title in db:
-                            courseDict = db["Course"]
-                        else:
-                            db.close()
-                            return redirect("home")
-
-                    except:
-                        print("Error in obtaining course.db data")
-                        return redirect(url_for("home"))
-                    
-                    searchInput = request.args.get("q")
-                    print("searchInput")
-                    titleList = []
-                    for courseID in courseDict:
-                        courseTitle = courseDict.get(courseID).get_title()
-                        courseTitleList.append(courseTitle)
-                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
-                    print("matchedCourseTitleList")
-                    for courseID in courseDict:
-                        courseObject = courseDict.get(courseID)
-                        titleCourse = courseObject.get_title
-                        for key in matchedCourseTitleList:
-                            if titleCourse == key:
-                                titleList.append(courseObject)
-                            
-                    db.close()
-                    
-                    maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                    courseListLen = len(courseTitleList) # get the length of the userList
-                    maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-                    pageNum = int(pageNum)
-                    # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-                    if pageNum < 0:
-                        return redirect("/search/0")
-                    elif courseListLen > 0 and pageNum == 0:
-                        return redirect("/search/1")
-                    elif pageNum > maxPages:
-                        redirectRoute = "/search/" + str(maxPages)
-                        return redirect(redirectRoute)
-                    else:
-                        # pagination algorithm starts here
-                        courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                        pageNumForPagination = pageNum - 1 # minus for the paginate function
-                        paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                        courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
-
-                        paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                        previousPage = pageNum - 1
-                        nextPage = pageNum + 1
-
-                        return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList)
+                session.clear()
+                return redirect(url_for("home"))
                 # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
             # determine if it make sense to redirect the user to the home page or the login page or this function's html page
