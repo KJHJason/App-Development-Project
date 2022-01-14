@@ -136,8 +136,6 @@ course.get_Lesson(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
 
-course.get_courseID().get_title()
-
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user
 courseDict[course.get_courseID()] = course
