@@ -1,4 +1,3 @@
-from tkinter import E
 from Admin import Admin
 from Security import hash_password, verify_password, sanitise, validate_email
 import shelve, shortuuid
@@ -66,7 +65,7 @@ while True:
                 if password == "0":
                     break
                 
-                pwdLengthValidate = validate_pwd_length(password, 6) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
+                pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
 
                 if pwdLengthValidate:
                     password = hash_password(password)
@@ -184,7 +183,7 @@ while True:
                                 break
                         if emailValid:
                             password = input("\nEnter password for admin account: ")
-                            pwdLengthValidate = validate_pwd_length(password, 6) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
+                            pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
                             if pwdLengthValidate:
                                 password = hash_password(password)
                                 cfm_password = input("\nConfirm password for admin account: ")
@@ -211,7 +210,7 @@ while True:
                         if email in adminDict:
                             adminObject = adminDict.get(email)
                             password = input("\nEnter password for admin account: ")
-                            pwdLengthValidate = validate_pwd_length(password, 6) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
+                            pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
                             if pwdLengthValidate:
                                 password = hash_password(password)
                                 cfm_password = input("\nConfirm password for admin account: ")
