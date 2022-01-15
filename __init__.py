@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, os, math, paypalrestsdk, difflib
 import Student, Teacher, Forms
 from Payment import Payment
@@ -132,9 +132,9 @@ def home():
                 paymentComplete = False
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-            imagesrcPath = retrieve_user_profile_pic(userKey)
 
             if userFound and accGoodStatus:
+                imagesrcPath = retrieve_user_profile_pic(userKey)
                 #def recommend(most_watched_category):
                    #recommendationList = []
                    #videoCat = [[]]
@@ -383,7 +383,6 @@ def resetPassword(token):
                     db = shelve.open("user", "c")
                     try:
                         if 'Users' in db:
-                            # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                             userDict = db['Users']
                         else:
                             db.close()
@@ -544,7 +543,6 @@ def verifyEmailToken(token):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1521,7 +1519,6 @@ def deleteUser(userID):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1578,7 +1575,6 @@ def banUser(userID):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1633,7 +1629,6 @@ def unbanUser(userID):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1690,7 +1685,6 @@ def changeUserUsername(userID):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1753,7 +1747,6 @@ def resetProfileImage(userID):
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
-                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                     userDict = db['Users']
                 else:
                     db.close()
@@ -1804,7 +1797,6 @@ def userProfile():
         db = shelve.open("user", "c")
         try:
             if 'Users' in db:
-                # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
                 userDict = db['Users']
             else:
                 db.close()
@@ -1843,42 +1835,46 @@ def userProfile():
 
                     file = request.files["profileImage"]
 
-                    #  "never trust user input" principle, all submitted form data can be forged, and filenames can be dangerous.
-                    filename = secure_filename(file.filename)
+                    extensionType = get_extension(file.filename)
+                    if extensionType != False:
+                        file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
+                        filename = file.filename
+                    else:
+                        filename = "invalid"
 
                     uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
                     print("Uploaded file size:", uploadedFileSize, "bytes")
 
                     withinFileLimit = allow_file_size(uploadedFileSize, app.config['MAX_PROFILE_IMAGE_FILESIZE'])
 
-                    if filename != "":
-                        if file and allowed_image_file(filename) and withinFileLimit:
-                            # will only accept .png, .jpg, .jpeg
-                            print("File extension accepted and is within size limit.")
+                    if file and allowed_image_file(filename) and withinFileLimit:
+                        # will only accept .png, .jpg, .jpeg
+                        print("File extension accepted and is within size limit.")
 
-                            # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
-                            extensionType = get_extension(filename)
-                            file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
-                            userImageFileName = file.filename
-                            newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+                        
+                        userImageFileName = file.filename
+                        newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
 
-                            # constructing a file path to see if the user has already uploaded an image and if the file exists
-                            userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
+                        # constructing a file path to see if the user has already uploaded an image and if the file exists
+                        userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
 
-                            # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                            # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
-                            # else it will just save normally and rename it to userID.png (e.g. 0.png)
-                            if Path(userOldImageFilePath).is_file():
-                                print("User has already uploaded a profile image before.")
-                                overwrite_file(file, userOldImageFilePath, newFilePath)
-                                print("Image file has been overwrited.")
-                            else:
-                                file.save(newFilePath)
-                                print("Image file has been saved.")
+                        # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                        # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
+                        # else it will just save normally and rename it to userID.png (e.g. 0.png)
+                        if Path(userOldImageFilePath).is_file():
+                            print("User has already uploaded a profile image before.")
+                            overwrite_file(file, userOldImageFilePath, newFilePath)
+                            print("Image file has been overwrited.")
+                        else:
+                            file.save(newFilePath)
+                            print("Image file has been saved.")
 
-                            # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
-                            resize_image(newFilePath, (500, 500))
+                        # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                        imageResized = resize_image(newFilePath, (500, 500))
 
+                        if imageResized:
+                            # if file was successfully resized, it means the image is a valid image
                             userKey.set_profile_image(userImageFileName)
                             db['Users'] = userDict
                             db.close()
@@ -1886,13 +1882,16 @@ def userProfile():
                             session["imageChanged"] = True
                             return redirect(url_for("userProfile"))
                         else:
+                            # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file in which the code below will reset the user's profile image but the corrupted image will still be stored on the server until it is overwritten
+                            userKey.set_profile_image("")
+                            db['Users'] = userDict
                             db.close()
-                            print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
                             session["imageFailed"] = True
                             return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        print("No selected file/the user sent a empty file without a filename")
+                        print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
+                        session["imageFailed"] = True
                         return redirect(url_for("userProfile"))
                 else:
                     db.close()
@@ -2031,11 +2030,11 @@ def updateUsername():
 
         # retrieving the object from the shelve based on the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
-        create_update_username_form = Forms.CreateChangeUsername(request.form)
-        if request.method == "POST" and create_update_username_form.validate():
-            if userFound and accGoodStatus:
+        
+        if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            create_update_username_form = Forms.CreateChangeUsername(request.form)
+            if request.method == "POST" and create_update_username_form.validate():
                 updatedUsername = sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
 
@@ -2077,13 +2076,13 @@ def updateUsername():
                     return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath)
             else:
                 db.close()
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
+                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath)
         else:
             db.close()
-            return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath)
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("userLogin"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -2114,11 +2113,11 @@ def updateEmail():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
-        create_update_email_form = Forms.CreateChangeEmail(request.form)
-        if request.method == "POST" and create_update_email_form.validate():
-            if userFound and accGoodStatus:
+        if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            create_update_email_form = Forms.CreateChangeEmail(request.form)
+            if request.method == "POST" and create_update_email_form.validate():
+                
                 updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
                 currentEmail = userKey.get_email()
                 if updatedEmail != currentEmail:
@@ -2161,13 +2160,13 @@ def updateEmail():
                     return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath)
             else:
                 db.close()
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
+                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath)
         else:
             db.close()
-            return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath)
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("userLogin"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -2198,17 +2197,17 @@ def updatePassword():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-        create_update_password_form = Forms.CreateChangePasswordForm(request.form)
-        if request.method == "POST" and create_update_password_form.validate():
-            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
-            passwordNotMatched = True
-            passwordVerification = False
+        if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            create_update_password_form = Forms.CreateChangePasswordForm(request.form)
+            if request.method == "POST" and create_update_password_form.validate():
+                # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
+                passwordNotMatched = True
+                passwordVerification = False
 
-            # for jinja2
-            errorMessage = False
+                # for jinja2
+                errorMessage = False
 
-            if userFound and accGoodStatus:
                 currentPassword = create_update_password_form.currentPassword.data
                 updatedPassword = create_update_password_form.updatePassword.data
                 confirmPassword = create_update_password_form.confirmPassword.data
@@ -2263,13 +2262,13 @@ def updatePassword():
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
-                print("User not found is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
+                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath)
         else:
             db.close()
-            return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath)
+            print("User not found is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("userLogin"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -2300,11 +2299,12 @@ def changeAccountType():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
+
         accType = userKey.get_acc_type()
         print("Account type:", accType)
 
         if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Student":
                 if request.method == "POST":
                     # changing the user's account type to teacher by deleting the student object and creating a new teacher object, and hence, changing the user ID as a whole.
@@ -2369,12 +2369,12 @@ def changeAccountType():
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
-            return redirect(url_for("home"))
+            return redirect(url_for("teacherSignUp"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            return redirect(url_for("userLogin"))
+            return redirect(url_for("teacherSignUp"))
 
 """End of User Profile Settings by Jason"""
 
@@ -2405,9 +2405,9 @@ def userPayment():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
+        
         if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
 
@@ -2528,9 +2528,9 @@ def userEditPayment():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
+        
         if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
             cardName = userKey.get_card_name()
@@ -2665,9 +2665,9 @@ def search(pageNum):
             userSession = session["userSession"]
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-
+            
             if userFound and accGoodStatus:
+                imagesrcPath = retrieve_user_profile_pic(userKey)
                 # add in your code here (if any)
                 courseDict = {}
                 courseTitleList = []
@@ -2766,9 +2766,9 @@ def purchaseHistory(pageNum):
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
+        
         if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
             purchaseHistoryList = userKey.get_purchases()
@@ -2864,11 +2864,11 @@ def purchaseReview():
         # userFound, accGoodStatus = validate_session_open_file(userSession)
         # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
+        
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
-
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             reviewID = userKey.get_reviewID()
             print("ReviewID exists?: ", reviewID)
             reviewDict = {}
@@ -2949,10 +2949,10 @@ def purchaseView():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
+        
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             purchaseHistoryList = []
             showCourse = ""
             purchaseID = bool(userKey.get_purchaseID())
@@ -3035,10 +3035,10 @@ def teacherCashOut():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             joinDate = userKey.get_joinDate
             print("When did user joined?", joinDate)
 
@@ -3101,10 +3101,10 @@ def shoppingCart(pageNum):
         # retrieving the object based on the shelve files using the user's user ID
         # userKey is the object (e.g. Student() or Teacher())
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             removeCourseForm = Forms.RemoveShoppingCartCourse(request.form)
             shoppingCart = userKey.get_shoppingCart()
 
@@ -3246,10 +3246,10 @@ def checkout():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey) # newly added for user profile pic to show on the navbar, decide if you want to delete or not if this is just a page for doing something before redirecting the user to another page - Jason
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey) # newly added for user profile pic to show on the navbar, decide if you want to delete or not if this is just a page for doing something before redirecting the user to another page - Jason
             userID = userKey.get_user_id()
             # Add purchase ID to declare user can access course
             userKey.add_purchaseID(payment.get_paymentID())
@@ -3369,11 +3369,11 @@ def teacherPage(teacherUID):
             userSession = session["userSession"]
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-            imagesrcPath = retrieve_user_profile_pic(userKey)
+           
 
             if userFound and accGoodStatus:
                 # add in your code here (if any)
-
+                imagesrcPath = retrieve_user_profile_pic(userKey)
                 """
                 To Clarence, this template code is outdated, please use the new one for the general page
                 - Jason
@@ -3416,11 +3416,11 @@ def teacherCourses(teacherUID):
             userSession = session["userSession"]
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-            imagesrcPath = retrieve_user_profile_pic(userKey)
+            
 
             if userFound and accGoodStatus:
                 # add in your code here (if any)
-
+                imagesrcPath = retrieve_user_profile_pic(userKey)
                 """
                 To Clarence, this template code is outdated, please use the new one for the general page
                 - Jason
@@ -3559,10 +3559,10 @@ def function():
 
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
-
+        
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
@@ -3601,10 +3601,11 @@ def function():
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
+        
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            imagesrcPath = retrieve_user_profile_pic(userKey)
 
             return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
@@ -3641,11 +3642,11 @@ def insertName():
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        imagesrcPath = retrieve_user_profile_pic(userKey)
+        
 
         if userFound and accGoodStatus:
             # add in your code below
-
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("User not found or is banned.")

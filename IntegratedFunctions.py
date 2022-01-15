@@ -191,15 +191,24 @@ def check_duplicates(userInput, userDict, infoToCheck):
 
 # use this function to check for the allowed image extensions when uploading an image to the web app's server
 # it will return True or False
+# What it does is: converts the filename to a list of strings. For e.g. ["filename", "png"] and retrieve the first index which will be the file extension and lowercase it
 def allowed_image_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+    # try and except as if the user submits a file that does not have any extensions, e.g. "this_is_my_file" which is missing the extension such as .png at the back, it will cause a runtime error
+    try:
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+    except:
+        return False
 
 # use this function to to get the extension type of a file
 # it will return the extension type (e.g. ".png")
 def get_extension(filename):
-    extension = filename.rsplit('.', 1)[1].lower()
-    extension = "." + str(extension)
-    return extension
+    # try and except as if the user submits a file that does not have any extensions, e.g. "this_is_my_file" which is missing the extension such as .png at the back, it will cause a runtime error
+    try:
+        extension = filename.rsplit('.', 1)[1].lower() # converts the filename to a list of strings. For e.g. ["filename", "png"] and retrieve the first index which will be the file extension and lowercase it
+        extension = "." + str(extension)
+        return extension
+    except:
+        return False
 
 # for overwriting existing files but must validate if the file already exists else it will cause a runtime error
 def overwrite_file(file, oldFilePath, newFilePath):
@@ -209,10 +218,16 @@ def overwrite_file(file, oldFilePath, newFilePath):
 # use this function to resize your image to the desired dimensions
 # do note that the dimensions argument must be in a tuple, e.g. (500, 500)
 def resize_image(imagePath, dimensions):
-    image = Image.open(imagePath)
-    resizedImage = image.resize(dimensions)
-    os.remove(imagePath)
-    resizedImage.save(imagePath)
+    # try and except as a user might have use a unsupported image file and manually change it to .png, .jpg, etc. in which the Pillow library will raise a runtime error as it is unable to open the image
+    try:
+        image = Image.open(imagePath)
+        resizedImage = image.resize(dimensions)
+        os.remove(imagePath)
+        resizedImage.save(imagePath)
+        return True
+    except:
+        print("Error in resizing user's profile image...")
+        return False
 
 # use this function to construct a path for storing files such as images in the web app directory
 # pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
