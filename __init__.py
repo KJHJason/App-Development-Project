@@ -1536,9 +1536,16 @@ def deleteUser(userID):
             userKey = userDict.get(userID)
 
             if userKey != None:
+                userImageFileName = userKey.get_profile_image()
                 userDict.pop(userID)
                 db['Users'] = userDict
                 db.close()
+
+                userImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                # delete the user's profile image and adding validation to check if the image file path exists just in case as if the file does not exists, it will cause a runtime error/internal server error
+                if Path(userImageFilePath).is_file():
+                    os.remove(userImageFilePath)
+
                 print(f"User account with the ID, {userID}, has been deleted.")
                 return redirect(redirectURL)
             else:
@@ -1767,8 +1774,15 @@ def resetProfileImage(userID):
 
             if userKey != None:
                 userKey.set_profile_image("")
+                userImageFileName = userKey.get_profile_image()
                 db['Users'] = userDict
                 db.close()
+
+                userImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                # delete the user's profile image and adding validation to check if the image file path exists just in case as if the file does not exists, it will cause a runtime error/internal server error
+                if Path(userImageFilePath).is_file():
+                    os.remove(userImageFilePath)
+
                 print(f"User account with the ID, {userID}, has its profile picture reset.")
                 return redirect(redirectURL)
             else:
