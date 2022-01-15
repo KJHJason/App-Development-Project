@@ -1842,7 +1842,10 @@ def userProfile():
                         return redirect(url_for("userProfile"))
 
                     file = request.files["profileImage"]
-                    filename = file.filename
+
+                    #  "never trust user input" principle, all submitted form data can be forged, and filenames can be dangerous.
+                    # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
+                    filename = secure_filename(file.filename)
 
                     uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
                     print("Uploaded file size:", uploadedFileSize, "bytes")
@@ -1854,16 +1857,10 @@ def userProfile():
                             # will only accept .png, .jpg, .jpeg
                             print("File extension accepted and is within size limit.")
 
-                            #  “never trust user input” principle, all submitted form data can be forged, and filenames can be dangerous.
-                            # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
-                            filename = secure_filename(filename)
-
-                            # constructing the file path so that the it will know where to store the image
-                            filePath = construct_path(PROFILE_UPLOAD_PATH, filename)
-
                             # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
                             extensionType = get_extension(filename)
-                            userImageFileName = str(userSession) + extensionType
+                            file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
+                            userImageFileName = file.filename
                             newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
 
                             # constructing a file path to see if the user has already uploaded an image and if the file exists
@@ -1873,15 +1870,12 @@ def userProfile():
                             # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
                             # else it will just save normally and rename it to userID.png (e.g. 0.png)
                             if Path(userOldImageFilePath).is_file():
-                                print("Removing existing image.")
-                                overwrite_file(file, userOldImageFilePath, filePath)
-                                os.rename(filePath, newFilePath) # afterwards, it will rename the image that the user uploaded to userID.png
-                                print("File renamed to", newFilePath, "and has been overwrited.")
+                                print("User has already uploaded a profile image before.")
+                                overwrite_file(file, userOldImageFilePath, newFilePath)
+                                print("Image file has been overwrited.")
                             else:
-                                print("Saving image file.")
-                                file.save(filePath)
-                                os.rename(filePath, newFilePath) # rename the image that the user uploaded to userID.png
-                                print("File renamed to", newFilePath, "and has been saved.")
+                                file.save(newFilePath)
+                                print("Image file has been saved.")
 
                             # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
                             resize_image(newFilePath, (500, 500))
