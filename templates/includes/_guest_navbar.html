@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg bg-dark">
-	<div class="container-fluid">
+	<div class="container-fluid navbar_margin">
 		<a id="logo" href="/"><img src="{{ url_for('static', filename='images/common/logo.png') }}" alt="CourseFinity Logo"></a>
 		</a>
 		<input type="checkbox" id="check" data-bs-toggle="collapse" data-bs-target="#navbar-content"  aria-expanded="false" aria-label="Toggle navigation">
@@ -101,18 +101,18 @@
 					</ul>
 				</li>
             </ul>
+			<form action="/search/1/" method="GET" class="d-flex ms-auto me-auto search_form">
+				<div class="input-group">
+					<input class="form-control border-0 mr-2" type="search" placeholder="Search" name="q" aria-label="Search" required>
+					<button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
+				</div>
+			</form>
 			<div class="d-flex ms-auto">
 				<ul class="navbar-nav">
 					<li class="nav-item"><a class="nav-link text-white" href="/login">Login</a></li>
 					<li class="nav-item"><a class="nav-link text-white" href="/signup">Sign Up</a></li>
 				</ul>
 			</div>
-			<form action="/search/1/" method="GET" class="d-flex">
-				<div class="input-group">
-					<input class="form-control border-0 mr-2" type="search" placeholder="Search" name="searchingtext" aria-label="Search">
-					<button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
-				</div>
-			</form>
 		</div>
 	</div>
 </nav>

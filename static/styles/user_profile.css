@@ -273,3 +273,9 @@
 .cancleSaveBio {
   margin-right: 10px;
 }
+
+.users_profile {
+	height: 40px;
+	width: auto;
+	border-radius: 50%;
+}

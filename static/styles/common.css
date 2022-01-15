@@ -24,7 +24,6 @@ a:hover {
 
 .dropdown-menu.show {
 	-webkit-animation: fadeIn 0.3s alternate;
-	/* Safari 4.0 - 8.0 */
 	animation: fadeIn 0.3s alternate;
 }
 
@@ -36,6 +35,25 @@ a:hover {
 	width: 90%;
 	top: auto;
 	left: 5%;
+}
+
+.navbar_margin {
+	padding-right: 50px;
+	padding-left: 50px;
+}
+
+.search_form {
+	width: 600px;
+}
+
+.navbar-expand-lg .navbar-nav .nav-link {
+	padding: 5px;
+}
+
+@media (max-width: 1500px) {
+	.search_form {
+		width: 40%;
+	}
 }
 
 #nav-icon {
@@ -108,6 +126,16 @@ a:hover {
 		-o-transform: rotate(-135deg);
 		transform: rotate(-135deg);
 	}
+	.search_form {
+		width: 100%;
+	}
+	.navbar-expand-lg .navbar-nav .nav-link, .search_form {
+		padding-top: 20px;
+	}
+	.navbar_margin {
+		padding-right: 15px;
+		padding-left: 15px;
+	}
 }
 
 @media (max-width: 360px) {
@@ -151,6 +179,12 @@ a:hover {
 	height: 80px;
 	width: auto;
 	margin-right: 20px;
+}
+
+#user_profile {
+	height: 40px;
+	width: auto;
+	border-radius: 50%;
 }
 
 @media (max-width: 412px) {
