@@ -152,5 +152,5 @@ class Course():
     def get_schedule(self):
         return self.__schedule
 
-    def get_Lesson(self, lesson):
+    def get_lesson(self, lesson):
         return self.__schedule[int(lesson)]

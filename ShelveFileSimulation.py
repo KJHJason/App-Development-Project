@@ -129,12 +129,14 @@ course.add_rating("2", "Very Good", "Please make more.", "4")
 
 # def __init__(self, title, description, thumbnail, **kwargs):
 course.add_scheduleZoomLesson("Step 1: See Documentation","We learn Flask Documentation","")
-course.get_Lesson(0).set_timing("2022-07-03","15:30")
+course.get_lesson(0).set_timing("2022-07-03","15:30")
 
 course.add_scheduleZoomLesson("Step 2: Practice","At least 5 Codeforces a Week","")
-course.get_Lesson(1).set_timing("2022-07-10","15:30")
+course.get_lesson(1).set_timing("2022-07-10","15:30")
 
 user.set_courseTeaching(course.get_courseID())
+
+
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user

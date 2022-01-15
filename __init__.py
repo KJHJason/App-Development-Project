@@ -3184,91 +3184,27 @@ def checkout():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            paymentForm = Forms.PaymentInfo(request.form)
-            if request.method == "POST" and paymentForm.validate():
-                print("paymentForm posted successfully.")
-                try:
-                    dbPayment = shelve.open("payment","c")
-                    if "Payment" in dbPayment:
-                        paymentDict = dbPayment['Payment']
-                    else:
-                        print("dbPayment has no entries.")
-                        paymentDict = {}
-                except:
-                    print("Error in retrieving Payment from payment.db")
+            userID = userKey.get_user_id()
+            # Add purchase ID to declare user can access course
+            userKey.add_purchaseID(payment.get_paymentID())
 
-                #Credit Validation
-                cardName = sanitise(paymentForm.cardName.data)
+            # Remove courses from cart
+            userKey.addCartToPurchases()
+            print(userKey.get_shoppingCart())
 
-                cardNumber = sanitise(paymentForm.cardNumber.data)
-                cardValid = validate_card_number(cardNumber)
+            userDict[userID] = userKey
+            paymentDict[payment.get_paymentID()] = payment
 
-                cardCVV = sanitise(paymentForm.cardCVV.data)
-                cardType = get_credit_card_type(cardNumber, cardValid)
-                cardCVVValid = validate_cvv(cardCVV, cardType)
+            # Make changes permanent only after all processes are finished with no interrupt errors
+            db["Users"] = userDict
+            dbPayment["Payments"] = paymentDict
 
-                cardExpiry = sanitise(paymentForm.cardExpiry.data)
-                cardExpiryValid = validate_expiry_date(cardExpiry)
+            session["paymentComplete"] = True
 
-                if True:#cardValid and cardCVVValid and cardExpiryValid:
+            db.close()
+            dbPayment.close()
+            return redirect(url_for('home'))
 
-                    # If someone wants to save any changes made
-                    if paymentForm.savePaymentInfo.data == True:                                            # U for Update
-                        userKey.set_card_name(cardName)
-                        userKey.set_card_no(cardNumber)
-                        userKey.set_card_expiry(cardExpiry)
-
-                else:
-                    return render_template('users/student/payment_info_v2.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardCVV=cardCVV, cardExpiry=cardExpiry, cardValid=cardValid, cardCVVValid=cardCVVValid, cardExpiryValid=cardExpiryValid)
-
-                userID = userKey.get_user_id()
-
-                # Create payment object                                                             # 'C' for Create
-                payment = Payment(userID,
-                                  paymentForm.cardName.data,
-                                  paymentForm.cardNumber.data,
-                                  paymentForm.cardExpiry.data,
-                                  paymentForm.firstName.data,
-                                  paymentForm.lastName.data,
-                                  paymentForm.billAddress1.data,
-                                  paymentForm.billAddress2.data,
-                                  paymentForm.billAddress3.data,
-                                  paymentForm.city.data,
-                                  paymentForm.country.data,
-                                  paymentForm.zipCode.data,
-                                  paymentForm.countryCode.data,
-                                  paymentForm.phoneNumber.data)
-
-                # Add purchase ID to declare user can access course
-                userKey.add_purchaseID(payment.get_paymentID())
-
-                # Remove courses from cart
-                userKey.addCartToPurchases()
-                print(userKey.get_shoppingCart())
-
-                userDict[userID] = userKey
-                paymentDict[payment.get_paymentID()] = payment
-
-                # Make changes permanent only after all processes are finished with no interrupt errors
-                db["Users"] = userDict
-                dbPayment["Payments"] = paymentDict
-
-                session["paymentComplete"] = True
-
-                db.close()
-                dbPayment.close()
-                return redirect(url_for('home'))
-            else:
-                # Add choices as tuple (value, label)
-                # Do not append choices, it does not work
-                """PaymentForm.paymentMethod.choices = [('5','3')]
-                print(paymentForm.paymentMethod.choices)"""
-                cardName = userKey.get_card_name()
-                cardNumber = userKey.get_card_no()
-                cardExpiry = userKey.get_card_expiry()
-
-                db.close() # remember to close your shelve files!
-                return render_template('users/student/payment_info_v2.html', form = paymentForm, accType=accType, cardName=cardName, cardNumber=cardNumber, cardExpiry =cardExpiry, cardValid=True, cardCVVValid=True, cardExpiryValid=True)
         else:
             db.close()
             print("User not found or is banned")

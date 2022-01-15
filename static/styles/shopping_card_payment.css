@@ -8,13 +8,17 @@
     display:none;
 }
 
+body .g-0 {
+    padding:0px 2.5vw;
+}
+
 .card .col-8 {
     padding-right:0px;
 }
 
 .card {
     max-width: 80vw;
-    margin: 5vw;
+    margin: 2.5vw;
     margin-top:1vw;
 }
 
@@ -22,8 +26,9 @@
     margin-bottom:5vw;
 }
 
-.card .row:first-of-type {
+.card .row {
     align-items:center;
+    padding:0.75em 0.75em 0px;
 }
 
 .col-8 .card-body {
@@ -180,6 +185,10 @@
     width:100%;
 }
 
+.card-body .row {
+    padding:0px;
+}
+
 .information {
     flex-direction:column;
     display: flex;
@@ -242,10 +251,6 @@
     margin:1vw;
 }
 
-#paypal-button-container div {
-    width:33%;
-}
-
 .subtotal {
     text-align:center;
     margin-top:2em;
@@ -256,13 +261,36 @@
     top: 2.5em;
 }
 
+#hidden-subtotal {
+    display:none;
+}
+
 /*For responsiveness*/
 @media only screen and (max-width: 1175px) {/*No Bootstrap deconstruction this time*/
 
 }
 
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 825px) {
+    .card {
+        margin:auto;
+    }
+    .card-body .row {
+        padding:0px;
+    }
+}
 
+@media only screen and (max-width: 450px) {
+    .selection p, .selection a {
+        width:100%;
+        height:50%;
+        padding:25px;
+    }
+    .selection {
+        width:100%;
+    }
+    .card-body .row {
+        flex-direction:column;
+    }
 }
 
 @media only screen and (max-width:350px) {

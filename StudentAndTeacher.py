@@ -24,9 +24,15 @@ class StudentAndTeacher(User):
         self.__email_verification = verify_email
 
     def set_purchaseID(self, purchaseID):
-        self.__purchaseID = purchaseID
+        self.__purchaseID.append(purchaseID)
     def set_reviewID(self, reviewID):
-        self.__reviewID = reviewID
+        self.__reviewID.append(reviewID)
+
+    def remove_purchaseID(self, purchaseID):
+        self.__purchaseID.remove(purchaseID)
+    def remove_reviewID(self, reviewID):
+        self.__reviewID.remove(reviewID)
+
     def set_viewed(self, viewed):
         self.__viewed = viewed
 
