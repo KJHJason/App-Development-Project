@@ -123,7 +123,7 @@
                         <div class="col-md-6">
                             <form action="/user_management/search/1/" method="GET" class="d-flex">
                                 <div class="input-group margin-btm">
-                                    <input class="form-control mr-2" type="search" placeholder="Search for user (using username or user ID)..." name="user" aria-label="Search" value="{{ parameter }}" required>
+                                    <input class="form-control mr-2" type="search" placeholder="Search for user (using username or UID or email)..." name="user" aria-label="Search" value="{{ parameter }}" required>
                                     <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
                                 </div>
                             </form>
@@ -131,7 +131,8 @@
                         <div class="table-responsive">
                             <table class="table">
                                 <tr>
-                                    <td>User ID</td>
+                                    <td>User ID/UID</td>
+                                    <td>Profile Image</td>
                                     <td>Username</td>
                                     <td>Account Type</td>
                                     <td>Email</td>
@@ -142,9 +143,16 @@
                                 {% endif %}
                                 {% for user in userList %}
                                     <tr>
-                                        <td class="user_id_text text-break">
+                                        <td class="user_id_text text-break text-truncate">
                                             <a href="javascript:userIDCopyToClipBoard('{{ user.get_user_id() }}')" id="userIDTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_user_id() }}</a>
                                             <span class="tooltip_value" id="userIDTooltipValue{{ user.get_user_id() }}">{{ user.get_user_id() }}</span>
+                                        </td>
+                                        <td>
+                                            {% if user.get_profile_image() != "" %}
+                                            <img src="/static/images/user/{{ user.get_profile_image() }}" alt="User uploaded profile image" class="users_profile">
+                                            {% else %}
+                                            <img src="https://avatars.dicebear.com/api/initials/{{ user.get_username() }}.svg" alt="User default profile image" class="users_profile">
+                                            {% endif %}
                                         </td>
                                         <td class="text-truncate"><a href="javascript:usernameCopyToClipBoard('{{ user.get_user_id() }}')" id="usernameTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_username() }}</a></td>
                                         <span class="tooltip_value" id="usernameTooltipValue{{ user.get_user_id() }}">{{ user.get_username() }}</span>
@@ -210,12 +218,12 @@
                                                     <div class="modal-dialog">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title" id="usernameChangeModalLabel{{ user.get_user_id() }}">Changer User's Username</h5>
+                                                                <h5 class="modal-title" id="usernameChangeModalLabel{{ user.get_user_id() }}">Change User's Username</h5>
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
                                                             <div class="modal-body">
                                                                 <h6>Are you sure that you would like to change {{ user.get_username() }}'s username? If so, please enter a new username below.</h6>
-                                                                <h6>Note: Only change the user's username if it violates the community guidelines, otherwise, refrain from changing a user's username.</h6>
+                                                                <h6>Note: Only change the user's username if it violates the <a href=/community_guidelines target="_blank">community guidelines</a>, otherwise, refrain from changing a user's username.</h6>
                                                                 <label for="username" class="form-label">Enter a username:</label>
                                                                 <input type="text" name="username" id="username" class="form-control">
                                                                 <h6 class="text-danger">Warning: There is no going back after clicking confirm.</h6>
@@ -228,6 +236,28 @@
                                                     </div>
                                                 </div>
                                             </form>
+                                            {% if user.get_profile_image() != "" %}
+                                            <form action="/reset_profile_image/uid/{{ user.get_user_id() }}" method="POST">
+                                                <div class="modal fade" id="profileImageChangeModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="profileImageChangeModalLabel{{ user.get_user_id() }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="profileImageChangeModalLabel{{ user.get_user_id() }}">Reset User's Profile Image</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <h6>Are you sure that you would like to reset {{ user.get_username() }}'s profile image?</h6>
+                                                                <h6>Note: Only reset a user's profile image if it is <span class="text-danger">deemed inappropriate</span> or when it violates the <a href=/community_guidelines target="_blank">community guidelines</a>, otherwise, refrain from resetting a user's profile image.</h6>
+                                                            </div>
+                                                                <div class="modal-footer">
+                                                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-success">Confirm Reset of Profile Image</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                            {% endif %}
                                             {% if user.get_status() == "Good" %}
                                             <form action="/ban/uid/{{ user.get_user_id() }}" method="POST">
                                                 <div class="modal fade" id="banUserModal{{ user.get_user_id() }}" tabindex="-1" aria-labelledby="banUserModalLabel{{ user.get_user_id() }}" aria-hidden="true">
@@ -274,6 +304,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
+                                                    {% if user.get_profile_image() != "" %}
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
+                                                    {% endif %}
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.get_user_id() }}">Ban</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
@@ -325,6 +358,9 @@
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
+                                                    {% if user.get_profile_image() != "" %}
+                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
+                                                    {% endif %}
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#unbanUserModal{{ user.get_user_id() }}">Unban</a></li>
                                                     <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>

@@ -1728,6 +1728,61 @@ def changeUserUsername(userID):
     else:
         return redirect(url_for("home"))
 
+@app.route("/reset_profile_image/uid/<userID>", methods=['POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
+def resetProfileImage(userID):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            # for redirecting the admin to the user management page that he/she was in
+            if "searchedPageRoute" in session:
+                redirectURL = session["searchedPageRoute"]
+            else:
+                if "pageNum" in session:
+                    pageNum = session["pageNum"]
+                else:
+                    pageNum = 0
+                redirectURL = "/user_management/page/" + str(pageNum)
+
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the admin to the user management page
+                    return redirect(url_for("userManagement"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("userManagement"))
+
+            userKey = userDict.get(userID)
+
+            if userKey != None:
+                userKey.set_profile_image("")
+                db['Users'] = userDict
+                db.close()
+                print(f"User account with the ID, {userID}, has its profile picture reset.")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Error in retrieving user object.")
+                return redirect(redirectURL)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the admin login page
+            session.clear()
+            return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
 """End of User Management for Admins by Jason"""
 
 """User Profile Settings by Jason"""
