@@ -75,6 +75,7 @@ def generate_ID(inputDict):
 
 # function to retrieve the acc type and validate the session which will mainly be used on general pages
 def general_page_open_file(userID):
+    imagesrcPath = ""
     try:
         adminDict = {}
         db = shelve.open("admin", "r")
@@ -95,9 +96,9 @@ def general_page_open_file(userID):
             accStatus = adminKey.get_status()
             if accStatus == "Active":
                 accType = adminKey.get_acc_type()
-                return userFound, True, accType
+                return userFound, True, accType, imagesrcPath
             else:
-                return userFound, False, ""
+                return userFound, False, "", imagesrcPath
     try:
         userDict = {}
         db = shelve.open("user", "r")
@@ -106,7 +107,7 @@ def general_page_open_file(userID):
         db.close()
     except:
         print("File could not be found.")
-        return False, False, ""
+        return False, False, "", imagesrcPath
 
     userFound = False
     print("User ID in session:", userID)
@@ -116,10 +117,11 @@ def general_page_open_file(userID):
         userFound = True
         accStatus = userKey.get_status()
         if accStatus == "Good":
+            imagesrcPath = retrieve_user_profile_pic(userKey)
             accType = userKey.get_acc_type()
-            return userFound, True, accType
+            return userFound, True, accType, imagesrcPath
         else:
-            return userFound, False, ""
+            return userFound, False, "", imagesrcPath
 
 # use the function below if you just want to validate the session and check if the user is banned but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
 def validate_session_open_file(userSession):
@@ -232,6 +234,16 @@ def get_user_profile_pic(username, profileFileName, profileFilePath):
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
         imagesrcPath = Avatar(type="initials", seed=username)
+    return imagesrcPath
+
+# function for retrieving user's profile picture using dicebear library based on only the user's object given
+def retrieve_user_profile_pic(userKey):
+    profileFileName = userKey.get_profile_image()
+    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, profileFileName)
+    if profileFileName != "" and Path(profileFilePath).is_file():
+        imagesrcPath = "/static/images/user/" + profileFileName
+    else:
+        imagesrcPath = Avatar(type="initials", seed=userKey.get_username())
     return imagesrcPath
 
 # use the function below if you just want to validate the session and check if the admin is active but there is no need to manipulate the data in the admin shelve data files and also assuming that the admin must be logged in, meaning the admin shelve data must be present in the directory
@@ -517,10 +529,17 @@ We are really sorry for the inconvenience caused and will do our part to investi
 """
     mail.send(message)
 
+# For generating a 6 character ID using shortuuid library for the support ticket ID.
+# Out of 10 test cases that generated one million id(s), there were an average of 206 collisions which is feasible as CourseFinity should not expect a million support tickets to be generated everyday unless the system is intentionally attacked which can be prevented to a certain extent using the flask-limiter.
+def generate_6_char_id(ticketDict):
+    ticketID = str(shortuuid.ShortUUID().random(length=6)) # generates a 6 characters ID using shortuuid library
+    if ticketID in ticketDict: # the ticketDict must use the generated ticketID as the keys for all objects
+        generate_6_char_id(ticketDict) # using recursion to generate a new ID if there is a collision
+    return ticketID
+
 # use this to send the creation of support ticket notification email to be sent to the user
 # for Wei Ren
-def send_contact_us_email(issueTitle, name, email):
-    ticketID = str(shortuuid.ShortUUID().random(length=6)) # generates a 6 characters ID using shortuuid library
+def send_contact_us_email(ticketID, issueTitle, name, email):
     title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
     message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
     message.html = f"""<p>Hello {name},</p>
@@ -539,49 +558,6 @@ def send_contact_us_email(issueTitle, name, email):
 <b>CourseFinity Team</b></p>
 """
     mail.send(message)
-
-# old function for contact us page which works by sending the user the ticket email and sending the email to CourseFinity123@gmail.com from CourseFinity123@gmail.com a copy (which is not ideal)
-# def send_contact_us_email(issueTitle, userID, name, email, bodyContent):
-#     ticketID = str(shortuuid.ShortUUID().random(length=6)) # generates a 6 characters ID using shortuuid
-#     title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
-#     message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
-#     message.html = f"""<p>Hello {name},</p>
-
-# <p>Thanks for contacting CourseFinity support! We have received your request (#{ticketID}) and will respond back as soon as we are able to.</p>
-
-# <p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
-
-# <p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("home", _external=True)}</a> for solutions to common problems.</p>
-
-# <p>Please reply to this email if you have any further questions or concerns.</p>
-
-# <p>Thank you.</p>
-
-# <p>Sincerely,<br>
-# <b>CourseFinity Team</b></p>
-# """
-#     mail.send(message)
-
-#     # sending another email for a copy of the user's problem to the admin to refer
-#     title = "[CourseFinity for Support Team] Support Ticket - " + issueTitle + " #" + id
-#     message = Message(title, sender="CourseFinity123@gmail.com", recipients=["CourseFinity123@gmail.com"])
-#     message.body = f"""Hello,
-
-# Please refer to the user's problem below:
-# (Warning: Please do NOT click on suspicious looking links that were sent by the user!)
-# {bodyContent}
-
-# User's info:
-# User ID: {userID}
-# Name: {name}
-# Email: {email}
-
-# Afterwards, please reply to the email with the ticket #{id} in the sent emails folder.
-
-# Thank you and have a nice day.
-# This email was auto-generated by the system. Please do not reply to this email.
-# """
-#     mail.send(message)
 
 def generate_password():
     combinations = string.digits + "!@#$%^&*()" + string.ascii_lowercase + string.ascii_uppercase

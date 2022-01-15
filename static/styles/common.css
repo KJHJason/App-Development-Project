@@ -153,6 +153,12 @@ a:hover {
 	margin-right: 20px;
 }
 
+#user_profile {
+	height: 35px;
+	width: auto;
+	border-radius: 50%;
+}
+
 @media (max-width: 412px) {
 	#logo img {
 		height: 55px;
