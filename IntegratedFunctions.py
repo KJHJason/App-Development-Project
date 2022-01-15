@@ -246,6 +246,12 @@ def retrieve_user_profile_pic(userKey):
         imagesrcPath = Avatar(type="initials", seed=userKey.get_username())
     return imagesrcPath
 
+def delete_user_profile(userImageFileName):
+    userImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+    # delete the user's profile image and adding validation to check if the image file path exists just in case as if the file does not exists, it will cause a runtime error/internal server error
+    if Path(userImageFilePath).is_file():
+        os.remove(userImageFilePath)
+
 # use the function below if you just want to validate the session and check if the admin is active but there is no need to manipulate the data in the admin shelve data files and also assuming that the admin must be logged in, meaning the admin shelve data must be present in the directory
 def admin_validate_session_open_file(adminSession):
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
