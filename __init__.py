@@ -3041,27 +3041,44 @@ def shoppingCart(pageNum):
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             removeCourseForm = Forms.RemoveShoppingCartCourse(request.form)
+            checkoutCompleteForm = Forms.CheckoutComplete(request.form)
             shoppingCart = userKey.get_shoppingCart()
+            print("Shopping Cart:", userKey.get_shoppingCart())
 
             if request.method == "POST" and removeCourseForm.validate():                                    # D for Delete
-                courseID =  removeCourseForm.courseID.data
-                courseType = removeCourseForm.courseType.data
+                if checkoutCompleteForm.checkoutComplete.data:
 
-                print("Removing course with Course ID, Type:", [courseID, courseType])
+                    # Remove courses from cart
+                    userKey.addCartToPurchases()
+                    print("Shopping Cart:", userKey.get_shoppingCart())
+                    print("Purchases:", userKey.get_purchases())
 
-                for course in shoppingCart:
-                    try:
-                        if course == [courseID,courseType]:
-                            shoppingCart.remove(course)
-                            userDict[userKey.get_user_id] = userKey
-                            db["Users"] = userDict
+                    userDict[userKey.get_user_id()] = userKey
+                    db['Users'] = userDict
+
+                    session["paymentComplete"] = True
+
+                    return redirect(url_for('home'))
+
+                else:
+                    courseID =  removeCourseForm.courseID.data
+                    courseType = removeCourseForm.courseType.data
+
+                    print("Removing course with Course ID, Type:", [courseID, courseType])
+
+                    for course in shoppingCart:
+                        try:
+                            if course == [courseID,courseType]:
+                                shoppingCart.remove(course)
+                                userDict[userKey.get_user_id] = userKey
+                                db["Users"] = userDict
+                                db.close()
+                                break
+                        except:
                             db.close()
-                            break
-                    except:
-                        db.close()
-                        print("Error. Shopping cart courses are missing values.")
+                            print("Error. Shopping cart courses are missing values.")
 
-                return redirect("/shopping_cart/"+str(pageNum))
+                    return redirect("/shopping_cart/"+str(pageNum))
 
             # Render the page                                                                               # R for Read
             else:
@@ -3137,7 +3154,7 @@ def shoppingCart(pageNum):
 
                     db.close() # remember to close your shelve files!
                     dbCourse.close()
-                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, subtotal = "{:,.2f}".format(subtotal), accType=accType)
+                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -3155,77 +3172,12 @@ def shoppingCart(pageNum):
 
 """End of Template Shopping Cart by Wei Ren"""
 
-"""Template Checkout by Wei Ren"""
-
-@app.route("/checkout", methods = ["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
-def checkout():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            userID = userKey.get_user_id()
-            # Add purchase ID to declare user can access course
-            userKey.add_purchaseID(payment.get_paymentID())
-
-            # Remove courses from cart
-            userKey.addCartToPurchases()
-            print(userKey.get_shoppingCart())
-
-            userDict[userID] = userKey
-            paymentDict[payment.get_paymentID()] = payment
-
-            # Make changes permanent only after all processes are finished with no interrupt errors
-            db["Users"] = userDict
-            dbPayment["Payments"] = paymentDict
-
-            session["paymentComplete"] = True
-
-            db.close()
-            dbPayment.close()
-            return redirect(url_for('home'))
-
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Template Checkout by Wei Ren"""
-
 """Contact Us by Wei Ren"""
 
 @app.route("/contact_us")
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
+    contactForm = Forms.ContactUs(request.form)
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -3235,13 +3187,16 @@ def contactUs():
         userFound, accGoodStanding, accType = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/contact_us.html', accType=accType)
+            # CRUD Time!
+
+
+            return render_template('users/general/contact_us.html', accType=accType, form = contactForm, subjectChoices = contactForm.subject.choices)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/contact_us.html", accType="Guest")
+            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
     else:
-        return render_template("users/general/contact_us.html", accType="Guest")
+        return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""
 
@@ -3751,6 +3706,11 @@ def function():
 '''
 
 """Custom Error Pages"""
+
+# Bad Request
+@app.errorhandler(400)
+def error400(e):
+    return render_template("errors/401.html"), 400
 
 # Unauthorised
 @app.errorhandler(401)

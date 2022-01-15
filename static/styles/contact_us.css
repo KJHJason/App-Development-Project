@@ -1,0 +1,44 @@
+.title {
+    margin:3em;
+    text-align:center;
+}
+
+.icon-div {
+    display:flex;
+    justify-content:center;
+}
+
+.fa-envelope-open-text {
+    font-size:20vw;
+}
+
+.content-row {
+    display:flex;
+    align-items: center;
+    padding:0px 10vw;
+}
+
+.form-div label {
+    display:none;
+}
+
+.form-div button {
+    text-align:center;
+    display:block;
+}
+
+.form-div input, .form-div select, .form-div textarea, .form-div button {
+    margin:1em auto;
+    width:75%;
+}
+
+.form-div select {
+    appearance:auto;
+    padding:0.5rem 0.75rem;
+}
+
+@media only screen and (max-width: 600px) {
+    .icon-div {
+        display:none;
+    }
+}
