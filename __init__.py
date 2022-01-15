@@ -2669,6 +2669,7 @@ def search(pageNum):
             if userFound and accGoodStatus:
                 imagesrcPath = retrieve_user_profile_pic(userKey)
                 # add in your code here (if any)
+                checker = ""
                 courseDict = {}
                 courseTitleList = []
                 try:
@@ -2692,13 +2693,17 @@ def search(pageNum):
                 print(matchedCourseTitleList)
                 for courseID in courseDict:
                     courseObject = courseDict.get(courseID)
-                    titleCourse = courseObject.get_title
-                    for key in matchedCourseTitleList:
-                        if titleCourse == key:
-                            titleList.append(courseObject)
+                    titleCourse = courseObject.get_title()
+                for key in matchedCourseTitleList:
+                    if titleCourse == key:
+                        titleList.append(courseObject)
+                print(titleList)
+                if bool(titleList):
+                    checker = False
+                else:
+                    checker = True
 
                 db.close()
-
 
                 maxItemsPerPage = 5 # declare the number of items that can be seen per pages
                 courseListLen = len(courseTitleList) # get the length of the userList
@@ -2714,9 +2719,9 @@ def search(pageNum):
                     return redirect(redirectRoute)
                 else:
                     # pagination algorithm starts here
-                    courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    courseTitleList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                     pageNumForPagination = pageNum - 1 # minus for the paginate function
-                    paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                    paginatedCourseList = paginate(courseTitleList, pageNumForPagination, maxItemsPerPage)
                     courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
 
                     paginationList = get_pagination_button_list(pageNum, maxPages)
@@ -2725,7 +2730,7 @@ def search(pageNum):
                     nextPage = pageNum + 1
 
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList, courseTitleList=courseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, paginatedCourseList=paginatedCourseList, maxPages=maxPages, imagesrcPath=imagesrcPath)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, individualCount=len(paginatedCourseList), courseTitleList=paginatedCourseList)
             else:
                 print("User not found or is banned.")
                 # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -2771,6 +2776,7 @@ def purchaseHistory(pageNum):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
+            historyCheck = True
             purchaseHistoryList = userKey.get_purchases()
             historyList = {}
             showCourse = ""
@@ -2805,11 +2811,13 @@ def purchaseHistory(pageNum):
                 for i in purchaseHistoryList:
                     showCourse(video[i])
                     historyList.append(showCourse)
+                    print(historyList)
 
                 db.close()
             else:
                 db.close()
                 print("Purchase History is Empty")
+                historyCheck = False
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
             courseListLen = len(purchaseHistoryList) # get the length of the userList
@@ -2836,7 +2844,7 @@ def purchaseHistory(pageNum):
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
         else:
             db.close()
             print("User not found or is banned")
