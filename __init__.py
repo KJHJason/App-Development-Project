@@ -1844,7 +1844,6 @@ def userProfile():
                     file = request.files["profileImage"]
 
                     #  "never trust user input" principle, all submitted form data can be forged, and filenames can be dangerous.
-                    # hence, secure_filename() is used because it will return a secure version of the filepath so that when constructing a file path to store the image, the server OS will be able to safely store the image
                     filename = secure_filename(file.filename)
 
                     uploadedFileSize = request.cookies.get("filesize") # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
