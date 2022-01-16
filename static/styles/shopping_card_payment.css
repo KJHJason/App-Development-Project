@@ -257,7 +257,7 @@ body .g-0 {
     top: 2.5em;
 }
 
-#hidden-subtotal, .form-label, #payment-complete {
+#hidden-subtotal, .form-label{
     display:none;
 }
 

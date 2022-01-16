@@ -117,10 +117,10 @@ class StudentAndTeacher(User):
     def get_purchases(self):
         return self.__purchasedCourses
 
-    def addCartToPurchases(self, courseID, courseType, timing, cost, transactionID, accountID):
+    def addCartToPurchases(self, courseID, courseType, date, time, cost, orderID, payerID):
         if [courseID, courseType] in self.__shoppingCart:
             paymentID = courseID + "_" + courseType # ID_Type
-            purchase = {paymentID:{'Timing' : timing,'Cost' : cost, "paypalTransactionID" : transactionID, "paypalAccountID" : accountID}}
+            purchase = {paymentID:{'Date' : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}}
             self.__purchasedCourses.append(purchase)
             self.__shoppingCart.remove([courseID, courseType])
         else:

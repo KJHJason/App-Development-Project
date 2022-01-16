@@ -1,15 +1,15 @@
 function unavailable() {
-    var unavailables = document.getElementsByClassName("unavailable")
+    var unavailables = document.getElementsByClassName("unavailable");
     for (var unavailable = 0; unavailable < unavailables.length; unavailable++) {
-        document.getElementsByClassName("unavailable")[unavailable].innerHTML += "*Unavailable*"
+        document.getElementsByClassName("unavailable")[unavailable].innerHTML += "*Unavailable*";
     }
 }
 
-window.onload = unavailable()
+window.onload = unavailable();
 
 function removeCourse(courseID) {
-    document.getElementById(courseID).submit()
-    console.log(courseID)
+    document.getElementById(courseID).submit();
+    console.log(courseID);
 }
 
 
@@ -30,7 +30,8 @@ function PayPalMove() {
     }
 }
 
-moveConditon = window.matchMedia("(max-width: 825px)")
-moveConditon.addListener(PayPalMove);
+moveCondition = window.matchMedia("(max-width: 825px)");
+moveCondition.addListener(PayPalMove);
 
-document.getElementById("paypal-container").onload = PayPalMove()
+document.getElementById("paypal-container").onload = PayPalMove();
+
