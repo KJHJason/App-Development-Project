@@ -5,10 +5,10 @@ class Teacher(StudentAndTeacher):
     def __init__(self, user_id, username, email, password):
         super().__init__(user_id, username, email, password, "Teacher", "Good")
         self.__earnings = 0
+        self.__accumulated_earnings = 0
         self.__purchaseIDs = []
         self.__reviewIDs = []
         self.__viewed = ""
-        self.__joinDate = ""
     # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
         self.__shoppingCart = [] # Course IDs here
@@ -34,19 +34,19 @@ class Teacher(StudentAndTeacher):
 
     def set_viewed(self, viewed):
         self.__viewed = viewed
-    def set_joinDate(self, joinDate):
-        self.__joinDate = joinDate
     def set_earnings(self, earnings):
         self.__earnings = earnings
+    def set_accumulated_earnings(self, earnings):
+        self.__accumulated_earnings = earnings
     def set_bio(self, bio):
         self.__bio = bio
     
-    def get_joinDate(self):
-        return self.__joinDate
     def get_earnings(self):
         return self.__earnings
     def get_bio(self):
         return self.__bio
+    def get_accumulated_earnings(self):
+        return self.__accumulated_earnings
 
 # Added by Wei Ren for courses
     def get_coursesTeaching(self):

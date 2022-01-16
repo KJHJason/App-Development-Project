@@ -295,6 +295,11 @@ footer ul {
 	color: #FFF !important;
 }
 
+.btn-primary:hover {
+	background-color: #273C4D !important;
+	color: #FFF !important;
+}
+
 /* Go to top button style */
 #topbutton {
 	text-decoration: none;

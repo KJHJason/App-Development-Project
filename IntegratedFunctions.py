@@ -6,6 +6,8 @@ import shelve, os, uuid, string, random, shortuuid
 from pathlib import Path
 from flask import url_for
 from src import Avatar
+from calendar import monthrange
+from datetime import date
 
 """Done by Jason"""
 
@@ -375,6 +377,22 @@ def get_pagination_button_list(pageNum, maxPages):
             paginationList.append(pageNum + 2)
 
     return paginationList
+
+def check_last_day_of_month(inputDate):
+    lastDayOfMonth = monthrange(inputDate.year, inputDate.month)[1] # retrieves the last date of the return tuple value from monthrange, e.g. (5, 31). The value in index 0 is the days of the week on the first day of the month, for e.g. 0 for monday.
+    if inputDate == date(inputDate.year, inputDate.month, lastDayOfMonth):
+        return True
+    else:
+        return False
+
+def check_first_day_of_month(inputDate):
+    if inputDate == date(inputDate.year, inputDate.month, 1):
+        return True
+    else:
+        return False
+
+def get_two_decimal_pt(numberInput):
+    return f"{numberInput:.2f}"
 
 # functions for reset password process via email
 # helpful resources: https://stackoverflow.com/questions/56699115/timedjsonwebsignatureserializer-vs-urlsafetimedserializer-when-should-i-use-wha

@@ -11,6 +11,7 @@ from pathlib import Path
 from flask_mail import Mail
 from IntegratedFunctions import *
 import vimeo
+from datetime import date, timedelta
 
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
@@ -651,7 +652,7 @@ def teacherSignUp():
                     print("User ID setted: ", userID)
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
-                    print(user)
+                    user.set_teacher_join_date(date.today())
 
                     userDict[userID] = user
                     db["Users"] = userDict
@@ -2335,6 +2336,7 @@ def changeAccountType():
 
                     userDict.pop(userID)
                     user = Teacher.Teacher(userID, username, email, password)
+                    user.set_teacher_join_date(date.today())
                     userDict[userID] = user
 
                     # setting the user's payment method if the user has saved their payment method before
@@ -2349,6 +2351,12 @@ def changeAccountType():
                         user.set_profile_image(profileImageFilename)
 
                     # add in other saved attributes of the student object
+
+                    # checking if the user has already became a teacher
+                    # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
+                    if bool(user.get_teacher_join_date) == False:
+                        user.set_teacher_join_date(date.today())
+                        print("User has not been a teacher, setting today's date as joined date.")
 
                     db["Users"] = userDict
                     db.close()
@@ -2639,6 +2647,157 @@ def deleteCard():
             return redirect(url_for("userLogin"))
 
 """End of User payment method settings by Jason"""
+
+"""Teacher Cashout System by Jason"""
+
+@app.route("/teacher_cashout", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
+def teacherCashOut():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            if "cashedOut" in session:
+                cashedOut = True
+                session.pop("cashedOut", None)
+            else:
+                cashedOut = False
+            
+            if "failedToCashOut" in session:
+                failedToCashOut = True
+                session.pop("failedToCashOut", None)
+            else:
+                failedToCashOut = False
+
+            if "noPayment" in session:
+                noPayment = True
+                session.pop("noPayment", None)
+            else:
+                noPayment = False
+
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            joinedDate = userKey.get_teacher_join_date()
+            zeroCommissionEndDate = joinedDate + timedelta(days=90)
+            currentDate = date.today()
+
+            # if it's the first day of the month
+            resetMonth = check_first_day_of_month(currentDate)
+            initialEarnings = round(userKey.get_earnings(), 2)
+            accumulatedEarnings = userKey.get_accumulated_earnings()
+            if resetMonth:
+                accumulatedEarnings += initialEarnings
+                userKey.set_accumulated_earnings(accumulatedEarnings)
+                userKey.set_earnings(0)
+
+            lastDayOfMonth = check_last_day_of_month(currentDate)
+
+            if request.method == "POST":
+                typeOfCollection = request.form.get("typeOfCollection")
+                if ((accumulatedEarnings + initialEarnings) > 0):
+                    # simple resetting of teacher's income
+                    doesCardExist = bool(userKey.get_card_name())
+                    if doesCardExist != False:
+                        if typeOfCollection == "collectingAll" and lastDayOfMonth:
+                            session["cashedOut"] = True
+                            userKey.set_earnings(0)
+                            userKey.set_accumulated_earnings(0)
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
+                        elif typeOfCollection == "collectingAccumulated":
+                            session["cashedOut"] = True
+                            userKey.set_accumulated_earnings(0)
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
+                        else:
+                            db.close()
+                            print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
+                            session["failedToCashOut"] = True
+                            return redirect(url_for("teacherCashOut"))
+                    else:
+                        db.close()
+                        session["noPayment"] = True
+                        print("POST request sent but user does not have a valid payment method to cash out to.")
+                        return redirect(url_for("teacherCashOut"))
+                else:
+                    db.close()
+                    print("POST request sent but user have already collected their revenue or user did not earn any this month.")
+                    session["failedToCashOut"] = True
+                    return redirect(url_for("teacherCashOut"))
+            else:
+                db.close()
+                monthTuple = ("January ", "February ", "March ", "April ", "May ", "June ", "July ", "August ", "September ", "October ", "November ", "December ")
+                month = monthTuple[(int(date.today().month) - 1)] # retrieves the month in a word format from the tuple instead of 1 for January.
+                monthYear = month + str(date.today().year)
+                remainingDays = int(str(zeroCommissionEndDate - currentDate)[0:2]) # to get the remaining days left to alert the user to make full use of it, since without string slicing, it will return a value such as "86 days, 0:00:00".
+
+                if accumulatedEarnings > 0:
+                    accumulatedCollect = True
+                else:
+                    accumulatedCollect = False
+
+                if currentDate <= zeroCommissionEndDate:
+                    commission = "0%"
+                    totalEarned = round((initialEarnings + accumulatedEarnings), 2)
+
+                    # converting the number of remaining days till the free 0% commission is over in a readable format as compared to "you have until 60 days till it is over" for an example.
+                    if remainingDays > 60 and remainingDays <= 90:
+                        remainingDays = "3 months"
+                    elif remainingDays > 30 and remainingDays <= 60:
+                        remainingDays = "2 months"
+                    elif remainingDays == 30:
+                        remainingDays = "1 month"
+                    elif remainingDays > 7 and remainingDays < 30:
+                        remainingDays = "less than a month"
+                    elif remainingDays <= 7:
+                        remainingDays = "less than a week"
+                    elif remainingDays < 0:
+                        remainingDays = 0
+                        print("User's free 0% three months commission is over.")
+                    else:
+                        remainingDays = "Unexpected error, please contact CourseFinity support."
+                else:
+                    commission = "25%"
+                    totalEarned = round(((initialEarnings + accumulatedEarnings) - (initialEarnings * 0.25)), 2)
+                    
+                totalEarnedInt = totalEarned
+                # converting the numbers into strings of 2 decimal place for the earnings
+                initialEarnings = get_two_decimal_pt(initialEarnings)
+                totalEarned = get_two_decimal_pt(totalEarned)
+                accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
+
+                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, failedToCashOut=failedToCashOut, cashedOut=cashedOut, accumulatedCollect=accumulatedCollect, noPayment=noPayment)
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("userLogin"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
+
+"""End of Teacher Cashout System by Jason"""
 
 """Search Function by Royston"""
 
@@ -3016,58 +3175,6 @@ def purchaseView():
             # return redirect(url_for("userLogin"))
 
 """End of Purchase View by Royston"""
-
-"""Teacher Cashout System by Royston"""
-
-@app.route("/teacher_cashout")
-@limiter.limit("30/second") # to prevent ddos attacks
-def teacherCashOut():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            joinDate = userKey.get_joinDate
-            print("When did user joined?", joinDate)
-
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Teacher Cashout System by Royston"""
 
 
 """Template Redirect Shopping Cart by Jason because Opera is bad"""

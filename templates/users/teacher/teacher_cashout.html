@@ -3,60 +3,162 @@
 {% block title %}Teacher Cash Out | CourseFinity{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row" style="margin-top:30px;">
-        <div class="col-lg-3 merge-boxes">
-            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
-                <h4><span class="fs-4">My Account</span></h4>
-                <hr>
-                <ul class="nav nav-pills flex-column mb-auto">
-                    <li class="nav-item">
-                        <a href="/user_profile" class="nav-link text-white">
-                            Profile
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/payment_method" class="nav-link text-white">
-                            Payment Method
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/teacher_cashout" class="nav-link text-white active-custom">
-                          Cash Out
-                        </a>
-                    </li>
-                </ul>
-            </div>
+{% if failedToCashOut %}
+<div class="modal fade" id="failedToCashOutModal" tabindex="-1" aria-labelledby="failedToCashOutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="failedToCashOutModalLabel">Failed to cash out</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="col-lg-9 merge-boxes">
-            <div id="right-user">
-                <div class="container">
-                    <div class="row">
-                      <div>
-                          <h4>You have earned ${} for {}</h4>
-                          <h4>Earning Details:</h4>
-                      </div>
-                        <div class="card">
-                            <h6 class="card-title payment" style="margin-top:10px;">
-                                <span class="float-start">Earnings from your course:</span>
-                                <span class="float-end">{}</span>
-                            </h6>
-                            <h6 class="card-title payment" style="margin-top:10px;">
-                                <span class="float-start">Commission:</span>
-                                <span class="float-end">{}</span>
-                            </h6>
-                            <h6 class="card-title payment" style="margin-top:10px;">
-                                <span class="float-start">Total:</span>
-                                <span class="float-end">{}</span>
-                            </h6>
-                        </div>
-                        <form action="/" method="POST">
-                            <button type="Submit" class="cashout_button btn btn-primary btn-lg">Cash out</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+        <div class="modal-body">
+            <h6>This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
         </div>
     </div>
 </div>
+{% endif %}
+
+{% if cashedOut %}
+<div class="modal fade" id="cashedOutModal" tabindex="-1" aria-labelledby="cashedOutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="cashedOutModalLabel">Collected Revenue</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>You have successfully collected your revenue (after commission)!</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if noPayment %}
+<div class="modal fade" id="noPaymentModal" tabindex="-1" aria-labelledby="noPaymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="noPaymentModalLabel">Failed to cash out</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6>It seems like you are missing a payment method to cash out to...</h6>
+			<h6>You can either <a href="/payment_method">click here</a> to go to the payment method to add a payment method or go to the payment method on the side navigation bar on the left of this page.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+	<div class="row" style="margin-top:30px;">
+		<div class="col-lg-3 merge-boxes">
+			<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
+				<h4><span class="fs-4">My Account</span></h4>
+				<hr>
+				<ul class="nav nav-pills flex-column mb-auto">
+					<li class="nav-item">
+						<a href="/user_profile" class="nav-link text-white">
+							Profile
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/payment_method" class="nav-link text-white">
+							Payment Method
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/teacher_cashout" class="nav-link text-white active-custom">
+						  Cash Out
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-lg-9 merge-boxes">
+			<div id="right-user">
+				<div class="container">
+					<div class="row">
+						<h3>Earning Details for {{ monthYear }}</h3>
+						<div class="table-responsive">
+							<table class="table margin-top">
+								<tr>
+									<td><h6>Earnings from your courses for this month:</h6></td>
+									<td><h6>USD$ {{ initialEarnings }}</h6></td>
+								</tr>
+								<tr>
+									<td>
+										<h6><a href="javascript:void(0)" class="profile_copy_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Why commissions? Commissions are the ones that help maintain CouseFinity to stay afloat and we really appreciate your efforts for being a teacher!">Commissions:</a></h6>
+										{% if commission == "0%" %}
+										(You have 0% commission for <span class="text-danger">{{ remainingDays }}</span>)
+										{% endif %}
+									</td>
+									<td><h6>{{ commission }}</h6></td>
+								</tr>
+								{% if accumulatedEarnings != "0.00" %}
+								<tr>
+									<td><h6>Accumulated earnings from past months:</h6></td>
+									<td><h6>{{ accumulatedEarnings }}</h6></td>
+								</tr>
+								{% endif %}
+								<tr>
+									<td><h6>Total revenue (after commission):</h6></td>
+									<td><h6>USD$ {{ totalEarned }}</h6></td>
+								</tr>
+							</table>
+						</div>
+						{% if accumulatedCollect %}
+						<form action="" method="POST">
+							<input type="hidden" name="typeOfCollection" value="collectingAccumulated">
+							<button type="Submit" class="cashout_button btn-primary btn btn-lg">Cash out</button>
+						</form>
+						{% elif lastDayOfMonth and totalEarnedInt > 0 %}
+						<form action="" method="POST">
+							<input type="hidden" name="typeOfCollection" value="collectingAll">
+							<button type="Submit" class="cashout_button btn-primary btn btn-lg">Cash out</button>
+						</form>
+						{% elif lastDayOfMonth and totalEarnedInt <= 0 %}
+						<button type="button" class="cashout_button btn-primary btn btn-lg" data-bs-toggle="tooltip" data-bs-placement="top" title="Sorry, you have already collected your revenue or you did not earn any this month!">Cash Out</button>
+						{% else %}
+						<button type="button" class="cashout_button btn-primary btn btn-lg" data-bs-toggle="tooltip" data-bs-placement="top" title="Sorry, you can only cash out at the end of each month or if you have accumulated revenue from past months!">Cash Out</button>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+	{% if failedToCashOut %}
+        <script>
+            var failedToCashOutModal = new bootstrap.Modal(document.getElementById("failedToCashOutModal"), {});
+            failedToCashOutModal.show();
+        </script>
+    {% endif %}
+	{% if cashedOut %}
+        <script>
+            var cashedOutModal = new bootstrap.Modal(document.getElementById("cashedOutModal"), {});
+            cashedOutModal.show();
+        </script>
+    {% endif %}
+	{% if noPayment %}
+        <script>
+            var noPaymentModal = new bootstrap.Modal(document.getElementById("noPaymentModal"), {});
+            noPaymentModal.show();
+        </script>
+    {% endif %}
+	<script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
 {% endblock %}
