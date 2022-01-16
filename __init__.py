@@ -133,10 +133,10 @@ def home():
                 # for recommendation algorithm
                 userTagDict = userKey.get_tags_viewed()
                 highestWatchedByTag = max(userTagDict, key=userTagDict.get)
-                userTagDict.pop("highestWatchedByTag")
+                userTagDict.pop(highestWatchedByTag)
                 secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                 userPurchasedCourses = userKey.get_purchases()
-                
+
                 recommendedCourseListByHighestTag = []
                 recommendedCourseListBySecondHighestTag = []
                 for key in courseDict:
