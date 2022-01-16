@@ -11,6 +11,7 @@ from pathlib import Path
 from flask_mail import Mail
 from IntegratedFunctions import *
 import vimeo
+from datetime import date, timedelta
 
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
@@ -86,37 +87,33 @@ print("Your video link is: " + response['link']) """
 
 """End of Web app configurations"""
 
-"""General pages by INSERT_YOUR_NAME"""
+"""Home page by Jason"""
 
 @app.route('/')
 @limiter.limit("30/second") # to prevent ddos attacks
 def home():
-    # checking sessions if the user had recently logged out
-    if "recentlyLoggedOut" in session:
-        recentlyLoggedOut = True
-        session.pop("recentlyLoggedOut", None)
-        print("User recently logged out?:", recentlyLoggedOut)
-    else:
-        recentlyLoggedOut = False
-        print("User recently logged out?:", recentlyLoggedOut)
+    courseDict = {}
+    try:
+        db = shelve.open("user", "r")
+        courseDict = db['Courses']
+        db.close()
+        print("File found.")
+    except:
+        print("File could not be found.")
+        # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
+        db = shelve.open("user", "c")
+        db["Courses"] = courseDict
+        db.close()
 
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/admin_home.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return render_template('users/guest/guest_home.html')
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
-            print(userSession)
 
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
             # checking if the teacher recently added their payment method when signing up
             if "teacherPaymentAdded" in session:
                 teacherPaymentAdded = True
@@ -131,45 +128,15 @@ def home():
             else:
                 paymentComplete = False
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
-            if userFound and accGoodStatus:
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                #def recommend(most_watched_category):
-                   #recommendationList = []
-                   #videoCat = [[]]
-                   #Nested array, for each category id, example category math, there will be the video ids of those videos that belong to that category
-                   #curShownFeed = 0
-                   #recommendationList.append(most_watched_category + 1)
-                   #recommendationList.append(most_watched_category - 1)
-                   #vids = []
-                   #For each video ID, maintain an array that shows if the video has been bought before by the user, or course has been recommended before by the user,
-                   #This is so that the algorithm does not double recommend
-                   #For each course in the purchase history, mark the course id in the vis[id] = 1
-
-                   #while len().recommendationList and curShownFeed < 4:
-                    #   curTop = recommendationList.pop(0)
-                    #   for vids in videoCat[curTop]:
-                    #           if !vis[vids] and curShownFeed < 4:
-                    #               ++curShownFeed
-                    #               recommend(vids)
-                    #               vis[vids] = 1
-
-
-#Vid id for discrete math 673, math cat 0
-#videoCat[0][673]
-
-
-                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType, paymentComplete=paymentComplete, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return render_template('users/guest/guest_home.html')
+            return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
         else:
-            return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/home.html", accType="Guest")
+    else:
+        return render_template("users/general/home.html", accType="Guest")
 
-"""End of General pages by INSERT_YOUR_NAME"""
+"""End of Home pages by Jason"""
 
 """User login and logout by Jason"""
 
@@ -187,8 +154,8 @@ def userLogin():
         if request.method == "POST" and create_login_form.validate():
             emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
+            userDict = {}
             try:
-                userDict = {}
                 db = shelve.open("user", "r")
                 userDict = db['Users']
                 db.close()
@@ -196,7 +163,6 @@ def userLogin():
             except:
                 print("File could not be found.")
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                userDict = {}
                 db = shelve.open("user", "c")
                 db["Users"] = userDict
                 db.close()
@@ -311,57 +277,64 @@ def requestPasswordReset():
 
         if request.method == "POST" and create_request_form.validate():
             emailInput = sanitise(create_request_form.email.data.lower())
+            userDict = {}
             try:
-                userDict = {}
                 db = shelve.open("user", "r")
                 userDict = db['Users']
                 db.close()
                 print("File found.")
+                fileFound = True
             except:
                 print("File could not be found.")
+                fileFound = False
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                userDict = {}
                 db = shelve.open("user", "c")
                 db["Users"] = userDict
                 db.close()
 
-            # Declaring the 4 variables below to prevent UnboundLocalError
-            email_found = False
-            emailShelveData = ""
+            if fileFound:
+                # Declaring the 2 variables below to prevent UnboundLocalError
+                email_found = False
+                emailShelveData = ""
 
-            # Checking the email input and see if it matches with any in the database
-            for key in userDict:
-                emailShelveData = userDict[key].get_email()
-                if emailInput == emailShelveData:
-                    email_key = userDict[key]
-                    email_found = True
+                # Checking the email input and see if it matches with any in the database
+                for key in userDict:
+                    emailShelveData = userDict[key].get_email()
+                    if emailInput == emailShelveData:
+                        email_key = userDict[key]
+                        email_found = True
+                        print("Email in database:", emailShelveData)
+                        print("Email Input:", emailInput)
+                        break
+                    else:
+                        print("User email not found.")
+
+                if email_found:
+                    print("User email found...")
                     print("Email in database:", emailShelveData)
                     print("Email Input:", emailInput)
-                    break
-                else:
-                    print("User email not found.")
 
-            if email_found:
-                print("User email found...")
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-
-                # checking if the user is banned
-                accGoodStatus = email_key.get_status()
-                if accGoodStatus == "Good":
-                    send_reset_email(emailInput, email_key)
-                    print("Email sent")
-                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                    # checking if the user is banned
+                    accGoodStatus = email_key.get_status()
+                    if accGoodStatus == "Good":
+                        send_reset_email(emailInput, email_key)
+                        print("Email sent")
+                        return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
+                    else:
+                        # email found in database but the user is banned.
+                        # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
+                        print("User account banned, email not sent.")
+                        return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
                 else:
-                    # email found in database but the user is banned.
-                    # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
-                    print("User account banned, email not sent.")
-                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                    # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
+                    print("Email in database:", emailShelveData)
+                    print("Email Input:", emailInput)
+                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
             else:
                 # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
-                print("Email in database:", emailShelveData)
+                print("No user account records found.")
                 print("Email Input:", emailInput)
-                return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
         else:
             return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidToken=invalidToken)
     else:
@@ -651,7 +624,7 @@ def teacherSignUp():
                     print("User ID setted: ", userID)
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
-                    print(user)
+                    user.set_teacher_join_date(date.today())
 
                     userDict[userID] = user
                     db["Users"] = userDict
@@ -2335,6 +2308,7 @@ def changeAccountType():
 
                     userDict.pop(userID)
                     user = Teacher.Teacher(userID, username, email, password)
+                    user.set_teacher_join_date(date.today())
                     userDict[userID] = user
 
                     # setting the user's payment method if the user has saved their payment method before
@@ -2349,6 +2323,12 @@ def changeAccountType():
                         user.set_profile_image(profileImageFilename)
 
                     # add in other saved attributes of the student object
+
+                    # checking if the user has already became a teacher
+                    # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
+                    if bool(user.get_teacher_join_date) == False:
+                        user.set_teacher_join_date(date.today())
+                        print("User has not been a teacher, setting today's date as joined date.")
 
                     db["Users"] = userDict
                     db.close()
@@ -2640,28 +2620,166 @@ def deleteCard():
 
 """End of User payment method settings by Jason"""
 
+"""Teacher Cashout System by Jason"""
+
+@app.route("/teacher_cashout", methods=['GET', 'POST'])
+@limiter.limit("30/second") # to prevent ddos attacks
+def teacherCashOut():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            if "cashedOut" in session:
+                cashedOut = True
+                session.pop("cashedOut", None)
+            else:
+                cashedOut = False
+            
+            if "failedToCashOut" in session:
+                failedToCashOut = True
+                session.pop("failedToCashOut", None)
+            else:
+                failedToCashOut = False
+
+            if "noPayment" in session:
+                noPayment = True
+                session.pop("noPayment", None)
+            else:
+                noPayment = False
+
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            joinedDate = userKey.get_teacher_join_date()
+            zeroCommissionEndDate = joinedDate + timedelta(days=90)
+            currentDate = date.today()
+
+            # if it's the first day of the month
+            resetMonth = check_first_day_of_month(currentDate)
+            initialEarnings = round(userKey.get_earnings(), 2)
+            accumulatedEarnings = userKey.get_accumulated_earnings()
+            if resetMonth:
+                accumulatedEarnings += initialEarnings
+                userKey.set_accumulated_earnings(accumulatedEarnings)
+                userKey.set_earnings(0)
+
+            lastDayOfMonth = check_last_day_of_month(currentDate)
+
+            if request.method == "POST":
+                typeOfCollection = request.form.get("typeOfCollection")
+                if ((accumulatedEarnings + initialEarnings) > 0):
+                    # simple resetting of teacher's income
+                    doesCardExist = bool(userKey.get_card_name())
+                    if doesCardExist != False:
+                        if typeOfCollection == "collectingAll" and lastDayOfMonth:
+                            session["cashedOut"] = True
+                            userKey.set_earnings(0)
+                            userKey.set_accumulated_earnings(0)
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
+                        elif typeOfCollection == "collectingAccumulated":
+                            session["cashedOut"] = True
+                            userKey.set_accumulated_earnings(0)
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
+                        else:
+                            db.close()
+                            print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
+                            session["failedToCashOut"] = True
+                            return redirect(url_for("teacherCashOut"))
+                    else:
+                        db.close()
+                        session["noPayment"] = True
+                        print("POST request sent but user does not have a valid payment method to cash out to.")
+                        return redirect(url_for("teacherCashOut"))
+                else:
+                    db.close()
+                    print("POST request sent but user have already collected their revenue or user did not earn any this month.")
+                    session["failedToCashOut"] = True
+                    return redirect(url_for("teacherCashOut"))
+            else:
+                db.close()
+                monthTuple = ("January ", "February ", "March ", "April ", "May ", "June ", "July ", "August ", "September ", "October ", "November ", "December ")
+                month = monthTuple[(int(date.today().month) - 1)] # retrieves the month in a word format from the tuple instead of 1 for January.
+                monthYear = month + str(date.today().year)
+                remainingDays = int(str(zeroCommissionEndDate - currentDate)[0:2]) # to get the remaining days left to alert the user to make full use of it, since without string slicing, it will return a value such as "86 days, 0:00:00".
+
+                if accumulatedEarnings > 0:
+                    accumulatedCollect = True
+                else:
+                    accumulatedCollect = False
+
+                if currentDate <= zeroCommissionEndDate:
+                    commission = "0%"
+                    totalEarned = round((initialEarnings + accumulatedEarnings), 2)
+
+                    # converting the number of remaining days till the free 0% commission is over in a readable format as compared to "you have until 60 days till it is over" for an example.
+                    if remainingDays > 60 and remainingDays <= 90:
+                        remainingDays = "3 months"
+                    elif remainingDays > 30 and remainingDays <= 60:
+                        remainingDays = "2 months"
+                    elif remainingDays == 30:
+                        remainingDays = "1 month"
+                    elif remainingDays > 7 and remainingDays < 30:
+                        remainingDays = "less than a month"
+                    elif remainingDays <= 7:
+                        remainingDays = "less than a week"
+                    elif remainingDays < 0:
+                        remainingDays = 0
+                        print("User's free 0% three months commission is over.")
+                    else:
+                        remainingDays = "Unexpected error, please contact CourseFinity support."
+                else:
+                    commission = "25%"
+                    totalEarned = round(((initialEarnings + accumulatedEarnings) - (initialEarnings * 0.25)), 2)
+                    
+                totalEarnedInt = totalEarned
+                # converting the numbers into strings of 2 decimal place for the earnings
+                initialEarnings = get_two_decimal_pt(initialEarnings)
+                totalEarned = get_two_decimal_pt(totalEarned)
+                accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
+
+                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, failedToCashOut=failedToCashOut, cashedOut=cashedOut, accumulatedCollect=accumulatedCollect, noPayment=noPayment)
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("userLogin"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
+
+"""End of Teacher Cashout System by Jason"""
+
 """Search Function by Royston"""
 
 @app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
 def search(pageNum):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/page.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("adminLogin"))
-            # return render_template("users/guest/page.html)
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -2731,17 +2849,13 @@ def search(pageNum):
 
                     db.close()
                     return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, individualCount=len(paginatedCourseList), courseTitleList=paginatedCourseList)
+
             else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                print("Admin/User account is not found or is not active/banned.")
                 session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-            # return render_template("users/guest/page.html)
+                return render_template("users/guest/guest_home.html", accType="Guest")
+    else:
+        return render_template("users/guest/guest_home.html", accType="Guest")
 
 """"End of Search Function by Royston"""
 
@@ -3016,58 +3130,6 @@ def purchaseView():
             # return redirect(url_for("userLogin"))
 
 """End of Purchase View by Royston"""
-
-"""Teacher Cashout System by Royston"""
-
-@app.route("/teacher_cashout")
-@limiter.limit("30/second") # to prevent ddos attacks
-def teacherCashOut():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open("user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            joinDate = userKey.get_joinDate
-            print("When did user joined?", joinDate)
-
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-"""End of Teacher Cashout System by Royston"""
 
 
 """Template Redirect Shopping Cart by Jason because Opera is bad"""

@@ -16,6 +16,7 @@ from Student import Student
 from Course import Course
 from Security import hash_password, sanitise
 from IntegratedFunctions import generate_ID
+from datetime import date
 
 import shelve
 
@@ -84,7 +85,7 @@ user = Teacher(userID, username, email, password)
 
 #Teacher
 user.set_earnings("100")
-user.set_joinDate("2022-04-01") ## wtforms default datefield format = YYYY-MM-DD
+user.set_teacher_join_date(date(2022, 1, 1)) ## wtforms default datefield format = YYYY-MM-DD
 
 #Card --> No Validation for Simulation
 user.set_card_name("Avery Tim")
@@ -135,7 +136,7 @@ user = Teacher(userID, username, email, password)
 
 #Teacher
 user.set_earnings("100")
-user.set_joinDate("2020-05-02") ## wtforms default datefield format = YYYY-MM-DD
+user.set_teacher_join_date(date(2020, 5, 2)) ## wtforms default datefield format = YYYY-MM-DD
 
 #Card --> No Validation for Simulation
 user.set_card_name("Sara Louise")
