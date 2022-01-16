@@ -33,10 +33,8 @@ from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
 
 class Course():
-    course_no = -1
-    def __init__(self, userID, title, description, thumbnail, price, status):
-        self.__class__.course_no += 1
-        self.__courseID = str(self.__class__.course_no)
+    def __init__(self, courseID,  userID, title, description, thumbnail, price, status):
+        self.__courseID = courseID
         self.__userID = userID  # Owner of course
         self.__title = title
         self.__description = description

@@ -1,4 +1,5 @@
 from User import User
+from ViewsAndRecommendations import ViewsAndRecommendations
 
 class StudentAndTeacher(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
@@ -15,6 +16,7 @@ class StudentAndTeacher(User):
         # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs & Type here
         self.__purchasedCourses = [] # Course IDs, Type, Timing, Cost here
+        self.__viewedCourseObject = ViewsAndRecommendations()
 
     def set_card_name(self, card_name):
         self.__card_name = card_name
@@ -60,6 +62,8 @@ class StudentAndTeacher(User):
         return self.__email_verification
     def get_teacher_join_date(self):
         return self.__teacher_joined_date
+    def get_views_recommendations_object(self):
+        return self.__viewedCourseObject
 
     def get_purchaseID(self):
         return self.__purchaseID

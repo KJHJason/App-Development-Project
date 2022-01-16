@@ -5,11 +5,8 @@ class Student(StudentAndTeacher):
         super().__init__(user_id, username, email, password, "Student", "Good")
         self.__purchaseIDs = []
         self.__reviewIDs = []
-        self.__viewed = ""
-
 
     def add_purchaseID(self, purchaseID):
         self.__purchaseIDs.append(purchaseID)
     def add_reviewID(self, reviewID):
         self.__reviewIDs.append(reviewID)
-

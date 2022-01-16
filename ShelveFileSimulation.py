@@ -15,7 +15,7 @@ from Teacher import Teacher
 from Student import Student
 from Course import Course
 from Security import hash_password, sanitise
-from IntegratedFunctions import generate_ID
+from IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
 
 import shelve
@@ -23,7 +23,6 @@ import shelve
 # Open shelve
 userBase = shelve.open("user", "c")
 adminBase = shelve.open("admin", "c")
-courseBase = shelve.open("course", "c")
 
 # Remove all prior entries
 userDict = {}
@@ -120,7 +119,7 @@ price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(userID, title, description, thumbnail, price, status)
+course = Course(generate_course_ID(), userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
@@ -172,7 +171,7 @@ thumbnail = ""
 price = "69"
 status = "Available" ## Available or Unavailable
 
-course = Course(userID, title, description, thumbnail, price, status)
+course = Course(generate_course_ID(), userID, title, description, thumbnail, price, status)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -234,9 +233,8 @@ adminDict[adminID] = admin
 # Overwrite entire shelve with updated dictionary
 userBase["Users"] = userDict
 adminBase["Admins"] = adminDict
-courseBase["Courses"] = courseDict
+userBase["Courses"] = courseDict
 
 # Make sure to close!
 userBase.close()
 adminBase.close()
-courseBase.close()

@@ -75,6 +75,14 @@ def generate_ID(inputDict):
         generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
+# ShortUUID with 10 test cases that generated a million ID, there was an average of 0 collisions which is ideal and feasible for now as CourseFinity is still a new business.
+# If CourseFinity grows to be a successful hit, changing the length of the ID would not break the whole app
+def generate_course_ID(inputDict):
+    generatedID = str(shortuuid.ShortUUID().random(length=16)) # using shortuuid to generate a 16 character ID for the course ID which will be used in the url
+    if generatedID in inputDict:
+        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
+    return generatedID
+
 # function to retrieve the acc type and validate the session which will mainly be used on general pages
 def general_page_open_file(userID):
     imagesrcPath = ""

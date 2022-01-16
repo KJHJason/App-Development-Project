@@ -8,7 +8,6 @@ class Teacher(StudentAndTeacher):
         self.__accumulated_earnings = 0
         self.__purchaseIDs = []
         self.__reviewIDs = []
-        self.__viewed = ""
     # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
 
@@ -49,6 +48,3 @@ class Teacher(StudentAndTeacher):
         return self.__coursesTeaching
     def set_courseTeaching(self, courseID):
         self.__coursesTeaching.append(courseID)
-
-
-
