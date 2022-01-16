@@ -92,6 +92,19 @@ print("Your video link is: " + response['link']) """
 @app.route('/')
 @limiter.limit("30/second") # to prevent ddos attacks
 def home():
+    courseDict = {}
+    try:
+        db = shelve.open("user", "r")
+        courseDict = db['Courses']
+        db.close()
+        print("File found.")
+    except:
+        print("File could not be found.")
+        # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
+        db = shelve.open("user", "c")
+        db["Courses"] = courseDict
+        db.close()
+
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -115,13 +128,13 @@ def home():
             else:
                 paymentComplete = False
 
-            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
+            return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/page.html", accType="Guest")
+            return render_template("users/general/home.html", accType="Guest")
     else:
-        return render_template("users/general/page.html", accType="Guest")
+        return render_template("users/general/home.html", accType="Guest")
 
 """End of Home pages by Jason"""
 
@@ -141,8 +154,8 @@ def userLogin():
         if request.method == "POST" and create_login_form.validate():
             emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
+            userDict = {}
             try:
-                userDict = {}
                 db = shelve.open("user", "r")
                 userDict = db['Users']
                 db.close()
@@ -150,7 +163,6 @@ def userLogin():
             except:
                 print("File could not be found.")
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                userDict = {}
                 db = shelve.open("user", "c")
                 db["Users"] = userDict
                 db.close()
@@ -265,57 +277,64 @@ def requestPasswordReset():
 
         if request.method == "POST" and create_request_form.validate():
             emailInput = sanitise(create_request_form.email.data.lower())
+            userDict = {}
             try:
-                userDict = {}
                 db = shelve.open("user", "r")
                 userDict = db['Users']
                 db.close()
                 print("File found.")
+                fileFound = True
             except:
                 print("File could not be found.")
+                fileFound = False
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                userDict = {}
                 db = shelve.open("user", "c")
                 db["Users"] = userDict
                 db.close()
 
-            # Declaring the 4 variables below to prevent UnboundLocalError
-            email_found = False
-            emailShelveData = ""
+            if fileFound:
+                # Declaring the 2 variables below to prevent UnboundLocalError
+                email_found = False
+                emailShelveData = ""
 
-            # Checking the email input and see if it matches with any in the database
-            for key in userDict:
-                emailShelveData = userDict[key].get_email()
-                if emailInput == emailShelveData:
-                    email_key = userDict[key]
-                    email_found = True
+                # Checking the email input and see if it matches with any in the database
+                for key in userDict:
+                    emailShelveData = userDict[key].get_email()
+                    if emailInput == emailShelveData:
+                        email_key = userDict[key]
+                        email_found = True
+                        print("Email in database:", emailShelveData)
+                        print("Email Input:", emailInput)
+                        break
+                    else:
+                        print("User email not found.")
+
+                if email_found:
+                    print("User email found...")
                     print("Email in database:", emailShelveData)
                     print("Email Input:", emailInput)
-                    break
-                else:
-                    print("User email not found.")
 
-            if email_found:
-                print("User email found...")
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-
-                # checking if the user is banned
-                accGoodStatus = email_key.get_status()
-                if accGoodStatus == "Good":
-                    send_reset_email(emailInput, email_key)
-                    print("Email sent")
-                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                    # checking if the user is banned
+                    accGoodStatus = email_key.get_status()
+                    if accGoodStatus == "Good":
+                        send_reset_email(emailInput, email_key)
+                        print("Email sent")
+                        return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
+                    else:
+                        # email found in database but the user is banned.
+                        # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
+                        print("User account banned, email not sent.")
+                        return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
                 else:
-                    # email found in database but the user is banned.
-                    # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
-                    print("User account banned, email not sent.")
-                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                    # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
+                    print("Email in database:", emailShelveData)
+                    print("Email Input:", emailInput)
+                    return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
             else:
                 # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
-                print("Email in database:", emailShelveData)
+                print("No user account records found.")
                 print("Email Input:", emailInput)
-                return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True)
+                return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
         else:
             return render_template('users/guest/request_password_reset.html', form=create_request_form, invalidToken=invalidToken)
     else:
