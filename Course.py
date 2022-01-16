@@ -31,12 +31,11 @@ User --> Teacher (Object) 1
 from Rating import Rating
 from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
+import uuid, shortuuid
 
 class Course():
-    course_no = -1
     def __init__(self, userID, title, description, thumbnail, price, status):
-        self.__class__.course_no += 1
-        self.__courseID = str(self.__class__.course_no)
+        self.__courseID = str(shortuuid.ShortUUID().random(length=16))
         self.__userID = userID  # Owner of course
         self.__title = title
         self.__description = description

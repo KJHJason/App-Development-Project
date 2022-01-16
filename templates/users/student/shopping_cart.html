@@ -176,8 +176,33 @@
         {% endif %}
     </div>
 
+    <!-- Modal -->
+    <div class="modal fade" id="paypalErrorModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="paypalErrorModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="paypalErrorModalLabel">Transaction Cancelled</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <h6>Your transaction appears to have been cancelled.</h6>
+              <h6>If you did not do so, try clearing your cache and try again.</h6>
+              <h6>An ad blocker might also be the issue.</h6>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="col-4">
-        <form id="paypal-complete" method="post">{{ render_field(checkoutForm.checkoutComplete) }}</form>
+        <form id="paypal-complete" method="post">
+            {{ render_field(checkoutForm.checkoutComplete) }}
+            {{ render_field(checkoutForm.checkoutTiming) }}
+            {{ render_field(checkoutForm.checkoutOrderID) }}
+            {{ render_field(checkoutForm.checkoutPayerID) }}
+        </form>
 
         <div id="paypal-container">
             <div class="subtotal">

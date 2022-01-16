@@ -3118,11 +3118,32 @@ def shoppingCart(pageNum):
             shoppingCart = userKey.get_shoppingCart()
             print("Shopping Cart:", userKey.get_shoppingCart())
 
-            if request.method == "POST" and removeCourseForm.validate():                                    # D for Delete
-                if checkoutCompleteForm.checkoutComplete.data:
+            # Remember to validate
+            try:
+                dbCourse = shelve.open("course","c")
+                if "Courses" in dbCourse:
+                    courseDict = dbCourse['Courses']
+                else:
+                    print("dbCourse has no entries.")
+                    courseDict = {}
+            except:
+                print("Error in retrieving Course from course.db")
 
+            if request.method == "POST":
+                if bool(checkoutCompleteForm.checkoutComplete.data):
+                    print(checkoutCompleteForm.checkoutComplete.data)
                     # Remove courses from cart
-                    userKey.addCartToPurchases()
+                    for courseInfo in shoppingCart:
+                        timing = checkoutCompleteForm.checkoutTiming.data.upper()
+                        date = timing.split("T")[0]
+                        time = timing.split("T")[1].split("Z")[0]
+
+                        cost = courseDict[courseInfo[0]].get_price()
+                        orderID = checkoutCompleteForm.checkoutOrderID.data
+                        payerID = checkoutCompleteForm.checkoutPayerID.data
+
+                        userKey.addCartToPurchases(courseInfo[0], courseInfo[1], date, time, cost, orderID, payerID)
+
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
 
@@ -3133,11 +3154,11 @@ def shoppingCart(pageNum):
 
                     return redirect(url_for('home'))
 
-                else:
+                elif removeCourseForm.validate():
                     courseID =  removeCourseForm.courseID.data
                     courseType = removeCourseForm.courseType.data
 
-                    print("Removing course with Course ID, Type:", [courseID, courseType])
+                    print("Removing course with Course ID, Type:", [courseID, courseType])      # D for Delete
 
                     for course in shoppingCart:
                         try:
@@ -3153,20 +3174,12 @@ def shoppingCart(pageNum):
 
                     return redirect("/shopping_cart/"+str(pageNum))
 
+                else:
+                    print("Error with form.")
+                    return redirect(url_for('home'))
+
             # Render the page                                                                               # R for Read
             else:
-                # Remember to validate
-                try:
-                    dbCourse = shelve.open("course","c")
-                    if "Courses" in dbCourse:
-                        courseDict = dbCourse['Courses']
-                    else:
-                        print("dbCourse has no entries.")
-                        courseDict = {}
-                except:
-                    print("Error in retrieving Course from course.db")
-
-
                 # Initialise lists for jinja2 tags
                 ownerProfileImageList = []
                 ownerUsernameList = []
