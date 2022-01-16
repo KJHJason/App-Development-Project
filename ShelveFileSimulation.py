@@ -17,6 +17,7 @@ from Course import Course
 from Security import hash_password, sanitise
 from IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
+from AdminAccountConsole import generate_admin_id
 
 import shelve
 
@@ -56,7 +57,7 @@ password = hash_password("123!@#")
 user = Student(userID, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
+userDict[userID] = user
 
 
 """Student 2"""
@@ -71,7 +72,7 @@ user = Student(userID, username, email, password)
 #Courses (Royston)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
+userDict[userID] = user
 
 """Teacher 1"""
 
@@ -102,7 +103,7 @@ price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-courseID = generate_course_ID()
+courseID = generate_course_ID(courseDict)
 course = Course(courseID, userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
 
@@ -122,7 +123,7 @@ user.set_courseTeaching(courseID)
 
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
+userDict[userID] = user
 courseDict[courseID] = course
 
 """Teacher 2"""
@@ -155,7 +156,7 @@ thumbnail = ""
 price = "69"
 status = "Available" ## Available or Unavailable
 
-courseID = generate_course_ID()
+courseID = generate_course_ID(courseDict)
 course = Course(courseID, userID, title, description, thumbnail, price, status)
 course.add_tags("z","y","x","w","v")
 
@@ -173,14 +174,14 @@ course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the j
 user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[user.get_user_id()] = user
+userDict[userID] = user
 courseDict[courseID] = course
 
 
 
 """Admin 1"""
 #General
-adminID = generate_ID(userDict)
+adminID = generate_admin_id(adminDict)
 username = "The Archivist"
 email = sanitise("O5-2@SCP.com".lower())
 password = hash_password("27sb2we9djaksidu8a")
@@ -190,11 +191,11 @@ admin = Admin(adminID, username, email, password)
 
 
 # Get corresponding userID for updating/adding to dictionary
-adminDict[admin.get_user_id()] = admin
+adminDict[adminID] = admin
 
 """Admin 2"""
 #General
-adminID = generate_ID(userDict)
+adminID = generate_admin_id(adminDict)
 username = "Tamlin"
 email = sanitise("O5-13@SCP.com".lower())
 password = hash_password("o4jru5fjr49f8ieri4")
@@ -204,9 +205,6 @@ admin = Admin(adminID, username, email, password)
 
 
 # Get corresponding userID for updating/adding to dictionary
-adminDict[admin.get_user_id()] = admin
-
-# Save Object to dict
 adminDict[adminID] = admin
 
 
