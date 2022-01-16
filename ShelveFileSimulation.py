@@ -102,7 +102,8 @@ price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
-course = Course(generate_course_ID(), userID, title, description, thumbnail, price, status)
+courseID = generate_course_ID()
+course = Course(courseID, userID, title, description, thumbnail, price, status)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
@@ -116,13 +117,13 @@ course.get_lesson(0).set_timing("2022-07-03","15:30")
 course.add_scheduleZoomLesson("Step 2: Practice","At least 5 Codeforces a Week","")
 course.get_lesson(1).set_timing("2022-07-10","15:30")
 
-user.set_courseTeaching(course.get_courseID())
+user.set_courseTeaching(courseID)
 
 
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user
-courseDict[course.get_courseID()] = course
+courseDict[courseID] = course
 
 """Teacher 2"""
 
@@ -154,7 +155,8 @@ thumbnail = ""
 price = "69"
 status = "Available" ## Available or Unavailable
 
-course = Course(generate_course_ID(), userID, title, description, thumbnail, price, status)
+courseID = generate_course_ID()
+course = Course(courseID, userID, title, description, thumbnail, price, status)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -168,11 +170,11 @@ course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun",
 course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 
 
-user.set_courseTeaching(course.get_courseID())
+user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[user.get_user_id()] = user
-courseDict[course.get_courseID()] = course
+courseDict[courseID] = course
 
 
 
