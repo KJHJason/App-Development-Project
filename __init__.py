@@ -87,37 +87,20 @@ print("Your video link is: " + response['link']) """
 
 """End of Web app configurations"""
 
-"""General pages by INSERT_YOUR_NAME"""
+"""Home page by Jason"""
 
 @app.route('/')
 @limiter.limit("30/second") # to prevent ddos attacks
 def home():
-    # checking sessions if the user had recently logged out
-    if "recentlyLoggedOut" in session:
-        recentlyLoggedOut = True
-        session.pop("recentlyLoggedOut", None)
-        print("User recently logged out?:", recentlyLoggedOut)
-    else:
-        recentlyLoggedOut = False
-        print("User recently logged out?:", recentlyLoggedOut)
-
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/admin_home.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return render_template('users/guest/guest_home.html')
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
-            print(userSession)
 
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
             # checking if the teacher recently added their payment method when signing up
             if "teacherPaymentAdded" in session:
                 teacherPaymentAdded = True
@@ -132,45 +115,15 @@ def home():
             else:
                 paymentComplete = False
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
-            if userFound and accGoodStatus:
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                #def recommend(most_watched_category):
-                   #recommendationList = []
-                   #videoCat = [[]]
-                   #Nested array, for each category id, example category math, there will be the video ids of those videos that belong to that category
-                   #curShownFeed = 0
-                   #recommendationList.append(most_watched_category + 1)
-                   #recommendationList.append(most_watched_category - 1)
-                   #vids = []
-                   #For each video ID, maintain an array that shows if the video has been bought before by the user, or course has been recommended before by the user,
-                   #This is so that the algorithm does not double recommend
-                   #For each course in the purchase history, mark the course id in the vis[id] = 1
-
-                   #while len().recommendationList and curShownFeed < 4:
-                    #   curTop = recommendationList.pop(0)
-                    #   for vids in videoCat[curTop]:
-                    #           if !vis[vids] and curShownFeed < 4:
-                    #               ++curShownFeed
-                    #               recommend(vids)
-                    #               vis[vids] = 1
-
-
-#Vid id for discrete math 673, math cat 0
-#videoCat[0][673]
-
-
-                return render_template('users/loggedin/user_home.html', teacherPaymentAdded=teacherPaymentAdded, accType=accType, paymentComplete=paymentComplete, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return render_template('users/guest/guest_home.html')
+            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
         else:
-            return render_template('users/guest/guest_home.html', recentlyLoggedOut=recentlyLoggedOut)
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/page.html", accType="Guest")
+    else:
+        return render_template("users/general/page.html", accType="Guest")
 
-"""End of General pages by INSERT_YOUR_NAME"""
+"""End of Home pages by Jason"""
 
 """User login and logout by Jason"""
 
