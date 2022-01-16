@@ -13,6 +13,7 @@ from datetime import date
 
 # for uploading images of the user's profile picture to the web app's server configurations
 PROFILE_UPLOAD_PATH = 'static/images/user'
+THUMBNAIL_UPLOAD_PATH = 'static/images/courses/thumbnails'
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 # use this function if you want to validate, check if the user is banned, and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)

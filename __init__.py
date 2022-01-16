@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, os, math, paypalrestsdk, difflib
-import Student, Teacher, Forms, ViewsAndRecommendations
+import Student, Teacher, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -111,24 +111,56 @@ def home():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
-        if userFound and accGoodStanding:
-            # checking if the teacher recently added their payment method when signing up
-            if "teacherPaymentAdded" in session:
-                teacherPaymentAdded = True
-                session.pop("teacherPaymentAdded", None)
+        if userFound and accGoodStatus:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType != "Admin":
+                # checking if the teacher recently added their payment method when signing up
+                if "teacherPaymentAdded" in session:
+                    teacherPaymentAdded = True
+                    session.pop("teacherPaymentAdded", None)
+                else:
+                    teacherPaymentAdded = False
+
+                # checking if the user recently completed a purchase
+                if "paymentComplete" in session:
+                    paymentComplete = True
+                    session.pop("paymentComplete", None)
+                else:
+                    paymentComplete = False
+
+                # for recommendation algorithm
+                userTagDict = userKey.get_tags_viewed()
+                highestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                userTagDict.pop("highestWatchedByTag")
+                secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                userPurchasedCourses = userKey.get_purchases()
+                
+                recommendedCourseListByHighestTag = []
+                recommendedCourseListBySecondHighestTag = []
+                for key in courseDict:
+                    courseObject = courseDict[key]
+                    courseTag = courseObject.get_tags()
+                    if courseTag == highestWatchedByTag:
+                        if courseObject.get_courseID() not in userPurchasedCourses:
+                            recommendedCourseListByHighestTag.append(courseObject)
+                    elif courseTag == secondHighestWatchedByTag:
+                        if courseObject.get_courseID() not in userPurchasedCourses:
+                            recommendedCourseListBySecondHighestTag.append(courseObject)
+                try: 
+                    randomisedRecommendedCourseList = random.sample(recommendedCourseListByHighestTag, 2)
+                    randomisedRecommendedCourseList.append(random.choice(recommendedCourseListBySecondHighestTag))
+                except:
+                    randomisedRecommendedCourseList = []
+
+                # for trending algorithm
+                
+                
+
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
             else:
-                teacherPaymentAdded = False
-
-            # checking if the user recently completed a purchase
-            if "paymentComplete" in session:
-                paymentComplete = True
-                session.pop("paymentComplete", None)
-            else:
-                paymentComplete = False
-
-            return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -3557,7 +3589,7 @@ def faq():
 
 """End of Genral Pages"""
 
-# 7 template app.route("") for you guys :prayge:
+# 8 template app.route("") for you guys :prayge:
 # Please REMEMBER to CHANGE the def function() function name to something relevant and unique (will have runtime error if the function name is not unique)
 '''
 # Template for your app.route("") if
@@ -3722,6 +3754,43 @@ def insertName():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
+            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/page.html", accType="Guest")
+    else:
+        return render_template("users/general/page.html", accType="Guest")
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
+'''
+
+'''
+# Template for your app.route("") if
+  - User session validity check needed (Logged in?)
+  - User banned?
+  - Is user admin?
+
+  - Using CUSTOM shelve or reading user info
+
+  - Webpage will have admin and user view
+  e.g. General pages (home page) that check whether user/admin is logged in.
+"""Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
+
+@app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
+def insertName():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            # add in your CRUD or other code
             return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("Admin/User account is not found or is not active/banned.")

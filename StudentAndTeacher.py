@@ -1,6 +1,4 @@
 from User import User
-from ViewsAndRecommendations import ViewsAndRecommendations
-
 class StudentAndTeacher(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
         super().__init__(user_id, username, email, password, acc_type, status)
@@ -16,7 +14,47 @@ class StudentAndTeacher(User):
         # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs & Type here
         self.__purchasedCourses = [] # Course IDs, Type, Timing, Cost here
-        self.__viewedCourseObject = ViewsAndRecommendations()
+        self.__tags_viewed = {"Programming": 0, 
+                              "Web Development": 0,
+                              "Game Development": 0,
+                              "Mobile App Development": 0,
+                              "Software Development": 0,
+                              "Other Development": 0,
+                              "Entrepreneurship": 0,
+                              "Project Management": 0,
+                              "BI & Analytics": 0,
+                              "Business Strategy": 0,
+                              "Other Business": 0,
+                              "3D Modelling": 0,
+                              "Animation": 0,
+                              "UX Design": 0,
+                              "Design Tools": 0,
+                              "Other Design": 0,
+                              "Digital Photography": 0,
+                              "Photography Tools": 0,
+                              "Video Production": 0,
+                              "Video Design Tools": 0,
+                              "Other Photography/Videography": 0,
+                              "Science": 0,
+                              "Math": 0,
+                              "Language": 0,
+                              "Test Prep": 0,
+                              "Other Academics": 0}
+    
+    def set_tags_viewed(self, tagsDict):
+        self.__tags_viewed = tagsDict
+    def get_tags_viewed(self):
+        return self.__tags_viewed
+    def change_no_of_view(self, seenTag):
+        if seenTag in self.__tags_viewed:
+            self.__tags_viewed[seenTag] += 1
+        else:
+            print("No such tag found.")
+    # for scalability reasons but would not be used in this project
+    def add_tag(self, newTag):
+        self.__tags_viewed[newTag] = 0
+    def remove_tag(self, tagToBeRemoved):
+        self.__tags_viewed.pop(tagToBeRemoved)
 
     def set_card_name(self, card_name):
         self.__card_name = card_name
@@ -62,8 +100,6 @@ class StudentAndTeacher(User):
         return self.__email_verification
     def get_teacher_join_date(self):
         return self.__teacher_joined_date
-    def get_views_recommendations_object(self):
-        return self.__viewedCourseObject
 
     def get_purchaseID(self):
         return self.__purchaseID

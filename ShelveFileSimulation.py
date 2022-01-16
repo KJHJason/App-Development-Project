@@ -102,7 +102,7 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 #Courses Teaching (Wei Ren)
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = ""
+thumbnail = "static/images/course/thumbnails/course_thumbnail_2.png"
 price = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
@@ -156,7 +156,7 @@ user.set_card_type("american express") ## [visa, mastercard, american express]
 #Courses Teaching (Wei Ren)
 title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = ""
+thumbnail = "static/images/course/thumbnails/course_thumbnail_1.png"
 price = "69"
 status = "Available" ## Available or Unavailable
 
