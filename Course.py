@@ -50,6 +50,8 @@ class Course():
         self.__ratings = []
         self.__schedule = []
 
+    def set_courseID(self, courseID):
+        self.__courseID = courseID
     def get_courseID(self):
         return self.__courseID
 
