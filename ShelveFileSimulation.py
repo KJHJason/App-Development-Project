@@ -17,9 +17,13 @@ from Course import Course
 from Security import hash_password, sanitise
 from IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
-from AdminAccountConsole import generate_admin_id
+import shelve, shortuuid
 
-import shelve
+def generate_admin_id(adminDict):
+    generatedID = str(shortuuid.ShortUUID().random(length=5))
+    if generatedID in adminDict:
+        generate_admin_id(adminDict) # using recursion if there is a collision to generate a new unique ID
+    return generatedID
 
 # Open shelve
 userBase = shelve.open("user", "c")
