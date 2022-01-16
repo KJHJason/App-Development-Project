@@ -30,7 +30,7 @@ function PayPalMove() {
     }
 }
 
-window.matchMedia("(max-width: 825px)").addListener(PayPalMove);
-window.matchMedia("(min-width: 825px)").addListener(PayPalMove);
+moveConditon = window.matchMedia("(max-width: 825px)")
+moveConditon.addListener(PayPalMove);
 
 document.getElementById("paypal-container").onload = PayPalMove()

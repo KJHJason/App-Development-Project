@@ -14,13 +14,20 @@ paypal.Buttons({
         // Finalize the transaction after payer approval
         onApprove: function(data, actions) {
           return actions.order.capture().then(function(orderData) {
-            // Successful capture! For dev/demo purposes:
-                console.log('Capture result', orderData, JSON.stringify(orderData, null, 2));
+            /* For dev/demo purposes:*/
+                console.log('Capture result');
+                console.log(orderData);
+                console.log(JSON.stringify(orderData, null, 2));
                 var transaction = orderData.purchase_units[0].payments.captures[0];
-                console.log(transaction);
+                console.log(transaction);     //Dictionary of transaction info
+
+                console.log(orderData.update_time); //Time purchase was last edited
+                console.log(orderData.id);  //Order ID
+                console.log(orderData.payer.payer_id);  //ID assigned to payer
+                console.log(account_id);    //Payer PayPal Account ID
 
                 document.getElementById("paypal-complete").value = "True";
-                document.getElementById("paypal-complete").submit();
+                //document.getElementById("paypal-complete").submit();
                 console.log("Payment?")
 
 
@@ -32,7 +39,7 @@ paypal.Buttons({
           });
         },
 
-        style: {
+        style: {//Using default Values
           layout:  'vertical',
           color:   'gold',
           shape:   'rect',

@@ -2804,23 +2804,10 @@ def teacherCashOut():
 @app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
 def search(pageNum):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/page.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("adminLogin"))
-            # return render_template("users/guest/page.html)
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
             userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -2890,17 +2877,13 @@ def search(pageNum):
 
                     db.close()
                     return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, individualCount=len(paginatedCourseList), courseTitleList=paginatedCourseList)
+
             else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                print("Admin/User account is not found or is not active/banned.")
                 session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-            # return render_template("users/guest/page.html)
+                return render_template("users/guest/guest_home.html", accType="Guest")
+    else:
+        return render_template("users/guest/guest_home.html", accType="Guest")
 
 """"End of Search Function by Royston"""
 
@@ -3368,7 +3351,7 @@ def contactUs():
 
 
         if userFound and accGoodStanding:
-            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
