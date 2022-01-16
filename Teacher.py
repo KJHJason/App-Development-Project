@@ -2,8 +2,8 @@ from StudentAndTeacher import StudentAndTeacher
 from Course import Course
 
 class Teacher(StudentAndTeacher):
-    def __init__(self, userID, username, email, password):
-        super().__init__(userID, username, email, password, "Teacher", "Good")
+    def __init__(self, user_id, username, email, password):
+        super().__init__(user_id, username, email, password, "Teacher", "Good")
         self.__earnings = 0
         self.__purchaseIDs = []
         self.__reviewIDs = []
