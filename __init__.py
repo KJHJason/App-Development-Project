@@ -3253,7 +3253,7 @@ def contactUs():
 
 
         if userFound and accGoodStanding:
-            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()

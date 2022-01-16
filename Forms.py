@@ -1,4 +1,4 @@
-from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, HiddenField, FormField, IntegerField, PasswordField, BooleanField
+from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, TimeField, HiddenField, FormField, IntegerField, PasswordField, BooleanField
 
 """WTForms by Jason"""
 
@@ -88,6 +88,10 @@ class RemoveShoppingCartCourse(Form):
 
 class CheckoutComplete(Form):
     checkoutComplete = HiddenField("Check whether PayPal is complete: Extra Secret Easter Egg", default = False)
+    checkoutDate = DateField("Date of Transaction: Unhidden Easter?")
+    checkoutTime = TimeField("Time of Transaction: Unhidden Egg?")
+    checkoutTransactionID = HiddenField("PayPal's own ID for transaction: Easter Egg to you!")
+    checkoutAccountID = HiddenField("PayPal's own ID for identifying account: Easter Egg Number 4!")
 
 class ContactUs(Form):
     name = StringField("Name: Easter Egg", [validators.DataRequired()])

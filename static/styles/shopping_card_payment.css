@@ -4,10 +4,6 @@
   outline: solid #f00 1px !important;
 }*/
 
-.form-label {
-    display:none;
-}
-
 body .g-0 {
     padding:0px 2.5vw;
 }
@@ -261,7 +257,7 @@ body .g-0 {
     top: 2.5em;
 }
 
-#hidden-subtotal {
+#hidden-subtotal, .form-label, #payment-complete {
     display:none;
 }
 
