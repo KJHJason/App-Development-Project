@@ -47,6 +47,14 @@ class Course():
         self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course?
         self.__ratings = []
         self.__schedule = []
+        self.__views = 0
+
+    def set_views(self, views):
+        self.__views = views
+    def get_views(self):
+        return self.__views
+    def increase_view(self):
+        self.__views += 1
 
     def set_courseID(self, courseID):
         self.__courseID = courseID
