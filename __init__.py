@@ -3085,6 +3085,7 @@ def purchaseHistory(pageNum):
                 for courseInfo in list(purchasedCourses.keys()):
                     print(courseInfo)
                     # courseInfo is key
+                    print(courseInfo)
                     courseID = courseInfo.split("_")[0]
                     courseType = courseInfo.split("_")[1]
 
@@ -3334,8 +3335,14 @@ def shoppingCart(pageNum):
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+
+            userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
+            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+
+            # checking if the user have uploaded a profile image before and if the image file exists
+            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
+
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
             removeCourseForm = Forms.RemoveShoppingCartCourse(request.form)
             checkoutCompleteForm = Forms.CheckoutComplete(request.form)
             shoppingCart = userKey.get_shoppingCart()
@@ -3352,19 +3359,29 @@ def shoppingCart(pageNum):
                 print("Error in retrieving Course from user.db")
 
             if request.method == "POST":
-                if bool(checkoutCompleteForm.checkoutComplete.data):
+                if bool(checkoutCompleteForm.checkoutComplete.data) and checkoutCompleteForm.validate():
                     print(checkoutCompleteForm.checkoutComplete.data)
-                    # Remove courses from cart into purchases
-                    for courseInfo in shoppingCart:
-                        timing = checkoutCompleteForm.checkoutTiming.data.upper()               # U for Update
-                        date = timing.split("T")[0]
-                        time = timing.split("T")[1]
 
-                        cost = courseDict[courseInfo[0]].get_price()
+                    # Remove courses from cart into purchases
+
+                    timing = checkoutCompleteForm.checkoutTiming.data.upper()               # U for Update
+                    date = timing.split("T")[0]
+                    time = timing.split("T")[1]
+
+                    for courseID in list(shoppingCart.keys()):
+                        courseType = shoppingCart[courseID]
+
+                        cost = 0
+                        if courseType == "Zoom" or courseType == "Both":
+                            cost += float(courseDict[courseID].get_zoomPrice())
+                        if courseType == "Video" or courseType == "Both":
+                            cost += float(courseDict[courseID].get_videoPrice())
+
+
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
-                        userKey.addCartToPurchases(courseInfo[0], courseInfo[1], date, time, cost, orderID, payerID)
+                        userKey.addCartToPurchases(courseID, courseType, date, time, cost, orderID, payerID)
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -3378,21 +3395,18 @@ def shoppingCart(pageNum):
 
                 elif removeCourseForm.validate():
                     courseID =  removeCourseForm.courseID.data
-                    courseType = removeCourseForm.courseType.data
 
-                    print("Removing course with Course ID, Type:", [courseID, courseType])      # D for Delete
+                    print("Removing course with Course ID:", courseID)      # D for Delete
 
-                    for course in shoppingCart:
-                        try:
-                            if course == [courseID,courseType]:
-                                shoppingCart.remove(course)
-                                userDict[userKey.get_user_id] = userKey
-                                db["Users"] = userDict
-                                db.close()
-                                break
-                        except:
+                    for course in list(shoppingCart.keys()):
+                        print(course)
+                        if course == courseID:
+                            userKey.remove_from_cart(courseID)
+                            print(userKey.get_shoppingCart)
+                            userDict[userKey.get_user_id] = userKey
+                            db["Users"] = userDict
                             db.close()
-                            print("Error. Shopping cart courses are missing values.")
+                            break
 
                     return redirect("/shopping_cart/"+str(pageNum))
 
@@ -3402,39 +3416,56 @@ def shoppingCart(pageNum):
 
             # Render the page
             else:                                                                               # R for Read
-                userKey.get_purchases()
+                print(userKey.get_purchases())
                 # Initialise lists for jinja2 tags
-                ownerProfileImageList = []
-                ownerUsernameList = []
                 courseList = []
-                courseTypeList = []
                 subtotal = 0
 
-                for courseInfo in shoppingCart:
-                    # Getting course info
-                    print("Course Info [ID, Type]:", courseInfo)
-                    print(courseDict)
-                    course = courseDict[courseInfo[0]]
-                    courseList.append(course)
+                try:
+                    courseIDs = list(shoppingCart.keys())
+                except:
+                    courseIDs = []
+                    print("Shopping Cart is Empty.")
 
-                    # Getting subtototal
-                    subtotal += float(course.get_price())
+                print(shoppingCart)
+                for courseID in courseIDs:
+                    # Getting course info
+                    print("Course Info [ID, Type]:", [courseID, shoppingCart[courseID]])
+
+                    course = courseDict[courseID]
 
                     # Getting course type chosen
-                    courseTypeList.append(courseInfo[1])
+                    courseType = shoppingCart[courseID]
+
+                    # Getting price paying (individual course)
+                    coursePricePaying = 0
+                    if courseType == "Zoom" or courseType == "Both":
+                        coursePricePaying += float(course.get_zoomPrice())
+                    if courseType == "Video" or courseType == "Both":
+                        coursePricePaying += float(course.get_videoPrice())
+
+                    # Getting subtototal
+                    subtotal += coursePricePaying
 
                     # Getting course owner username
                     courseOwnerUsername = userDict[course.get_userID()].get_username()
-                    ownerUsernameList.append(courseOwnerUsername)
 
-                    # Getting course owner profile
-                    userProfileImage = userDict[course.get_userID()].get_profile_image() # will return a filename, e.g. "0.png"
-                    userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+                    # Getting course owner profile pic
+                    courseOwnerProfile = None
 
-                    # checking if the user have uploaded a profile image before and if the image file exists
-                    imagesrcPath = get_user_profile_pic(courseOwnerUsername, userProfileImage, userProfileImagePath)
+                    # Add additional info to list
+                    courseList.append({"courseID" : courseID,
+                                       "courseType" : courseType,
+                                       "courseTitle" : course.get_shortTitle(),
+                                       "courseDescription" : course.get_shortDescription(),
+                                       "coursePricePaying" : coursePricePaying,
+                                       "courseZoomCondition" : course.get_zoomCondition(),
+                                       "courseVideoCondition":course.get_videoCondition(),
+                                       "courseOwnerUsername" : courseOwnerUsername,
+                                       "courseOwnerProfile" : courseOwnerProfile,
+                                       "courseOwnerLink" : None,
+                                       "courseThumbnail" : None})
 
-                    ownerProfileImageList.append(imagesrcPath)
 
                 maxItemsPerPage = 5 # declare the number of items that can be seen per pages
                 courseListLen = len(courseList) # get the length of the userList
@@ -3456,14 +3487,10 @@ def shoppingCart(pageNum):
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
 
-                    ownerProfileImageList = paginate(ownerProfileImageList[::-1], pageNumForPagination, maxItemsPerPage)
-                    ownerUsernameList = paginate(ownerUsernameList[::-1], pageNumForPagination, maxItemsPerPage)
-                    courseTypeList = paginate(courseTypeList[::-1], pageNumForPagination, maxItemsPerPage)
-
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
                     db.close() # remember to close your shelve files!
-                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -3487,6 +3514,7 @@ def shoppingCart(pageNum):
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
 
+    contactForm = Forms.ContactUs(request.form)
     db = shelve.open("user", "c")
     # Remember to validate
     try:
@@ -3504,40 +3532,32 @@ def contactUs():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
 
-        if userFound and accGoodStanding:
-            contactForm = Forms.ContactUs(request.form)
-            if request.method == "POST" and contactForm.validate():
 
-                contact = {"Name" : contactForm.name.data,
-                           "Email" : contactForm.email.data,
-                           "Subject" : contactForm.subject.data,
-                           "Enquiry" : contactForm.enquiry.data}
+    if userFound and accGoodStatus:
+        # add in your code below
+        imagesrcPath = retrieve_user_profile_pic(userKey)
 
-                contactDict.append(contact)
-
-                db["Contacts"] = contactDict
-                db.close()
-
-                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, success=True)
-            elif accType == 'Admin':
-
-                return render_template('admin/general/contact_us.html', accType="Admin")
-            else:
-
-                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
+        if accType != 'Admin':
+            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
         else:
-            print("Admin/User account is not found or is not active/banned.")
-            session.clear()
-            contactForm = Forms.ContactUs(request.form)
-            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
+            return redirect(url_for())
     else:
-        contactForm = Forms.ContactUs(request.form)
+        print("Admin/User account is not found or is not active/banned.")
+        session.clear()
         return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""
+
+"""Contact Us Management"""
+"""
+@app.route("/contact_us_management", methods = ["GET", "POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
+def contactUsManagement():
+
+"""
 
 """Teacher's Channel Page by Clarence"""
 

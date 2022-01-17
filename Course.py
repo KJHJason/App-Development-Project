@@ -33,13 +33,14 @@ from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
 
 class Course():
-    def __init__(self, courseID,  userID, title, description, thumbnail, price, status):
+    def __init__(self, courseID,  userID, title, description, thumbnail, status):
         self.__courseID = courseID
         self.__userID = userID  # Owner of course
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
-        self.__price = price
+        self.__videoPrice = None
+        self.__zoomPrice = None
         self.__videoCondition = False # Zoom or Video?
         self.__zoomCondition = False
         self.__status = status  # Is course available?
@@ -87,10 +88,15 @@ class Course():
     def get_thumbnail(self):
         return self.__thumbnail
 
-    def set_price(self, price):
-        self.__price = price
-    def get_price(self):
-        return self.__price
+    def set_zoomPrice(self, price):
+        self.__zoomPrice = price
+    def get_zoomPrice(self):
+        return self.__zoomPrice
+
+    def set_videoPrice(self, price):
+        self.__videoPrice = price
+    def get_videoPrice(self):
+        return self.__videoPrice
 
     def switch_videoCondition(self):
         if self.__videoCondition: # if True:

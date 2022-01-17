@@ -12,7 +12,7 @@ class StudentAndTeacher(User):
         self.__viewed = ""
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
-        self.__shoppingCart = [] # Course IDs & Type here
+        self.__shoppingCart = {} # Course IDs & Type here
         self.__purchasedCourses = {} # Course IDs, Type, Timing, Cost here
         self.__tags_viewed = {"Programming": 0, 
                               "Web Development": 0,
@@ -114,40 +114,32 @@ class StudentAndTeacher(User):
 
     # Added by Wei Ren for courses
     def add_to_cart(self, courseID,type):        #e.g. add_to_cart(0,"Zoom")
-        self.__shoppingCart.append([str(courseID),type])
-    def remove_from_cart(self,courseID,type):
-        self.__shoppingCart.remove([str(courseID),type])
+        if courseID in list(self.__shoppingCart.keys()):
+            if self.__shoppingCart[courseID] != type:
+                self.__shoppingCart[courseID] = "Both"
+            else:
+                raise Exception("Course ID", courseID, "Type", type, "already in shopping cart.")
+        else:
+            self.__shoppingCart[courseID] = type
+
+    def remove_from_cart(self,courseID):
+        try:
+            self.__shoppingCart.pop(courseID)
+        except KeyError:
+            raise Exception("Course ID", courseID, "Type", type, "not in shopping cart.")
+
 
     def get_cartCourseType(self, courseID):
-        for course in self.__shoppingCart:
-            if course[0] == courseID and course[1] == "Video":
-                video = True
-            elif course[0] == courseID and course[1] == "Zoom":
-                zoom = True
-        if video and zoom:
-            return "Both"
-        elif video:
-            return "Video"
-        elif zoom:
-            return "Zoom"
+        try:
+            return self.__shoppingCart[courseID]
+        except KeyError:
+            raise Exception("Course ID", courseID, "not in shopping cart.")
 
     def get_purchasesCourseType(self,courseID):
-        for paymentID in list(self.__purchasedCourses.keys()):
-            video = False
-            zoom = False
-            course = paymentID.split("_")    # [ID, Type]
-            if course[0] == courseID and course[1] == "Video":
-                video = True
-            elif course[0] == courseID and course[1] == "Zoom":
-                zoom = True
-            if video and zoom:
-                return "Both"
-            elif video:
-                return "Video"
-            elif zoom:
-                return "Zoom"
-            else:
-                return None
+        try:
+            return self.__purchasedCourse[courseID]["Course Type"]
+        except KeyError:
+            raise Exception("Course ID", courseID, "not in purchased courses.")
 
     def get_shoppingCart(self):
         return self.__shoppingCart
@@ -156,9 +148,8 @@ class StudentAndTeacher(User):
         return self.__purchasedCourses
 
     def addCartToPurchases(self, courseID, courseType, date, time, cost, orderID, payerID):
-        if [courseID, courseType] in self.__shoppingCart:
-            paymentID = courseID + "_" + courseType # ID_Type
-            self.__purchasedCourses[paymentID] = {'Date' : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}
-            self.__shoppingCart.remove([courseID, courseType])
+        if courseID in list(self.__shoppingCart.keys()):
+            self.__purchasedCourses[courseID] = {'Course ID' : courseID, "Course Type" : courseType,'Date' : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}
+            self.__shoppingCart.pop(courseID)
         else:
             raise Exception("PayPal dislikes you.")

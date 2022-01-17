@@ -77,14 +77,10 @@ def NoNumbers(form,field):
         if not value.isdigit():
             raise ValidationError("Value should not contain numbers.")
 
-def NoFirstChoice(form, field):
-    value = field.data
-    if value == "":
-        raise ValidationError("Invalid Input.")
 
 class RemoveShoppingCartCourse(Form):
-    courseID = HiddenField("Course ID: Easter Egg Text")
-    courseType = HiddenField("Course Type: More Easter Eggs!")
+    courseID = HiddenField("Course ID: Easter Egg Text, Now with More Easter Eggs!")
+    #courseType = HiddenField("Course Type: More Easter Eggs!")
 
 class CheckoutComplete(Form):
     checkoutComplete = HiddenField("Check whether PayPal is complete: Extra Secret Easter Egg", [validators.DataRequired()], default = False)
@@ -96,7 +92,7 @@ class CheckoutComplete(Form):
 class ContactUs(Form):
     name = StringField("Name: Easter Egg", [validators.DataRequired()])
     email = EmailField("Email: easter@bunny.com", [validators.DataRequired(), validators.Email()])
-    subject = SelectField("Subject: 17 April 2022", [validators.DataRequired(), NoFirstChoice], choices = [("","Subject"),
+    subject = SelectField("Subject: 17 April 2022", [validators.DataRequired()], choices = [("","Subject"),
                                                                                                              ("",""),
                                                                                                              ("",""),
                                                                                                              ("",""),

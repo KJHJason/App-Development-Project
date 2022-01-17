@@ -103,15 +103,16 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "static/images/course/thumbnails/course_thumbnail_2.png"
-price = "{:,.2f}".format(72.5)
+zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, price, status)
+course = Course(courseID, userID, title, description, thumbnail, status)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
+course.set_zoomPrice(zoomPrice)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("2", "Very Good", "Please make more.", "4")
@@ -157,14 +158,15 @@ user.set_card_type("american express") ## [visa, mastercard, american express]
 title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "static/images/course/thumbnails/course_thumbnail_1.png"
-price = "69"
+videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, price, status)
+course = Course(courseID, userID, title, description, thumbnail, status)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
+course.set_videoPrice(videoPrice)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
