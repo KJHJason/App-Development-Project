@@ -133,6 +133,8 @@ class StudentAndTeacher(User):
 
     def get_purchasesCourseType(self,courseID):
         for paymentID in list(self.__purchasedCourses.keys()):
+            video = False
+            zoom = False
             course = paymentID.split("_")    # [ID, Type]
             if course[0] == courseID and course[1] == "Video":
                 video = True
