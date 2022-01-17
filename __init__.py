@@ -2891,7 +2891,7 @@ def search(pageNum):
                 courseDict = {}
                 courseTitleList = []
                 try:
-                    db = shelve.open("course", "r")
+                    db = shelve.open("user", "r")
                     courseDict = db["Courses"]
 
                 except:
@@ -2920,6 +2920,7 @@ def search(pageNum):
                     checker = False
                 else:
                     checker = True
+                
 
                 db.close()
 
@@ -2955,7 +2956,69 @@ def search(pageNum):
                 session.clear()
                 return render_template("users/guest/guest_home.html", accType="Guest")
     else:
-        return render_template("users/guest/guest_home.html", accType="Guest")
+        checker = ""
+        courseDict = {}
+        courseTitleList = []
+        try:
+            db = shelve.open("course", "r")
+            courseDict = db["Courses"]
+
+        except:
+            print("Error in obtaining course.db data")
+            return redirect(url_for("home"))
+
+        searchInput = request.args.get("q")
+        print(searchInput)
+        titleList = []
+        for courseID in courseDict:
+            courseTitle = courseDict.get(courseID).get_title()
+            courseTitleList.append(courseTitle)
+        try:
+            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+        except:
+            matchedCourseTitleList = []
+        print(matchedCourseTitleList)
+        for courseID in courseDict:
+            courseObject = courseDict.get(courseID)
+            titleCourse = courseObject.get_title()
+        for key in matchedCourseTitleList:
+            if titleCourse == key:
+                titleList.append(courseObject)
+        print(titleList)
+        if bool(titleList):
+            checker = False
+        else:
+            checker = True
+        print("What is in the titeList?: ",titleList)
+
+        db.close()
+
+        maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+        courseListLen = len(courseTitleList) # get the length of the userList
+        maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+        pageNum = int(pageNum)
+        # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+        if pageNum < 0:
+            return redirect("/search/0")
+        elif courseListLen > 0 and pageNum == 0:
+            return redirect("/search/1")
+        elif pageNum > maxPages:
+            redirectRoute = "/search/" + str(maxPages)
+            return redirect(redirectRoute)
+        else:
+            # pagination algorithm starts here
+            courseTitleList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+            pageNumForPagination = pageNum - 1 # minus for the paginate function
+            paginatedCourseList = paginate(courseTitleList, pageNumForPagination, maxItemsPerPage)
+            courseTitleList = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
+
+            paginationList = get_pagination_button_list(pageNum, maxPages)
+
+            previousPage = pageNum - 1
+            nextPage = pageNum + 1
+
+            db.close()
+            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, individualCount=len(paginatedCourseList), courseTitleList=paginatedCourseList)
 
 """"End of Search Function by Royston"""
 
@@ -2990,51 +3053,58 @@ def purchaseHistory(pageNum):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
+            courseType = ""
             historyCheck = True
-            purchaseHistoryList = userKey.get_purchases()
-            historyList = {}
+            historyList = []
             showCourse = ""
-            purchaseID = bool(userKey.get_purchases())
-            print("PurchaseID exists?: ", purchaseID)
+            # Get purchased courses
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchaseID == True:
+            if purchasedCourses != []:
                 try:
-                    historyDict = {}
-                    dbCourse = shelve.open("course", "r")
-                    historyDict = dbCourse["Courses"]
+                    courseDict = {}
+                    db = shelve.open("user", "r")
+                    courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
                     db.close()
 
-                for courseID in purchaseHistoryList:
-                    history = dbCourse(courseID.get_courseID)
+                # Get specific course with course ID
+                for courseInfo in list(purchasedCourses.keys()):
+                    print(courseInfo)
+                    # courseInfo is key
+                    courseID = courseInfo.split("_")[0]
+                    courseType = courseInfo.split("_")[1]
+
+                # Find the correct course
+                course = courseDict[courseID]
 
 
-                    #id will be an integer
+                #id will be an integer
 
-                    video = {id :
-                        {historyDict : {"Title":history.get_title(),
-                        "Description":history.get_description(),
-                        "Thumbnail":history.get_thumbnail(),
-                        "VideoCheck":history.get_courseType()["Video"],
-                        "ZoomCheck":history.get_courseType()["Zoom"],
-                        "Price":history.get_price(),
-                        "Owner":history.get_owner()}
+                video = {id :
+                    {courseDict : {"Title":course.get_title(),
+                    "Description":course.get_description(),
+                    "Thumbnail":course.get_thumbnail(),
+                    "VideoCheck":course.get_courseType()["Video"],
+                    "ZoomCheck":course.get_courseType()["Zoom"],
+                    "Price":course.get_price(),
+                    "Owner":course.get_owner()}
                         }
                     }
-                for i in purchaseHistoryList:
+                for i in purchasedCourses:
                     showCourse(video[i])
                     historyList.append(showCourse)
                     print(historyList)
 
                 db.close()
             else:
-                db.close()
                 print("Purchase History is Empty")
                 historyCheck = False
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(purchaseHistoryList) # get the length of the userList
+            courseListLen = len(purchasedCourses) # get the length of the userList
             maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
@@ -3047,10 +3117,10 @@ def purchaseHistory(pageNum):
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
-                courseList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                courseList = purchasedCourses[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                purchaseHistoryList = paginate(purchaseHistoryList[::-1], pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(purchasedCourses[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3058,13 +3128,7 @@ def purchaseHistory(pageNum):
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3094,7 +3158,7 @@ def purchaseReview():
             reviewID = userKey.get_reviewID()
             print("ReviewID exists?: ", reviewID)
             reviewDict = {}
-            db = shelve.open("review", "c")
+            db = shelve.open("user", "c")
 
             try:
                 reviewDict = db["Review"]
@@ -3242,10 +3306,6 @@ def shoppingCartDefault():
 
 """Template Shopping Cart by Wei Ren"""
 
-"""@app.route("/shopping_cart", methods = ["GET","POST"])
-def shoppingCartDefault():
-    redirect("/shopping_cart/1")"""
-
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCart(pageNum):
@@ -3282,23 +3342,22 @@ def shoppingCart(pageNum):
 
             # Remember to validate
             try:
-                dbCourse = shelve.open("course","c")
-                if "Courses" in dbCourse:
-                    courseDict = dbCourse['Courses']
+                if "Courses" in db:
+                    courseDict = db['Courses']
                 else:
-                    print("dbCourse has no entries.")
+                    print("user.db has no course entries.")
                     courseDict = {}
             except:
-                print("Error in retrieving Course from course.db")
+                print("Error in retrieving Course from user.db")
 
             if request.method == "POST":
                 if bool(checkoutCompleteForm.checkoutComplete.data):
                     print(checkoutCompleteForm.checkoutComplete.data)
-                    # Remove courses from cart
+                    # Remove courses from cart into purchases
                     for courseInfo in shoppingCart:
-                        timing = checkoutCompleteForm.checkoutTiming.data.upper()
+                        timing = checkoutCompleteForm.checkoutTiming.data.upper()               # U for Update
                         date = timing.split("T")[0]
-                        time = timing.split("T")[1].split("Z")[0]
+                        time = timing.split("T")[1]
 
                         cost = courseDict[courseInfo[0]].get_price()
                         orderID = checkoutCompleteForm.checkoutOrderID.data
@@ -3340,8 +3399,9 @@ def shoppingCart(pageNum):
                     print("Error with form.")
                     return redirect(url_for('home'))
 
-            # Render the page                                                                               # R for Read
-            else:
+            # Render the page
+            else:                                                                               # R for Read
+                userKey.get_purchases()
                 # Initialise lists for jinja2 tags
                 ownerProfileImageList = []
                 ownerUsernameList = []
@@ -3352,6 +3412,7 @@ def shoppingCart(pageNum):
                 for courseInfo in shoppingCart:
                     # Getting course info
                     print("Course Info [ID, Type]:", courseInfo)
+                    print(courseDict)
                     course = courseDict[courseInfo[0]]
                     courseList.append(course)
 
@@ -3401,7 +3462,6 @@ def shoppingCart(pageNum):
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
                     db.close() # remember to close your shelve files!
-                    dbCourse.close()
                     return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath)
 
         else:
@@ -3422,10 +3482,21 @@ def shoppingCart(pageNum):
 
 """Contact Us by Wei Ren"""
 
-@app.route("/contact_us")
+@app.route("/contact_us", methods = ["GET", "POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
-    contactForm = Forms.ContactUs(request.form)
+
+    db = shelve.open("user", "c")
+    # Remember to validate
+    try:
+        if "Contacts" in db:
+            contactDict = db['Contacts']
+        else:
+            print("user.db has no contact entries.")
+            contactDict = []
+    except:
+        print("Error in retrieving Contacts from user.db")
+
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -3436,12 +3507,33 @@ def contactUs():
 
 
         if userFound and accGoodStanding:
-            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
+            contactForm = Forms.ContactUs(request.form)
+            if request.method == "POST" and contactForm.validate():
+
+                contact = {"Name" : contactForm.name.data,
+                           "Email" : contactForm.email.data,
+                           "Subject" : contactForm.subject.data,
+                           "Enquiry" : contactForm.enquiry.data}
+
+                contactDict.append(contact)
+
+                db["Contacts"] = contactDict
+                db.close()
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, success=True)
+            elif accType == 'Admin':
+
+                return render_template('admin/general/contact_us.html', accType="Admin")
+            else:
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
+            contactForm = Forms.ContactUs(request.form)
             return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
     else:
+        contactForm = Forms.ContactUs(request.form)
         return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""

@@ -13,7 +13,7 @@ class StudentAndTeacher(User):
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs & Type here
-        self.__purchasedCourses = [] # Course IDs, Type, Timing, Cost here
+        self.__purchasedCourses = {} # Course IDs, Type, Timing, Cost here
         self.__tags_viewed = {"Programming": 0, 
                               "Web Development": 0,
                               "Game Development": 0,
@@ -132,7 +132,9 @@ class StudentAndTeacher(User):
             return "Zoom"
 
     def get_purchasesCourseType(self,courseID):
-        for paymentID in self.__purchasedCourses.keys():
+        for paymentID in list(self.__purchasedCourses.keys()):
+            video = False
+            zoom = False
             course = paymentID.split("_")    # [ID, Type]
             if course[0] == courseID and course[1] == "Video":
                 video = True
@@ -156,8 +158,7 @@ class StudentAndTeacher(User):
     def addCartToPurchases(self, courseID, courseType, date, time, cost, orderID, payerID):
         if [courseID, courseType] in self.__shoppingCart:
             paymentID = courseID + "_" + courseType # ID_Type
-            purchase = {paymentID:{'Date' : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}}
-            self.__purchasedCourses.append(purchase)
+            self.__purchasedCourses[paymentID] = {'Date' : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}
             self.__shoppingCart.remove([courseID, courseType])
         else:
             raise Exception("PayPal dislikes you.")

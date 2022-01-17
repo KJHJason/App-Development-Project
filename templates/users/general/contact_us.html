@@ -23,13 +23,21 @@
     <div class="col icon-div">
         <i class="fas fa-envelope-open-text"></i>
     </div>
-    <form class="col form-div" method="post">
-        {{ render_field(form.name, class="form-control", placeholder="Name") }}
-        {{ render_field(form.email, class="form-control", placeholder="Email") }}
-        {{ render_field(form.subject, class="form-control", placeholder="Subject") }}
-        {{ render_field(form.enquiry, class="form-control", placeholder="Enquiry", rows="6") }}
-        <button type="submit" class="btn btn-primary mb-2">Submit</button>
-    </form>
+        {% if success %}
+    <div class="col">
+        <h3>Your response has been submitted. Expect an answer soon.</h3>
+    </div>
+        {% else %}
+    <div class="col form-div">
+        <form class="contact-form" method="post">
+            {{ render_field(form.name, class="form-control", placeholder="Name") }}
+            {{ render_field(form.email, class="form-control", placeholder="Email") }}
+            {{ render_field(form.subject, class="form-control", placeholder="Subject") }}
+            {{ render_field(form.enquiry, class="form-control", placeholder="Enquiry", rows="6") }}
+            <button type="submit" class="btn btn-primary mb-2">Submit</button>
+        </form>
+    </div>
+        {% endif %}
 </div>
 
 <div class="title">
