@@ -3175,10 +3175,6 @@ def shoppingCartDefault():
 
 """Template Shopping Cart by Wei Ren"""
 
-"""@app.route("/shopping_cart", methods = ["GET","POST"])
-def shoppingCartDefault():
-    redirect("/shopping_cart/1")"""
-
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCart(pageNum):
@@ -3215,23 +3211,22 @@ def shoppingCart(pageNum):
 
             # Remember to validate
             try:
-                dbCourse = shelve.open("course","c")
-                if "Courses" in dbCourse:
-                    courseDict = dbCourse['Courses']
+                if "Courses" in db:
+                    courseDict = db['Courses']
                 else:
-                    print("dbCourse has no entries.")
+                    print("user.db has no course entries.")
                     courseDict = {}
             except:
-                print("Error in retrieving Course from course.db")
+                print("Error in retrieving Course from user.db")
 
             if request.method == "POST":
                 if bool(checkoutCompleteForm.checkoutComplete.data):
                     print(checkoutCompleteForm.checkoutComplete.data)
-                    # Remove courses from cart
+                    # Remove courses from cart into purchases
                     for courseInfo in shoppingCart:
-                        timing = checkoutCompleteForm.checkoutTiming.data.upper()
+                        timing = checkoutCompleteForm.checkoutTiming.data.upper()               # U for Update
                         date = timing.split("T")[0]
-                        time = timing.split("T")[1].split("Z")[0]
+                        time = timing.split("T")[1]
 
                         cost = courseDict[courseInfo[0]].get_price()
                         orderID = checkoutCompleteForm.checkoutOrderID.data
@@ -3273,8 +3268,9 @@ def shoppingCart(pageNum):
                     print("Error with form.")
                     return redirect(url_for('home'))
 
-            # Render the page                                                                               # R for Read
-            else:
+            # Render the page
+            else:                                                                               # R for Read
+                userKey.get_purchases()
                 # Initialise lists for jinja2 tags
                 ownerProfileImageList = []
                 ownerUsernameList = []
@@ -3285,6 +3281,7 @@ def shoppingCart(pageNum):
                 for courseInfo in shoppingCart:
                     # Getting course info
                     print("Course Info [ID, Type]:", courseInfo)
+                    print(courseDict)
                     course = courseDict[courseInfo[0]]
                     courseList.append(course)
 
@@ -3334,7 +3331,6 @@ def shoppingCart(pageNum):
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
                     db.close() # remember to close your shelve files!
-                    dbCourse.close()
                     return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, individualCount=len(paginatedCourseList), courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ownerUsernameList = ownerUsernameList, ownerProfileImageList = ownerProfileImageList, courseTypeList = courseTypeList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath)
 
         else:
@@ -3355,10 +3351,21 @@ def shoppingCart(pageNum):
 
 """Contact Us by Wei Ren"""
 
-@app.route("/contact_us")
+@app.route("/contact_us", methods = ["GET", "POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
-    contactForm = Forms.ContactUs(request.form)
+
+    db = shelve.open("user", "c")
+    # Remember to validate
+    try:
+        if "Contacts" in db:
+            contactDict = db['Contacts']
+        else:
+            print("user.db has no contact entries.")
+            contactDict = []
+    except:
+        print("Error in retrieving Contacts from user.db")
+
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -3369,12 +3376,33 @@ def contactUs():
 
 
         if userFound and accGoodStanding:
-            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
+            contactForm = Forms.ContactUs(request.form)
+            if request.method == "POST" and contactForm.validate():
+
+                contact = {"Name" : contactForm.name.data,
+                           "Email" : contactForm.email.data,
+                           "Subject" : contactForm.subject.data,
+                           "Enquiry" : contactForm.enquiry.data}
+
+                contactDict.append(contact)
+
+                db["Contacts"] = contactDict
+                db.close()
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, success=True)
+            elif accType == 'Admin':
+
+                return render_template('admin/general/contact_us.html', accType="Admin")
+            else:
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
+            contactForm = Forms.ContactUs(request.form)
             return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
     else:
+        contactForm = Forms.ContactUs(request.form)
         return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""

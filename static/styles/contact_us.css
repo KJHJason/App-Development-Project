@@ -18,23 +18,27 @@
     padding:0px 10vw;
 }
 
-.form-div label {
+.contact-form label {
     display:none;
 }
 
-.form-div button {
+.contact-form button {
     text-align:center;
     display:block;
 }
 
-.form-div input, .form-div select, .form-div textarea, .form-div button {
+.contact-form input, .contact-form select, .contact-form textarea, .contact-form button {
     margin:1em auto;
     width:75%;
 }
 
-.form-div select {
+.contact-form select {
     appearance:auto;
     padding:0.5rem 0.75rem;
+}
+
+.col h3 {
+    text-align:center;
 }
 
 @media only screen and (max-width: 600px) {
