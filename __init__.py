@@ -130,29 +130,97 @@ def home():
                 else:
                     paymentComplete = False
 
-                # for recommendation algorithm
-                userTagDict = userKey.get_tags_viewed()
-                highestWatchedByTag = max(userTagDict, key=userTagDict.get)
-                userTagDict.pop(highestWatchedByTag)
-                secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
-                userPurchasedCourses = userKey.get_purchases()
+                """ # for recommendation algorithm
+                courseList = []
+                if len(courseDict) > 3:
+                    userTagDict = userKey.get_tags_viewed()
+                    userPurchasedCourses = userKey.get_purchases() # to be edited once the attribute in the class has been updated
+                    numberOfUniqueViews = checkUniqueElements(userTagDict)
+                    if numberOfUniqueViews > 1:
+                        highestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                        userTagDict.pop(highestWatchedByTag)
+                        numberOfUnqiueViews = checkUniqueElements(userTagDict)
+                        if numberOfUnqiueViews > 1: 
+                            secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                        else:
+                            # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                            try:
+                                # hence choosing one other random course objects
+                                while True:
+                                    randomisedCourse = random.choice(courseDict.values())
+                                    if randomisedCourse not in userPurchasedCourses:
+                                        courseList.append(randomisedCourse)
+                                        break
+                            except:
+                                print("No course found.")
+                    else:
+                        # meaning that the user has either not seen any tags or has watched an equal balance of various tags
+                        # hence choosing three random course objects
+                        count = 0
+                        try:
+                            while count != 3:
+                                randomisedCourse = random.choice(courseDict.values())
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
+                                    courseList.append(randomisedCourse)
+                                    count += 1
+                        except:
+                            print("No courses found.")
+                
+                    recommendedCourseListByHighestTag = []
+                    
+                    courseListLen = len(courseList)
+                    if courseListLen == 0:
+                        recommendedCourseListBySecondHighestTag = []
+                        for key in courseDict:
+                            courseObject = courseDict[key]
+                            courseTag = courseObject.get_tags()
+                            if courseTag == highestWatchedByTag:
+                                if courseObject.get_courseID() not in userPurchasedCourses:
+                                    recommendedCourseListByHighestTag.append(courseObject)
+                            elif courseTag == secondHighestWatchedByTag:
+                                if courseObject.get_courseID() not in userPurchasedCourses:
+                                    recommendedCourseListBySecondHighestTag.append(courseObject)
+                        count = 0
+                        try: 
+                            while count != 2:
+                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
+                                    courseList.append(randomisedCourse)
+                                    count += 1
+                            count = 0
+                            while count != 1:
+                                randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
+                                    courseList.append(randomisedCourse)
+                                    count += 1
+                        except:
+                            print("Not enough courses with the user's corresponding tags.")
+                    elif courseListLen == 1:
+                        for key in courseDict:
+                            courseObject = courseDict[key]
+                            courseTag = courseObject.get_tags()
+                            if courseTag == highestWatchedByTag:
+                                if courseObject.get_courseID() not in userPurchasedCourses:
+                                    recommendedCourseListByHighestTag.append(courseObject)
+                        count = 0
+                        try:
+                            while count != 2:
+                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
+                                    courseList.append(randomisedCourse)
+                                    count += 1
+                        except:
+                            print("Not enough courses with the user's corresponding tags.")
 
-                recommendedCourseListByHighestTag = []
-                recommendedCourseListBySecondHighestTag = []
-                for key in courseDict:
-                    courseObject = courseDict[key]
-                    courseTag = courseObject.get_tags()
-                    if courseTag == highestWatchedByTag:
-                        if courseObject.get_courseID() not in userPurchasedCourses:
-                            recommendedCourseListByHighestTag.append(courseObject)
-                    elif courseTag == secondHighestWatchedByTag:
-                        if courseObject.get_courseID() not in userPurchasedCourses:
-                            recommendedCourseListBySecondHighestTag.append(courseObject)
-                try: 
-                    randomisedRecommendedCourseList = random.sample(recommendedCourseListByHighestTag, 2)
-                    randomisedRecommendedCourseList.append(random.choice(recommendedCourseListBySecondHighestTag))
-                except:
-                    randomisedRecommendedCourseList = []
+                    # in the event where there is insufficient tags to recommend, it will randomly choose another course object
+                    if len(courseList) != 3:
+                        while len(courseList) != 3:
+                            randomisedCourse = random.choice(courseDict.values())
+                            if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
+                                courseList.append(randomisedCourse)
+                else:
+                    for value in courseDict.values():
+                        courseList.append(value) """
 
                 # for trending algorithm
                 
