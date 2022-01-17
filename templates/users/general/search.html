@@ -36,23 +36,6 @@
                         {% elif info == "Zoom" %}
                         <p class="info">Zoom Session</p>
                         <a href="{{ link }}" class="view">View Zoom Link</a>
-                        {% else %}	<!--Zoom not specified.-->
-                            {% if courseTitleList[index].get_videoCondition() == False %}
-                            <p class="unavailable" onload="unavailable()">Video Recording<br></p>
-                            {% elif courseTypeList[index] == "Video" or courseTypeList[index] == "Both" %}
-                            <a href="{{ link_vid }}" class="selected">Video Recording</a>
-                            {% elif courseTypeList[index] != "Video" and courseTypeList[index] != "Both" %}
-                            <a href="{{ link_vid }}" class="unselected">Video Recording</a>
-                            {% endif %}
-
-                            {% if courseTitleList[index].get_zoomCondition() == False %}
-                            <p class="unavailable" onload="unavailable()">Live Zoom<br></p>
-                            {% elif courseTypeList[index] == "Zoom" or courseTypeList[index] == "Both" %}
-                            <a href="{{ link_zoom }}" class="selected">Live Zoom</a>
-                            {% elif courseTypeList[index] != "Zoom" and courseTypeList[index] != "Both" %}
-                            <a href="{{ link_zoom }}" class="unselected">Live Zoom</a>
-                            {% endif %}
-
                         {% endif %}
                     </div>
                 </div>
