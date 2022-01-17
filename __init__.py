@@ -2925,34 +2925,41 @@ def purchaseHistory(pageNum):
             courseID = ""
             historyCheck = True
             purchaseHistoryList = userKey.get_purchases()
-            historyList = {}
+            historyList = []
             showCourse = ""
-            purchaseID = bool(userKey.get_purchases())
-            print("PurchaseID exists?: ", purchaseID)
+            # Get purchased courses
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchaseID == True:
+            if purchasedCourses != []:
                 try:
-                    historyDict = {}
-                    dbCourse = shelve.open("user", "r")
-                    historyDict = dbCourse["Courses"]
+                    courseDict = {}
+                    db = shelve.open("user", "r")
+                    courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
                     db.close()
 
-                for courseID in purchaseHistoryList:
-                    history = dbCourse(courseID.get_courseID)
+                # Get specific course with course ID
+                for courseInfo in purchaseHistoryList:
+                    # courseInfo is key
+                    courseID = courseInfo.split("_")[0]
+                    courseType = courseInfo.split("_")[1]
+
+                # Find the correct course
+                course = courseDict[courseID]
 
 
-                    #id will be an integer
+                #id will be an integer
 
-                    video = {id :
-                        {historyDict : {"Title":history.get_title(),
-                        "Description":history.get_description(),
-                        "Thumbnail":history.get_thumbnail(),
-                        "VideoCheck":history.get_courseType()["Video"],
-                        "ZoomCheck":history.get_courseType()["Zoom"],
-                        "Price":history.get_price(),
-                        "Owner":history.get_owner()}
+                video = {id :
+                    {courseDict : {"Title":course.get_title(),
+                    "Description":course.get_description(),
+                    "Thumbnail":course.get_thumbnail(),
+                    "VideoCheck":course.get_courseType()["Video"],
+                    "ZoomCheck":course.get_courseType()["Zoom"],
+                    "Price":course.get_price(),
+                    "Owner":course.get_owner()}
                         }
                     }
                 for i in purchaseHistoryList:
@@ -2962,7 +2969,6 @@ def purchaseHistory(pageNum):
 
                 db.close()
             else:
-                db.close()
                 print("Purchase History is Empty")
                 historyCheck = False
 
@@ -2991,13 +2997,7 @@ def purchaseHistory(pageNum):
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
