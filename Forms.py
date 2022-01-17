@@ -88,6 +88,7 @@ class RemoveShoppingCartCourse(Form):
 
 class CheckoutComplete(Form):
     checkoutComplete = HiddenField("Check whether PayPal is complete: Extra Secret Easter Egg", [validators.DataRequired()], default = False)
+    # Internet Date & Time Format: https://datatracker.ietf.org/doc/html/rfc3339#section-5.6
     checkoutTiming = HiddenField("Timing of Transaction: The past, present, future, where Eggs are found!", [validators.DataRequired()])
     checkoutOrderID = HiddenField("PayPal's own ID for transaction: Easter Egg to you!", [validators.DataRequired()])
     checkoutPayerID = HiddenField("PayPal's own ID for identifying account: Easter Egg Number 4!", [validators.DataRequired()])
