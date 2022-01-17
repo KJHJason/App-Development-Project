@@ -2823,7 +2823,7 @@ def search(pageNum):
                 courseDict = {}
                 courseTitleList = []
                 try:
-                    db = shelve.open("course", "r")
+                    db = shelve.open("user", "r")
                     courseDict = db["Courses"]
 
                 except:
@@ -2852,6 +2852,7 @@ def search(pageNum):
                     checker = False
                 else:
                     checker = True
+                
 
                 db.close()
 
@@ -2932,7 +2933,7 @@ def purchaseHistory(pageNum):
             if purchaseID == True:
                 try:
                     historyDict = {}
-                    dbCourse = shelve.open("course", "r")
+                    dbCourse = shelve.open("user", "r")
                     historyDict = dbCourse["Courses"]
                 except:
                     print("Unable to open up course shelve")
@@ -3026,7 +3027,7 @@ def purchaseReview():
             reviewID = userKey.get_reviewID()
             print("ReviewID exists?: ", reviewID)
             reviewDict = {}
-            db = shelve.open("review", "c")
+            db = shelve.open("user", "c")
 
             try:
                 reviewDict = db["Review"]
