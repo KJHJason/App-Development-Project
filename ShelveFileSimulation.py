@@ -102,7 +102,7 @@ user.set_card_type("mastercard") ## [visa, mastercard, american express]
 #Courses Teaching (Wei Ren)
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "static/images/course/thumbnails/course_thumbnail_2.png"
+thumbnail = "static/images/courses/thumbnails/course_thumbnail_2.png"
 zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
@@ -157,7 +157,7 @@ user.set_card_type("american express") ## [visa, mastercard, american express]
 #Courses Teaching (Wei Ren)
 title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "static/images/course/thumbnails/course_thumbnail_1.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
@@ -182,6 +182,67 @@ user.set_courseTeaching(courseID)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userID] = user
 courseDict[courseID] = course
+
+title = "How to be a Daniel"
+description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
+videoPrice = "{:,.2f}".format(69)
+status = "Available" ## Available or Unavailable
+
+courseID = generate_course_ID(courseDict)
+course = Course(courseID, userID, title, description, thumbnail, status)
+course.add_tags("z","y","x","w","v")
+
+course.switch_videoCondition() # Video = True
+course.set_videoPrice(videoPrice)
+
+# def __init__(self, userID, title, comment, rating)
+course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+
+# def __init__(self, title, description, thumbnail, videoData):
+course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
+
+course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
+
+
+user.set_courseTeaching(courseID)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userID] = user
+courseDict[courseID] = course
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userID] = user
+courseDict[courseID] = course
+
+title = "How to be a Daniel 2"
+description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
+videoPrice = "{:,.2f}".format(69)
+status = "Available" ## Available or Unavailable
+
+courseID = generate_course_ID(courseDict)
+course = Course(courseID, userID, title, description, thumbnail, status)
+course.add_tags("z","y","x","w","v")
+
+course.switch_videoCondition() # Video = True
+course.set_videoPrice(videoPrice)
+
+# def __init__(self, userID, title, comment, rating)
+course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+
+# def __init__(self, title, description, thumbnail, videoData):
+course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
+
+course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
+
+
+user.set_courseTeaching(courseID)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userID] = user
+courseDict[courseID] = course
+
 
 
 

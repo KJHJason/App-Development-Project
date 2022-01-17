@@ -630,6 +630,18 @@ def checkUniqueElements(inputToCheck):
         raise Exception("Function checkUniqueElements can only accept dictionary or lists!")
     return uniqueNumbersOfViews
 
+def get_random_courses(courseDict):
+    recommendCourseList = []
+    if len(courseDict) > 3:
+        while len(recommendCourseList) != 3:
+            randomisedCourse = random.choice(list(courseDict.values()))
+            if randomisedCourse not in recommendCourseList:
+                recommendCourseList.append(randomisedCourse)
+    else:
+        for value in courseDict.values():
+            recommendCourseList.append(value)
+    return recommendCourseList
+
 """Done by Jason"""
 
 """Done by Wei Ren"""

@@ -54,44 +54,43 @@
 
 <div class="container">
     <h2>Trending</h2>
+    
     <div class="row">
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Discrete Math</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+        {% if trendingCourseLen > 1 %}
+            {% for course in trendingCourseList %}
+            <div class="col-md-4">
+                <a href="#"><img src="{{ course.get_thumbnail() }}" alt="Course Thumbnail" class="thumbnails"></a>
+                <a href="#"><h4>{{ course.get_shortTitle() }}</h4></a>
+                <p>{{ course.get_shortDescription() }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-md-4">
+            <a href="#"><img src="/static/images/user_home/placeholder.jpg" alt="Course Thumbnail" class="thumbnails"></a>
+            <a href="#"><h6>Sorry, there are currently no courses available.</h6></a>
         </div>
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Competitive Programming</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Dynamic Programming</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
+        {% endif %}
     </div>
     <h2>Recommendations</h2>
     <div class="row">
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Discrete Math</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+        {% if recommendCourseLen > 1 %}
+            {% for course in recommendCourseList %}
+            <div class="col-md-4">
+                <a href="#"><img src="{{ course.get_thumbnail() }}" alt="Course Thumbnail" class="thumbnails"></a>
+                <a href="#"><h4>{{ course.get_shortTitle() }}</h4></a>
+                <p>{{ course.get_shortDescription() }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-md-4">
+            <a href="#"><img src="/static/images/user_home/placeholder.jpg" alt="Course Thumbnail" class="thumbnails"></a>
+            <a href="#"><h6>Sorry, there are currently no courses available.</h6></a>
         </div>
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Competitive Programming</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
-        <div class="col-md">
-            <a href="#"><img src="../static/images/user_home/placeholder.jpg" alt=""></a>
-            <a href="#"><h4>Dynamic Programming</h4></a>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-        </div>
+        {% endif %}
     </div>
     <div class="row">
         <div class="col-md teacher">
-            <img src="../static/images/user_home/placeholder.jpg" alt="">
+            <img src="../static/images/user_home/placeholder.jpg" alt="Become a Teacher Promo Image" class="thumbnails">
         </div>
         <div class="col-md teacher">
             <h2>Become A Teacher Today!</h2>

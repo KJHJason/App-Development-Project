@@ -7,14 +7,14 @@ h2{
   text-align:center;
 }
 
-.col-md img{
+.thumbnails{
   height:auto;
   width:100%;
   margin-bottom:15px;
   border-radius:10px;
 }
 
-.col-md p{
+.col-md-4 p{
   margin-bottom:100px;
 }
 

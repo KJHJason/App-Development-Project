@@ -100,10 +100,24 @@ def home():
         print("File found.")
     except:
         print("File could not be found.")
-        # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
+        # since the shelve files could not be found, it will create a placeholder/empty shelve files
         db = shelve.open("user", "c")
         db["Courses"] = courseDict
         db.close()
+
+    # for trending algorithm
+    trendingCourseList = []
+    count = 0
+    try:
+        courseDictCopy = copy.deepcopy(courseDict)
+        while count != 3:
+            highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID].get_views())
+            trendingCourseList.append(courseDict.get(highestViewedCourse))
+            courseDictCopy.pop(highestViewedCourse)
+            count += 1
+    except:
+        print("No courses or not enough courses (requires 3 courses)")
+        trendingCourseList = get_random_courses(courseDict)
 
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -130,8 +144,8 @@ def home():
                 else:
                     paymentComplete = False
 
-                """ # for recommendation algorithm
-                courseList = []
+                # for recommendation algorithm
+                recommendCourseList = []
                 if len(courseDict) > 3:
                     userTagDict = userKey.get_tags_viewed()
                     userPurchasedCourses = userKey.get_purchases() # to be edited once the attribute in the class has been updated
@@ -147,9 +161,9 @@ def home():
                             try:
                                 # hence choosing one other random course objects
                                 while True:
-                                    randomisedCourse = random.choice(courseDict.values())
+                                    randomisedCourse = random.choice(list(courseDict.values()))
                                     if randomisedCourse not in userPurchasedCourses:
-                                        courseList.append(randomisedCourse)
+                                        recommendCourseList.append(randomisedCourse)
                                         break
                             except:
                                 print("No course found.")
@@ -159,16 +173,16 @@ def home():
                         count = 0
                         try:
                             while count != 3:
-                                randomisedCourse = random.choice(courseDict.values())
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
-                                    courseList.append(randomisedCourse)
+                                randomisedCourse = random.choice(list(courseDict.values()))
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                    recommendCourseList.append(randomisedCourse)
                                     count += 1
                         except:
                             print("No courses found.")
                 
                     recommendedCourseListByHighestTag = []
                     
-                    courseListLen = len(courseList)
+                    courseListLen = len(recommendCourseList)
                     if courseListLen == 0:
                         recommendedCourseListBySecondHighestTag = []
                         for key in courseDict:
@@ -184,14 +198,14 @@ def home():
                         try: 
                             while count != 2:
                                 randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
-                                    courseList.append(randomisedCourse)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                    recommendCourseList.append(randomisedCourse)
                                     count += 1
                             count = 0
                             while count != 1:
                                 randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
-                                    courseList.append(randomisedCourse)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                    recommendCourseList.append(randomisedCourse)
                                     count += 1
                         except:
                             print("Not enough courses with the user's corresponding tags.")
@@ -206,47 +220,33 @@ def home():
                         try:
                             while count != 2:
                                 randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
-                                    courseList.append(randomisedCourse)
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                    recommendCourseList.append(randomisedCourse)
                                     count += 1
                         except:
                             print("Not enough courses with the user's corresponding tags.")
 
                     # in the event where there is insufficient tags to recommend, it will randomly choose another course object
-                    if len(courseList) != 3:
-                        while len(courseList) != 3:
-                            randomisedCourse = random.choice(courseDict.values())
-                            if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in courseList):
-                                courseList.append(randomisedCourse)
+                    if len(recommendCourseList) != 3:
+                        while len(recommendCourseList) != 3:
+                            randomisedCourse = random.choice(list(courseDict.values()))
+                            if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                recommendCourseList.append(randomisedCourse)
                 else:
                     for value in courseDict.values():
-                        courseList.append(value) """
+                        recommendCourseList.append(value)
 
-                # for trending algorithm
-                trendingCourseList = []
-                count = 0
-                try:
-                    while count != 3:
-                        courseDictCopy = copy.deepcopy(courseDict)
-                        highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID]['views'])
-                        trendingCourseList.append(courseDict.get(highestViewedCourse))
-                        courseDictCopy.pop(highestViewedCourse)
-                        count += 1
-                except:
-                    print("No courses or not enough courses (requires 3 courses)")
-                    trendingCourseList = []
-                    for value in courseDict.values():
-                        trendingCourseList.append(value)
-                
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
             else:
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/home.html", accType="Guest")
+            recommendCourseList = get_random_courses(courseDict)
+            return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
     else:
-        return render_template("users/general/home.html", accType="Guest")
+        recommendCourseList = get_random_courses(courseDict)
+        return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
 """End of Home pages by Jason"""
 
