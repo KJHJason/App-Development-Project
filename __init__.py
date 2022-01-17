@@ -3068,12 +3068,11 @@ def purchaseHistory(pageNum):
             courseType = ""
             historyCheck = True
             historyList = []
-            showCourse = ""
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchasedCourses != []:
+            if purchasedCourses != {}:
                 try:
                     courseDict = {}
                     db = shelve.open("user", "r")
@@ -3089,27 +3088,17 @@ def purchaseHistory(pageNum):
                     courseID = courseInfo.split("_")[0]
                     courseType = courseInfo.split("_")[1]
 
-                # Find the correct course
-                course = courseDict[courseID]
+                    # Find the correct course
+                    course = courseDict[courseID]
 
-
-                #id will be an integer
-
-                video = {id :
-                    {courseDict : {"Title":course.get_title(),
-                    "Description":course.get_description(),
-                    "Thumbnail":course.get_thumbnail(),
-                    "VideoCheck":course.get_courseType()["Video"],
-                    "ZoomCheck":course.get_courseType()["Zoom"],
-                    "Price":course.get_price(),
-                    "Owner":course.get_owner()}
-                        }
-                    }
-                for i in purchasedCourses:
-                    showCourse(video[i])
-                    historyList.append(showCourse)
+                    courseInformation = {"Title":course.get_title(),
+                        "Description":course.get_description(),
+                        "Thumbnail":course.get_thumbnail(),
+                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "Price":course.get_price(),
+                        "Owner":course.get_userID()} 
+                    historyList.append(courseInformation)
                     print(historyList)
-
                 db.close()
             else:
                 print("Purchase History is Empty")
@@ -3129,10 +3118,10 @@ def purchaseHistory(pageNum):
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
-                courseList = purchasedCourses[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                purchasedCourses = paginate(purchasedCourses[::-1], pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3140,7 +3129,7 @@ def purchaseHistory(pageNum):
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,courseList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
