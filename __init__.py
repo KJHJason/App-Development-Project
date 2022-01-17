@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib
+import shelve, os, math, paypalrestsdk, difflib, copy
 import Student, Teacher, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
@@ -223,9 +223,21 @@ def home():
                         courseList.append(value) """
 
                 # for trending algorithm
+                trendingCourseList = []
+                count = 0
+                try:
+                    while count != 3:
+                        courseDictCopy = copy.deepcopy(courseDict)
+                        highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID]['views'])
+                        trendingCourseList.append(courseDict.get(highestViewedCourse))
+                        courseDictCopy.pop(highestViewedCourse)
+                        count += 1
+                except:
+                    print("No courses or not enough courses (requires 3 courses)")
+                    trendingCourseList = []
+                    for value in courseDict.values():
+                        trendingCourseList.append(value)
                 
-                
-
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete)
             else:
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath)
