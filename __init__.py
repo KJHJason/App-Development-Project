@@ -2985,8 +2985,8 @@ def purchaseHistory(pageNum):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
+            courseType = ""
             historyCheck = True
-            purchaseHistoryList = userKey.get_purchases()
             historyList = []
             showCourse = ""
             # Get purchased courses
@@ -3003,7 +3003,8 @@ def purchaseHistory(pageNum):
                     db.close()
 
                 # Get specific course with course ID
-                for courseInfo in purchaseHistoryList:
+                for courseInfo in list(purchasedCourses.keys()):
+                    print(courseInfo)
                     # courseInfo is key
                     courseID = courseInfo.split("_")[0]
                     courseType = courseInfo.split("_")[1]
@@ -3024,7 +3025,7 @@ def purchaseHistory(pageNum):
                     "Owner":course.get_owner()}
                         }
                     }
-                for i in purchaseHistoryList:
+                for i in purchasedCourses:
                     showCourse(video[i])
                     historyList.append(showCourse)
                     print(historyList)
@@ -3035,7 +3036,7 @@ def purchaseHistory(pageNum):
                 historyCheck = False
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(purchaseHistoryList) # get the length of the userList
+            courseListLen = len(purchasedCourses) # get the length of the userList
             maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
@@ -3048,10 +3049,10 @@ def purchaseHistory(pageNum):
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
-                courseList = purchaseHistoryList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                courseList = purchasedCourses[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                purchaseHistoryList = paginate(purchaseHistoryList[::-1], pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(purchasedCourses[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
