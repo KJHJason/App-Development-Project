@@ -379,7 +379,13 @@ def guestCookies():
             expires=datetime.now() + timedelta(days=90)
         )
     print(request.cookies.get("guestSeenTags"))
-    if not request.cookies.get("guestSeenTags"):
+    if "cookieCreated" in session:
+        cookieCreated = session["cookieCreated"]
+    else:
+        session["cookieCreated"] = True
+        cookieCreated = False
+    print(cookieCreated)
+    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
         return redirect("/home/no_cookies") # if the user had disabled cookies
     return res
 
@@ -436,8 +442,13 @@ def guestEditCookie(teacherUID, courseID, courseTag):
         value=b64encode(json.dumps(userTagDict).encode("utf-8")),
         expires=datetime.datetime.now() + datetime.timedelta(days=90)
     )
-    print(request.cookies.get("guestSeenTags"))
-    if not request.cookies.get("guestSeenTags"):
+    if "cookieCreated" in session:
+        cookieCreated = session["cookieCreated"]
+    else:
+        session["cookieCreated"] = True
+        cookieCreated = False
+    print(cookieCreated)
+    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
         redirectURL = redirectURL + "/no_cookies"
         return redirect(redirectURL) # if the user had disabled cookies
     return res
