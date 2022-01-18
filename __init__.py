@@ -379,7 +379,13 @@ def guestCookies():
             expires=datetime.now() + timedelta(days=90)
         )
     print(request.cookies.get("guestSeenTags"))
-    if not request.cookies.get("guestSeenTags"):
+    if "cookieCreated" in session:
+        cookieCreated = session["cookieCreated"]
+    else:
+        session["cookieCreated"] = True
+        cookieCreated = False
+    print(cookieCreated)
+    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
         return redirect("/home/no_cookies") # if the user had disabled cookies
     return res
 
@@ -424,7 +430,7 @@ def homeNoCookies():
 
 """Editing Cookie"""
 
-@app.route('/<teacherUID>/<courseID>/<courseTag>')
+@app.route('/edit_cookie/<teacherUID>/<courseID>/<courseTag>')
 @limiter.limit("10/second")
 def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
@@ -436,8 +442,13 @@ def guestEditCookie(teacherUID, courseID, courseTag):
         value=b64encode(json.dumps(userTagDict).encode("utf-8")),
         expires=datetime.datetime.now() + datetime.timedelta(days=90)
     )
-    print(request.cookies.get("guestSeenTags"))
-    if not request.cookies.get("guestSeenTags"):
+    if "cookieCreated" in session:
+        cookieCreated = session["cookieCreated"]
+    else:
+        session["cookieCreated"] = True
+        cookieCreated = False
+    print(cookieCreated)
+    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
         redirectURL = redirectURL + "/no_cookies"
         return redirect(redirectURL) # if the user had disabled cookies
     return res
@@ -3115,10 +3126,18 @@ def search(pageNum):
 
                 searchInput = request.args.get("q")
                 print(searchInput)
-                titleList = []
+                MatchedList = []
                 for courseID in courseDict:
                     courseTitle = courseDict.get(courseID).get_title()
                     courseTitleList.append(courseTitle)
+                
+                course = courseDict[courseID]
+
+                searchInformation = {"Title":course.get_title(),
+                    "Description":course.get_description(),
+                    "Thumbnail":course.get_thumbnail(),
+                    "Owner":course.get_userID()} 
+
                 try:
                     matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
                 except:
@@ -3129,12 +3148,12 @@ def search(pageNum):
                     titleCourse = courseObject.get_title()
                 for key in matchedCourseTitleList:
                     if titleCourse == key:
-                        titleList.append(courseObject)
-                print(titleList)
-                if bool(titleList):
-                    checker = False
-                else:
+                        MatchedList.append(searchInformation)
+                print(MatchedList)
+                if bool(MatchedList): #If there is something inside the list
                     checker = True
+                else:
+                    checker = False
                 
 
                 db.close()
@@ -3285,24 +3304,27 @@ def purchaseHistory(pageNum):
                     db.close()
 
                 # Get specific course with course ID
-                for courseInfo in list(purchasedCourses.keys()):
-                    print(courseInfo)
-                    # courseInfo is key
-                    print(courseInfo)
-                    courseID = courseInfo.split("_")[0]
-                    courseType = courseInfo.split("_")[1]
+                for courseID in list(purchasedCourses.keys()):
+                    print(courseID)
 
                     # Find the correct course
                     course = courseDict[courseID]
+                    courseType = purchasedCourses.get(courseID).get("Course Type")
+
+                    coursePricePaying = 0
+                    if courseType == "Zoom" or courseType == "Both":
+                        coursePricePaying += float(course.get_zoomPrice())
+                    if courseType == "Video" or courseType == "Both":
+                        coursePricePaying += float(course.get_videoPrice())
 
                     courseInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
-                        "Price":course.get_price(),
+                        "Price":coursePricePaying,
                         "Owner":course.get_userID()} 
                     historyList.append(courseInformation)
-                    print(historyList)
+                print(historyList)
                 db.close()
             else:
                 print("Purchase History is Empty")
