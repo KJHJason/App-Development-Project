@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy
+import shelve, os, math, paypalrestsdk, difflib, copy, json
 import Student, Teacher, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
@@ -11,7 +11,7 @@ from pathlib import Path
 from flask_mail import Mail
 from IntegratedFunctions import *
 import vimeo
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
@@ -250,8 +250,52 @@ def home():
             return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
     else:
         # guests
+        if not request.cookies.get("guestSeenTags"):
+            return redirect(url_for("guestCookies"))
+        else:
+            guestSeenTags = json.loads(request.cookies.get("guestSeenTags"))
+            print(guestSeenTags)
         recommendCourseList = get_random_courses(courseDict)
         return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+
+# for setting a cookie for the guest for content personalisation
+@app.route('/set_cookies')
+@limiter.limit("1/second")
+def guestCookies():
+    res = make_response(redirect(url_for("home")))
+    if not request.cookies.get("guestSeenTags"):
+        res.set_cookie(
+            "guestSeenTags",
+            value=json.dumps({"Programming": 0, 
+            "Web Development": 0,
+            "Game Development": 0,
+            "Mobile App Development": 0,
+            "Software Development": 0,
+            "Other Development": 0,
+            "Entrepreneurship": 0,
+            "Project Management": 0,
+            "BI & Analytics": 0,
+            "Business Strategy": 0,
+            "Other Business": 0,
+            "3D Modelling": 0,
+            "Animation": 0,
+            "UX Design": 0,
+            "Design Tools": 0,
+            "Other Design": 0,
+            "Digital Photography": 0,
+            "Photography Tools": 0,
+            "Video Production": 0,
+            "Video Design Tools": 0,
+            "Other Photography/Videography": 0,
+            "Science": 0,
+            "Math": 0,
+            "Language": 0,
+            "Test Prep": 0,
+            "Other Academics": 0}),
+            expires=datetime.now() + timedelta(days=90)
+        )
+    print(request.cookies.get("guestSeenTags"))
+    return res
 
 """End of Home pages by Jason"""
 
