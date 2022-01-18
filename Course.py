@@ -45,7 +45,7 @@ class Course():
         self.__zoomCondition = False
         self.__status = status  # Is course available?
         self.__overallRating = 0
-        self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course?
+        self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course? AND ALSO, PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE StudentAndTeacher.py
         self.__ratings = []
         self.__schedule = []
         self.__views = 0

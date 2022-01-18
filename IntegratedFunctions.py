@@ -87,6 +87,7 @@ def generate_course_ID(inputDict):
 # function to retrieve the acc type and validate the session which will mainly be used on general pages
 def general_page_open_file(userID):
     imagesrcPath = ""
+    adminImagesrcPath = "/static/images/user/default.png"
     try:
         adminDict = {}
         db = shelve.open("admin", "r")
@@ -107,9 +108,9 @@ def general_page_open_file(userID):
             accStatus = adminKey.get_status()
             if accStatus == "Active":
                 accType = adminKey.get_acc_type()
-                return userFound, True, accType, imagesrcPath
+                return userFound, True, accType, adminImagesrcPath
             else:
-                return userFound, False, "", imagesrcPath
+                return userFound, False, "", adminImagesrcPath
     try:
         userDict = {}
         db = shelve.open("user", "r")
@@ -133,6 +134,58 @@ def general_page_open_file(userID):
             return userFound, True, accType, imagesrcPath
         else:
             return userFound, False, "", imagesrcPath
+    return None, False, False, ""
+
+def general_page_open_file_with_userKey(userID):
+    imagesrcPath = ""
+    adminImagesrcPath = "/static/images/user/default.png"
+    try:
+        adminDict = {}
+        db = shelve.open("admin", "r")
+        adminDict = db['Admins']
+        print("File found.")
+        db.close()
+        fileFound = True
+    except:
+        print("File could not be found.")
+        fileFound = False
+
+    if fileFound:
+        print("Admin ID in session:", userID)
+        adminKey = adminDict.get(userID)
+        if adminKey != None:
+            print("Verdict: Admin ID Matched.")
+            userFound = True
+            accStatus = adminKey.get_status()
+            if accStatus == "Active":
+                accType = adminKey.get_acc_type()
+                return adminKey, userFound, True, accType, adminImagesrcPath
+            else:
+                return adminKey, userFound, False, "", adminImagesrcPath
+    try:
+        userDict = {}
+        db = shelve.open("user", "r")
+        userDict = db['Users']
+        print("File found.")
+        db.close()
+    except:
+        print("File could not be found.")
+        return False, False, "", imagesrcPath
+
+    userFound = False
+    print("User ID in session:", userID)
+    userKey = userDict.get(userID)
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        accStatus = userKey.get_status()
+        if accStatus == "Good":
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            accType = userKey.get_acc_type()
+            return userKey, userFound, True, accType, imagesrcPath
+        else:
+            return userKey, userFound, False, "", imagesrcPath
+    return None, False, False, "", ""
 
 # use the function below if you just want to validate the session and check if the user is banned but there is no need to manipulate the data in the user shelve data files and also assuming that the user must be logged in, meaning the user shelve data must be present in the directory
 def validate_session_open_file(userSession):

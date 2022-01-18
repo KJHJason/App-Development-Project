@@ -12,6 +12,7 @@ from flask_mail import Mail
 from IntegratedFunctions import *
 import vimeo
 from datetime import date, timedelta, datetime
+from base64 import b64encode, b64decode
 
 """Rubrics (for Excellent)"""
 """Week 13 Progress Review (15%)
@@ -125,10 +126,9 @@ def home():
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
         if userFound and accGoodStatus:
-            imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType != "Admin":
                 # checking if the teacher recently added their payment method when signing up
                 if "teacherPaymentAdded" in session:
@@ -246,58 +246,203 @@ def home():
             # users with invalid session, aka guest
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            recommendCourseList = get_random_courses(courseDict)
-            return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+            return redirect(url_for("home"))
     else:
         # guests
+        print("User did not disable cookies.")
         if not request.cookies.get("guestSeenTags"):
             return redirect(url_for("guestCookies"))
         else:
-            guestSeenTags = json.loads(request.cookies.get("guestSeenTags"))
-            print(guestSeenTags)
-        recommendCourseList = get_random_courses(courseDict)
+            userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+
+            # for recommendation algorithm
+            recommendCourseList = []
+            if len(courseDict) > 3:
+                numberOfUniqueViews = checkUniqueElements(userTagDict)
+                if numberOfUniqueViews > 1:
+                    highestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                    userTagDict.pop(highestWatchedByTag)
+                    numberOfUnqiueViews = checkUniqueElements(userTagDict)
+                    if numberOfUnqiueViews > 1: 
+                        secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
+                    else:
+                        # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                        try:
+                            # hence choosing one other random course objects
+                            while True:
+                                randomisedCourse = random.choice(list(courseDict.values()))
+                                recommendCourseList.append(randomisedCourse)
+                        except:
+                            print("No course found.")
+                else:
+                    # meaning that the user has either not seen any tags or has watched an equal balance of various tags
+                    # hence choosing three random course objects
+                    count = 0
+                    try:
+                        while count != 3:
+                            randomisedCourse = random.choice(list(courseDict.values()))
+                            if randomisedCourse not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourse)
+                                count += 1
+                    except:
+                        print("No courses found.")
+            
+                recommendedCourseListByHighestTag = []
+                
+                courseListLen = len(recommendCourseList)
+                if courseListLen == 0:
+                    recommendedCourseListBySecondHighestTag = []
+                    for key in courseDict:
+                        courseObject = courseDict[key]
+                        courseTag = courseObject.get_tags()
+                        if courseTag == highestWatchedByTag:
+                            recommendedCourseListByHighestTag.append(courseObject)
+                        elif courseTag == secondHighestWatchedByTag:
+                            recommendedCourseListBySecondHighestTag.append(courseObject)
+                    count = 0
+                    try: 
+                        while count != 2:
+                            randomisedCourse = random.choice(recommendedCourseListByHighestTag)
+                            if randomisedCourse not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourse)
+                                count += 1
+                        count = 0
+                        while count != 1:
+                            randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
+                            if randomisedCourse not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourse)
+                                count += 1
+                    except:
+                        print("Not enough courses with the user's corresponding tags.")
+                elif courseListLen == 1:
+                    for key in courseDict:
+                        courseObject = courseDict[key]
+                        courseTag = courseObject.get_tags()
+                        if courseTag == highestWatchedByTag:
+                            recommendedCourseListByHighestTag.append(courseObject)
+                    count = 0
+                    try:
+                        while count != 2:
+                            randomisedCourse = random.choice(recommendedCourseListByHighestTag)
+                            if randomisedCourse not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourse)
+                                count += 1
+                    except:
+                        print("Not enough courses with the user's corresponding tags.")
+
+                # in the event where there is insufficient tags to recommend, it will randomly choose another course object
+                if len(recommendCourseList) != 3:
+                    while len(recommendCourseList) != 3:
+                        randomisedCourse = random.choice(list(courseDict.values()))
+                        if randomisedCourse not in recommendCourseList:
+                            recommendCourseList.append(randomisedCourse)
+            else:
+                for value in courseDict.values():
+                    recommendCourseList.append(value)
+
         return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
 # for setting a cookie for the guest for content personalisation
 @app.route('/set_cookies')
-@limiter.limit("1/second")
+@limiter.limit("10/second")
 def guestCookies():
     res = make_response(redirect(url_for("home")))
     if not request.cookies.get("guestSeenTags"):
         res.set_cookie(
             "guestSeenTags",
-            value=json.dumps({"Programming": 0, 
-            "Web Development": 0,
-            "Game Development": 0,
-            "Mobile App Development": 0,
-            "Software Development": 0,
-            "Other Development": 0,
+            value=b64encode(json.dumps({"Programming": 0, 
+            "Web_Development": 0,
+            "Game_Development": 0,
+            "Mobile_App_Development": 0,
+            "Software_Development": 0,
+            "Other_Development": 0,
             "Entrepreneurship": 0,
-            "Project Management": 0,
-            "BI & Analytics": 0,
-            "Business Strategy": 0,
-            "Other Business": 0,
-            "3D Modelling": 0,
+            "Project_Management": 0,
+            "BI_Analytics": 0,
+            "Business _Strategy": 0,
+            "Other_Business": 0,
+            "3D_Modelling": 0,
             "Animation": 0,
-            "UX Design": 0,
-            "Design Tools": 0,
-            "Other Design": 0,
-            "Digital Photography": 0,
-            "Photography Tools": 0,
-            "Video Production": 0,
-            "Video Design Tools": 0,
-            "Other Photography/Videography": 0,
+            "UX_Design": 0,
+            "Design_Tools": 0,
+            "Other_Design": 0,
+            "Digital_Photography": 0,
+            "Photography_Tools": 0,
+            "Video_Production": 0,
+            "Video_Design_Tools": 0,
+            "Other_Photography_Videography": 0,
             "Science": 0,
             "Math": 0,
             "Language": 0,
-            "Test Prep": 0,
-            "Other Academics": 0}),
+            "Test_Prep": 0,
+            "Other_Academics": 0}).encode("utf-8")),
             expires=datetime.now() + timedelta(days=90)
         )
     print(request.cookies.get("guestSeenTags"))
+    if not request.cookies.get("guestSeenTags"):
+        return redirect("/home/no_cookies") # if the user had disabled cookies
     return res
 
+@app.route('/home/no_cookies')
+@limiter.limit("30/second") # to prevent ddos attacks
+def homeNoCookies():
+    if "userSession" not in session and "adminSession" not in session:
+        courseDict = {}
+        try:
+            db = shelve.open("user", "r")
+            courseDict = db['Courses']
+            db.close()
+            print("File found.")
+        except:
+            print("File could not be found.")
+            # since the shelve files could not be found, it will create a placeholder/empty shelve files
+            db = shelve.open("user", "c")
+            db["Courses"] = courseDict
+            db.close()
+
+        # for trending algorithm
+        trendingCourseList = []
+        count = 0
+        try:
+            courseDictCopy = copy.deepcopy(courseDict)
+            while count != 3:
+                highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID].get_views())
+                trendingCourseList.append(courseDict.get(highestViewedCourse))
+                courseDictCopy.pop(highestViewedCourse)
+                count += 1
+        except:
+            print("No courses or not enough courses (requires 3 courses)")
+            trendingCourseList = get_random_courses(courseDict)
+
+        recommendCourseList = get_random_courses(courseDict)
+
+        return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+    else:
+        return redirect(url_for("home"))
+
 """End of Home pages by Jason"""
+
+"""Editing Cookie"""
+
+@app.route('/<teacherUID>/<courseID>/<courseTag>')
+@limiter.limit("10/second")
+def guestCookies(teacherUID, courseID, courseTag):
+    redirectURL = "/" + teacherUID + "/" + courseID
+    res = make_response(redirect(redirectURL))
+    userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+    userTagDict[courseTag] += 1
+    res.set_cookie(
+        "guestSeenTags",
+        value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+        expires=datetime.datetime.now() + datetime.timedelta(days=90)
+    )
+    print(request.cookies.get("guestSeenTags"))
+    if not request.cookies.get("guestSeenTags"):
+        redirectURL = redirectURL + "/no_cookies"
+        return redirect(redirectURL) # if the user had disabled cookies
+    return res
+
+"""End of Editing Cookie"""
 
 """User login and logout by Jason"""
 
@@ -4025,10 +4170,9 @@ def insertName():
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
         if userFound and accGoodStanding:
-            imagesrcPath = retrieve_user_profile_pic(userKey)
             # add in your CRUD or other code
             return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
