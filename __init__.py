@@ -2849,6 +2849,15 @@ def teacherCashOut():
                     # simple resetting of teacher's income
                     doesCardExist = bool(userKey.get_card_name())
                     if doesCardExist != False:
+                        # calculating how much the teacher has earned
+                        if currentDate <= zeroCommissionEndDate:
+                            commission = "0%"
+                            totalEarned = round((initialEarnings + accumulatedEarnings), 2)
+                        else:
+                            commission = "25%"
+                            totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
+
+                        # deducting from the teacher object
                         if typeOfCollection == "collectingAll" and lastDayOfMonth:
                             session["cashedOut"] = True
                             userKey.set_earnings(0)
@@ -2909,7 +2918,7 @@ def teacherCashOut():
                         remainingDays = "Unexpected error, please contact CourseFinity support."
                 else:
                     commission = "25%"
-                    totalEarned = round(((initialEarnings + accumulatedEarnings) - (initialEarnings * 0.25)), 2)
+                    totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
                     
                 totalEarnedInt = totalEarned
                 # converting the numbers into strings of 2 decimal place for the earnings
