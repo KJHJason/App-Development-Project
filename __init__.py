@@ -426,7 +426,7 @@ def homeNoCookies():
 
 @app.route('/<teacherUID>/<courseID>/<courseTag>')
 @limiter.limit("10/second")
-def guestCookies(teacherUID, courseID, courseTag):
+def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
     res = make_response(redirect(redirectURL))
     userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
