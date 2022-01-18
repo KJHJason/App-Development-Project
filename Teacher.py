@@ -6,6 +6,7 @@ class Teacher(StudentAndTeacher):
         super().__init__(user_id, username, email, password, "Teacher", "Good")
         self.__earnings = 0
         self.__accumulated_earnings = 0
+        self.__paypalID = ""    # PayPal Account ID
         self.__purchaseIDs = []
         self.__reviewIDs = []
     # Added by Wei Ren for courses
@@ -48,3 +49,8 @@ class Teacher(StudentAndTeacher):
         return self.__coursesTeaching
     def set_courseTeaching(self, courseID):
         self.__coursesTeaching.append(courseID)
+
+    def set_paypalID(self, paypalID):
+        self.__paypalID = paypalID
+    def get_paypalID(self):
+        return self.__paypalID

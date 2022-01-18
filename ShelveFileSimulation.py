@@ -33,7 +33,7 @@ adminBase = shelve.open("admin", "c")
 userDict = {}
 adminDict = {}
 courseDict = {}
-
+ticketDict = {}
 
 
 """
@@ -289,6 +289,7 @@ print(user.get_shoppingCart())
 userBase["Users"] = userDict
 adminBase["Admins"] = adminDict
 userBase["Courses"] = courseDict
+adminBase["Tickets"] = ticketDict
 
 # Make sure to close!
 userBase.close()

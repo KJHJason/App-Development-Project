@@ -3661,7 +3661,7 @@ def shoppingCart(pageNum):
                                        "courseType" : courseType,
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
-                                       "coursePricePaying" : coursePricePaying,
+                                       "coursePricePaying" : "{:,.2f}".format(coursePricePaying),
                                        "courseZoomCondition" : course.get_zoomCondition(),
                                        "courseVideoCondition":course.get_videoCondition(),
                                        "courseOwnerUsername" : courseOwnerUsername,
@@ -3718,16 +3718,21 @@ def shoppingCart(pageNum):
 def contactUs():
 
     contactForm = Forms.ContactUs(request.form)
-    db = shelve.open("user", "c")
+    dbAdmin = shelve.open("admin", "c")
+
     # Remember to validate
     try:
-        if "Contacts" in db:
-            contactDict = db['Contacts']
+        if "Tickets" in dbAdmin:
+            ticketDict = dbAdmin['Tickets']
         else:
-            print("user.db has no contact entries.")
-            contactDict = []
+            print("admin.db has no contact entries.")
+            ticketDict = {}
     except:
-        print("Error in retrieving Contacts from user.db")
+        print("Error in retrieving Tickets from admin.db")
+
+    # Initialise, or UnboundLocalError
+    userFound = False
+    accGoodStatus = False
 
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -3738,19 +3743,72 @@ def contactUs():
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
 
-
-    if userFound and accGoodStatus:
+    if userFound and accGoodStatus: # Registered user in database, not banned
         # add in your code below
         imagesrcPath = retrieve_user_profile_pic(userKey)
 
-        if accType != 'Admin':
-            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm)
-        else:
-            return redirect(url_for())
-    else:
+        if accType == 'Admin': # Admin user
+            return render_template("users/general/contact_us.html", accType="Admin", form = contactForm)
+        else: # Teacher or Student
+            success = False
+
+            if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
+
+                name = contactForm.name.data
+                email = contactForm.email.data
+                subject = contactForm.subject.data
+
+                ticketID = generate_6_char_id(list(ticketDict.keys()))
+
+                ticket = {"User ID" : userKey.get_user_id(),
+                           "Account Type" : accType,
+                           "Name" : name,
+                           "Email" : email,
+                           "Subject" : subject,
+                           "Enquiry" : contactForm.enquiry.data}
+
+                print(ticket)
+
+                ticketDict[ticketID] = ticket
+                dbAdmin['Tickets'] = ticketDict
+
+                success = True
+
+                #send_contact_us_email(ticketID, subject, name, email)
+
+            dbAdmin.close()
+            return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success)
+    else: # Not registered, not found in database, or banned
         print("Admin/User account is not found or is not active/banned.")
         session.clear()
-        return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
+
+        success = False
+
+        if request.method == "POST" and contactForm.validate():
+
+            name = contactForm.name.data
+            email = contactForm.email.data
+            subject = contactForm.subject.data
+
+            ticketID = generate_6_char_id(ticketDict)
+
+            contact = {"User ID" : None,
+                       "Account Type" : "Guest",
+                       "Name" : name,
+                       "Email" : email,
+                       "Subject" : subject,
+                       "Enquiry" : contactForm.enquiry.data}
+
+            ticketDict[ticketID] = contact
+            dbAdmin['Tickets'] = ticketDict
+
+            success = True
+
+            #send_contact_us_email(ticketID, subject, name, email)
+
+        dbAdmin.close()
+
+        return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
 
 """End of Contact Us by Wei Ren"""
 
