@@ -3738,20 +3738,99 @@ def shoppingCart(pageNum):
 @app.route("/contact_us", methods = ["GET", "POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
-
     contactForm = Forms.ContactUs(request.form)
     dbAdmin = shelve.open("admin", "c")
 
     # Remember to validate
+    ticketDict = {}
     try:
         if "Tickets" in dbAdmin:
             ticketDict = dbAdmin['Tickets']
         else:
             print("admin.db has no contact entries.")
-            ticketDict = {}
+            dbAdmin['Tickets'] = ticketDict
     except:
         print("Error in retrieving Tickets from admin.db")
 
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+
+        if userFound and accGoodStatus:
+            # add in your CRUD or other code
+            if accType != "Admin": # Registered user in database, not banned
+                success = False
+                if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
+
+                    name = contactForm.name.data
+                    email = contactForm.email.data
+                    subject = contactForm.subject.data
+
+                    ticketID = generate_6_char_id(list(ticketDict.keys()))
+
+                    ticket = {"User ID" : userKey.get_user_id(),
+                            "Account Type" : accType,
+                            "Name" : name,
+                            "Email" : email,
+                            "Subject" : subject,
+                            "Enquiry" : contactForm.enquiry.data}
+
+                    print(ticket)
+
+                    ticketDict[ticketID] = ticket
+                    dbAdmin['Tickets'] = ticketDict
+
+                    success = True
+
+                    #send_contact_us_email(ticketID, subject, name, email)
+
+                dbAdmin.close()
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success)
+            else:
+                # Admin user
+                return render_template("users/general/contact_us.html", accType=accType, form = contactForm)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return redirect(url_for("contactUs"))
+    else:
+        # guests
+        print("Admin/User account is not found or is not active/banned.")
+        session.clear()
+
+        success = False
+
+        if request.method == "POST" and contactForm.validate():
+
+            name = contactForm.name.data
+            email = contactForm.email.data
+            subject = contactForm.subject.data
+
+            ticketID = generate_6_char_id(ticketDict)
+
+            contact = {"User ID" : None,
+                       "Account Type" : "Guest",
+                       "Name" : name,
+                       "Email" : email,
+                       "Subject" : subject,
+                       "Enquiry" : contactForm.enquiry.data}
+
+            ticketDict[ticketID] = contact
+            dbAdmin['Tickets'] = ticketDict
+
+            success = True
+
+            #send_contact_us_email(ticketID, subject, name, email)
+
+        dbAdmin.close()
+
+        return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
+    
     # Initialise, or UnboundLocalError
     userFound = False
     accGoodStatus = False
@@ -4223,6 +4302,7 @@ def insertName():
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
             return render_template("users/general/page.html", accType="Guest")
+            # return redirect(url_for("insertName"))
     else:
         return render_template("users/general/page.html", accType="Guest")
 
@@ -4252,13 +4332,14 @@ def insertName():
 
         userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             # add in your CRUD or other code
             return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
             return render_template("users/general/page.html", accType="Guest")
+            # return redirect(url_for("insertName"))
     else:
         return render_template("users/general/page.html", accType="Guest")
 
