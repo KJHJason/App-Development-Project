@@ -137,7 +137,7 @@ class StudentAndTeacher(User):
 
     def get_purchasesCourseType(self,courseID):
         try:
-            return self.__purchasedCourse[courseID]["Course Type"]
+            return self.__purchasedCourses[courseID]["Course Type"]
         except KeyError:
             raise Exception("Course ID", courseID, "not in purchased courses.")
 
