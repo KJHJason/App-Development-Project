@@ -9,6 +9,7 @@ class Teacher(StudentAndTeacher):
         self.__paypalID = ""    # PayPal Account ID
         self.__purchaseIDs = []
         self.__reviewIDs = []
+        self.__bio = ""
     # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
 
