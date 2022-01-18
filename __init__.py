@@ -424,7 +424,7 @@ def homeNoCookies():
 
 """Editing Cookie"""
 
-@app.route('/<teacherUID>/<courseID>/<courseTag>')
+@app.route('/edit_cookie/<teacherUID>/<courseID>/<courseTag>')
 @limiter.limit("10/second")
 def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
