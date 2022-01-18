@@ -236,15 +236,20 @@ def home():
                     for value in courseDict.values():
                         recommendCourseList.append(value)
 
+                # logged in users
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
             else:
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath)
+                # admins
+                recommendCourseList = get_random_courses(courseDict)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
         else:
+            # users with invalid session, aka guest
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
             recommendCourseList = get_random_courses(courseDict)
             return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
     else:
+        # guests
         recommendCourseList = get_random_courses(courseDict)
         return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
