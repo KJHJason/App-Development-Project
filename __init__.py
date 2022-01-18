@@ -348,6 +348,7 @@ def home():
 def guestCookies():
     res = make_response(redirect(url_for("home")))
     if not request.cookies.get("guestSeenTags"):
+        # encoding the cookie value with base64 such that the guest cannot tamper with the values in the dictionary too easily
         res.set_cookie(
             "guestSeenTags",
             value=b64encode(json.dumps({"Programming": 0, 
@@ -435,13 +436,16 @@ def homeNoCookies():
 def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
     res = make_response(redirect(redirectURL))
-    userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
-    userTagDict[courseTag] += 1
-    res.set_cookie(
-        "guestSeenTags",
-        value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-        expires=datetime.datetime.now() + datetime.timedelta(days=90)
-    )
+    try:
+        userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+        userTagDict[courseTag] += 1
+        res.set_cookie(
+            "guestSeenTags",
+            value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+            expires=datetime.datetime.now() + datetime.timedelta(days=90)
+        )
+    except:
+        print("Error with editing guest's cookie.")
     if "cookieCreated" in session:
         cookieCreated = session["cookieCreated"]
     else:
