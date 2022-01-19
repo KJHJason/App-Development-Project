@@ -14,6 +14,7 @@ import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from flask_apscheduler import APScheduler
+from matplotlib import pyplot as plt
 
 """Web app configurations"""
 
@@ -2084,6 +2085,74 @@ def resetProfileImage(userID):
         return redirect(url_for("home"))
 
 """End of User Management for Admins by Jason"""
+
+"""Admin Data Visualisation (Total user per day) by Jason"""
+
+@app.route("/admin_dashboard")
+@limiter.limit("30/second") # to prevent ddos attacks
+def dashboard():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # add in your code here
+            graphList = []
+            db = shelve.open("user", "c")
+            try:
+                if 'userGraphData' in db and "Users" in db:
+                    graphList = db['userGraphData']
+                else:
+                    print("No data in user shelve files")
+                    db["userGraphData"] = graphList
+            except:
+                print("Error in retrieving userGraphData from user.db")
+            finally:
+                db.close()
+            
+            lastUpdated = graphList[-1].get_lastUpdate()
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+
+            xAxisData = [] # dates
+            yAxisData = [] # number of users
+            for objects in selectedGraphDataList:
+                xAxisData.append(str(objects.get_date()))
+                yAxisData.append(objects.get_noOfUser())
+
+            fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+            plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+
+
+            x = xAxisData # date labels for x-axis
+            y = yAxisData # data for y-axis
+            
+            plt.plot(x, y, color="#009DF8", linewidth=3)
+
+            plt.ylabel('Total Numbers of Users')
+            plt.title("Total Userbase by Day")
+            fig.autofmt_xdate() # auto formats the date label to be tilted
+            fig.tight_layout() # eliminates padding
+            plt.savefig("static/images/graph.png")
+
+            # below code for simulation purposes
+            xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            yAxisData = [12, 240, 500] # number of users
+
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Admin Data Visualisation (Total user per day) by Jason"""
 
 """User Profile Settings by Jason"""
 

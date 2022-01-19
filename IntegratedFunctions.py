@@ -707,7 +707,7 @@ def saveNoOfUserPerDay():
             graphList = db['userGraphData']
             userDict = db['Users']
         else:
-            print("No user data in user shelve files")
+            print("No data in user shelve files")
             db["userGraphData"] = graphList
             db['Users'] = userDict
         for dates in graphList:
@@ -718,7 +718,7 @@ def saveNoOfUserPerDay():
             db["userGraphData"] = graphList
     except:
         db.close()
-        print("Error in retrieving Users from user.db")
+        print("Error in retrieving Users/userGraphData from user.db")
     print(graphDateList)
     print(graphList)
 
