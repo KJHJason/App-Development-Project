@@ -107,26 +107,27 @@
                     datasets:[{
                         label:"Total Number of Users",
                         data:{{ yAxisData }},
-                    
+                        backgroundColor: "#009DF8",
+                        borderWidth: 3,
+                        borderColor: "#009DF8",
                     }],
-                    backgroundColor: "#009DF8",
-                    borderWidth: 1,
-                    borderColor: "#273C4D",
-                    hoverBorderWidth: 3,
-                    hoverBorderColor: "#212529",
                 },
                 options: {
-                    title:{
+                    plugins: {
+                        title:{
                         display: true,
                         text:"Total Userbase by Day",
-                        fontSize: 25,
-                    },
-                    legend:{
-                        display:false,
-                        /* position:"right",
-                        labels:{
-                            fontColor: "#212529",
-                        } */
+                        font: {
+                            size: 24
+                            }
+                        },
+                        legend:{
+                            display:false
+                            /* position:"right",
+                            labels:{
+                                fontColor: "#212529",
+                            } */
+                        }
                     }
                 }
             });
