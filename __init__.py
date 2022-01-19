@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
 
 # Maximum file size for uploading anything to the web app's server
-app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
+app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
 app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 2 * 1024 * 1024 # 2MiB
 
 # configuration for email
@@ -623,7 +623,10 @@ def requestPasswordReset():
                     # checking if the user is banned
                     accGoodStatus = email_key.get_status()
                     if accGoodStatus == "Good":
-                        send_reset_email(emailInput, email_key)
+                        try:
+                            send_reset_email(emailInput, email_key)
+                        except:
+                            print("Email server is down or its port is blocked")
                         print("Email sent")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
                     else:
@@ -763,7 +766,10 @@ def userSignUp():
 
                     db.close()
                     print("User added.")
-                    send_verify_email(emailInput, userID)
+                    try:
+                        send_verify_email(emailInput, userID)
+                    except:
+                        print("Email server is down or its port is blocked")
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -795,7 +801,10 @@ def verifyEmail():
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
                 session["emailVerifySent"] = True
-                send_another_verify_email(email, userID)
+                try:
+                    send_another_verify_email(email, userID)
+                except:
+                    print("Email server is down or its port is blocked")
             else:
                 session["emailFailed"] = False
                 print("User's email already verified.")
@@ -941,7 +950,10 @@ def teacherSignUp():
                     print("Teacher added.")
 
                     db.close()
-                    send_verify_email(emailInput, userID)
+                    try:
+                        send_verify_email(emailInput, userID)
+                    except:
+                        print("Email server is down or its port is blocked")
                     session["userSession"] = userID
                     return redirect(url_for("signUpPayment"))
                 else:
@@ -1485,7 +1497,10 @@ def userManagement(pageNum):
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
-                                send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                try:
+                                    send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                except:
+                                    print("Email server is down or its port is blocked")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1628,7 +1643,10 @@ def userSearchManagement(pageNum):
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
-                                send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                try:
+                                    send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                except:
+                                    print("Email server is down or its port is blocked")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1926,7 +1944,10 @@ def unbanUser(userID):
                 db['Users'] = userDict
                 db.close()
                 print(f"User account with the ID, {userID}, has been unbanned.")
-                send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                try:
+                    send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                except:
+                    print("Email server is down or its port is blocked")
                 print("Successfully sent an email.")
                 return redirect(redirectURL)
             else:
@@ -2420,7 +2441,10 @@ def updateEmail():
                         # updating email of the user
                         userKey.set_email(updatedEmail)
                         userKey.set_email_verification("Not Verified")
-                        send_verify_changed_email(updatedEmail, currentEmail, userSession)
+                        try:
+                            send_verify_changed_email(updatedEmail, currentEmail, userSession)
+                        except:
+                            print("Email server is down or its port is blocked")
                         db['Users'] = userDict
                         db.close()
                         print("Email updated")
@@ -2428,7 +2452,10 @@ def updateEmail():
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
                         session["email_updated"] = True
 
-                        send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
+                        try:
+                            send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
+                        except:
+                            print("Email server down or email server port is blocked.")
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
@@ -2537,7 +2564,11 @@ def updatePassword():
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
                         session["password_changed"] = True
 
-                        send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
+                        try:
+                            send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
+                        except:
+                            print("Email server is down or its port is blocked")
+
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
