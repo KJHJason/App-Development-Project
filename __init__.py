@@ -14,21 +14,6 @@ import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 
-"""Rubrics (for Excellent)"""
-"""Week 13 Progress Review (15%)
-Flask Application (10%)
-Completed at least 4 functions (C, R, U and/or D) with excellent use of
-UI components, consistent layout and compellingly consideration to address
-the user's needs.
-
-OOP Concepts (5%)
-Implemented 3 OOP concepts appropriately and correctly with strong
-justification in supporting the functionality of the flask application.
- - Classes, Objects and Methods
- - Inheritance & Polymorphism
- - Persistence & Exceptions
-"""
-
 """Web app configurations"""
 
 # general Flask configurations
