@@ -23,7 +23,7 @@ class StudentAndTeacher(User):
                               "Entrepreneurship": 0,
                               "Project_Management": 0,
                               "BI_Analytics": 0,
-                              "Business _Strategy": 0,
+                              "Business_Strategy": 0,
                               "Other_Business": 0,
                               "3D_Modelling": 0,
                               "Animation": 0,
