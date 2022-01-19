@@ -3115,25 +3115,13 @@ def search(pageNum):
 
                 searchInput = request.args.get("q")
                 print(searchInput)
-                MatchedList = []
                 searchfound = []
                 for courseID in courseDict:
                     courseTitle = courseDict.get(courseID).get_title()
                     courseTitleList.append(courseTitle)
-                
-                    course = courseDict[courseID]
-
-                    searchInformation = {"Title":course.get_title(),
-                        "Description":course.get_description(),
-                        "Thumbnail":course.get_thumbnail(),
-                        "Owner":course.get_userID()} 
-
-                    searchfound.append(searchInformation)
-
-                print(searchfound)
 
                 try:
-                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.1) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
                 except:
                     matchedCourseTitleList = []
 
@@ -3145,9 +3133,17 @@ def search(pageNum):
                     for key in matchedCourseTitleList:
                         print("what is inside the key?", key)
                         if titleCourse == key:
-                            MatchedList.append(courseObject)
-                print(MatchedList)
-                if bool(MatchedList): #If there is something inside the list
+                            course = courseDict[courseID]
+
+                            searchInformation = {"Title":course.get_title(),
+                                "Description":course.get_description(),
+                                "Thumbnail":course.get_thumbnail(),
+                                "Owner":course.get_userID()} 
+
+                            searchfound.append(searchInformation)
+
+                print(searchfound)
+                if bool(searchfound): #If there is something inside the list
                     checker = True
                 else:
                     checker = False
@@ -3155,7 +3151,7 @@ def search(pageNum):
                 db.close()
 
                 maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                courseListLen = len(searchInformation) # get the length of the userList
+                courseListLen = len(searchfound) # get the length of the userList
                 maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
                 pageNum = int(pageNum)
                 # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
@@ -3168,10 +3164,10 @@ def search(pageNum):
                     return redirect(redirectRoute)
                 else:
                     # pagination algorithm starts here
-                    courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                     pageNumForPagination = pageNum - 1 # minus for the paginate function
                     paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                    searchfound = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
+                    searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3179,7 +3175,7 @@ def search(pageNum):
                     nextPage = pageNum + 1
 
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, MatchedList=paginatedCourseList)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList)
 
             else:
                 print("Admin/User account is not found or is not active/banned.")
@@ -3187,7 +3183,7 @@ def search(pageNum):
                 courseDict = {}
                 courseTitleList = []
                 try:
-                    db = shelve.open("course", "r")
+                    db = shelve.open("user", "r")
                     courseDict = db["Courses"]
 
                 except:
