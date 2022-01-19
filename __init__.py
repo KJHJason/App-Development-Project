@@ -14,7 +14,6 @@ import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from flask_apscheduler import APScheduler
-from tzlocal import get_localzone
 
 """Web app configurations"""
 
