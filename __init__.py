@@ -13,12 +13,15 @@ from IntegratedFunctions import *
 import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
+from flask_apscheduler import APScheduler
+from tzlocal import get_localzone
 
 """Web app configurations"""
 
 # general Flask configurations
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+scheduler = APScheduler()
 
 # Maximum file size for uploading anything to the web app's server
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
@@ -770,6 +773,8 @@ def userSignUp():
                         send_verify_email(emailInput, userID)
                     except:
                         print("Email server is down or its port is blocked")
+                    
+                    saveNoOfUserPerDay(userDict) # for the graph
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -954,6 +959,8 @@ def teacherSignUp():
                         send_verify_email(emailInput, userID)
                     except:
                         print("Email server is down or its port is blocked")
+
+                    saveNoOfUserPerDay(userDict) # for the graph
                     session["userSession"] = userID
                     return redirect(url_for("signUpPayment"))
                 else:
@@ -1026,7 +1033,6 @@ def signUpPayment():
                                 teacherKey.display_card_info()
                                 db['Users'] = userDict
                                 print("Payment added")
-
                                 db.close()
 
                                 session.pop("teacher", None) # deleting data from the session after registering the payment method
@@ -4546,4 +4552,8 @@ def error503(e):
 """End of Custom Error Pages"""
 
 if __name__ == '__main__':
-    app.run(debug=True) # debug=True for development purposes
+    # uncomment the part below after the whole app is developed
+    """ scheduler.add_job(func=saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", id="Scheduled task")
+    scheduler.start()
+    app.run(use_reloader=False) """
+    app.run(debug=True)

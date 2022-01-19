@@ -63,7 +63,7 @@
 					<a href="#"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
 					<div class="card-body">
 						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
-						<small class="text-muted">By {{ course.get_username() }}</small>
+						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
 						{% if course.get_videoPrice() != None %}
 						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
@@ -110,6 +110,7 @@
 							<span class="far fa-star"></span>
 							{% endif %}
 						</div>
+						<p class="card-text">Views: {{ course.get_views() }}</p>
 					</div>
 				</div>
 			</div>
@@ -137,7 +138,7 @@
 					<a href=""><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a> 
 					<div class="card-body">
 						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
-						<small class="text-muted">By {{ course.get_username() }}</small>
+						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
 						{% if course.get_videoPrice() != None %}
 						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
@@ -184,6 +185,7 @@
 							<span class="far fa-star"></span>
 							{% endif %}
 						</div>
+						<p class="card-text">Views: {{ course.get_views() }}</p>
 					</div>
 				</div>
 			</div>

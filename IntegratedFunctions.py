@@ -7,7 +7,8 @@ from pathlib import Path
 from flask import url_for
 from src import Avatar
 from calendar import monthrange
-from datetime import date
+from datetime import date, datetime
+from Graph import Graph
 
 """Done by Jason"""
 
@@ -694,6 +695,32 @@ def get_random_courses(courseDict):
         for value in courseDict.values():
             recommendCourseList.append(value)
     return recommendCourseList
+
+def saveNoOfUserPerDay():
+    graphList = []
+    graphDateList = []
+    userDict = {}
+    db = shelve.open("user", "c")
+    currentTime = date.today()
+    try:
+        if 'userGraphData' in db and "Users" in db:
+            graphList = db['userGraphData']
+            userDict = db['Users']
+        else:
+            print("No user data in user shelve files")
+            db["userGraphData"] = graphList
+            db['Users'] = userDict
+        for dates in graphList:
+            graphDateList.append(dates.get_date())
+        if currentTime not in graphDateList:
+            graphData = Graph(len(userDict))
+            graphList.append(graphData)
+            db["userGraphData"] = graphList
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+    print(graphDateList)
+    print(graphList)
 
 """Done by Jason"""
 
