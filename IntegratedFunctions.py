@@ -757,10 +757,10 @@ def ellipsis(text, textType):
               'Z': 65,
               ' ': 27}
     if textType == "Title":
-        wordLimit = 30*weight['A']
+        wordLimit = 35*weight['A']
 
     elif textType == "Description":
-        wordLimit = 130*weight['A']
+        wordLimit = 70*weight['A']
     else:
         return None # You never know.
     for character in list(text):

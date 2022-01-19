@@ -12,108 +12,221 @@
 {% block content %}
 {% if teacherPaymentAdded %}
 <div class="modal fade" id="addedCardModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addedCardModalLabel">Payment Method Added</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Your card details has been successfully added.</h6>
-                <h6>You can still edit your payment method in the user account settings.</h6>
-                <h6>Have fun teaching!</h6>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="addedCardModalLabel">Payment Method Added</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<h6>Your card details has been successfully added.</h6>
+				<h6>You can still edit your payment method in the user account settings.</h6>
+				<h6>Have fun teaching!</h6>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+			</div>
+		</div>
+	</div>
 </div>
 {% endif %}
 
 {% if paymentComplete %}
 <div class="modal fade" id="paymentCompleteModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="paymentCompleteModalLabel">Payment Method Added</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Your purchase is successful.</h6>
-                <h6>For more info on courses, check your purchase history.</h6>
-                <h6>Have fun learning!</h6>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-            </div>
-        </div>
-    </div>
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="paymentCompleteModalLabel">Payment Method Added</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<h6>Your purchase is successful.</h6>
+				<h6>For more info on courses, check your purchase history.</h6>
+				<h6>Have fun learning!</h6>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+			</div>
+		</div>
+	</div>
 </div>
 {% endif %}
 
 <div class="container">
-    <h2>Trending</h2>
-    
-    <div class="row">
-        {% if trendingCourseLen > 1 %}
-            {% for course in trendingCourseList %}
-            <div class="col-md-4">
-                <a href="#"><img src="{{ course.get_thumbnail() }}" alt="Course Thumbnail" class="thumbnails"></a>
-                <a href="#"><h4>{{ course.get_shortTitle() }}</h4></a>
-                <p>{{ course.get_shortDescription() }}</p>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="col-md-4">
-            <a href="#"><img src="/static/images/user_home/placeholder.jpg" alt="Course Thumbnail" class="thumbnails"></a>
-            <a href="#"><h6>Sorry, there are currently no courses available.</h6></a>
-        </div>
-        {% endif %}
-    </div>
-    <h2>Recommendations</h2>
-    <div class="row">
-        {% if recommendCourseLen > 1 %}
-            {% for course in recommendCourseList %}
-            <div class="col-md-4">
-                <a href="#"><img src="{{ course.get_thumbnail() }}" alt="Course Thumbnail" class="thumbnails"></a>
-                <a href="#"><h4>{{ course.get_shortTitle() }}</h4></a>
-                <p>{{ course.get_shortDescription() }}</p>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="col-md-4">
-            <a href="#"><img src="/static/images/user_home/placeholder.jpg" alt="Course Thumbnail" class="thumbnails"></a>
-            <a href="#"><h6>Sorry, there are currently no courses available.</h6></a>
-        </div>
-        {% endif %}
-    </div>
-    <div class="row">
-        <div class="col-md teacher">
-            <img src="../static/images/user_home/placeholder.jpg" alt="Become a Teacher Promo Image" class="thumbnails">
-        </div>
-        <div class="col-md teacher">
-            <h2>Become A Teacher Today!</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-            <form action="/teacher_signup" method="POST">
-                <button type="submit" class="teacher-button btn btn-primary btn-lg">Start Teaching Today</button>
-            </form>
-        </div>
-    </div>
+	<div class="row">
+		<h2 class="headings">Trending</h2>
+		<div class="row row-cols-1 row-cols-md-3 g-4">
+		{% if trendingCourseLen > 1 %}
+			{% for course in trendingCourseList %}
+			<div class="col">
+				<div class="card h-100">
+					<a href="#"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
+					<div class="card-body">
+						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
+						<small class="text-muted">By {{ course.get_username() }}</small>
+						<p class="card-text">{{ course.get_shortDescription() }}</p>
+						{% if course.get_videoPrice() != None %}
+						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
+						{% endif %}
+						{% if course.get_zoomPrice() != None %}
+						<p class="card-text fw-bold">Zoom: ${{ course.get_zoomPrice() }}</p>
+						{% endif %}
+						<div class="ratings">
+							{% if course.get_averageRating() == 5 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							{% elif course.get_averageRating() >= 4 and course.get_averageRating() < 5 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 3 and course.get_averageRating() < 4 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span> 
+							{% elif course.get_averageRating() >= 2 and course.get_averageRating() < 3 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 1 and course.get_averageRating() < 2 %}
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 0 and course.get_averageRating() < 1 %}
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		{% else %}
+			<div class="col">
+				<div class="card h-100">
+					<img src="/static/images/user_home/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+					<div class="card-body">
+						<h4 class="card-title">No Course Available</h4>
+						<p class="card-text">Sorry, there are currently no courses available.</p>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+		</div>
+	</div>
+	<div class="row">
+		<h2 class="headings">Recommendations</h2>
+		<div class="row row-cols-1 row-cols-md-3 g-4">
+		{% if recommendCourseLen > 1 %}
+			{% for course in recommendCourseList %}
+			<div class="col">
+				<div class="card h-100">
+					<a href=""><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a> 
+					<div class="card-body">
+						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
+						<small class="text-muted">By {{ course.get_username() }}</small>
+						<p class="card-text">{{ course.get_shortDescription() }}</p>
+						{% if course.get_videoPrice() != None %}
+						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
+						{% endif %}
+						{% if course.get_zoomPrice() != None %}
+						<p class="card-text fw-bold">Zoom: ${{ course.get_zoomPrice() }}</p>
+						{% endif %}
+						<div class="ratings">
+							{% if course.get_averageRating() == 5 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							{% elif course.get_averageRating() >= 4 and course.get_averageRating() < 5 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 3 and course.get_averageRating() < 4 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span> 
+							{% elif course.get_averageRating() >= 2 and course.get_averageRating() < 3 %}
+							<span class="fas fa-star"></span>
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 1 and course.get_averageRating() < 2 %}
+							<span class="fas fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% elif course.get_averageRating() >= 0 and course.get_averageRating() < 1 %}
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							<span class="far fa-star"></span>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		{% else %}
+		<div class="col">
+			<div class="card h-100">
+				<img src="/static/images/user_home/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+				<div class="card-body">
+					<h4 class="card-title">No Course Available</h4>
+					<p class="card-text">Sorry, there are currently no courses available.</p>
+				</div>
+			</div>
+		</div>
+		{% endif %}
+		</div>
+	</div>
+	<div class="row become_headings">
+		<div class="col-md teacher">
+			<img src="/static/images/user_home/placeholder.jpg" alt="Become a Teacher Promo Image" class="thumbnails">
+		</div>
+		<div class="col-md teacher">
+			<h2>Become A Teacher Today!</h2>
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+			<form action="/teacher_signup" method="POST">
+				<button type="submit" class="teacher-button btn btn-primary btn-lg">Start Teaching Today</button>
+			</form>
+		</div>
+	</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-    {% if teacherPaymentAdded %}
-        <script>
-            var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
-            addedCardModal.show();
-        </script>
-    {% endif %}
-    {% if paymentComplete %}
-        <script>
-            var paymentCompleteModal = new bootstrap.Modal(document.getElementById('paymentCompleteModal'), {});
-            paymentCompleteModal.show();
-        </script>
-    {% endif %}
+	{% if teacherPaymentAdded %}
+		<script>
+			var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
+			addedCardModal.show();
+		</script>
+	{% endif %}
+	{% if paymentComplete %}
+		<script>
+			var paymentCompleteModal = new bootstrap.Modal(document.getElementById('paymentCompleteModal'), {});
+			paymentCompleteModal.show();
+		</script>
+	{% endif %}
 {% endblock %}
