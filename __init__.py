@@ -773,7 +773,6 @@ def userSignUp():
                     except:
                         print("Email server is down or its port is blocked")
                     
-                    saveNoOfUserPerDay(userDict) # for the graph
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -959,7 +958,6 @@ def teacherSignUp():
                     except:
                         print("Email server is down or its port is blocked")
 
-                    saveNoOfUserPerDay(userDict) # for the graph
                     session["userSession"] = userID
                     return redirect(url_for("signUpPayment"))
                 else:
