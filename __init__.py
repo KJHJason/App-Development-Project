@@ -3425,7 +3425,7 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
-@app.route("/purchasereview")
+@app.route("/purchasereview", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def purchaseReview():
     if "userSession" in session and "adminSession" not in session:
@@ -3453,7 +3453,7 @@ def purchaseReview():
                     reviewDict["Review"] = db
                     db.close()
                     dbCourse = {}
-                    db = shelve.open("course","c")
+                    db = shelve.open("user","c")
                     try:
                         if "Courses" in db:
                             dbCourse = db["Courses"]
