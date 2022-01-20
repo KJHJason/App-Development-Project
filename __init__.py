@@ -3631,7 +3631,7 @@ def purchaseReview():
 
 @app.route("/purchaseview")
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseView():
+def purchaseView(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3656,60 +3656,76 @@ def purchaseView():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            purchaseHistoryList = []
-            showCourse = ""
-            purchaseID = bool(userKey.get_purchaseID())
-            print("PurchaseID exists?: ", purchaseID)
+            courseID = ""
+            courseType = ""
+            historyCheck = True
+            historyList = []
+            # Get purchased courses
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchaseID == True:
+            if purchasedCourses != {}:
                 try:
-                    historyDict = {}
-                    dbCourse = shelve.open("course", "r")
-                    historyDict = dbCourse[""]
-                    for courseID in purchaseHistoryList(5):
-                        history = dbCourse[courseID]
-
-                        #id will be an integer
-
-                        video = {id :
-                            {historyDict : {"Title":history.get_title(),
-                            "Description":history.get_description(),
-                            "Thumbnail":history.get_thumbnail(),
-                            "VideoCheck":history.get_courseType()["Video"],
-                            "ZoomCheck":history.get_courseType()["Zoom"],
-                            "Price":history.get_price(),
-                            "Owner":history.get_owner()}
-                            }
-                        }
-                    for i in purchaseHistoryList:
-                        showCourse(video[i])
-
-                    db.close()
-
+                    courseDict = {}
+                    db = shelve.open("user", "r")
+                    courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
+                    db.close()
 
-            else:
+                # Get specific course with course ID
+                for courseID in list(purchasedCourses.keys()):
+                    print(courseID)
+
+                    # Find the correct course
+                    course = courseDict[courseID]
+                    courseType = purchasedCourses.get(courseID).get("Course Type")
+
+                    coursePricePaying = 0
+                    if courseType == "Zoom" or courseType == "Both":
+                        coursePricePaying += float(course.get_zoomPrice())
+                    if courseType == "Video" or courseType == "Both":
+                        coursePricePaying += float(course.get_videoPrice())
+
+                    courseInformation = {"Title":course.get_title(),
+                        "Description":course.get_description(),
+                        "Thumbnail":course.get_thumbnail(),
+                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "Price":coursePricePaying,
+                        "Owner":course.get_userID()} 
+                    historyList.append(courseInformation)
+                print(historyList)
                 db.close()
-                print("Nothing to view here.")
-                return redirect(url_for("purchaseview"))
+            else:
+                print("Purchase view is Empty")
+                historyCheck = False
 
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(purchasedCourses) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/purchaseview/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/purchaseview/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/purchaseview/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
 
 """End of Purchase View by Royston"""
 
@@ -4034,128 +4050,50 @@ def contactUsManagement():
 
 """Teacher's Channel Page by Clarence"""
 
-@app.route("/teacher_page")
-@limiter.limit("30/second") # to prevent ddos attacks
-def function():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
-
-        if userFound and accGoodStatus:
-            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
-            userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
-            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
-
-            # checking if the user have uploaded a profile image before and if the image file exists
-            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
-            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-@app.route('/teacher_page/<teacherUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
+@app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
+@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherUID):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/teacher_page.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            redirect(url_for("teacher_page/teacherUID"))
-            redirectURL = "/teacher_page/" + teacherUID
-            return redirect(redirectURL)
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
-
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-                """
-
-                return render_template('users/teacher/teacher_page.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        if userFound and accGoodStanding:
+            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_page.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/teacher/teacher_page.html", accType="Guest")
+    else:
+        return render_template("users/teacher/teacher_page.html", accType="Guest")
 
 """End of Teacher's Channel Page by Clarence"""
 
+
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/<teacherUID>/teacher_courses', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@app.route('/<teacherUID >/teacher_courses', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherCourses(teacherUID):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/teacher_courses.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect("/" + teacherUID + "/teacher_courses")
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
-
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-                """
-
-                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        if userFound and accGoodStanding:
+            return render_template('users/teacher/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_courses.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/teacher/teacher_courses.html", accType="Guest")
+    else:
+        return render_template("users/teacher/teacher_courses.html", accType="Guest")
 
 """End of Teacher's Courses Page by Clarence"""
 
