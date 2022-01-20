@@ -108,7 +108,7 @@ courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
@@ -122,6 +122,7 @@ course.add_scheduleZoomLesson("Step 1: See Documentation","We learn Flask Docume
 course.get_lesson(0).set_timing("2022-07-03","15:30")
 course.add_scheduleZoomLesson("Step 2: Practice","At least 5 Codeforces a Week","")
 course.get_lesson(1).set_timing("2022-07-10","15:30")
+course.set_views(13)
 
 user.set_courseTeaching(courseID)
 
@@ -162,7 +163,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -175,7 +176,7 @@ course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dro
 course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
 
 course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
-
+course.set_views(1)
 
 user.set_courseTeaching(courseID)
 
@@ -190,7 +191,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -203,7 +204,7 @@ course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dro
 course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
 
 course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
-
+course.set_views(123)
 
 user.set_courseTeaching(courseID)
 
@@ -222,7 +223,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -235,7 +236,7 @@ course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dro
 course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
 
 course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
-
+course.set_views(1000)
 
 user.set_courseTeaching(courseID)
 

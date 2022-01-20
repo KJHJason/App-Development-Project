@@ -26,4 +26,6 @@ Libraries needed:
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo]</li>
   <li>shortuuid Version 1.0.8 [pip install shortuuid]</li>
   <li>dicebear Version 0.1.2 [pip install dicebear]</li>
+  <li>matplotlib Version 3.5.1 [pip install matplotlib]</li>
+  <li>Flask-APScheduler Version 1.12.3 [pip install flask_apscheduler]</li>
 </ol>	

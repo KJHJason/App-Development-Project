@@ -13,15 +13,18 @@ from IntegratedFunctions import *
 import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
+from flask_apscheduler import APScheduler
+from matplotlib import pyplot as plt
 
 """Web app configurations"""
 
 # general Flask configurations
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+scheduler = APScheduler()
 
 # Maximum file size for uploading anything to the web app's server
-app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024 # 15MiB
+app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
 app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 2 * 1024 * 1024 # 2MiB
 
 # configuration for email
@@ -623,7 +626,10 @@ def requestPasswordReset():
                     # checking if the user is banned
                     accGoodStatus = email_key.get_status()
                     if accGoodStatus == "Good":
-                        send_reset_email(emailInput, email_key)
+                        try:
+                            send_reset_email(emailInput, email_key)
+                        except:
+                            print("Email server is down or its port is blocked")
                         print("Email sent")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
                     else:
@@ -763,7 +769,11 @@ def userSignUp():
 
                     db.close()
                     print("User added.")
-                    send_verify_email(emailInput, userID)
+                    try:
+                        send_verify_email(emailInput, userID)
+                    except:
+                        print("Email server is down or its port is blocked")
+                    
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -795,7 +805,10 @@ def verifyEmail():
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
                 session["emailVerifySent"] = True
-                send_another_verify_email(email, userID)
+                try:
+                    send_another_verify_email(email, userID)
+                except:
+                    print("Email server is down or its port is blocked")
             else:
                 session["emailFailed"] = False
                 print("User's email already verified.")
@@ -941,7 +954,11 @@ def teacherSignUp():
                     print("Teacher added.")
 
                     db.close()
-                    send_verify_email(emailInput, userID)
+                    try:
+                        send_verify_email(emailInput, userID)
+                    except:
+                        print("Email server is down or its port is blocked")
+
                     session["userSession"] = userID
                     return redirect(url_for("signUpPayment"))
                 else:
@@ -1014,7 +1031,6 @@ def signUpPayment():
                                 teacherKey.display_card_info()
                                 db['Users'] = userDict
                                 print("Payment added")
-
                                 db.close()
 
                                 session.pop("teacher", None) # deleting data from the session after registering the payment method
@@ -1485,7 +1501,10 @@ def userManagement(pageNum):
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
-                                send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                try:
+                                    send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                except:
+                                    print("Email server is down or its port is blocked")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1628,7 +1647,10 @@ def userSearchManagement(pageNum):
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
                                 db.close()
-                                send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                try:
+                                    send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                except:
+                                    print("Email server is down or its port is blocked")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1926,7 +1948,10 @@ def unbanUser(userID):
                 db['Users'] = userDict
                 db.close()
                 print(f"User account with the ID, {userID}, has been unbanned.")
-                send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                try:
+                    send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                except:
+                    print("Email server is down or its port is blocked")
                 print("Successfully sent an email.")
                 return redirect(redirectURL)
             else:
@@ -2060,6 +2085,74 @@ def resetProfileImage(userID):
         return redirect(url_for("home"))
 
 """End of User Management for Admins by Jason"""
+
+"""Admin Data Visualisation (Total user per day) by Jason"""
+
+@app.route("/admin_dashboard")
+@limiter.limit("30/second") # to prevent ddos attacks
+def dashboard():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # add in your code here
+            graphList = []
+            db = shelve.open("user", "c")
+            try:
+                if 'userGraphData' in db and "Users" in db:
+                    graphList = db['userGraphData']
+                else:
+                    print("No data in user shelve files")
+                    db["userGraphData"] = graphList
+            except:
+                print("Error in retrieving userGraphData from user.db")
+            finally:
+                db.close()
+            
+            lastUpdated = graphList[-1].get_lastUpdate()
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+
+            xAxisData = [] # dates
+            yAxisData = [] # number of users
+            for objects in selectedGraphDataList:
+                xAxisData.append(str(objects.get_date()))
+                yAxisData.append(objects.get_noOfUser())
+
+            fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+            plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+
+
+            x = xAxisData # date labels for x-axis
+            y = yAxisData # data for y-axis
+            
+            plt.plot(x, y, color="#009DF8", linewidth=3)
+
+            plt.ylabel('Total Numbers of Users')
+            plt.title("Total Userbase by Day")
+            fig.autofmt_xdate() # auto formats the date label to be tilted
+            fig.tight_layout() # eliminates padding
+            plt.savefig("static/images/graph.png")
+
+            # below code for simulation purposes
+            xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            yAxisData = [12, 240, 500] # number of users
+
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Admin Data Visualisation (Total user per day) by Jason"""
 
 """User Profile Settings by Jason"""
 
@@ -2420,7 +2513,10 @@ def updateEmail():
                         # updating email of the user
                         userKey.set_email(updatedEmail)
                         userKey.set_email_verification("Not Verified")
-                        send_verify_changed_email(updatedEmail, currentEmail, userSession)
+                        try:
+                            send_verify_changed_email(updatedEmail, currentEmail, userSession)
+                        except:
+                            print("Email server is down or its port is blocked")
                         db['Users'] = userDict
                         db.close()
                         print("Email updated")
@@ -2428,7 +2524,10 @@ def updateEmail():
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
                         session["email_updated"] = True
 
-                        send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
+                        try:
+                            send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
+                        except:
+                            print("Email server down or email server port is blocked.")
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
@@ -2537,7 +2636,11 @@ def updatePassword():
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
                         session["password_changed"] = True
 
-                        send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
+                        try:
+                            send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
+                        except:
+                            print("Email server is down or its port is blocked")
+
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
@@ -3115,25 +3218,13 @@ def search(pageNum):
 
                 searchInput = request.args.get("q")
                 print(searchInput)
-                MatchedList = []
                 searchfound = []
                 for courseID in courseDict:
                     courseTitle = courseDict.get(courseID).get_title()
                     courseTitleList.append(courseTitle)
-                
-                    course = courseDict[courseID]
-
-                    searchInformation = {"Title":course.get_title(),
-                        "Description":course.get_description(),
-                        "Thumbnail":course.get_thumbnail(),
-                        "Owner":course.get_userID()} 
-
-                    searchfound.append(searchInformation)
-
-                print(searchfound)
 
                 try:
-                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.80) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                    matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.1) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
                 except:
                     matchedCourseTitleList = []
 
@@ -3145,9 +3236,17 @@ def search(pageNum):
                     for key in matchedCourseTitleList:
                         print("what is inside the key?", key)
                         if titleCourse == key:
-                            MatchedList.append(courseObject)
-                print(MatchedList)
-                if bool(MatchedList): #If there is something inside the list
+                            course = courseDict[courseID]
+
+                            searchInformation = {"Title":course.get_title(),
+                                "Description":course.get_description(),
+                                "Thumbnail":course.get_thumbnail(),
+                                "Owner":course.get_userID()} 
+
+                            searchfound.append(searchInformation)
+
+                print(searchfound)
+                if bool(searchfound): #If there is something inside the list
                     checker = True
                 else:
                     checker = False
@@ -3155,7 +3254,7 @@ def search(pageNum):
                 db.close()
 
                 maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                courseListLen = len(searchInformation) # get the length of the userList
+                courseListLen = len(searchfound) # get the length of the userList
                 maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
                 pageNum = int(pageNum)
                 # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
@@ -3168,10 +3267,10 @@ def search(pageNum):
                     return redirect(redirectRoute)
                 else:
                     # pagination algorithm starts here
-                    courseList = courseTitleList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                    courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                     pageNumForPagination = pageNum - 1 # minus for the paginate function
                     paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                    searchfound = paginate(courseTitleList[::-1], pageNumForPagination, maxItemsPerPage)
+                    searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3179,7 +3278,7 @@ def search(pageNum):
                     nextPage = pageNum + 1
 
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, MatchedList=paginatedCourseList)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList)
 
             else:
                 print("Admin/User account is not found or is not active/banned.")
@@ -3187,7 +3286,7 @@ def search(pageNum):
                 courseDict = {}
                 courseTitleList = []
                 try:
-                    db = shelve.open("course", "r")
+                    db = shelve.open("user", "r")
                     courseDict = db["Courses"]
 
                 except:
@@ -3429,7 +3528,7 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
-@app.route("/purchasereview")
+@app.route("/purchasereview", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def purchaseReview():
     if "userSession" in session and "adminSession" not in session:
@@ -3457,7 +3556,7 @@ def purchaseReview():
                     reviewDict["Review"] = db
                     db.close()
                     dbCourse = {}
-                    db = shelve.open("course","c")
+                    db = shelve.open("user","c")
                     try:
                         if "Courses" in db:
                             dbCourse = db["Courses"]
@@ -4441,4 +4540,8 @@ def error503(e):
 """End of Custom Error Pages"""
 
 if __name__ == '__main__':
-    app.run(debug=True) # debug=True for development purposes
+    # uncomment the part below after the whole app is developed
+    """ scheduler.add_job(func=saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", id="Scheduled task")
+    scheduler.start()
+    app.run(use_reloader=False) """
+    app.run(debug=True)

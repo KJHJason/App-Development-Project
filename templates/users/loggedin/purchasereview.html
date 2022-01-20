@@ -1,5 +1,6 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/breadcrumb.css') }}">{% endblock %}
 {% block title %}Purchase Review | CourseFinity{% endblock %}
 {% from "includes/_formHelper.html" import render_field %}
 
@@ -14,7 +15,7 @@
       <h2>Course:</h2>
       <h5>Overall Rating:</h5>
       <h5>Review (Less than 200 words):</h5>
-      <form action="#" method="POST">
+      <form action="home" method="POST">
         <div>
           <textarea class="form-control" id="exampleFormControlTextarea1" rows="6"></textarea>
           <button type="submit" class="btn btn-primary">Submit</button>
