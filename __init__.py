@@ -5,7 +5,6 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from flask_mail import Mail
-from IntegratedFunctions import *
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -14,6 +13,7 @@ import Student, Teacher, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+from IntegratedFunctions import *
 
 """Web app configurations"""
 
