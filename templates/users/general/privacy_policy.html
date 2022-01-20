@@ -199,3 +199,7 @@
     </ul>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/go_to_top.js') }}"></script>
+{% endblock %}

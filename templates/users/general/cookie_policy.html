@@ -31,7 +31,7 @@
             <strong>Cookies</strong> means small files that are placed on Your computer, mobile device or any other device by a website, containing details of your browsing history on that website among its many uses.
         </li>
         <li>
-            <strong>Website</strong> refers to CourseFinity, accessible from <a href="https://www.coursefinity.com" rel="external nofollow noopener" target="_blank">https://www.coursefinity.com</a>
+            <strong>Website</strong> refers to CourseFinity, accessible from <a href="/" rel="external nofollow noopener" target="_blank">https://www.coursefinity.com</a>
         </li>
         <li>
             <strong>You</strong> means the individual accessing or using the Website, or a company, or any legal entity on behalf of which such individual is accessing or using the Website, as applicable.
@@ -92,4 +92,8 @@
         </li>
     </ul>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/go_to_top.js') }}"></script>
 {% endblock %}
