@@ -13,12 +13,15 @@ from IntegratedFunctions import *
 import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
+from flask_apscheduler import APScheduler
+from matplotlib import pyplot as plt
 
 """Web app configurations"""
 
 # general Flask configurations
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
+scheduler = APScheduler()
 
 # Maximum file size for uploading anything to the web app's server
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
@@ -770,6 +773,7 @@ def userSignUp():
                         send_verify_email(emailInput, userID)
                     except:
                         print("Email server is down or its port is blocked")
+                    
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -954,6 +958,7 @@ def teacherSignUp():
                         send_verify_email(emailInput, userID)
                     except:
                         print("Email server is down or its port is blocked")
+
                     session["userSession"] = userID
                     return redirect(url_for("signUpPayment"))
                 else:
@@ -1026,7 +1031,6 @@ def signUpPayment():
                                 teacherKey.display_card_info()
                                 db['Users'] = userDict
                                 print("Payment added")
-
                                 db.close()
 
                                 session.pop("teacher", None) # deleting data from the session after registering the payment method
@@ -2081,6 +2085,74 @@ def resetProfileImage(userID):
         return redirect(url_for("home"))
 
 """End of User Management for Admins by Jason"""
+
+"""Admin Data Visualisation (Total user per day) by Jason"""
+
+@app.route("/admin_dashboard")
+@limiter.limit("30/second") # to prevent ddos attacks
+def dashboard():
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # add in your code here
+            graphList = []
+            db = shelve.open("user", "c")
+            try:
+                if 'userGraphData' in db and "Users" in db:
+                    graphList = db['userGraphData']
+                else:
+                    print("No data in user shelve files")
+                    db["userGraphData"] = graphList
+            except:
+                print("Error in retrieving userGraphData from user.db")
+            finally:
+                db.close()
+            
+            lastUpdated = graphList[-1].get_lastUpdate()
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+
+            xAxisData = [] # dates
+            yAxisData = [] # number of users
+            for objects in selectedGraphDataList:
+                xAxisData.append(str(objects.get_date()))
+                yAxisData.append(objects.get_noOfUser())
+
+            fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+            plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+
+
+            x = xAxisData # date labels for x-axis
+            y = yAxisData # data for y-axis
+            
+            plt.plot(x, y, color="#009DF8", linewidth=3)
+
+            plt.ylabel('Total Numbers of Users')
+            plt.title("Total Userbase by Day")
+            fig.autofmt_xdate() # auto formats the date label to be tilted
+            fig.tight_layout() # eliminates padding
+            plt.savefig("static/images/graph.png")
+
+            # below code for simulation purposes
+            xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            yAxisData = [12, 240, 500] # number of users
+
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData)
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""End of Admin Data Visualisation (Total user per day) by Jason"""
 
 """User Profile Settings by Jason"""
 
@@ -3947,128 +4019,50 @@ def contactUsManagement():
 
 """Teacher's Channel Page by Clarence"""
 
-@app.route("/teacher_page")
-@limiter.limit("30/second") # to prevent ddos attacks
-def function():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
-
-        if userFound and accGoodStatus:
-            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
-            userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
-            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
-
-            # checking if the user have uploaded a profile image before and if the image file exists
-            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
-            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-@app.route('/teacher_page/<teacherUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
+@app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
+@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherUID):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/teacher_page.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            redirect(url_for("teacher_page/teacherUID"))
-            redirectURL = "/teacher_page/" + teacherUID
-            return redirect(redirectURL)
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
-
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-                """
-
-                return render_template('users/teacher/teacher_page.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        if userFound and accGoodStanding:
+            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_page.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/teacher/teacher_page.html", accType="Guest")
+    else:
+        return render_template("users/teacher/teacher_page.html", accType="Guest")
 
 """End of Teacher's Channel Page by Clarence"""
 
+
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/<teacherUID>/teacher_courses', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@app.route('/<teacherUID >/teacher_courses', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherCourses(teacherUID):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/teacher_courses.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect("/" + teacherUID + "/teacher_courses")
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
-
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-                """
-
-                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        if userFound and accGoodStanding:
+            return render_template('users/teacher/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_courses.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/teacher/teacher_courses.html", accType="Guest")
+    else:
+        return render_template("users/teacher/teacher_courses.html", accType="Guest")
 
 """End of Teacher's Courses Page by Clarence"""
 
@@ -4562,4 +4556,8 @@ def error503(e):
 """End of Custom Error Pages"""
 
 if __name__ == '__main__':
-    app.run(debug=True) # debug=True for development purposes
+    # uncomment the part below after the whole app is developed
+    """ scheduler.add_job(func=saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", id="Scheduled task")
+    scheduler.start()
+    app.run(use_reloader=False) """
+    app.run(debug=True)

@@ -33,9 +33,10 @@ from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
 
 class Course():
-    def __init__(self, courseID,  userID, title, description, thumbnail, status):
+    def __init__(self, courseID,  userID, title, description, thumbnail, status, username):
         self.__courseID = courseID
         self.__userID = userID  # Owner of course
+        self.__username = username # username of the course owner
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
@@ -66,6 +67,10 @@ class Course():
         self.__userID = userID
     def get_userID(self):
         return self.__userID
+    def set_username(self, username):
+        self.__username = username
+    def get_username(self):
+        return self.__username
 
     def set_title(self, title):
         self.__title = title
@@ -143,7 +148,7 @@ class Course():
     def get_averageRating(self):
         total = 0
         for rating in self.__ratings:
-            total += rating.get_rating()
+            total += int(rating.get_rating())
             return (total/len(self.__ratings))
 
     def add_scheduleVideoLesson(self, title, description, thumbnail, videoData):

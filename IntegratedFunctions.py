@@ -7,7 +7,8 @@ from pathlib import Path
 from flask import url_for
 from src import Avatar
 from calendar import monthrange
-from datetime import date
+from datetime import date, datetime
+from Graph import Graph
 
 """Done by Jason"""
 
@@ -695,6 +696,32 @@ def get_random_courses(courseDict):
             recommendCourseList.append(value)
     return recommendCourseList
 
+def saveNoOfUserPerDay():
+    graphList = []
+    graphDateList = []
+    userDict = {}
+    db = shelve.open("user", "c")
+    currentTime = date.today()
+    try:
+        if 'userGraphData' in db and "Users" in db:
+            graphList = db['userGraphData']
+            userDict = db['Users']
+        else:
+            print("No data in user shelve files")
+            db["userGraphData"] = graphList
+            db['Users'] = userDict
+        for dates in graphList:
+            graphDateList.append(dates.get_date())
+        if currentTime not in graphDateList:
+            graphData = Graph(len(userDict))
+            graphList.append(graphData)
+            db["userGraphData"] = graphList
+    except:
+        db.close()
+        print("Error in retrieving Users/userGraphData from user.db")
+    print(graphDateList)
+    print(graphList)
+
 """Done by Jason"""
 
 """Done by Wei Ren"""
@@ -757,10 +784,10 @@ def ellipsis(text, textType):
               'Z': 65,
               ' ': 27}
     if textType == "Title":
-        wordLimit = 30*weight['A']
+        wordLimit = 35*weight['A']
 
     elif textType == "Description":
-        wordLimit = 130*weight['A']
+        wordLimit = 70*weight['A']
     else:
         return None # You never know.
     for character in list(text):

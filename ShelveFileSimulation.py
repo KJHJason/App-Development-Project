@@ -108,7 +108,7 @@ courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("a","b","c","d","e")
 
 course.switch_zoomCondition() # Video = True
@@ -163,7 +163,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -191,7 +191,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
@@ -223,7 +223,7 @@ videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status)
+course = Course(courseID, userID, title, description, thumbnail, status, username)
 course.add_tags("z","y","x","w","v")
 
 course.switch_videoCondition() # Video = True
