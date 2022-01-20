@@ -3,7 +3,7 @@ from datetime import datetime, date
 class Graph:
     def __init__(self, numberOfUsers):
         self.__noOfUser = numberOfUsers
-        self.__collectedDate = date.today()
+        self.__collectedDate = date.today().strftime("%d-%m-%Y")
         self.__lastUpdated = str(datetime.now().strftime("%d-%m-%Y, %H:%M:%S")).replace("-", "/")
 
     def set_noOfUser(self, numberOfUsers):
