@@ -4007,14 +4007,25 @@ def contactUsManagement():
 @limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherUID):
     if "adminSession" in session or "userSession" in session:
+        #Checks if user is admin or user
         if "adminSession" in session:
+        #if admin
             userSession = session["adminSession"]
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
+            #if user is found and available
+            # will return a filename, e.g. "0.png"
+            userProfileImage = userKey.get_profile_image()
+            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
+
+            # checking if the user have uploaded a profile image before and if the image file exists
+            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+
             return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -4028,7 +4039,7 @@ def teacherPage(teacherUID):
 
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/<teacherUID >/teacher_courses', methods=["GET","POST"])
+@app.route("/<teacherUID>/teacher_courses", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherCourses(teacherUID):
     if "adminSession" in session or "userSession" in session:
