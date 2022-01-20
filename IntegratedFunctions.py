@@ -8,7 +8,7 @@ from flask import url_for
 from src import Avatar
 from calendar import monthrange
 from datetime import date, datetime
-from Graph import Graph
+from Graph import userbaseGraph
 
 """Done by Jason"""
 
@@ -713,7 +713,7 @@ def saveNoOfUserPerDay():
         for dates in graphList:
             graphDateList.append(dates.get_date())
         if currentTime not in graphDateList:
-            graphData = Graph(len(userDict))
+            graphData = userbaseGraph(len(userDict))
             graphList.append(graphData)
             db["userGraphData"] = graphList
     except:

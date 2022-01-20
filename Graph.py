@@ -1,6 +1,6 @@
 from datetime import datetime, date
 
-class Graph:
+class userbaseGraph:
     def __init__(self, numberOfUsers):
         self.__noOfUser = numberOfUsers
         self.__collectedDate = date.today().strftime("%d-%m-%Y")
