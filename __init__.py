@@ -13,7 +13,7 @@ from IntegratedFunctions import *
 import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
-from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 
 """Web app configurations"""
@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 # general Flask configurations
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
-scheduler = APScheduler()
+scheduler = BackgroundScheduler()
 
 # Maximum file size for uploading anything to the web app's server
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
@@ -2134,23 +2134,28 @@ def dashboard():
             for objects in graphList:
                 graphDict[objects.get_date()] = objects.get_noOfUser()
 
-            fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
-            plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+            # try and except as matplotlib may fail since it is outside of main thread
+            try:
+                fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+                plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
 
-            x = xAxisData # date labels for x-axis
-            y = yAxisData # data for y-axis
-            
-            plt.plot(x, y, color="#009DF8", linewidth=3)
+                x = xAxisData # date labels for x-axis
+                y = yAxisData # data for y-axis
+                
+                plt.plot(x, y, color="#009DF8", linewidth=3)
 
-            # graph configurations
-            plt.ylabel('Total Numbers of Users')
-            plt.title("Total Userbase by Day")
-            plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
-            fig.autofmt_xdate() # auto formats the date label to be tilted
-            fig.tight_layout() # eliminates padding
+                # graph configurations
+                plt.ylabel('Total Numbers of Users')
+                plt.title("Total Userbase by Day")
+                plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
+                plt.axhline(y=0) # added this so that it will show the line if it is at 0 for the y-axis as by default, it would not connect/draw a line if it is at 0 (y-axis)
+                fig.autofmt_xdate() # auto formats the date label to be tilted
+                fig.tight_layout() # eliminates padding
 
-            figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
-            plt.savefig(figureFilename)
+                figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
+                plt.savefig(figureFilename)
+            except:
+                print("Error in saving graph image...")
 
             csvFileName = "static/data/user_base/csv/user_base.csv"
 
@@ -2171,7 +2176,8 @@ def dashboard():
                 for key, value in graphDict.items():
                     writer.writerow([key, value])
                 
-            
+            print("X-axis data:", xAxisData)
+            print("Y-axis data:", yAxisData)
 
             return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFileName=csvFileName)
         else:
@@ -4650,8 +4656,10 @@ def error503(e):
 """End of Custom Error Pages"""
 
 if __name__ == '__main__':
-    # uncomment the part below after the whole app is developed
-    """ scheduler.add_job(func=saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", id="Scheduled task")
+    # uncomment the below part when the web app is ready to be deployed for testing
+    """ scheduler.configure(timezone="Asia/Singapore") # configure timezone to always follow Singapore's timezone
+    # adding a scheduled job to save data for the graph everyday at 11.59 p.m. below
+    scheduler.add_job(saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", second="0", id="collectUserbaseData")
     scheduler.start()
-    app.run(use_reloader=False) """
+    app.run(debug=True, use_reloader=False) """
     app.run(debug=True)
