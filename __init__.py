@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json
+import shelve, os, math, paypalrestsdk, difflib, copy, json, csv
 import Student, Teacher, Forms
 from Payment import Payment
 from Security import hash_password, verify_password, sanitise, validate_email
@@ -1786,7 +1786,7 @@ def userSearchManagementError():
                 else:
                     pageNum = 0
                 redirectURL = "/user_management/page/" + str(pageNum)
-            return render_template('users/admin/user_management.html', notAllowed = True, searched=True, redirectURL=redirectURL)
+            return render_template('users/admin/user_management.html', notAllowed=True, searched=True, redirectURL=redirectURL)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -2113,18 +2113,29 @@ def dashboard():
             finally:
                 db.close()
             
-            lastUpdated = graphList[-1].get_lastUpdate()
-            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            print("Retrieved graph data:", graphList)
+            try:
+                lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
+            except:
+                lastUpdated = str(datetime.now().strftime("%d-%m-%Y, %H:%M:%S")).replace("-", "/")
 
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            print("Selected graph data:", selectedGraphDataList)
+
+            # for matplotlib and chartjs graphs
             xAxisData = [] # dates
             yAxisData = [] # number of users
             for objects in selectedGraphDataList:
                 xAxisData.append(str(objects.get_date()))
                 yAxisData.append(objects.get_noOfUser())
 
+            # for csv
+            graphDict = {}
+            for objects in graphList:
+                graphDict[objects.get_date()] = objects.get_noOfUser()
+
             fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
             plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
-
 
             x = xAxisData # date labels for x-axis
             y = yAxisData # data for y-axis
@@ -2133,15 +2144,35 @@ def dashboard():
 
             plt.ylabel('Total Numbers of Users')
             plt.title("Total Userbase by Day")
+            plt.ylim(ymin=0)
             fig.autofmt_xdate() # auto formats the date label to be tilted
             fig.tight_layout() # eliminates padding
-            plt.savefig("static/images/graph.png")
 
-            # below code for simulation purposes
-            xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
-            yAxisData = [12, 240, 500] # number of users
+            figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
+            plt.savefig(figureFilename)
 
-            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData)
+            csvFileName = "static/data/user_base/csv/user_base.csv"
+
+            # # below code for simulation purposes
+            # xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            # yAxisData = [12, 240, 500] # number of users
+            # graphDict = {
+            #     "21/1/2022": 4,
+            #     "22/1/2022": 20,
+            #     "23/1/2022": 25,
+            #     "24/1/2022": 100
+            # }
+            
+            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
+            with open(csvFileName, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Dates", "Number Of Users"])
+                for key, value in graphDict.items():
+                    writer.writerow([key, value])
+                
+            
+
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFileName=csvFileName)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
