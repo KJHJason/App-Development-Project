@@ -1,20 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json, csv
-import Student, Teacher, Forms
-from Payment import Payment
-from Security import hash_password, verify_password, sanitise, validate_email
-from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from flask_mail import Mail
 from IntegratedFunctions import *
-import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
+import Student, Teacher, Forms
+from Payment import Payment
+from Security import hash_password, verify_password, sanitise, validate_email
+from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 
 """Web app configurations"""
 
