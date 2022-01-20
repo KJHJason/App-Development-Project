@@ -3528,7 +3528,7 @@ def purchaseReview():
 
 @app.route("/purchaseview")
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseView():
+def purchaseView(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3553,60 +3553,76 @@ def purchaseView():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            purchaseHistoryList = []
-            showCourse = ""
-            purchaseID = bool(userKey.get_purchaseID())
-            print("PurchaseID exists?: ", purchaseID)
+            courseID = ""
+            courseType = ""
+            historyCheck = True
+            historyList = []
+            # Get purchased courses
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchaseID == True:
+            if purchasedCourses != {}:
                 try:
-                    historyDict = {}
-                    dbCourse = shelve.open("course", "r")
-                    historyDict = dbCourse[""]
-                    for courseID in purchaseHistoryList(5):
-                        history = dbCourse[courseID]
-
-                        #id will be an integer
-
-                        video = {id :
-                            {historyDict : {"Title":history.get_title(),
-                            "Description":history.get_description(),
-                            "Thumbnail":history.get_thumbnail(),
-                            "VideoCheck":history.get_courseType()["Video"],
-                            "ZoomCheck":history.get_courseType()["Zoom"],
-                            "Price":history.get_price(),
-                            "Owner":history.get_owner()}
-                            }
-                        }
-                    for i in purchaseHistoryList:
-                        showCourse(video[i])
-
-                    db.close()
-
+                    courseDict = {}
+                    db = shelve.open("user", "r")
+                    courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
+                    db.close()
 
-            else:
+                # Get specific course with course ID
+                for courseID in list(purchasedCourses.keys()):
+                    print(courseID)
+
+                    # Find the correct course
+                    course = courseDict[courseID]
+                    courseType = purchasedCourses.get(courseID).get("Course Type")
+
+                    coursePricePaying = 0
+                    if courseType == "Zoom" or courseType == "Both":
+                        coursePricePaying += float(course.get_zoomPrice())
+                    if courseType == "Video" or courseType == "Both":
+                        coursePricePaying += float(course.get_videoPrice())
+
+                    courseInformation = {"Title":course.get_title(),
+                        "Description":course.get_description(),
+                        "Thumbnail":course.get_thumbnail(),
+                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "Price":coursePricePaying,
+                        "Owner":course.get_userID()} 
+                    historyList.append(courseInformation)
+                print(historyList)
                 db.close()
-                print("Nothing to view here.")
-                return redirect(url_for("purchaseview"))
+            else:
+                print("Purchase view is Empty")
+                historyCheck = False
 
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(purchasedCourses) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/purchaseview/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/purchaseview/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/purchaseview/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
 
 """End of Purchase View by Royston"""
 
