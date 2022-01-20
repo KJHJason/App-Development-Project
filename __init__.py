@@ -2147,7 +2147,6 @@ def dashboard():
                 plt.ylabel('Total Numbers of Users')
                 plt.title("Total Userbase by Day")
                 plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
-                plt.axhline(y=0) # added this so that it will show the line if it is at 0 for the y-axis as by default, it would not connect/draw a line if it is at 0 (y-axis)
                 fig.autofmt_xdate() # auto formats the date label to be tilted
                 fig.tight_layout() # eliminates padding
 
