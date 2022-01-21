@@ -3391,7 +3391,7 @@ def search(pageNum):
                     nextPage = pageNum + 1
 
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList)
     else:
                 checker = ""
                 courseDict = {}
@@ -3466,7 +3466,7 @@ def search(pageNum):
                     nextPage = pageNum + 1
 
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList)
+                    return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList)
 
 """"End of Search Function by Royston"""
 
@@ -3596,45 +3596,34 @@ def purchaseReview():
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
             imagesrcPath = retrieve_user_profile_pic(userKey)
+            purchasedCourses = userKey.get_purchases()
             reviewID = userKey.get_reviewID()
+            print("Purchased course exists?: ", purchasedCourses)
             print("ReviewID exists?: ", reviewID)
-            reviewDict = {}
+            courseDict = {}
             db = shelve.open("user", "c")
 
             try:
-                reviewDict = db["Review"]
-                createReview = Forms.CreateReviewText(request.form)
-                if request.method == 'POST' and createReview.validate():
-                    reviewID = createReview.review.data
-                    reviewDict.append(reviewID)
-                    reviewDict["Review"] = db
-                    db.close()
-                    dbCourse = {}
-                    db = shelve.open("user","c")
-                    try:
-                        if "Courses" in db:
-                            dbCourse = db["Courses"]
-
-                        else:
-                            db["Courses"] = dbCourse
-
-                    except:
-                        print("Error in retrieving course from course.db")
-                        db.close()
-                        return render_template('users/loggedin/purchasereview.html')
-
-                else:
-                    print("Review creation failed")
-                    db.close()
-                    return render_template('users/loggedin/purchasereview.html')
-
+                courseDict = db["Courses"]
             except:
                 print("Error in retrieving review from review.db")
+                db.close()
+                return render_template('users/loggedin/purchasehistory.html')
+            
+            createReview = Forms.CreateReviewText(request.form)
+            if request.method == 'POST' and createReview.validate():
+                review = createReview.review.data
+                print(review)
+                courseDict.append(review)
+                courseDict["Courses"] = db
+
+            else:
+                print("Review creation failed")
                 db.close()
                 return render_template('users/loggedin/purchasereview.html')
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, courseDict=courseDict, reviewID=reviewID, imagesrcPath=imagesrcPath)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
