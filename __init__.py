@@ -1,27 +1,26 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json
-import Student, Teacher, Forms
-from Payment import Payment
-from Security import hash_password, verify_password, sanitise, validate_email
-from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from flask_mail import Mail
-from IntegratedFunctions import *
-import vimeo
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
-from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
+import Student, Teacher, Forms
+from Payment import Payment
+from Security import hash_password, verify_password, sanitise, validate_email
+from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+from IntegratedFunctions import *
 
 """Web app configurations"""
 
 # general Flask configurations
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deployed, change it to something more secure
-scheduler = APScheduler()
+scheduler = BackgroundScheduler()
 
 # Maximum file size for uploading anything to the web app's server
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
@@ -1786,7 +1785,7 @@ def userSearchManagementError():
                 else:
                     pageNum = 0
                 redirectURL = "/user_management/page/" + str(pageNum)
-            return render_template('users/admin/user_management.html', notAllowed = True, searched=True, redirectURL=redirectURL)
+            return render_template('users/admin/user_management.html', notAllowed=True, searched=True, redirectURL=redirectURL)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -2113,35 +2112,72 @@ def dashboard():
             finally:
                 db.close()
             
-            lastUpdated = graphList[-1].get_lastUpdate()
-            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            print("Retrieved graph data:", graphList)
+            try:
+                lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
+            except:
+                lastUpdated = str(datetime.now().strftime("%d-%m-%Y, %H:%M:%S")).replace("-", "/")
 
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            print("Selected graph data:", selectedGraphDataList)
+
+            # for matplotlib and chartjs graphs
             xAxisData = [] # dates
             yAxisData = [] # number of users
             for objects in selectedGraphDataList:
                 xAxisData.append(str(objects.get_date()))
                 yAxisData.append(objects.get_noOfUser())
 
-            fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
-            plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+            # for csv
+            graphDict = {}
+            for objects in graphList:
+                graphDict[objects.get_date()] = objects.get_noOfUser()
 
+            # try and except as matplotlib may fail since it is outside of main thread
+            try:
+                fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+                plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
 
-            x = xAxisData # date labels for x-axis
-            y = yAxisData # data for y-axis
+                x = xAxisData # date labels for x-axis
+                y = yAxisData # data for y-axis
+                
+                plt.plot(x, y, color="#009DF8", linewidth=3)
+
+                # graph configurations
+                plt.ylabel('Total Numbers of Users')
+                plt.title("Total Userbase by Day")
+                plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
+                fig.autofmt_xdate() # auto formats the date label to be tilted
+                fig.tight_layout() # eliminates padding
+
+                figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
+                plt.savefig(figureFilename)
+            except:
+                print("Error in saving graph image...")
+
+            csvFileName = "static/data/user_base/csv/user_base.csv"
+
+            # # below code for simulation purposes
+            # xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            # yAxisData = [12, 240, 500] # number of users
+            # graphDict = {
+            #     "21/1/2022": 4,
+            #     "22/1/2022": 20,
+            #     "23/1/2022": 25,
+            #     "24/1/2022": 100
+            # }
             
-            plt.plot(x, y, color="#009DF8", linewidth=3)
+            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
+            with open(csvFileName, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Dates", "Number Of Users"])
+                for key, value in graphDict.items():
+                    writer.writerow([key, value])
+                
+            print("X-axis data:", xAxisData)
+            print("Y-axis data:", yAxisData)
 
-            plt.ylabel('Total Numbers of Users')
-            plt.title("Total Userbase by Day")
-            fig.autofmt_xdate() # auto formats the date label to be tilted
-            fig.tight_layout() # eliminates padding
-            plt.savefig("static/images/graph.png")
-
-            # below code for simulation purposes
-            xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
-            yAxisData = [12, 240, 500] # number of users
-
-            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData)
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFileName=csvFileName)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -4012,7 +4048,9 @@ def teacherPage(teacherUID):
         #if admin
             userSession = session["adminSession"]
         else:
-            userSession = session["userSession"]
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
@@ -4028,36 +4066,86 @@ def teacherPage(teacherUID):
 
             return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            print("Admin/User account is not found or is not active/banned.")
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
-            return render_template("users/teacher/teacher_page.html", accType="Guest")
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            redirect(url_for("teacher_page/teacherUID"))
+            redirectURL = "/teacher_page/" + teacherUID
+            return redirect(redirectURL)
+
     else:
-        return render_template("users/teacher/teacher_page.html", accType="Guest")
+        if "userSession" in session:
+            userSession = session["userSession"]
+
+            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                """
+                To Clarence, this template code is outdated, please use the new one for the general page
+                - Jason
+                """
+
+                return render_template('users/teacher/teacher_page.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return render_template("users/teacher/teacher_page.html")
 
 """End of Teacher's Channel Page by Clarence"""
-
 
 """Teacher's Courses Page by Clarence"""
 
 @app.route("/<teacherUID>/teacher_courses", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherCourses(teacherUID):
-    if "adminSession" in session or "userSession" in session:
-        if "adminSession" in session:
-            userSession = session["adminSession"]
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+            return render_template('users/admin/teacher_courses.html')
         else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
+            return redirect("/" + teacherUID + "/teacher_courses")
+
+    else:
+        if "userSession" in session:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
-        if userFound and accGoodStanding:
-            return render_template('users/teacher/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            if userFound and accGoodStatus:
+                # add in your code here (if any)
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                """
+                To Clarence, this template code is outdated, please use the new one for the general page
+                - Jason
+                """
+
+                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
+            else:
+                print("User not found or is banned.")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
-            print("Admin/User account is not found or is not active/banned.")
-            session.clear()
-            return render_template("users/teacher/teacher_courses.html", accType="Guest")
-    else:
-        return render_template("users/teacher/teacher_courses.html", accType="Guest")
+            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
+            return render_template("users/teacher/teacher_courses.html")
 
 """End of Teacher's Courses Page by Clarence"""
 
@@ -4551,8 +4639,10 @@ def error503(e):
 """End of Custom Error Pages"""
 
 if __name__ == '__main__':
-    # uncomment the part below after the whole app is developed
-    """ scheduler.add_job(func=saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", id="Scheduled task")
+    # uncomment the below part when the web app is ready to be deployed for testing
+    """ scheduler.configure(timezone="Asia/Singapore") # configure timezone to always follow Singapore's timezone
+    # adding a scheduled job to save data for the graph everyday at 11.59 p.m. below
+    scheduler.add_job(saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", second="0", id="collectUserbaseData")
     scheduler.start()
-    app.run(use_reloader=False) """
+    app.run(debug=True, use_reloader=False) """
     app.run(debug=True)

@@ -1,0 +1,2 @@
+requests>=2.4.0
+tuspy>=0.2.4

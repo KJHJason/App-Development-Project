@@ -61,84 +61,86 @@ while True:
                     print("\nError: Invalid Email Format. Please try again.")
                     break
             if emailValid and username != False and email != False:
-                password = input("\nEnter password for admin account (0 to exit): ")
-                if password == "0":
-                    break
-                
-                pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
-
-                if pwdLengthValidate:
-                    password = hash_password(password)
-                    cfm_password = input("\nConfirm password for admin account (0 to exit): ")
-                    if cfm_password == "0":
+                print("Email Validated")
+                while True:
+                    password = input("\nEnter password for admin account (0 to exit): ")
+                    if password == "0":
                         break
+                    
+                    pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
 
-                    pwdMatched = verify_password(password, cfm_password)
-
-                    if pwdMatched:
-                        print("\nPassword for admin entered matched.")
-                        # Retrieving data from shelve for duplicate data checking
-                        adminDict = {}
-                        db = shelve.open("admin", "c")
-                        try:
-                            if 'Admins' in db:
-                                adminDict = db['Admins']
-                                print("\nRetrieved data from admin account database")
-                            else:
-                                print("\nError: No admin account data in admin account database")
-                                db["Admins"] = adminDict
-                                print("Error resolved: Created an empty admin account database")
-                        except:
-                            db.close()
-                            print("\nError in retrieving Admins from admin.db")
-                        
-                        email_duplicates = False
-                        username_duplicates = False
-
-                        # checking duplicates for username and getting the latest possible user ID from the admin shelve files
-                        for key in adminDict:
-                            print("\nretrieving usernames")
-                            usernameShelveData = adminDict[key].get_username()
-                            if username == usernameShelveData:
-                                print("Error: Username already taken.")
-                                username_duplicates = True
-                                break
-
-                        # Checking duplicates for email
-                        for key in adminDict:
-                            print("\nretrieving emails")
-                            emailShelveData = adminDict[key].get_email()
-                            if email == emailShelveData:
-                                print("Error: Admin email already exists.")
-                                email_duplicates = True
-                                break
-                        
-                        if email_duplicates and username_duplicates:
-                            print("\nError: Duplicate admin username and password, please enter unique username and password!")
-                            db.close()
+                    if pwdLengthValidate:
+                        password = hash_password(password)
+                        cfm_password = input("\nConfirm password (0 to exit): ")
+                        if cfm_password == "0":
                             break
-                        else:
-                            if email_duplicates:
+
+                        pwdMatched = verify_password(password, cfm_password)
+
+                        if pwdMatched:
+                            print("\nPassword for admin entered matched.")
+                            # Retrieving data from shelve for duplicate data checking
+                            adminDict = {}
+                            db = shelve.open("admin", "c")
+                            try:
+                                if 'Admins' in db:
+                                    adminDict = db['Admins']
+                                    print("\nRetrieved data from admin account database")
+                                else:
+                                    print("\nError: No admin account data in admin account database")
+                                    db["Admins"] = adminDict
+                                    print("Error resolved: Created an empty admin account database")
+                            except:
                                 db.close()
-                                print("\nError: Duplicate admin email, please enter a unique email.")
+                                print("\nError in retrieving Admins from admin.db")
+                            
+                            email_duplicates = False
+                            username_duplicates = False
+
+                            # checking duplicates for username and getting the latest possible user ID from the admin shelve files
+                            print("\nretrieving usernames")
+                            for key in adminDict:
+                                usernameShelveData = adminDict[key].get_username()
+                                if username == usernameShelveData:
+                                    print("Error: Username already taken.")
+                                    username_duplicates = True
+                                    break
+
+                            # Checking duplicates for email
+                            print("\nretrieving emails")
+                            for key in adminDict:
+                                emailShelveData = adminDict[key].get_email()
+                                if email == emailShelveData:
+                                    print("Error: Admin email already exists.")
+                                    email_duplicates = True
+                                    break
+                            
+                            if email_duplicates and username_duplicates:
+                                print("\nError: Duplicate admin username and password, please enter unique username and password!")
+                                db.close()
                                 break
                             else:
-                                if username_duplicates:
+                                if email_duplicates:
                                     db.close()
-                                    print("\nError: Duplicate admin username, please enter a unique username.")
+                                    print("\nError: Duplicate admin email, please enter a unique email.")
                                     break
                                 else:
-                                    adminID = generate_admin_id(adminDict)
-                                    admin = Admin(adminID, username, email, password)
-                                    adminDict[adminID] = admin
-                                    print("\nAdmin account created/updated in the admin account database")
-                                    db["Admins"] = adminDict
-                                    db.close()
-                                    print("Admin account ID:", admin.get_user_id())
-                                    break
-                    else:
-                        print("\nError: Password for admin entered did not matched.")
-                        break
+                                    if username_duplicates:
+                                        db.close()
+                                        print("\nError: Duplicate admin username, please enter a unique username.")
+                                        break
+                                    else:
+                                        adminID = generate_admin_id(adminDict)
+                                        admin = Admin(adminID, username, email, password)
+                                        adminDict[adminID] = admin
+                                        print("\nAdmin account created/updated in the admin account database")
+                                        db["Admins"] = adminDict
+                                        db.close()
+                                        print("Admin account ID:", admin.get_user_id())
+                                        break
+                        else:
+                            print("\nError: Password for admin entered did not matched.")
+                break
             else:
                 if email == False and username == False:
                     print("\nError: You cannot enter an empty input for the email and username!")

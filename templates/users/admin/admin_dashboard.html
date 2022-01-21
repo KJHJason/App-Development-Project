@@ -11,6 +11,11 @@
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
+                        <a href="/admin_dashboard" class="nav-link text-white active-custom">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="/admin_profile" class="nav-link text-white">
                             Account Settings
                         </a>
@@ -18,11 +23,6 @@
                     <li class="nav-item">
                         <a href="/user_management/page/1" class="nav-link text-white">
                             User Management
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/admin_dashboard" class="nav-link text-white active-custom">
-                            Dashboard
                         </a>
                     </li>
                 </ul>
@@ -34,7 +34,16 @@
                     <div class="row">
                         <div class="col">
                             <canvas id="totalUserChart"></canvas>
-                            <a class="float-end" href="/static/images/graph.png" download>Download graph in png format</a>
+                            <br>
+                            <div class=d-inline>
+                                <p class="float-start">Last updated (in 24hr format): {{ lastUpdated }}</p>
+                                <br>
+                                <a class="float-end" href="/{{ figureFilename }}" download>Download graph in png format</a>
+                            </div>
+                            <br>
+                            <div class="d-inline">
+                                <a class="float-end" href="/{{ csvFileName }}" download>Download data in csv format</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -93,8 +102,7 @@
             let chart = document.getElementById("totalUserChart").getContext("2d");
             let pythonData = "{{ xAxisData }}";
             let dataForChartString = decodeEntities(pythonData);
-            let dataForChart = dataForChartString.split(",");
-            dataForChart = dataForChart.toString().replaceAll("'","");
+            dataForChart = dataForChartString.replaceAll("'","");
             dataForChart = dataForChart.replace("[", "")
             dataForChart = dataForChart.replace("]", "")
             dataForChart = dataForChart.split(",")
@@ -103,34 +111,39 @@
             let lineChart = new Chart(chart, {
                 type:"line", // available types of charts: bar, horizontalBar, pie, line, doughnut, radar, polarArea
                 data: {
-                    labels:dataForChart,
-                    datasets:[{
-                        label:"Total Number of Users",
-                        data:{{ yAxisData }},
+                    labels: dataForChart,
+                    datasets: [{
+                        label: "Total Number of Users",
+                        data: {{ yAxisData }},
                         backgroundColor: "#009DF8",
                         borderWidth: 3,
                         borderColor: "#009DF8",
                     }],
                 },
                 options: {
+                    scales: {
+                        y: {
+                            min: 0
+                        }
+                    },
                     plugins: {
-                        title:{
+                        title: {
                         display: true,
-                        text:"Total Userbase by Day",
+                        text: "Total Userbase by Day",
                         font: {
                             size: 24
                             }
                         },
-                        legend:{
-                            display:false
-                            /* position:"right",
-                            labels:{
+                        legend: {
+                            display: true,
+                            position: "bottom",
+                            labels: {
                                 fontColor: "#212529",
-                            } */
+                            }
                         }
                     }
                 }
             });
-        });
+        }); 
     </script>
 {% endblock %}

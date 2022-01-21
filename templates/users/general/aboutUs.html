@@ -3,6 +3,7 @@
 {% block title %}About Us | CourseFinity{% endblock %}
 
 {% block content %}
+<a id="topbutton"><i class="fas fa-chevron-up"></i></a> <!-- go to top button -->
 <ul class="breadcrumb">
 	<li>
 		<a href="home.html">Home</a>
@@ -38,4 +39,8 @@
 	<p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit"</p>
 	<p>- Eden Pang, Competitive Programmer</p>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/go_to_top.js') }}"></script>
 {% endblock %}
