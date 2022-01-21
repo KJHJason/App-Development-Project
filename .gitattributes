@@ -1,1 +1,1 @@
-venv/* linguist-vendored
+venv/* linguist-detectable=false
