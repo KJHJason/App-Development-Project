@@ -1,3 +1,5 @@
+# Done by Wei Ren
+
 class Payment():
     paymentID = -1
     def __init__(self,userID, cardName, cardNumber, cardExpiry, firstName, lastName, billingAddress1, billingAddress2, billingAddress3, city, country, zipCode, countryCode, phoneNumber):

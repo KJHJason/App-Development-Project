@@ -1,3 +1,5 @@
+# Done by Jason
+
 class User:
     def __init__(self, user_id, username, email, password, acc_type, status):
         self.__user_id = user_id

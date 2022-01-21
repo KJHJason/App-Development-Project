@@ -2858,7 +2858,6 @@ def userPayment():
                             cardExpiry = cardExpiryStringFormatter(cardExpiry)
                             userKey.set_card_expiry(cardExpiry)
                             userKey.set_card_type(cardType)
-                            userKey.display_card_info()
                             db['Users'] = userDict
                             print("Payment added")
 
@@ -3039,7 +3038,6 @@ def deleteCard():
                 userKey.set_card_no("")
                 userKey.set_card_expiry("")
                 userKey.set_card_type("")
-                userKey.display_card_info()
 
                 db['Users'] = userDict
                 print("Payment added")

@@ -10,7 +10,8 @@ class Teacher(Common):
         # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
 
-    # added by Jason
+    """Done by Jason"""
+    
     def set_earnings(self, earnings):
         self.__earnings = earnings
     def get_earnings(self):
@@ -26,7 +27,10 @@ class Teacher(Common):
     def get_accumulated_earnings(self):
         return self.__accumulated_earnings
 
-    # Added by Wei Ren for courses
+    """End of Done by Jason"""
+
+    """Done by Wei Ren"""
+
     def get_coursesTeaching(self):
         return self.__coursesTeaching
     def set_courseTeaching(self, courseID):
@@ -36,3 +40,5 @@ class Teacher(Common):
         self.__paypalID = paypalID
     def get_paypalID(self):
         return self.__paypalID
+
+    """"End of Done by Wei Ren"""
