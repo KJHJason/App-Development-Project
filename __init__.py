@@ -425,14 +425,47 @@ def guestEditCookie(teacherUID, courseID, courseTag):
     res = make_response(redirect(redirectURL))
     try:
         userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
-        userTagDict[courseTag] += 1
-        res.set_cookie(
-            "guestSeenTags",
-            value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-            expires=datetime.datetime.now() + datetime.timedelta(days=90)
-        )
+        if courseTag in userTagDict:
+            userTagDict[courseTag] += 1
+            res.set_cookie(
+                "guestSeenTags",
+                value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+                expires=datetime.datetime.now() + datetime.timedelta(days=90)
+            )
     except:
         print("Error with editing guest's cookie.")
+        # if the guest user had tampered with the cookie value
+        res.set_cookie(
+            "guestSeenTags",
+            value=b64encode(json.dumps({"Programming": 0, 
+            "Web_Development": 0,
+            "Game_Development": 0,
+            "Mobile_App_Development": 0,
+            "Software_Development": 0,
+            "Other_Development": 0,
+            "Entrepreneurship": 0,
+            "Project_Management": 0,
+            "BI_Analytics": 0,
+            "Business_Strategy": 0,
+            "Other_Business": 0,
+            "3D_Modelling": 0,
+            "Animation": 0,
+            "UX_Design": 0,
+            "Design_Tools": 0,
+            "Other_Design": 0,
+            "Digital_Photography": 0,
+            "Photography_Tools": 0,
+            "Video_Production": 0,
+            "Video_Design_Tools": 0,
+            "Other_Photography_Videography": 0,
+            "Science": 0,
+            "Math": 0,
+            "Language": 0,
+            "Test_Prep": 0,
+            "Other_Academics": 0}).encode("utf-8")),
+            expires=datetime.now() + timedelta(days=90)
+        )
+
     if "cookieCreated" in session:
         cookieCreated = session["cookieCreated"]
     else:
