@@ -20,7 +20,7 @@ Libraries needed:
   <li>setuptools Version 60.1.0 [pip install setuptools]</li>
   <li>Flask-Limiter Version 2.0.4 [pip install Flask-Limiter]</li>
   <li>argon2-cffi Version 21.3.0 [pip install argon2-cffi]</li>
-  <li>Pillow Version 8.4.0 [pip install --upgrade Pillow]</li>
+  <li>Pillow Version 8.4.0 [pip install Pillow]</li>
   <li>Flask-mail Version 0.9.1 [pip install flask-mail]</li>
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk]</li>
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo]</li>
