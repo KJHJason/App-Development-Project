@@ -10,7 +10,6 @@ class Common(User):
         self.__email_verification = "Not Verified"
         self.__purchaseID = []
         self.__reviewID = []
-        self.__viewed = ""
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
         self.__shoppingCart = {} # Course IDs & Type here
@@ -42,6 +41,8 @@ class Common(User):
                               "Test_Prep": 0,
                               "Other_Academics": 0}
     
+    """Done by Jason"""
+
     def set_purchases(self, purchasesDict):
         self.__purchasedCourses = purchasesDict
     def get_purchases(self): # Get a dictionary of the user's purchased courses
@@ -51,13 +52,11 @@ class Common(User):
         self.__tags_viewed = tagsDict
     def get_tags_viewed(self):
         return self.__tags_viewed
-
     def change_no_of_view(self, seenTag):
         if seenTag in self.__tags_viewed:
             self.__tags_viewed[seenTag] += 1
         else:
             print("No such tag found.")
-
     # for scalability reasons but would not be used in this project
     def add_tag(self, newTag):
         self.__tags_viewed[newTag] = 0
@@ -94,14 +93,10 @@ class Common(User):
     def get_teacher_join_date(self):
         return self.__teacher_joined_date
 
-    def set_purchaseID(self, purchaseID):
-        self.__purchaseID.append(purchaseID)
-    def remove_purchaseID(self, purchaseID):
-        if purchaseID in self.__purchaseIDs:
-            self.__purchaseID.remove(purchaseID)
-        else:
-            return False
+    """End of Done by Jason"""
 
+    """Done by Wei Ren"""
+    
     def set_reviewID(self, reviewID):
         self.__reviewID.append(reviewID)
     def remove_reviewID(self, reviewID):
@@ -130,12 +125,6 @@ class Common(User):
         else:
             return False
 
-    def set_viewed(self, viewed):
-        self.__viewed = viewed
-    def get_viewed(self):
-        return self.__viewed
-
-    # Added by Wei Ren for courses
     def add_to_cart(self, courseID,type):        #e.g. add_to_cart(0,"Zoom")
         if courseID in list(self.__shoppingCart.keys()):
             if self.__shoppingCart[courseID] != type:
@@ -151,7 +140,6 @@ class Common(User):
             print("Course ID", courseID, "Type", type, "not in shopping cart.")
         except:
             print("Unexpected error.")
-
     def get_cartCourseType(self, courseID):
         try:
             return self.__shoppingCart[courseID]
@@ -161,7 +149,6 @@ class Common(User):
         except:
             print("Unexpected error.")
             return {}
-
     def get_purchasesCourseType(self,courseID):
         try:
             return self.__purchasedCourses[courseID]["Course Type"]
@@ -181,3 +168,5 @@ class Common(User):
         else:
             # raise Exception("PayPal dislikes you.")
             print("PayPal dislikes you.")
+
+    """End of Done by Wei Ren"""

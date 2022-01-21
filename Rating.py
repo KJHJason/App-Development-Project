@@ -1,3 +1,5 @@
+# Done by Wei Ren
+
 class Rating():
     def __init__(self, userID, title, comment, rating):
         self.__userID= userID

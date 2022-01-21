@@ -51,12 +51,23 @@ class Course():
         self.__schedule = []
         self.__views = 0
 
+    """Done by Jason"""
+
     def set_views(self, views):
         self.__views = views
     def get_views(self):
         return self.__views
     def increase_view(self):
         self.__views += 1
+
+    def set_username(self, username):
+        self.__username = username
+    def get_username(self):
+        return self.__username
+
+    """End of Done by Jason"""
+
+    """Done by Wei Ren"""
 
     def set_courseID(self, courseID):
         self.__courseID = courseID
@@ -67,11 +78,6 @@ class Course():
         self.__userID = userID
     def get_userID(self):
         return self.__userID
-
-    def set_username(self, username):
-        self.__username = username
-    def get_username(self):
-        return self.__username
 
     def set_title(self, title):
         self.__title = title
@@ -168,3 +174,5 @@ class Course():
 
     def get_lesson(self, lesson):
         return self.__schedule[int(lesson)]
+
+    """End of Done by Wei Ren"""
