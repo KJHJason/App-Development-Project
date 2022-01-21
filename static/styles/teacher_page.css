@@ -45,3 +45,22 @@ h2{
     background-color: white;
     margin-left:10px;
 }
+
+@media screen and (max-width: 1500px){
+  .thebutton{
+    margin-bottom:50px;
+  }
+}
+
+.ratings {
+  color: #FFD700;
+}
+
+.headings {
+  margin-bottom: 0;
+  margin-top: 30px;
+}
+
+.become_headings {
+  margin-top: 100px;
+}
