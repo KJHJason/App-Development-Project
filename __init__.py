@@ -223,8 +223,13 @@ def home():
                     for value in courseDict.values():
                         recommendCourseList.append(value)
 
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+
                 # logged in users
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
@@ -380,7 +385,7 @@ def guestCookies():
 @app.route('/home/no_cookies')
 @limiter.limit("30/second") # to prevent ddos attacks
 def homeNoCookies():
-    if "userSession" not in session and "adminSession" not in session:
+    if "userSession" not in session and "adminSession" not in session: # since if the user is logged in, it means that their cookie is enabled as the login uses session cookies
         courseDict = {}
         try:
             db = shelve.open("user", "r")
@@ -2434,7 +2439,12 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2473,6 +2483,11 @@ def updateUsername():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_username_form = Forms.CreateChangeUsername(request.form)
             if request.method == "POST" and create_update_username_form.validate():
@@ -2510,14 +2525,14 @@ def updateUsername():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2555,6 +2570,11 @@ def updateEmail():
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_email_form = Forms.CreateChangeEmail(request.form)
             if request.method == "POST" and create_update_email_form.validate():
@@ -2600,14 +2620,14 @@ def updateEmail():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2645,6 +2665,11 @@ def updatePassword():
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_password_form = Forms.CreateChangePasswordForm(request.form)
             if request.method == "POST" and create_update_password_form.validate():
@@ -2687,12 +2712,12 @@ def updatePassword():
                 if passwordVerification == False or passwordNotMatched:
                     db.close()
                     errorMessage = True
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     if oldPassword:
                         db.close()
                         print("User cannot change password to their current password!")
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         # updating password of the user once validated
                         hashedPwd = hash_password(updatedPassword)
@@ -2713,7 +2738,7 @@ def updatePassword():
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
-                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found is banned.")
@@ -2755,6 +2780,11 @@ def changeAccountType():
         print("Account type:", accType)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Student":
                 if request.method == "POST":
@@ -2816,7 +2846,7 @@ def changeAccountType():
                     return redirect(url_for("userProfile"))
                 else:
                     db.close()
-                    return render_template("users/student/change_account_type.html", accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template("users/student/change_account_type.html", accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 print("User is not a student.")
@@ -2865,6 +2895,10 @@ def userPayment():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -2900,9 +2934,9 @@ def userPayment():
                             db.close()
                             return redirect(url_for("userPayment"))
                         else:
-                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType, imagesrcPath=imagesrcPath)
+                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -2916,7 +2950,7 @@ def userPayment():
                         cardDeleted = False
                         print("Card recently added?:", cardDeleted)
 
-                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 cardName = userKey.get_card_name()
@@ -2945,7 +2979,7 @@ def userPayment():
                     cardAdded = False
                     print("Card recently added?:", cardAdded)
 
-                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2987,6 +3021,11 @@ def userEditPayment():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -3017,10 +3056,10 @@ def userEditPayment():
                         return redirect(url_for("userPayment"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
-                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 return redirect(url_for("userProfile"))
@@ -3241,7 +3280,12 @@ def teacherCashOut():
                 totalEarned = get_two_decimal_pt(totalEarned)
                 accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
 
-                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, failedToCashOut=failedToCashOut, cashedOut=cashedOut, accumulatedCollect=accumulatedCollect, noPayment=noPayment)
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+
+                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, failedToCashOut=failedToCashOut, cashedOut=cashedOut, accumulatedCollect=accumulatedCollect, noPayment=noPayment, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned")
@@ -3258,6 +3302,7 @@ def teacherCashOut():
 
 """Search Function by Royston"""
 
+# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE UPDATED TEMPLATE FOR GENERAL PAGES AND START FROM SCRATCH
 @app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
 def search(pageNum):
@@ -3344,8 +3389,13 @@ def search(pageNum):
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
 
+                    if accType == "Teacher":
+                        teacherUID = userSession
+                    else:
+                        teacherUID = ""
+
                     db.close()
-                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList)
+                    return render_template('users/general/search.html', accType=accType, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID)
 
             else:
                 print("Admin/User account is not found or is not active/banned.")
@@ -3599,8 +3649,13 @@ def purchaseHistory(pageNum):
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
 
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3613,6 +3668,7 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
+# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def purchaseReview():
@@ -3649,12 +3705,18 @@ def purchaseReview():
                 courseDict["Courses"] = db
 
             else:
+                # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
                 print("Review creation failed")
                 db.close()
                 return render_template('users/loggedin/purchasereview.html')
 
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, courseDict=courseDict, reviewID=reviewID, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, courseDict=courseDict, reviewID=reviewID, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3706,6 +3768,7 @@ def purchaseView():
             print("PurchaseID exists?: ", purchaseID)
 
             if purchaseID == True:
+                # improve on your try and except handling here or delete unnecessary db.close() to prevent runtime errors
                 try:
                     historyDict = {}
                     dbCourse = shelve.open("course", "r")
@@ -3736,10 +3799,15 @@ def purchaseView():
             else:
                 db.close()
                 print("Nothing to view here.")
-                return redirect(url_for("purchaseview"))
+                return redirect(url_for("purchaseview"))\
+
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned")
@@ -3758,10 +3826,12 @@ def purchaseView():
 
 
 """Template Redirect Shopping Cart by Jason because Opera is bad"""
+
 @app.route("/shopping_cart", methods = ["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCartDefault():
     return redirect("/shopping_cart/1")
+
 """End of Redirect Shopping Cart by Jason because Opera is bad"""
 
 
@@ -3948,8 +4018,13 @@ def shoppingCart(pageNum):
 
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
+                    if accType == "Teacher":
+                        teacherUID = userSession
+                    else:
+                        teacherUID = ""
+
                     db.close() # remember to close your shelve files!
-                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -4024,7 +4099,12 @@ def contactUs():
 
                 dbAdmin.close()
 
-                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success)
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+
+                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success, teacherUID=teacherUID)
             else:
                 # Admin user
                 return render_template("users/general/contact_us.html", accType=accType, form = contactForm)
@@ -4077,6 +4157,8 @@ def contactUsManagement():
 
 """Teacher's Channel Page by Clarence"""
 
+# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE TEMPLATE AND START FROM SCRATCH
+# Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
 @app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherUID):
@@ -4142,6 +4224,8 @@ def teacherPage(teacherUID):
 
 """Teacher's Courses Page by Clarence"""
 
+# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE UPDATED TEMPLATE FOR GENERAL PAGES AND START FROM SCRATCH
+# Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
 @app.route("/<teacherUID>/teacher_courses", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherCourses(teacherUID):
@@ -4172,6 +4256,8 @@ def teacherCourses(teacherUID):
                 """
                 To Clarence, this template code is outdated, please use the new one for the general page
                 - Jason
+
+                Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
                 """
 
                 return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
@@ -4201,7 +4287,11 @@ def cookiePolicy():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/cookie_policy.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/cookie_policy.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4221,7 +4311,11 @@ def termsAndConditions():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/terms_and_conditions.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/terms_and_conditions.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4241,7 +4335,11 @@ def privacyPolicy():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/privacy_policy.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/privacy_policy.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4261,7 +4359,11 @@ def faq():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/faq.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/faq.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4311,9 +4413,12 @@ def function():
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             imagesrcPath = retrieve_user_profile_pic(userKey)
-
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned")
@@ -4354,8 +4459,11 @@ def function():
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
             imagesrcPath = retrieve_user_profile_pic(userKey)
-
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4395,7 +4503,11 @@ def insertName():
         if userFound and accGoodStatus:
             # add in your code below
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4436,7 +4548,11 @@ def insertName():
         userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
 
         if userFound and accGoodStanding:
-            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4473,7 +4589,11 @@ def insertName():
 
         if userFound and accGoodStatus:
             # add in your CRUD or other code
-            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
