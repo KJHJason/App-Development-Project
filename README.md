@@ -1,6 +1,6 @@
 # App-Development-Project
-Nanyang Polytechnic Y1 App Development Group Project [4 members] 
-This project consists of us making a web application using Flask as its framework.
+Nanyang Polytechnic Y1 App Development Group Project [4 members]<br>
+This project consists of us making a web application using Flask as its framework.<br>
 Group Members: 
 <ol>
   <li>Jason (Group Leader)</li>
