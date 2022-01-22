@@ -1,9 +1,7 @@
 # App-Development-Project
 Nanyang Polytechnic Y1 App Development Group Project [4 members] 
-<br>
-<br>
+This project consists of us making a web application using Flask as its framework.
 Group Members: 
-<br>
 <ol>
   <li>Jason (Group Leader)</li>
   <li>Wei Ren (Assistant Group Leader)</li>
