@@ -1,7 +1,7 @@
 from argon2 import PasswordHasher
 import html, re # importing html for escaping inputs and re for compiling regular expression for validating email addresses
 
-# done by Jason
+# Done by Jason
 
 # helpful resources: 
 # https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html

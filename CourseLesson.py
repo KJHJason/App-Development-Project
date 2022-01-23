@@ -1,5 +1,6 @@
 """Made by Wei Ren"""
 """Edited by Clarence"""
+
 class Lesson():
     def __init__(self, title, description, thumbnail):
         self.__title = title
@@ -59,4 +60,3 @@ class ZoomLesson(Lesson):
 
     def get_user_timing(self, userID):  # [date, time]
         return self.__userTimings[userID]
-

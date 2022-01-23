@@ -51,12 +51,23 @@ class Course():
         self.__schedule = []
         self.__views = 0
 
+    """Done by Jason"""
+
     def set_views(self, views):
         self.__views = views
     def get_views(self):
         return self.__views
     def increase_view(self):
         self.__views += 1
+
+    def set_username(self, username):
+        self.__username = username
+    def get_username(self):
+        return self.__username
+
+    """End of Done by Jason"""
+
+    """Done by Wei Ren"""
 
     def set_courseID(self, courseID):
         self.__courseID = courseID
@@ -67,16 +78,11 @@ class Course():
         self.__userID = userID
     def get_userID(self):
         return self.__userID
-    def set_username(self, username):
-        self.__username = username
-    def get_username(self):
-        return self.__username
 
     def set_title(self, title):
         self.__title = title
     def get_title(self):
         return self.__title
-
     def get_shortTitle(self):
         return ellipsis(self.__title,"Title")
 
@@ -84,7 +90,6 @@ class Course():
         self.__description = description
     def get_description(self):
         return self.__description
-
     def get_shortDescription(self):
         return ellipsis(self.__description,"Description")
 
@@ -108,13 +113,11 @@ class Course():
             self.__videoCondition = False
         else:
             self.__videoCondition = True
-
     def switch_zoomCondition(self):
         if self.__zoomCondition: # if True:
             self.__zoomCondition = False
         else:
             self.__zoomCondition = True
-
     def get_videoCondition(self):
         return self.__videoCondition
     def get_zoomCondition(self):
@@ -130,19 +133,12 @@ class Course():
             self.__tags.append(tag) # As a value
     def remove_tag(self, tag):
         self.__tags.remove(tag)
-
     def get_tags(self):
         return self.__tags
 
     def add_rating(self, userID, title, comment, rating):
         rating = Rating(userID, title, comment, rating)
         self.__ratings.append(rating)
-    def remove_rating(self, userID, comment):
-        for rating in self.__ratings:
-            if rating.get_userID() == userID and rating.get_comment() == comment:
-                self.__ratings.remove(rating)
-                break
-
     def get_ratings(self):
         return self.__ratings
     def get_averageRating(self):
@@ -150,6 +146,11 @@ class Course():
         for rating in self.__ratings:
             total += int(rating.get_rating())
             return (total/len(self.__ratings))
+    def remove_rating(self, userID, comment):
+        for rating in self.__ratings:
+            if rating.get_userID() == userID and rating.get_comment() == comment:
+                self.__ratings.remove(rating)
+                break
 
     def add_scheduleVideoLesson(self, title, description, thumbnail, videoData):
         videoLesson = VideoLesson(title, description, thumbnail, videoData)
@@ -173,3 +174,5 @@ class Course():
 
     def get_lesson(self, lesson):
         return self.__schedule[int(lesson)]
+
+    """End of Done by Wei Ren"""
