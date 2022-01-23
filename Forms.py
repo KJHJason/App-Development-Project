@@ -1,5 +1,3 @@
-from matplotlib.image import thumbnail
-from matplotlib.pyplot import title
 from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, TimeField, HiddenField, FormField, IntegerField, PasswordField, BooleanField, FileField
 
 """WTForms by Jason"""
