@@ -229,6 +229,10 @@ def home():
                     teacherUID = ""
 
                 # logged in users
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
@@ -2487,7 +2491,6 @@ def updateUsername():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_username_form = Forms.CreateChangeUsername(request.form)
             if request.method == "POST" and create_update_username_form.validate():
@@ -2525,14 +2528,15 @@ def updateUsername():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
                 else:
                     db.close()
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2574,7 +2578,6 @@ def updateEmail():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_email_form = Forms.CreateChangeEmail(request.form)
             if request.method == "POST" and create_update_email_form.validate():
@@ -2669,7 +2672,6 @@ def updatePassword():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_password_form = Forms.CreateChangePasswordForm(request.form)
             if request.method == "POST" and create_update_password_form.validate():
@@ -3025,7 +3027,6 @@ def userEditPayment():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
             imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -3579,6 +3580,10 @@ def purchaseHistory(pageNum):
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
@@ -3682,6 +3687,10 @@ def purchaseReview():
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             purchasedCourses = userKey.get_purchases()
             reviewID = userKey.get_reviewID()
@@ -3716,7 +3725,7 @@ def purchaseReview():
                 teacherUID = ""
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, courseDict=courseDict, reviewID=reviewID, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3761,6 +3770,10 @@ def purchaseView():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             purchaseHistoryList = []
             showCourse = ""
@@ -4163,113 +4176,52 @@ def contactUsManagement():
 @limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherUID):
     if "adminSession" in session or "userSession" in session:
-        #Checks if user is admin or user
+    #checks if session is admin or user
         if "adminSession" in session:
-        #if admin
             userSession = session["adminSession"]
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
-
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
-        if userFound and accGoodStatus:
-            #if user is found and available
-            # will return a filename, e.g. "0.png"
-            userProfileImage = userKey.get_profile_image()
-            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
-
-            # checking if the user have uploaded a profile image before and if the image file exists
-            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath)
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-
-            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-        else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            redirect(url_for("teacher_page/teacherUID"))
-            redirectURL = "/teacher_page/" + teacherUID
-            return redirect(redirectURL)
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStanding, accType = validate_session_get_userKey_open_file(userSession)
 
+        if userFound and accGoodStanding:
+        #checks if user account is available
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            bio = Teacher.get_bio(userKey)
+            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio)
 
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-                """
-
-                return render_template('users/teacher/teacher_page.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_page.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/teacher_page.html", accType="Guest")
+    else:
+        return render_template("users/general/teacher_page.html", accType="Guest")
 
 """End of Teacher's Channel Page by Clarence"""
 
 """Teacher's Courses Page by Clarence"""
 
-# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE UPDATED TEMPLATE FOR GENERAL PAGES AND START FROM SCRATCH
-# Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
-@app.route("/<teacherUID>/teacher_courses", methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
+@app.route('/teacher_courses/<teacherUID>', methods=["GET", "POST"])
+@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherCourses(teacherUID):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-            return render_template('users/admin/teacher_courses.html')
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
         else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the login page or this function's html page
-            return redirect("/" + teacherUID + "/teacher_courses")
-
-    else:
-        if "userSession" in session:
             userSession = session["userSession"]
 
-            userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStanding, accType, imagesrcPath = validate_session_get_userKey_open_file(userSession)
 
+        if userFound and accGoodStanding:
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
-            if userFound and accGoodStatus:
-                # add in your code here (if any)
-                imagesrcPath = retrieve_user_profile_pic(userKey)
-                """
-                To Clarence, this template code is outdated, please use the new one for the general page
-                - Jason
-
-                Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
-                """
-
-                return render_template('users/teacher/teacher_courses.html', accType=accType, teacherUID=teacherUID, imagesrcPath=imagesrcPath)
-            else:
-                print("User not found or is banned.")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
-                # return redirect(url_for("this function name here")) # determine if it make sense to redirect the user to the home page or to this page (if you determine that it should redirect to this function again, make sure to render a guest version of the page in the else statement below)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page or this function's html page
-            return render_template("users/teacher/teacher_courses.html")
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/teacher_courses.html", accType="Guest")
+    else:
+        return render_template("users/general/teacher_courses.html", accType="Guest")
 
 """End of Teacher's Courses Page by Clarence"""
 
