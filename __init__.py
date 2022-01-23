@@ -223,11 +223,6 @@ def home():
                     for value in courseDict.values():
                         recommendCourseList.append(value)
 
-                if accType == "Teacher":
-                    teacherUID = userSession
-                else:
-                    teacherUID = ""
-
                 # logged in users
                 if accType == "Teacher":
                     teacherUID = userSession
@@ -3654,11 +3649,6 @@ def purchaseHistory(pageNum):
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
 
-                if accType == "Teacher":
-                    teacherUID = userSession
-                else:
-                    teacherUID = ""
-
                 db.close() # remember to close your shelve files!
                 return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
     else:
@@ -3718,11 +3708,6 @@ def purchaseReview():
                 print("Review creation failed")
                 db.close()
                 return render_template('users/loggedin/purchasereview.html')
-
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
@@ -3813,11 +3798,6 @@ def purchaseView():
                 db.close()
                 print("Nothing to view here.")
                 return redirect(url_for("purchaseview"))\
-
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
 
             db.close() # remember to close your shelve files!
             return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
