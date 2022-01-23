@@ -701,7 +701,7 @@ def saveNoOfUserPerDay():
     graphDateList = []
     userDict = {}
     db = shelve.open("user", "c")
-    currentTime = date.today()
+    currentTime = date.today().strftime("%d-%m-%Y")
     try:
         if 'userGraphData' in db and "Users" in db:
             graphList = db['userGraphData']
