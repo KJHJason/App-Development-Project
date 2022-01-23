@@ -6,7 +6,7 @@ class userbaseGraph:
     def __init__(self, numberOfUsers):
         self.__noOfUser = numberOfUsers
         self.__collectedDate = date.today().strftime("%d-%m-%Y")
-        self.__lastUpdated = str(datetime.now().strftime("%d-%m-%Y, %H:%M:%S")).replace("-", "/")
+        self.__lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
     def set_noOfUser(self, numberOfUsers):
         self.__noOfUser = numberOfUsers
