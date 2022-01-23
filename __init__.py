@@ -434,7 +434,7 @@ def guestEditCookie(teacherUID, courseID, courseTag):
             res.set_cookie(
                 "guestSeenTags",
                 value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-                expires=datetime.datetime.now() + datetime.timedelta(days=90)
+                expires=datetime.now() + datetime.timedelta(days=90)
             )
     except:
         print("Error with editing guest's cookie.")
