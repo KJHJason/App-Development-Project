@@ -4182,13 +4182,13 @@ def teacherPage(teacherUID):
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStanding, accType, imagesrcPath = validate_session_get_userKey_open_file(
-            userSession)
+        userKey, userFound, accGoodStanding, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStanding:
         #checks if user account is available
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            bio = Teacher.get_bio(userKey)
+            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio)
 
         else:
             print("Admin/User account is not found or is not active/banned.")

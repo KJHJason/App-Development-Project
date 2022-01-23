@@ -1,4 +1,6 @@
-from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, TimeField, HiddenField, FormField, IntegerField, PasswordField, BooleanField
+from matplotlib.image import thumbnail
+from matplotlib.pyplot import title
+from wtforms import Form, validators, ValidationError, StringField, RadioField, SelectField, TextAreaField, EmailField, DateField, TimeField, HiddenField, FormField, IntegerField, PasswordField, BooleanField, FileField
 
 """WTForms by Jason"""
 
@@ -99,4 +101,24 @@ class ContactUs(Form):
                                                                                                              ("Others","Others")])
     enquiry = TextAreaField("Enquiry: Easter Sunday", [validators.DataRequired()])
 
-""""End of WTForms by Wei Ren"""
+"""End of WTForms by Wei Ren"""
+
+"""WTForms by Clarence"""
+class CreateCourse(Form):
+    '''title
+    description = StringField("Description")
+    thumbnail
+    zoomprices = StringField("")
+    videoprice = StringField("")
+    zoomconditions 
+    videocondiction
+    tags = StringField("")
+    zoomschedule'''
+    title = StringField("Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
+    #thumbnail use HTML to validate size, type
+    zoomCondition = BooleanField("Zoom Included")
+    videoCondition = BooleanField("Video Included") #Validate in init if user selected at least one
+    coursePrice = StringField("Price for Video Lesson (USD$): ", [
+                              validators.DataRequired(), validators.NumberRange(min=0, max=500)])
+    pass
+"""End of WTForms by Clarence"""

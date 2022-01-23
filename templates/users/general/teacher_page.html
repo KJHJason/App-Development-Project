@@ -20,8 +20,6 @@
         <div class="row">
             <h2 class="headings">Featured Courses</h2>
             <div class="row row-cols-1 row-cols-md-3 g-4">
-                {% if trendingCourseLen > 1 %}
-                {% for course in trendingCourseList %}
                 <div class="col">
                     <div class="card h-100">
                         <a href="#"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
@@ -78,8 +76,6 @@
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-                {% else %}
                 <div class="col">
                     <div class="card h-100">
                         <img src="/static/images/user_home/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
@@ -89,14 +85,11 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
         </div>
         <div class="row">
             <h2 class="headings">Recent Courses</h2>
             <div class="row row-cols-1 row-cols-md-3 g-4">
-                {% if recommendCourseLen > 1 %}
-                {% for course in recommendCourseList %}
                 <div class="col">
                     <div class="card h-100">
                         <a href=""><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
@@ -153,8 +146,6 @@
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-                {% else %}
                 <div class="col">
                     <div class="card h-100">
                         <img src="/static/images/user_home/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
@@ -164,7 +155,6 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
         </div>
         </div>

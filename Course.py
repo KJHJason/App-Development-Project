@@ -41,7 +41,7 @@ class Course():
         self.__description = description
         self.__thumbnail = thumbnail
         self.__videoPrice = None
-        self.__zoomPrice = None
+        #self.__zoomPrice = None cost of zoom will be included into course price if zoom feature is included
         self.__videoCondition = False # Zoom or Video?
         self.__zoomCondition = False
         self.__status = status  # Is course available?
