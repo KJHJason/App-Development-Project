@@ -224,6 +224,10 @@ def home():
                         recommendCourseList.append(value)
 
                 # logged in users
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
                 return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
             else:
                 # admins
@@ -2401,6 +2405,10 @@ def userProfile():
                 else:
                     emailTokenInvalid = False
 
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
                 return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid)
         else:
             db.close()
@@ -2440,6 +2448,10 @@ def updateUsername():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_username_form = Forms.CreateChangeUsername(request.form)
             if request.method == "POST" and create_update_username_form.validate():
@@ -2477,14 +2489,15 @@ def updateUsername():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath)
+                        
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
                 else:
                     db.close()
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2522,6 +2535,10 @@ def updateEmail():
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_email_form = Forms.CreateChangeEmail(request.form)
             if request.method == "POST" and create_update_email_form.validate():
@@ -2567,14 +2584,14 @@ def updateEmail():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2612,6 +2629,10 @@ def updatePassword():
         # retrieving the object based on the shelve files using the user's user ID
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_password_form = Forms.CreateChangePasswordForm(request.form)
             if request.method == "POST" and create_update_password_form.validate():
@@ -2654,12 +2675,12 @@ def updatePassword():
                 if passwordVerification == False or passwordNotMatched:
                     db.close()
                     errorMessage = True
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     if oldPassword:
                         db.close()
                         print("User cannot change password to their current password!")
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         # updating password of the user once validated
                         hashedPwd = hash_password(updatedPassword)
@@ -2680,7 +2701,7 @@ def updatePassword():
                         return redirect(url_for("userProfile"))
             else:
                 db.close()
-                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath)
+                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found is banned.")
@@ -2832,6 +2853,10 @@ def userPayment():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -2868,9 +2893,9 @@ def userPayment():
                             db.close()
                             return redirect(url_for("userPayment"))
                         else:
-                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType, imagesrcPath=imagesrcPath)
+                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     print("POST request sent but form not validated")
                     db.close()
@@ -2884,7 +2909,7 @@ def userPayment():
                         cardDeleted = False
                         print("Card recently added?:", cardDeleted)
 
-                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 cardName = userKey.get_card_name()
@@ -2955,6 +2980,10 @@ def userEditPayment():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             cardExist = bool(userKey.get_card_name())
             print("Card exist?:", cardExist)
@@ -2985,10 +3014,10 @@ def userEditPayment():
                         return redirect(url_for("userPayment"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid, imagesrcPath=imagesrcPath)
+                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
-                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, imagesrcPath=imagesrcPath)
+                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 return redirect(url_for("userProfile"))
@@ -3480,6 +3509,10 @@ def purchaseHistory(pageNum):
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
             courseID = ""
@@ -3551,7 +3584,7 @@ def purchaseHistory(pageNum):
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck)
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3577,6 +3610,10 @@ def purchaseReview():
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             reviewID = userKey.get_reviewID()
             print("ReviewID exists?: ", reviewID)
@@ -3616,7 +3653,7 @@ def purchaseReview():
                 return render_template('users/loggedin/purchasereview.html')
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewDict=reviewDict, reviewID=reviewID, dbCourse=dbCourse, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3661,6 +3698,10 @@ def purchaseView():
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             purchaseHistoryList = []
             showCourse = ""
@@ -3701,7 +3742,7 @@ def purchaseView():
                 return redirect(url_for("purchaseview"))
 
             db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath)
+            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned")
