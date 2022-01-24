@@ -325,7 +325,7 @@
                                                 <label for="teacherBio" class="form-label">Bio:</label>
                                                 <input type="hidden" name="submittedForm" value="bio">
                                                 {% if teacherBio == "" %}
-                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15">Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)</textarea>
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" spellcheck="true">Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)</textarea>
                                                 {% else %}
                                                 <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" spellcheck="true">{{ teacherBio }}</textarea>
                                                 {% endif %}
