@@ -12,3 +12,4 @@ Pillow==9.0.0
 PyVimeo==1.1.0
 shortuuid==1.0.8
 WTForms==3.0.0
+setuptools==60.1.0
