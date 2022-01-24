@@ -148,7 +148,7 @@
                                 {% endif %}
                                 {% for user in userList %}
                                     <tr>
-                                        <td class="user_id_text text-break text-truncate">
+                                        <td class="user_id_text text-break">
                                             <a href="javascript:userIDCopyToClipBoard('{{ user.get_user_id() }}')" id="userIDTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_user_id() }}</a>
                                             <span class="tooltip_value" id="userIDTooltipValue{{ user.get_user_id() }}">{{ user.get_user_id() }}</span>
                                         </td>

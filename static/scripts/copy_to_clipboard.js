@@ -30,7 +30,7 @@ function userIDCopyToClipBoard(userID) {
     // using jquery to change the tooltip title so that the admin knows that they have copied
     $(tooltipEl).attr('title', 'Copied to clipboard!').tooltip('_fixTitle').tooltip('show')
 }
-function usernameTooltipMouseOut(userID) {
+function userIDTooltipMouseOut(userID) {
     var tooltipEl = document.getElementById('userIDTooltip' + userID);
     // using jquery to reset the tooltip title
     $(tooltipEl).attr('title', 'Copy to clipboard').tooltip('_fixTitle').tooltip('hide')

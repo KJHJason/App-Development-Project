@@ -259,7 +259,7 @@
 }
 
 .user_id_text {
-  max-width: 200px;
+  min-width: 200px;
 }
 
 .username_text, .profile_copy_text {
