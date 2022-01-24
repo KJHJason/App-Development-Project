@@ -244,7 +244,7 @@
                                 <form action="" method="POST" enctype="multipart/form-data">
                                     <input type="hidden" name="submittedForm" value="image">
                                     <label for="imageFile" class="form-label">Upload Profile Image</label>
-                                    <input class="form-control" type="file" id="imageFile" name="profileImage" oninput="filesize(this)" required>
+                                    <input class="form-control" type="file" id="imageFile" name="profileImage" accept="image/*" oninput="filesize(this)" required>
                                     <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
                                 </form>
                             </div>
@@ -327,7 +327,7 @@
                                                 {% if teacherBio == "" %}
                                                 <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15">Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)</textarea>
                                                 {% else %}
-                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15">{{ teacherBio }}</textarea>
+                                                <textarea class="form-control" id="teacherBio" name="teacherBio" rows="15" spellcheck="true">{{ teacherBio }}</textarea>
                                                 {% endif %}
                                                 <div class="d-flex float-end">
                                                     <button type="button" class="btn btn-danger margin-top cancleSaveBio" onclick="cancelBio()">Cancel</button>
