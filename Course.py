@@ -33,20 +33,18 @@ from CourseLesson import ZoomLesson, VideoLesson
 from IntegratedFunctions import ellipsis
 
 class Course():
-    def __init__(self, courseID,  userID, title, description, thumbnail, status, username):
+    def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, status, userID, username):
         self.__courseID = courseID
         self.__userID = userID  # Owner of course
         self.__username = username # username of the course owner
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
-        self.__videoPrice = None
-        #self.__zoomPrice = None cost of zoom will be included into course price if zoom feature is included
-        self.__videoCondition = False # Zoom or Video?
-        self.__zoomCondition = False
+        self.__price = price
+        self.__course_type = courseType # "Zoom" or "Video"
         self.__status = status  # Is course available?
         self.__overallRating = 0
-        self.__tags = [] #TO THE PERSON DOING TAGS: Would you rather tags be assigned seperately per session, or 1 set of tags for the whole course? AND ALSO, PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE StudentAndTeacher.py
+        self.__tag = tag #  PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE Common.py
         self.__ratings = []
         self.__schedule = []
         self.__views = 0
@@ -98,43 +96,29 @@ class Course():
     def get_thumbnail(self):
         return self.__thumbnail
 
-    def set_zoomPrice(self, price):
-        self.__zoomPrice = price
-    def get_zoomPrice(self):
-        return self.__zoomPrice
+    def set_price(self, price):
+        self.__price = price
+    def get_price(self):
+        return self.__price
 
-    def set_videoPrice(self, price):
-        self.__videoPrice = price
-    def get_videoPrice(self):
-        return self.__videoPrice
-
-    def switch_videoCondition(self):
-        if self.__videoCondition: # if True:
-            self.__videoCondition = False
-        else:
-            self.__videoCondition = True
-    def switch_zoomCondition(self):
-        if self.__zoomCondition: # if True:
-            self.__zoomCondition = False
-        else:
-            self.__zoomCondition = True
-    def get_videoCondition(self):
-        return self.__videoCondition
-    def get_zoomCondition(self):
-        return self.__zoomCondition
+    def switch_to_video(self):
+        if self.__course_type == "Zoom": # if True:
+            self.__course_type = "Video"
+    def switch_to_zoom(self):
+        if self.__course_type == "Video": # if True:
+            self.__course_type = "Zoom"
+    def get_course_type(self):
+        return self.__course_type
 
     def set_status(self,status):
         self.__status = status
     def get_status(self):
         return self.__status
 
-    def add_tags(self, *args):
-        for tag in args:
-            self.__tags.append(tag) # As a value
-    def remove_tag(self, tag):
-        self.__tags.remove(tag)
-    def get_tags(self):
-        return self.__tags
+    def set_tag(self, tag):
+        self.__tag = tag
+    def get_tag(self):
+        return self.__tag
 
     def add_rating(self, userID, title, comment, rating):
         rating = Rating(userID, title, comment, rating)

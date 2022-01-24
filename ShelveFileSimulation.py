@@ -108,11 +108,7 @@ courseType = "Zoom" ## Zoom or Video
 status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status, username)
-course.add_tags("a","b","c","d","e")
-
-course.switch_zoomCondition() # Video = True
-course.set_zoomPrice(zoomPrice)
+course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, status, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("2", "Very Good", "Please make more.", "4")
@@ -161,13 +157,11 @@ description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
+courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status, username)
-course.add_tags("z","y","x","w","v")
+course = Course(courseID, courseType, videoPrice, "Math", title, description, thumbnail, status, userID, username)
 
-course.switch_videoCondition() # Video = True
-course.set_videoPrice(videoPrice)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -189,13 +183,10 @@ description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
 videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
+courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status, username)
-course.add_tags("z","y","x","w","v")
-
-course.switch_videoCondition() # Video = True
-course.set_videoPrice(videoPrice)
+course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, status, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -221,13 +212,10 @@ description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
 videoPrice = "{:,.2f}".format(69)
 status = "Available" ## Available or Unavailable
+courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, userID, title, description, thumbnail, status, username)
-course.add_tags("z","y","x","w","v")
-
-course.switch_videoCondition() # Video = True
-course.set_videoPrice(videoPrice)
+course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, status, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")

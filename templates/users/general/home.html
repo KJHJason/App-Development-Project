@@ -65,11 +65,10 @@
 						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
 						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
-						{% if course.get_videoPrice() != None %}
-						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
-						{% endif %}
-						{% if course.get_zoomPrice() != None %}
-						<p class="card-text fw-bold">Zoom: ${{ course.get_zoomPrice() }}</p>
+						{% if course.get_course_type() == "Video" %}
+						<p class="card-text fw-bold">Video: ${{ course.get_price() }}</p>
+						{% elif course.get_course_type() == "Zoom" %}
+						<p class="card-text fw-bold">Zoom: ${{ course.get_price() }}</p>
 						{% endif %}
 						<div class="ratings">
 							{% if course.get_averageRating() == 5 %}
@@ -140,11 +139,10 @@
 						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
 						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
-						{% if course.get_videoPrice() != None %}
-						<p class="card-text fw-bold">Video: ${{ course.get_videoPrice() }}</p>
-						{% endif %}
-						{% if course.get_zoomPrice() != None %}
-						<p class="card-text fw-bold">Zoom: ${{ course.get_zoomPrice() }}</p>
+						{% if course.get_course_type() == "Video" %}
+						<p class="card-text fw-bold">Video: ${{ course.get_price() }}</p>
+						{% elif course.get_course_type() == "Zoom" %}
+						<p class="card-text fw-bold">Zoom: ${{ course.get_price() }}</p>
 						{% endif %}
 						<div class="ratings">
 							{% if course.get_averageRating() == 5 %}
