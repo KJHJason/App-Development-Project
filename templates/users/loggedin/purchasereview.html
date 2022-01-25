@@ -1,6 +1,5 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/breadcrumb.css') }}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">{% endblock %}
 {% block title %}Purchase Review | CourseFinity{% endblock %}
 {% from "includes/_formHelper.html" import render_field %}
 
@@ -8,7 +7,7 @@
 <ul class="breadcrumb">
     <li><a href="/purchasehistory">Purchase History</a></li>
     <li>Write A Review</li>
-  </ul>
+</ul>
   <div class="container">
     <div class="box">
       <h2>Course: {}</h2>
