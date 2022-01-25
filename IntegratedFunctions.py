@@ -171,7 +171,7 @@ def general_page_open_file_with_userKey(userID):
         db.close()
     except:
         print("File could not be found.")
-        return False, False, "", imagesrcPath
+        return False, False, False, "", ""
 
     userFound = False
     print("User ID in session:", userID)
