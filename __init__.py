@@ -3331,7 +3331,7 @@ def search(pageNum):
                 print("Error in obtaining course.db data")
                 return redirect(url_for("home"))
 
-            searchInput = request.args.get("q")
+            searchInput = str(request.args.get("q"))
             print(searchInput)
 
             searchURL = "?searchq=" + searchInput
@@ -3415,7 +3415,7 @@ def search(pageNum):
                 print("Error in obtaining course.db data")
                 return redirect(url_for("home"))
 
-            searchInput = request.args.get("q")
+            searchInput = str(request.args.get("q"))
             print(searchInput)
 
             searchURL = "?searchq=" + searchInput
@@ -3493,7 +3493,7 @@ def search(pageNum):
             print("Error in obtaining course.db data")
             return redirect(url_for("home"))
 
-        searchInput = request.args.get("q")
+        searchInput = str(request.args.get("q"))
         print(searchInput)
 
         searchURL = "?searchq=" + searchInput
