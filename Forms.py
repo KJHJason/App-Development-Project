@@ -93,13 +93,25 @@ class ContactUs(Form):
     name = StringField("Name: Easter Egg", [validators.DataRequired()])
     email = EmailField("Email: easter@bunny.com", [validators.DataRequired(), validators.Email()])
     subject = SelectField("Subject: 17 April 2022", [validators.DataRequired()], choices = [("","Subject"),
-                                                                                                             ("",""),
-                                                                                                             ("",""),
-                                                                                                             ("",""),
-                                                                                                             ("Others","Others")])
+                                                                                            ("General","General Enquiry"),
+                                                                                            ("Account", "Account Enquiry"),
+                                                                                            ("Business","Business Enquiry"),
+                                                                                            ("Bugs", "Bug Report"),
+                                                                                            ("Jobs","Job-Seeking"),
+                                                                                            ("News","News Media"),
+                                                                                            ("Others","Others")])
+                                                                                           #("Value", "Label")
     enquiry = TextAreaField("Enquiry: Easter Sunday", [validators.DataRequired()])
 
-"""End of WTForms by Wei Ren"""
+class TicketSearchForm(Form):# Very cursed. I love lack of Checkbox Field.
+    query = StringField([validators.Optional()], default="")
+    checkedFilters = HiddenField([validators.DataRequired(), validators.InputRequired()])
+
+#   filterStatus = RadioField("Ticket Status", [validators.DataRequired()], choices = ['Open','Closed'], default = 'Open')
+#   filterAccount = RadioField("Account Type", [validators.DataRequired()], choices = ['Guest','Student','Teacher'], default = 'Guest')
+#   filterSubject = RadioField("Subject", [validators.DataRequired()], choices = ['General','Account','Business','Bugs','Jobs','News','Other'], default = 'General')
+
+""""End of WTForms by Wei Ren"""
 
 """WTForms by Clarence"""
 class CreateCourse(Form):
@@ -108,7 +120,7 @@ class CreateCourse(Form):
     thumbnail
     zoomprices = StringField("")
     videoprice = StringField("")
-    zoomconditions 
+    zoomconditions
     videocondiction
     tags = StringField("")
     zoomschedule'''

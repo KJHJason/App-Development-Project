@@ -1,0 +1,356 @@
+{% extends "admin_base.html" %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
+{% block title %}User Management | CourseFinity{% endblock %}
+
+{% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+{% if ticketClosed %}
+<div class="modal fade" id="invalidEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="invalidEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="invalidEmailModalLabel">User Account Recovery Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6 class="text-danger">Error: Inputted user's new email is invalid, please try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if ticketReOpened %}
+<div class="modal fade" id="sameEmailModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="sameEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="sameEmailModalLabel">User Account Recovery Failed</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h6 class="text-danger">Error: Inputted user's new email is the same as user's old email, please enter a new user email and try again.</h6>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+        </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<form id="search-form" method="post">
+<div class="container container_margin">
+    <div class="row">
+        <div class="col-lg-3 merge-boxes">
+            <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
+                <h4><span class="fs-4">Ticket Dashboard</span></h4>
+                <hr>
+
+                <h6>Ticket Status</h6>
+                <div>
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Open">Open</label>
+                        {% if "Open" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Open')" checked id="Open" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Open')" id="Open" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Closed">Closed</label>
+                        {% if "Closed" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Closed')" checked id="Closed" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Closed')" id="Closed" class="form-check-input">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <br>
+                <h6>Account Type</h6>
+                <div>
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Guest">Guest</label>
+                        {% if "Guest" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Guest')" checked id="Guest" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Guest')" id="Guest" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Student">Student</label>
+                        {% if "Student" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Student')" checked id="Student" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Student')" id="Student" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Teacher">Teacher</label>
+                        {% if "Teacher" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Teacher')" checked id="Teacher" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Teacher')" id="Teacher" class="form-check-input">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <br>
+                <h6>Subject</h6>
+                <div>
+                    <div class='form-check'>
+                        <label class='form-check-label' for="General">General</label>
+                        {% if "General" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('General')" checked id="General" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('General')" id="General" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Account">Account</label>
+                        {% if "Account" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Account')" checked id="Account" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Account')" id="Account" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Business">Business</label>
+                        {% if "Business" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Business')" checked id="Business" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Business')" id="Business" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Bugs">Bugs</label>
+                        {% if "Bugs" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Bugs')" checked id="Bugs" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Bugs')" id="Bugs" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Jobs">Jobs</label>
+                        {% if "Jobs" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Jobs')" checked id="Jobs" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Jobs')" id="Jobs" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="News">News</label>
+                        {% if "News" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('News')" checked id="News" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('News')" id="News" class="form-check-input">
+                        {% endif %}
+                    </div>
+
+                    <div class='form-check'>
+                        <label class='form-check-label' for="Others">Others</label>
+                        {% if "Others" in renderedFilters %}
+                        <input type="checkbox" onclick="toggle('Others')" checked id="Others" class="form-check-input">
+                        {% else %}
+                        <input type="checkbox" onclick="toggle('Others')" id="Others" class="form-check-input">
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col-lg-9 merge-boxes">
+            <div id="right-user">
+                <div class="container ticket-container">
+                    <div class="row">
+
+
+
+                        <div class="col-md-6">
+                            {% if searched %}
+                                {% if count == 0 %}
+                                <h6>There are <span class="text-danger text-decoration-underline">no</span> such users in CourseFinity.</h6>
+                                {% else %}
+                                <h6>Search queried <span class="text-success text-decoration-underline">{{ count }}</span> such user in CourseFinity.</h6>
+                                {% endif %}
+                            {% else %}
+                                {% if count == 0 %}
+                                <h6>There are no tickets in CourseFinity Database.</h6>
+                                {% else %}
+                                <h6>There are {{ count }} tickets in CourseFinity Database.</h6>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group margin-btm">
+                                <input class="form-control mr-2" type="search" placeholder="Search for ticket (using ID, name, etc.)" name="user" aria-label="Search" id="query">
+                                <div class="submit-div"><button class="btn btn-secondary border-0" onclick="searchSubmit()"><i class="fas fa-search"></i></button></div>
+                                {% set renderedFilters = renderedFilters %}
+                                {{ ticketSearch.checkedFilters(value = renderedFilters) }}
+                            </div>
+                        </div>
+
+
+
+                        <div class="table-responsive">
+                            <table class="table ticket-table">
+                                <tr>
+                                    <td>Ticket ID</td>
+                                    <td>Account Type</td>
+                                    <td>Name</td>
+                                    <td>Email</td>
+                                    <td>Subject</td>
+                                    <td colspan="3">Enquiry</td>
+                                </tr>
+                                {% for ticket in ticketList %}
+                                <tr>
+                                    <td>
+                                        <p onclick="copyToClipBoard('{{ ticket['Ticket ID'] }}')" id="tooltipValue{{ ticket['Ticket ID'] }}" class="table_full_data_text ticket_id_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Ticket ID'] }}')">{{ ticket['Ticket ID'] }}</p>
+                                        <span class="tooltip_value" id="tooltipElement{{ ticket['Ticket ID'] }}">{{ ticket['Ticket ID'] }}</span>
+                                    </td>
+
+                                    <td>{{ ticket['Account Type'] }}</td>
+
+                                    <td>
+                                        <p onclick="copyToClipBoard('{{ ticket['Name'] }}')" id="tooltipValue{{ ticket['Name'] }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Name'] }}')">{{ ticket['Name'] }}</p>
+                                        <span class="tooltip_value" id="tooltipElement{{ ticket['Name'] }}">{{ ticket['Name'] }}</span>
+                                    </td>
+
+                                    <td>
+                                        <p onclick="copyToClipBoard('{{ ticket['Email'] }}')" id="tooltipValue{{ ticket['Email'] }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Email'] }}')">{{ ticket['Email'] }}</p>
+                                        <span class="tooltip_value" id="tooltipElement{{ ticket['Email'] }}">{{ ticket['Email'] }}</span>
+                                    </td>
+
+                                    <td>{{ ticket['Subject'] }}</td>
+                                    
+                                    <td>
+                                        <p onclick="copyToClipBoard('{{ ticket['Enquiry'] }}')" id="tooltipValue{{ ticket['Enquiry'] }}" class="table_full_data_text enquiry_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Enquiry'] }}')">{{ ticket['Enquiry'] }}</p>
+                                        <span class="tooltip_value" id="tooltipElement{{ ticket['Enquiry'] }}">{{ ticket['Enquiry'] }}</span>
+                                    </td>
+                                    
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
+
+
+
+                        <!--Pagination-->
+                        {% if maxPages > 5 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination flex-wrap">
+                                <li class="page-item ms-auto">
+                                    <a class="page-link" href="/shopping_cart/1" aria-label="First Page">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">First Page</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="/shopping_cart/{{ previousPage }}" aria-label="Previous">
+                                        <span aria-hidden="true">&lt;</span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                {% for key in paginationList %}
+                                    {% if key == pageNum %}
+                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
+                                    {% else %}
+                                    <li class="page-item"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="page-item">
+                                    <a class="page-link" href="/shopping_cart/{{ nextPage }}" aria-label="Next">
+                                        <span aria-hidden="true">&gt;</span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                                <li class="page-item me-auto">
+                                    <a class="page-link" href="/shopping_cart/{{ maxPages }}" aria-label="Last Page">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Last Page</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% elif maxPages == 0 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination flex-wrap">
+                                <li class="page-item ms-auto">
+                                    <a class="page-link" href="/shopping_cart/0" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/0">0</a></li>
+                                <li class="page-item me-auto">
+                                    <a class="page-link" href="/shopping_cart/0" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% elif maxPages <= 5 %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination flex-wrap">
+                                <li class="page-item ms-auto">
+                                    <a class="page-link" href="/shopping_cart/1" aria-label="First Page">
+                                    <span aria-hidden="true">&laquo;</span>
+                                    <span class="sr-only">First Page</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="/shopping_cart/{{ previousPage }}" aria-label="Previous">
+                                        <span aria-hidden="true">&lt;</span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                </li>
+                                {% for key in paginationList %}
+                                    {% if key == pageNum %}
+                                    <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
+                                    {% else %}
+                                    <li class="page-item"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="page-item">
+                                    <a class="page-link" href="/shopping_cart/{{ nextPage }}" aria-label="Next">
+                                        <span aria-hidden="true">&gt;</span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </li>
+                                <li class="page-item me-auto">
+                                    <a class="page-link" href="/shopping_cart/{{ maxPages }}" aria-label="Last Page">
+                                    <span aria-hidden="true">&raquo;</span>
+                                    <span class="sr-only">Last Page</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='scripts/checkbox_filter.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>
+{% endblock %}

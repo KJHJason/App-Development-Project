@@ -141,7 +141,7 @@ def home():
                         highestWatchedByTag = max(userTagDict, key=userTagDict.get)
                         userTagDict.pop(highestWatchedByTag)
                         numberOfUnqiueViews = checkUniqueElements(userTagDict)
-                        if numberOfUnqiueViews > 1: 
+                        if numberOfUnqiueViews > 1:
                             secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                         else:
                             # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
@@ -166,9 +166,9 @@ def home():
                                     count += 1
                         except:
                             print("No courses found.")
-                
+
                     recommendedCourseListByHighestTag = []
-                    
+
                     courseListLen = len(recommendCourseList)
                     if courseListLen == 0:
                         recommendedCourseListBySecondHighestTag = []
@@ -182,7 +182,7 @@ def home():
                                 if courseObject.get_courseID() not in userPurchasedCourses:
                                     recommendedCourseListBySecondHighestTag.append(courseObject)
                         count = 0
-                        try: 
+                        try:
                             while count != 2:
                                 randomisedCourse = random.choice(recommendedCourseListByHighestTag)
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
@@ -254,7 +254,7 @@ def home():
                     highestWatchedByTag = max(userTagDict, key=userTagDict.get)
                     userTagDict.pop(highestWatchedByTag)
                     numberOfUnqiueViews = checkUniqueElements(userTagDict)
-                    if numberOfUnqiueViews > 1: 
+                    if numberOfUnqiueViews > 1:
                         secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                     else:
                         # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
@@ -277,9 +277,9 @@ def home():
                                 count += 1
                     except:
                         print("No courses found.")
-            
+
                 recommendedCourseListByHighestTag = []
-                
+
                 courseListLen = len(recommendCourseList)
                 if courseListLen == 0:
                     recommendedCourseListBySecondHighestTag = []
@@ -291,7 +291,7 @@ def home():
                         elif courseTag == secondHighestWatchedByTag:
                             recommendedCourseListBySecondHighestTag.append(courseObject)
                     count = 0
-                    try: 
+                    try:
                         while count != 2:
                             randomisedCourse = random.choice(recommendedCourseListByHighestTag)
                             if randomisedCourse not in recommendCourseList:
@@ -342,7 +342,7 @@ def guestCookies():
         # encoding the cookie value with base64 such that the guest cannot tamper with the values in the dictionary too easily
         res.set_cookie(
             "guestSeenTags",
-            value=b64encode(json.dumps({"Programming": 0, 
+            value=b64encode(json.dumps({"Programming": 0,
             "Web_Development": 0,
             "Game_Development": 0,
             "Mobile_App_Development": 0,
@@ -441,7 +441,7 @@ def guestEditCookie(teacherUID, courseID, courseTag):
         # if the guest user had tampered with the cookie value
         res.set_cookie(
             "guestSeenTags",
-            value=b64encode(json.dumps({"Programming": 0, 
+            value=b64encode(json.dumps({"Programming": 0,
             "Web_Development": 0,
             "Game_Development": 0,
             "Mobile_App_Development": 0,
@@ -809,7 +809,7 @@ def userSignUp():
                         send_verify_email(emailInput, userID)
                     except:
                         print("Email server is down or its port is blocked")
-                    
+
                     session["userSession"] = userID
                     return redirect(url_for("home"))
                 else:
@@ -2148,7 +2148,7 @@ def dashboard():
                 print("Error in retrieving userGraphData from user.db")
             finally:
                 db.close()
-            
+
             print("Retrieved graph data:", graphList)
             try:
                 lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
@@ -2177,7 +2177,7 @@ def dashboard():
 
                 x = xAxisData # date labels for x-axis
                 y = yAxisData # data for y-axis
-                
+
                 plt.plot(x, y, color="#009DF8", linewidth=3)
 
                 # graph configurations
@@ -2203,14 +2203,14 @@ def dashboard():
             #     "23/1/2022": 25,
             #     "24/1/2022": 100
             # }
-            
+
             # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
             with open(csvFileName, "w", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["Dates", "Number Of Users"])
                 for key, value in graphDict.items():
                     writer.writerow([key, value])
-                
+
             print("X-axis data:", xAxisData)
             print("Y-axis data:", yAxisData)
 
@@ -2523,7 +2523,7 @@ def updateUsername():
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        
+
                         return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
                 else:
                     db.close()
@@ -3164,7 +3164,7 @@ def teacherCashOut():
                 session.pop("cashedOut", None)
             else:
                 cashedOut = False
-            
+
             if "failedToCashOut" in session:
                 failedToCashOut = True
                 session.pop("failedToCashOut", None)
@@ -3269,7 +3269,7 @@ def teacherCashOut():
                 else:
                     commission = "25%"
                     totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
-                    
+
                 totalEarnedInt = totalEarned
                 # converting the numbers into strings of 2 decimal place for the earnings
                 initialEarnings = get_two_decimal_pt(initialEarnings)
@@ -3356,7 +3356,7 @@ def search(pageNum):
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()} 
+                            "Owner":course.get_userID()}
 
                         searchfound.append(searchInformation)
 
@@ -3365,7 +3365,7 @@ def search(pageNum):
                 checker = True
             else:
                 checker = False
-            
+
             db.close()
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
@@ -3437,7 +3437,7 @@ def search(pageNum):
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()} 
+                            "Owner":course.get_userID()}
 
                         searchfound.append(searchInformation)
 
@@ -3446,7 +3446,7 @@ def search(pageNum):
                 checker = True
             else:
                 checker = False
-            
+
             db.close()
 
             maxItemsPerPage = 5 # declare the number of items that can be seen per pages
@@ -3512,7 +3512,7 @@ def search(pageNum):
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner":course.get_userID()} 
+                        "Owner":course.get_userID()}
 
                     searchfound.append(searchInformation)
 
@@ -3521,7 +3521,7 @@ def search(pageNum):
             checker = True
         else:
             checker = False
-        
+
         db.close()
 
         maxItemsPerPage = 5 # declare the number of items that can be seen per pages
@@ -3623,7 +3623,7 @@ def purchaseHistory(pageNum):
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
                         "Price":coursePricePaying,
-                        "Owner":course.get_userID()} 
+                        "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
                 db.close()
@@ -3701,7 +3701,7 @@ def purchaseReview():
                 print("Error in retrieving review from review.db")
                 db.close()
                 return render_template('users/loggedin/purchasehistory.html')
-            
+
             createReview = Forms.CreateReviewText(request.form)
             if request.method == 'POST' and createReview.validate():
                 review = createReview.review.data
@@ -4046,18 +4046,6 @@ def shoppingCart(pageNum):
 @limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
     contactForm = Forms.ContactUs(request.form)
-    dbAdmin = shelve.open("admin", "c")
-
-    # Remember to validate
-    ticketDict = {}
-    try:
-        if "Tickets" in dbAdmin:
-            ticketDict = dbAdmin['Tickets']
-        else:
-            print("admin.db has no contact entries.")
-            dbAdmin['Tickets'] = ticketDict
-    except:
-        print("Error in retrieving Tickets from admin.db")
 
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4070,8 +4058,21 @@ def contactUs():
         if userFound and accGoodStatus:
             # add in your CRUD or other code
             if accType != "Admin": # Registered user in database, not banned
+
                 success = False
+
                 if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
+
+                    dbAdmin = shelve.open("admin", "c")
+                    # Remember to validate
+                    try:
+                        if "Tickets" in dbAdmin:
+                            ticketDict = dbAdmin['Tickets']
+                        else:
+                            print("admin.db has no contact entries.")
+                            ticketDict = {}
+                    except:
+                        print("Error in retrieving Tickets from admin.db")
 
                     name = contactForm.name.data
                     email = contactForm.email.data
@@ -4080,11 +4081,12 @@ def contactUs():
                     ticketID = generate_6_char_id(list(ticketDict.keys()))
 
                     ticket = {"User ID" : userKey.get_user_id(),
-                            "Account Type" : accType,
-                            "Name" : name,
-                            "Email" : email,
-                            "Subject" : subject,
-                            "Enquiry" : contactForm.enquiry.data}
+                              "Account Type" : accType,
+                              "Name" : name,
+                              "Email" : email,
+                              "Subject" : subject,
+                              "Enquiry" : contactForm.enquiry.data,
+                              "Status" : "Open"}
 
                     print(ticket)
 
@@ -4093,9 +4095,12 @@ def contactUs():
 
                     success = True
 
-                    #send_contact_us_email(ticketID, subject, name, email)
+                    try:
+                        send_contact_us_email(ticketID, subject, name, email)
+                    except:
+                        print("Email server is down, please try again later")
 
-                dbAdmin.close()
+                    dbAdmin.close()
 
                 if accType == "Teacher":
                     teacherUID = userSession
@@ -4105,13 +4110,13 @@ def contactUs():
                 return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success, teacherUID=teacherUID)
             else:
                 # Admin user
-                return render_template("users/general/contact_us.html", accType=accType, form = contactForm)
+                return redirect("/support_ticket_management/0")
         else:
             print("Admin/User account is not found or is not active/banned.")
-            session.clear()
+            session.clear() # As Guest Account
             return redirect(url_for("contactUs"))
     else:
-        # guests
+        # Guests
         print("Admin/User account is not found or is not active/banned.")
         session.clear()
 
@@ -4119,39 +4124,164 @@ def contactUs():
 
         if request.method == "POST" and contactForm.validate():
 
+            dbAdmin = shelve.open("admin", "c")
+            # Remember to validate
+            try:
+                if "Tickets" in dbAdmin:
+                    ticketDict = dbAdmin['Tickets']
+                else:
+                    print("admin.db has no contact entries.")
+                    ticketDict = {}
+            except:
+                print("Error in retrieving Tickets from admin.db")
+
             name = contactForm.name.data
             email = contactForm.email.data
             subject = contactForm.subject.data
 
             ticketID = generate_6_char_id(ticketDict)
 
-            contact = {"User ID" : None,
-                       "Account Type" : "Guest",
-                       "Name" : name,
-                       "Email" : email,
-                       "Subject" : subject,
-                       "Enquiry" : contactForm.enquiry.data}
+            ticket = {"Ticket ID" : ticketID,
+                      "User ID" : None,
+                      "Account Type" : "Guest",
+                      "Name" : name,
+                      "Email" : email,
+                      "Subject" : subject,
+                      "Enquiry" : contactForm.enquiry.data,
+                      "Status" : "Open"}
 
-            ticketDict[ticketID] = contact
+            ticketDict[ticketID] = ticket
             dbAdmin['Tickets'] = ticketDict
 
             success = True
 
-            #send_contact_us_email(ticketID, subject, name, email)
+            try:
+                send_contact_us_email(ticketID, subject, name, email)
+            except:
+                print("Email server is down, please try again later")
 
-        dbAdmin.close()
+            dbAdmin.close()
 
         return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
-    
+
 """End of Contact Us by Wei Ren"""
 
-"""Contact Us Management"""
-"""
-@app.route("/contact_us_management", methods = ["GET", "POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
-def contactUsManagement():
+"""Support Ticket Management by Wei Ren"""
 
-"""
+@app.route("/support_ticket_management/<int:pageNum>", methods = ["GET", "POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
+def supportTicketManagement(pageNum):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+        # if there's a need to retrieve admin account details, use the function below instead of the one above
+        # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+
+            ticketSearch = Forms.TicketSearchForm(request.form)
+
+            dbAdmin = shelve.open("admin", "c")
+            # Remember to validate
+            try:
+                if "Tickets" in dbAdmin:
+                    ticketDict = dbAdmin['Tickets']
+                else:
+                    print("admin.db has no contact entries.")
+                    ticketDict = {}
+            except:
+                print("Error in retrieving Tickets from admin.db")
+
+            # add in your code here
+
+            ticketList = []
+
+            # Initialise filtration system
+            if "Checked Filters" not in session:
+                session['Checked Filters'] = ["Open", "Closed", "Guest", "Student", "Teacher", "General", "Account", "Business", "Bugs", "Jobs", "News", "Others"]
+                session['Query'] = ""
+            # GET is a client request for data from the web server,
+            # while POST and PUT are used to send messages that upload data to the web server
+
+            # Search does not work if there are no entries
+            if request.method == "POST":
+
+                if ticketSearch.validate() and ticketDict != {}:
+                    session["Checked Filters"] = json.loads(ticketSearch.checkedFilters.data)
+                    session["Query"] = ticketSearch.query.data
+
+            # Preparing filtration system
+            query = session["Query"]
+            filters = ["Open", "Closed", "Guest", "Student", "Teacher", "General", "Account", "Business", "Bugs", "Jobs", "News", "Others"]
+            for filter in session["Checked Filters"]:
+                if filter in filters:
+                    filters.remove(filter)
+
+            # Checking tickets
+            for ticketID in list(ticketDict.keys()):
+                ticket = ticketDict[ticketID]
+
+                # Checking filters
+                filtered = False
+                for filter in filters:
+                    if filtered == True:
+                        continue
+                    if filter == "Open" or filter == "Closed":
+                        if ticket["Status"] == filter:
+                            filtered = True
+                    elif filter == "Guest" or filter == "Student" or filter == "Teacher":
+                        if ticket["Account Type"] == filter:
+                            filtered = True
+                    else:
+                        if ticket["Subject"] == filter:
+                            filtered = True
+
+
+                if not filtered and (query in ticket['Name'] or query in ticket['Email'] or query in ticketID):
+                    ticketList.append(ticket)
+
+            renderedFilters = session['Checked Filters']
+
+
+
+            #print([key for key in list(session.items())])
+
+            maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+            ticketListLen = len(ticketList) # get the length of the userList
+            maxPages = math.ceil(ticketListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/support_ticket_management/0")
+            elif ticketListLen > 0 and pageNum == 0:
+                return redirect("/support_ticket_management/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/support_ticket_management/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                ticketList = ticketList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedTicketList = paginate(ticketList, pageNumForPagination, maxItemsPerPage)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                dbAdmin.close() # remember to close your shelve files!
+                return render_template('users/admin/support_ticket_management.html', nextPage = nextPage, previousPage = previousPage, ticketList=paginatedTicketList, count=ticketListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ticketSearch = ticketSearch, renderedFilters=json.dumps(renderedFilters))
+
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("contactUs"))
+    else:
+        return redirect(url_for("contactUs"))
+
+"""End of Support Ticket Management by Wei Ren"""
 
 """Teacher's Channel Page by Clarence"""
 

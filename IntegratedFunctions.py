@@ -804,4 +804,5 @@ def ellipsis(text, textType):
     return text
 # Weights taken here: https://gist.github.com/imaurer/d330e68e70180c985b380f25e195b90c
 
+
 """Done by Wei Ren"""
