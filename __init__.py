@@ -3333,6 +3333,9 @@ def search(pageNum):
 
             searchInput = request.args.get("q")
             print(searchInput)
+
+            searchURL = "?searchq=" + searchInput
+
             searchfound = []
             for courseID in courseDict:
                 courseTitle = courseDict.get(courseID).get_title()
@@ -3374,11 +3377,11 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/search/0")
+                return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
-                return redirect("/search/1")
+                return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
-                redirectRoute = "/search/" + str(maxPages)
+                redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -3398,7 +3401,7 @@ def search(pageNum):
                     teacherUID = ""
 
                 db.close()
-                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID)
+                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID, searchURL=searchURL)
         else:
             print("Admin/User account is not found or is not active/banned.")
             checker = ""
@@ -3414,6 +3417,9 @@ def search(pageNum):
 
             searchInput = request.args.get("q")
             print(searchInput)
+
+            searchURL = "?searchq=" + searchInput
+
             searchfound = []
             for courseID in courseDict:
                 courseTitle = courseDict.get(courseID).get_title()
@@ -3455,11 +3461,11 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                return redirect("/search/0")
+                return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
-                return redirect("/search/1")
+                return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
-                redirectRoute = "/search/" + str(maxPages)
+                redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
                 # pagination algorithm starts here
@@ -3474,7 +3480,7 @@ def search(pageNum):
                 nextPage = pageNum + 1
 
                 db.close()
-                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList, accType="Guest")
+                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL, accType="Guest")
     else:
         checker = ""
         courseDict = {}
@@ -3489,6 +3495,9 @@ def search(pageNum):
 
         searchInput = request.args.get("q")
         print(searchInput)
+
+        searchURL = "?searchq=" + searchInput
+
         searchfound = []
         for courseID in courseDict:
             courseTitle = courseDict.get(courseID).get_title()
@@ -3530,11 +3539,11 @@ def search(pageNum):
         pageNum = int(pageNum)
         # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
         if pageNum < 0:
-            return redirect("/search/0")
+            return redirect("/search/0/" + searchURL)
         elif courseListLen > 0 and pageNum == 0:
-            return redirect("/search/1")
+            return redirect("/search/1" + "/" + searchURL)
         elif pageNum > maxPages:
-            redirectRoute = "/search/" + str(maxPages)
+            redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
             return redirect(redirectRoute)
         else:
             # pagination algorithm starts here
@@ -3549,7 +3558,7 @@ def search(pageNum):
             nextPage = pageNum + 1
 
             db.close()
-            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList, accType="Guest")
+            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL, accType="Guest")
 
 """End of Search Function by Royston (Test)"""
 
