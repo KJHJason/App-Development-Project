@@ -1,0 +1,62 @@
+{% extends "user_base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/create_courses.css') }}">
+{% endblock %}
+
+{% block title %}Create Course | CourseFinity{% endblock %}
+{% from "includes/_formHelper.html" import render_field %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="LSUForm col">
+            <div class="login-form bg-dark mt-4 p-4 rounded" id="userForm">
+                <form action="" method="POST" class="row g-3">
+                    <h4 class="text-white">Create Course</h4>
+                    <!-- Title -->
+                    <div class="col-md-12 text-white">
+                        {{ render_field(form.title, class="form-control") }}
+                    </div>
+
+                    <!-- Thumbnail -->
+                    <div class="col-md-12 text-white">
+                        <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
+                        <!-- Validate pic to only accept jpeg, png -->
+                        <!-- Limit picture size to 2mb-->
+                    </div>
+
+                    <!-- zoomCondition -->
+                    <div class="col-md-12 form_checkbox">
+                        {{ render_field(form.zoomCondition, class="form-control") }}
+                    </div>
+
+                    <!-- videoCondition -->
+                    <div class="col-md-12 form_checkbox">
+                        {{ render_field(form.videoCondition, class="form-control") }}
+                    </div>
+
+                    <!-- coursePrice -->
+                    <div class="col-md-12 text-white">
+                        {{ render_field(form.coursePrice, class="form-control") }}
+                    </div>
+                    <div class="col-md-12 form_checkbox">
+                        <input class="form-check-input" type="checkbox" value="" id="teacher_condition2" required>
+                        <label class="form-label text-white" for="teacher_condition2">I understand that videos uploaded must comply with CourseFinity's terms and conditions.</label>
+                    </div>
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-colour text-white float-end">Create</button>
+                    </div>
+                </form>
+                <hr class="mt-4 text-white">
+                <div class="col-md-12">
+                    <p class="text-center mb-0"><a class="text-white fw-bold" href="/login">Login here!</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+{% endblock %}
