@@ -291,22 +291,23 @@ def resize_image(imagePath, dimensions):
         resizedImage.save(imagePath)
         return True
     except:
-        print("Error in resizing user's profile image...")
+        print("Error in resizing image...")
+        return False
+
+def compress_image(imagePath):
+    try:
+        image = Image.open(imagePath)
+        os.remove(imagePath)
+        image.save(imagePath, quality=25)
+        return True
+    except:
+        print("Error in compressing image...")
         return False
 
 # use this function to construct a path for storing files such as images in the web app directory
 # pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
 def construct_path(relativeUploadPath, filename):
     return os.path.join(app.root_path, relativeUploadPath, filename)
-
-# to check if the uploaded file size is within the maximum file size specified by you below in the web app configurations.
-# do note that the 2nd argument, maximumFileSize, must be in bytes (e.g. 3 * 1024 * 1024 which is 3145728 bytes or 3MiB)
-# also, in order to get the file size before saving onto the server directory, you need javascript to set a cookie that contain the file size in bytes as when I was reading the Flask documentation, I could not find any methods to get the file size when the user submits the form to upload a file
-def allow_file_size(fileSize, maximumFileSize):
-    if int(fileSize) <= maximumFileSize:
-        return True
-    else:
-        return False
 
 # function for retrieving user's profile picture using dicebear library
 def get_user_profile_pic(username, profileFileName, profileFilePath):
