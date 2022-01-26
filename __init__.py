@@ -4442,32 +4442,23 @@ def course_thumbnail_upload():
                         else:
                             filename = "invalid"
 
-                        # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
-                        uploadedFileSize = request.cookies.get("filesize")
-                        print("Uploaded file size:", uploadedFileSize, "bytes")
-
-                        withinFileLimit = allow_file_size(
-                            uploadedFileSize, app.config['MAX_THUMBNAIL_IMAGE_FILESIZE'])
-
-                        if file and allowed_image_file(filename) and withinFileLimit:
+                        if file and allowed_image_file(filename):
                             # will only accept .png, .jpg, .jpeg
-                            print("File extension accepted and is within size limit.")
+                            print("File extension accepted.")
 
                             # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
 
                             userImageFileName = file.filename
                             newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
 
-
-                            
                             file.save(newFilePath)
                             print("Image file has been saved.")
 
                             # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
                             imageResized = resize_image(newFilePath, (500, 500))
-
                             if imageResized:
                                 # if file was successfully resized, it means the image is a valid image
+                                compress_image(newFilePath) # compresses the image
                                 userKey.set_profile_image(userImageFileName)
                                 db['Users'] = userDict
                                 db.close()
