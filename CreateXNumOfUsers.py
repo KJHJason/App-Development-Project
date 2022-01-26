@@ -1,5 +1,5 @@
-import shelve, Student, uuid
-from Security import hash_password
+import shelve, uuid
+from python_files.Student import Student
 
 def generate_ID(inputDict):
     generatedID = str(uuid.uuid4())
@@ -24,11 +24,10 @@ noOfUser = int(input("How many user account to create?: "))
 getLatestTestI = len(userDict)
 # print(getLatestTestI)
 for i in range(getLatestTestI, noOfUser+getLatestTestI):
-    hashedPwd = hash_password("123123")
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
     uid = generate_ID(userDict)
-    user = Student.Student(uid, username, email, hashedPwd)
+    user = Student.Student(uid, username, email, "123123")
     userDict[uid] = user
     print(f"User {username}, created with the ID, {uid}.")
 

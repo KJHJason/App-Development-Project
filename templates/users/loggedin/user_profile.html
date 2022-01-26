@@ -260,17 +260,6 @@
                                     <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
                                 </div>
                             </div>
-                            {% if accType == "Teacher" %}
-                            <div class="border border-2 alert alert-light alert-dismissible fade show margin-card text-dark" role="alert">
-                                <h4>Did you know?</h4>
-                                <p>If you want to teach a subject that is not listed in the select option when uploading a video, you can contact us to get it added to the list of subjects!</p>
-                                <p>Additionally, if you require any assistance, feel free to contact us!</p>
-                                <form action="/contact_us" method="POST">
-                                    <button type="submit" class="btn button_colour btn-lg">Contact Us</button>
-                                </form>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                            {% endif %}
                         </div>
                         <div class="col-md-6">
                             <div class="table-responsive">
@@ -359,7 +348,7 @@
                                 <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
                                 <p>Click on the button below or click on "Become a Teacher!" above!</p>
                                 <form action="/change_account_type" method="GET">
-                                    <button type="submit" class="btn button_colour btn-lg">Change account type</button>
+                                    <button type="submit" class="btn btn-primary btn-lg">Change account type</button>
                                 </form>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
@@ -392,7 +381,6 @@
             pwdModal.show();
         </script>
     {% endif %}
-=
     {% if RecentChangeAccType %}
         <script>
             var RecentChangeAccTypeModal = new bootstrap.Modal(document.getElementById("RecentChangeAccTypeModal"), {});

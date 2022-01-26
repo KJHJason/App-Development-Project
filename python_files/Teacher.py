@@ -1,4 +1,4 @@
-from Common import Common
+from .Common import Common
 
 class Teacher(Common):
     def __init__(self, user_id, username, email, password):

@@ -9,11 +9,11 @@ from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
-import Student, Teacher, Forms
-from Payment import Payment
-from Security import verify_password, sanitise, validate_email
-from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
-from IntegratedFunctions import *
+from python_files import Student, Teacher, Forms
+from python_files import Payment
+from python_files.Security import verify_password, sanitise, validate_email
+from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
+from python_files.IntegratedFunctions import *
 
 """Web app configurations"""
 

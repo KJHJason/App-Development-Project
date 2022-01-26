@@ -8,7 +8,7 @@ from flask import url_for
 from src import Avatar
 from calendar import monthrange
 from datetime import date, datetime
-from Graph import userbaseGraph
+from .Graph import userbaseGraph
 
 """Done by Jason"""
 

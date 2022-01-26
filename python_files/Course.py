@@ -28,9 +28,9 @@ User --> Teacher (Object) 1
 """Made by Wei Ren"""
 """Edited by Clarence"""
 
-from Rating import Rating
-from CourseLesson import ZoomLesson, VideoLesson
-from IntegratedFunctions import ellipsis
+from .Rating import Rating
+from .CourseLesson import ZoomLesson, VideoLesson
+from .IntegratedFunctions import ellipsis
 
 class Course():
     def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, status, userID, username):

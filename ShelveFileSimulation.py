@@ -10,12 +10,12 @@ Please update with variables and relevant shelve files accordingly for testing p
 
 
 """Databases"""
-from Admin import Admin
-from Teacher import Teacher
-from Student import Student
-from Course import Course
-from Security import hash_password, sanitise
-from IntegratedFunctions import generate_ID, generate_course_ID
+from python_files.Admin import Admin
+from python_files.Teacher import Teacher
+from python_files.Student import Student
+from python_files.Course import Course
+from python_files.Security import sanitise
+from python_files.IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
 import shelve, shortuuid
 
@@ -57,7 +57,7 @@ ticketDict = {}
 userID = generate_ID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
-password = hash_password("123!@#")
+password = "123!@#"
 user = Student(userID, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
@@ -70,7 +70,7 @@ userDict[userID] = user
 userID = generate_ID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
-password = hash_password("456$%^")
+password = "456$%^"
 user = Student(userID, username, email, password)
 
 #Courses (Royston)
@@ -84,7 +84,7 @@ userDict[userID] = user
 userID = generate_ID(userDict)
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
-password = hash_password("789&*(")
+password = "789&*("
 user = Teacher(userID, username, email, password)
 
 #Teacher
@@ -134,7 +134,7 @@ courseDict[courseID] = course
 userID = generate_ID(userDict)
 username = "Sara"
 email = sanitise("tourism@gmail.com".lower())
-password = hash_password("0-=)_+")
+password = "0-=)_+"
 user = Teacher(userID, username, email, password)
 
 #Teacher
@@ -240,7 +240,7 @@ courseDict[courseID] = course
 adminID = generate_admin_id(adminDict)
 username = "The Archivist"
 email = sanitise("O5-2@SCP.com".lower())
-password = hash_password("27sb2we9djaksidu8a")
+password = "27sb2we9djaksidu8a"
 admin = Admin(adminID, username, email, password)
 
 #Admin
@@ -254,7 +254,7 @@ adminDict[adminID] = admin
 adminID = generate_admin_id(adminDict)
 username = "Tamlin"
 email = sanitise("O5-13@SCP.com".lower())
-password = hash_password("o4jru5fjr49f8ieri4")
+password = "o4jru5fjr49f8ieri4"
 admin = Admin(adminID, username, email, password)
 
 #Admin

@@ -1,5 +1,5 @@
-from Admin import Admin
-from Security import sanitise, validate_email
+from python_files.Admin import Admin
+from python_files.Security import sanitise, validate_email
 import shelve, shortuuid
 
 def validate_pwd_length(pwd, pwdMinimumLength):

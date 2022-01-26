@@ -1,4 +1,4 @@
-from User import User
+from .User import User
 
 class Common(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
