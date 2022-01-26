@@ -4,9 +4,53 @@
 {% endblock %}
 
 {% block title %}Create Course | CourseFinity{% endblock %}
-{% from "includes/_formHelper.html" import render_field %}
+
 
 {% block content %}
+{% from "includes/_formHelper.html" import render_field %}
+
+{% if imageChanged %}
+<div class="modal fade" id="imageChangedModal" tabindex="-1" aria-labelledby="imageChangedModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageChangedModalLabel">Course Thumbnail Uploaded</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your profile image has been succesfully changed.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if imageFailed %}
+<div class="modal fade" id="imageFailedModal" tabindex="-1" aria-labelledby="imageFailedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageFailedModalLabel">Failed to upload your course thumbnail image!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Your profile image <span class="text-danger">has not been succesfully</span> uploaded.
+                </h6>
+                <h6>Do note that only images with the extension <span class="text-danger">png, jpg, or jpeg are only
+                        accepted</span> and the image size must be <span class="text-danger">5MB or less</span>.</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="container">
     <div class="row">
         <div class="LSUForm col">
@@ -21,8 +65,17 @@
                     <!-- Thumbnail -->
                     <div class="col-md-12 text-white">
                         <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
-                        <!-- Validate pic to only accept jpeg, png -->
-                        <!-- Limit picture size to 2mb-->
+                        <p>
+                            Upload Your Thumbnail Here!<br>
+                            <input type="text" name="textline" size="30">
+                        </p>
+                        <p>
+                            Please upload a photo of filetype png, jpg, or jpeg under 5MB<br>
+                            <input type="file" name="datafile" size="40">
+                        </p>
+                        <div>
+                            <input type="submit" value="Send">
+                        </div>
                     </div>
 
                     <!-- zoomCondition -->
@@ -47,10 +100,6 @@
                         <button type="submit" class="btn btn-colour text-white float-end">Create</button>
                     </div>
                 </form>
-                <hr class="mt-4 text-white">
-                <div class="col-md-12">
-                    <p class="text-center mb-0"><a class="text-white fw-bold" href="/login">Login here!</a></p>
-                </div>
             </div>
         </div>
     </div>
@@ -58,5 +107,16 @@
 {% endblock %}
 
 {% block extra_js %}
-
+    {% if imageChanged %}
+    <script>
+        var imageChangedModal = new bootstrap.Modal(document.getElementById("imageChangedModal"), {});
+        imageChangedModal.show();
+    </script>
+    {% endif %}
+    {% if imageFailed %}
+    <script>
+        var imageFailedModal = new bootstrap.Modal(document.getElementById("imageFailedModal"), {});
+        imageFailedModal.show();
+    </script>
+    {% endif %}
 {% endblock %}

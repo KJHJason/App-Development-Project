@@ -130,5 +130,4 @@ class CreateCourse(Form):
     zoomCondition = BooleanField("Zoom Included")
     videoCondition = BooleanField("Video Included") #Validate in init if user selected at least one
     coursePrice = StringField("Price for Video Lesson (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
-    pass
 """End of WTForms by Clarence"""

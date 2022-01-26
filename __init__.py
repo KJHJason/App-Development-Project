@@ -25,6 +25,7 @@ scheduler = BackgroundScheduler()
 # Maximum file size for uploading anything to the web app's server
 app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
 app.config['MAX_PROFILE_IMAGE_FILESIZE'] = 2 * 1024 * 1024 # 2MiB
+app.config["MAX_THUMBNAIL_IMAGE_FILESIZE"] = 5 * 1024 *1024 #5MiB
 
 # configuration for email
 # Make sure to enable access for less secure apps
@@ -4391,6 +4392,124 @@ def teacherCourses(teacherUID):
 
 """End of Teacher's Courses Page by Clarence"""
 
+"""Course Creation by Clarence"""
+
+
+@app.route("/create_course")
+@limiter.limit("30/second")  # to prevent ddos attacks
+def course_thumbnail_upload():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open("user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+                if request.method == "POST":
+                    typeOfFormSubmitted = request.form.get("submittedForm")
+                    if typeOfFormSubmitted == "image":
+                        if "profileImage" not in request.files:
+                            print("No file sent.")
+                            return redirect(url_for("userProfile"))
+
+                        file = request.files["profileImage"]
+
+                        extensionType = get_extension(file.filename)
+                        if extensionType != False:
+                            # renaming the file name of the submitted image data payload
+                            file.filename = userSession + extensionType
+                            filename = file.filename
+                        else:
+                            filename = "invalid"
+
+                        # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                        uploadedFileSize = request.cookies.get("filesize")
+                        print("Uploaded file size:", uploadedFileSize, "bytes")
+
+                        withinFileLimit = allow_file_size(
+                            uploadedFileSize, app.config['MAX_THUMBNAIL_IMAGE_FILESIZE'])
+
+                        if file and allowed_image_file(filename) and withinFileLimit:
+                            # will only accept .png, .jpg, .jpeg
+                            print("File extension accepted and is within size limit.")
+
+                            # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+
+                            userImageFileName = file.filename
+                            newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+
+
+                            
+                            file.save(newFilePath)
+                            print("Image file has been saved.")
+
+                            # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                            imageResized = resize_image(newFilePath, (500, 500))
+
+                            if imageResized:
+                                # if file was successfully resized, it means the image is a valid image
+                                userKey.set_profile_image(userImageFileName)
+                                db['Users'] = userDict
+                                db.close()
+
+                                session["imageChanged"] = True
+                                return redirect(url_for("userProfile"))
+                            else:
+                                # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file in which the code below will reset the user's profile image but the corrupted image will still be stored on the server until it is overwritten
+                                userKey.set_profile_image("")
+                                db['Users'] = userDict
+                                db.close()
+                                session["imageFailed"] = True
+                                return redirect(url_for("userProfile"))
+                        else:
+                            db.close()
+                            print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_THUMBNAIL_IMAGE_FILESIZE']))
+                            session["imageFailed"] = True
+                            return redirect(url_for("userProfile"))
+                    else:
+                        db.close()
+                        print("Form value tampered...")
+                        return redirect(url_for("userProfile"))
+                else:
+                    teacherUID = ""
+                db.close()  # remember to close your shelve files!
+                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, imageFailed=imageFailed, imageChanged=imageChanged)
+            else:
+                db.close()
+                print("User not found or is banned")
+                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+        else:
+            if "adminSession" in session:
+                return redirect(url_for("home"))
+            else:
+                # determine if it make sense to redirect the user to the home page or the login page
+                # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+                return redirect(url_for("home"))
+                # return redirect(url_for("userLogin"))
+
+"""Course Creation by Clarence"""
 """General Pages"""
 
 @app.route('/cookie_policy')
