@@ -3659,7 +3659,7 @@ def purchaseHistory(pageNum):
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
-                        "Price":course.get_price(),
+                        "Price":"{:,.2f}".format(course.get_price()),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
@@ -3735,25 +3735,25 @@ def purchaseReview():
             except:
                 print("Error in retrieving review from review.db")
                 db.close()
-                return render_template('users/loggedin/purchasehistory.html')
+                return redirect(url_for("purchasehistory"))
 
             createReview = Forms.CreateReviewText(request.form)
             if request.method == 'POST' and createReview.validate():
                 review = createReview.review.data
                 print(review)
-                course = courseDict.get_courseID
-                course.set_reviewID()
+                course = courseDict.get_courseID()
+                course.set_reviewID(review)
                 courseDict["Courses"] = db
 
                 db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
                 print("Review creation failed")
                 db.close()
-                return render_template('users/loggedin/purchasereview.html')
+                return redirect(url_for("purchasehistory"))
 
-            return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
