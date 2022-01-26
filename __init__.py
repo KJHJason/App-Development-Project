@@ -240,10 +240,12 @@ def home():
             return redirect(url_for("home"))
     else:
         # guests
-        print("User did not disable cookies.")
         if not request.cookies.get("guestSeenTags"):
+            print("Guest user do not have cookie.")
+            session["sessionCookieCreated"] = True
             return redirect(url_for("guestCookies"))
         else:
+            print("Guest user has a cookie.")
             userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
 
             # for recommendation algorithm
@@ -338,8 +340,14 @@ def home():
 @limiter.limit("10/second")
 def guestCookies():
     res = make_response(redirect(url_for("home")))
-    if not request.cookies.get("guestSeenTags"):
-        # encoding the cookie value with base64 such that the guest cannot tamper with the values in the dictionary too easily
+    cookieCreated = False
+    if "sessionCookieCreated" in session:
+        cookieCreated = session["sessionCookieCreated"]
+        print("Retrieved session cookie.")
+    else:
+        print("Guest user had disabled cookie.")
+    if not request.cookies.get("guestSeenTags") and cookieCreated:
+        # encoding the cookie value with base64 such that the guest cannot replace the cookie with tampered values in the dictionary too easily
         res.set_cookie(
             "guestSeenTags",
             value=b64encode(json.dumps({"Programming": 0,
@@ -370,14 +378,7 @@ def guestCookies():
             "Other_Academics": 0}).encode("utf-8")),
             expires=datetime.now() + timedelta(days=90)
         )
-    print(request.cookies.get("guestSeenTags"))
-    if "cookieCreated" in session:
-        cookieCreated = session["cookieCreated"]
-    else:
-        session["cookieCreated"] = True
-        cookieCreated = False
-    print(cookieCreated)
-    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
+    if not request.cookies.get("guestSeenTags") and cookieCreated == False:
         return redirect("/home/no_cookies") # if the user had disabled cookies
     return res
 
@@ -427,56 +428,96 @@ def homeNoCookies():
 def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
     res = make_response(redirect(redirectURL))
-    try:
-        userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
-        if courseTag in userTagDict:
-            userTagDict[courseTag] += 1
+    cookieCreated = False
+    if "sessionCookieCreated" in session:
+        cookieCreated = session["sessionCookieCreated"]
+        print("Retrieved session cookie.")
+    else:
+        print("Guest user had disabled cookie.")
+    if request.cookies.get("guestSeenTags") and cookieCreated:
+        # if user have an existing cookie with the name guestSeenTags
+        try:
+            userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+            if courseTag in userTagDict:
+                userTagDict[courseTag] += 1
+                res.set_cookie(
+                    "guestSeenTags",
+                    value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+                    expires=datetime.now() + datetime.timedelta(days=90)
+                )
+        except:
+            print("Error with editing guest's cookie.")
+            # if the guest user had tampered with the cookie value
             res.set_cookie(
                 "guestSeenTags",
-                value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-                expires=datetime.now() + datetime.timedelta(days=90)
+                value=b64encode(json.dumps({"Programming": 0,
+                "Web_Development": 0,
+                "Game_Development": 0,
+                "Mobile_App_Development": 0,
+                "Software_Development": 0,
+                "Other_Development": 0,
+                "Entrepreneurship": 0,
+                "Project_Management": 0,
+                "BI_Analytics": 0,
+                "Business_Strategy": 0,
+                "Other_Business": 0,
+                "3D_Modelling": 0,
+                "Animation": 0,
+                "UX_Design": 0,
+                "Design_Tools": 0,
+                "Other_Design": 0,
+                "Digital_Photography": 0,
+                "Photography_Tools": 0,
+                "Video_Production": 0,
+                "Video_Design_Tools": 0,
+                "Other_Photography_Videography": 0,
+                "Science": 0,
+                "Math": 0,
+                "Language": 0,
+                "Test_Prep": 0,
+                "Other_Academics": 0}).encode("utf-8")),
+                expires=datetime.now() + timedelta(days=90)
             )
-    except:
-        print("Error with editing guest's cookie.")
-        # if the guest user had tampered with the cookie value
+    elif not request.cookies.get("guestSeenTags") and cookieCreated:
+        # if user do not have an existing cookie with the name guestSeenTags
+        originalCourseTagDict = {"Programming": 0,
+                                "Web_Development": 0,
+                                "Game_Development": 0,
+                                "Mobile_App_Development": 0,
+                                "Software_Development": 0,
+                                "Other_Development": 0,
+                                "Entrepreneurship": 0,
+                                "Project_Management": 0,
+                                "BI_Analytics": 0,
+                                "Business_Strategy": 0,
+                                "Other_Business": 0,
+                                "3D_Modelling": 0,
+                                "Animation": 0,
+                                "UX_Design": 0,
+                                "Design_Tools": 0,
+                                "Other_Design": 0,
+                                "Digital_Photography": 0,
+                                "Photography_Tools": 0,
+                                "Video_Production": 0,
+                                "Video_Design_Tools": 0,
+                                "Other_Photography_Videography": 0,
+                                "Science": 0,
+                                "Math": 0,
+                                "Language": 0,
+                                "Test_Prep": 0,
+                                "Other_Academics": 0}
+        try:
+            originalCourseTagDict[courseTag] += 1
+        except:
+            print("Tag does not exist.")
+
         res.set_cookie(
             "guestSeenTags",
-            value=b64encode(json.dumps({"Programming": 0,
-            "Web_Development": 0,
-            "Game_Development": 0,
-            "Mobile_App_Development": 0,
-            "Software_Development": 0,
-            "Other_Development": 0,
-            "Entrepreneurship": 0,
-            "Project_Management": 0,
-            "BI_Analytics": 0,
-            "Business_Strategy": 0,
-            "Other_Business": 0,
-            "3D_Modelling": 0,
-            "Animation": 0,
-            "UX_Design": 0,
-            "Design_Tools": 0,
-            "Other_Design": 0,
-            "Digital_Photography": 0,
-            "Photography_Tools": 0,
-            "Video_Production": 0,
-            "Video_Design_Tools": 0,
-            "Other_Photography_Videography": 0,
-            "Science": 0,
-            "Math": 0,
-            "Language": 0,
-            "Test_Prep": 0,
-            "Other_Academics": 0}).encode("utf-8")),
-            expires=datetime.now() + timedelta(days=90)
+            value=b64encode(json.dumps(originalCourseTagDict).encode("utf-8")),
+            expires=datetime.now() + datetime.timedelta(days=90)
         )
 
-    if "cookieCreated" in session:
-        cookieCreated = session["cookieCreated"]
-    else:
-        session["cookieCreated"] = True
-        cookieCreated = False
-    print(cookieCreated)
-    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
+    if not request.cookies.get("guestSeenTags") and cookieCreated == False:
         redirectURL = redirectURL + "/no_cookies"
         return redirect(redirectURL) # if the user had disabled cookies
     return res
