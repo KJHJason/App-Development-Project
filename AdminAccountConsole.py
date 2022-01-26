@@ -1,5 +1,5 @@
 from Admin import Admin
-from Security import hash_password, verify_password, sanitise, validate_email
+from Security import sanitise, validate_email
 import shelve, shortuuid
 
 def validate_pwd_length(pwd, pwdMinimumLength):
@@ -70,12 +70,14 @@ while True:
                     pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
 
                     if pwdLengthValidate:
-                        password = hash_password(password)
                         cfm_password = input("\nConfirm password (0 to exit): ")
                         if cfm_password == "0":
                             break
-
-                        pwdMatched = verify_password(password, cfm_password)
+                    
+                        if password == cfm_password:
+                            pwdMatched = True
+                        else:
+                            pwdMatched = False
 
                         if pwdMatched:
                             print("\nPassword for admin entered matched.")
@@ -187,10 +189,13 @@ while True:
                             password = input("\nEnter password for admin account: ")
                             pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
                             if pwdLengthValidate:
-                                password = hash_password(password)
                                 cfm_password = input("\nConfirm password for admin account: ")
 
-                                pwdMatched = verify_password(password, cfm_password)
+                                if password == cfm_password:
+                                    pwdMatched = True
+                                else:
+                                    pwdMatched = False
+
                                 if pwdMatched:
                                     adminKey.set_password(password)
                                     db["Admins"] = adminDict
@@ -214,10 +219,13 @@ while True:
                             password = input("\nEnter password for admin account: ")
                             pwdLengthValidate = validate_pwd_length(password, 8) # change the number accordingly to specify the minimum characters of the password that is required (accordingly to CourseFinity's password policy)
                             if pwdLengthValidate:
-                                password = hash_password(password)
                                 cfm_password = input("\nConfirm password for admin account: ")
 
-                                pwdMatched = verify_password(password, cfm_password)
+                                if password == cfm_password:
+                                    pwdMatched = True
+                                else:
+                                    pwdMatched = False
+
                                 if pwdMatched:
                                     adminObject.set_password(password)
                                     db["Admins"] = adminDict

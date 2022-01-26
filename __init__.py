@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 import Student, Teacher, Forms
 from Payment import Payment
-from Security import hash_password, verify_password, sanitise, validate_email
+from Security import verify_password, sanitise, validate_email
 from CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from IntegratedFunctions import *
 
@@ -561,6 +561,7 @@ def userLogin():
             emailShelveData = ""
 
             # Checking the email input and see if it matches with any in the database
+            print("Retrieving emails from database.")
             for key in userDict:
                 emailShelveData = userDict[key].get_email()
                 if emailInput == emailShelveData:
@@ -569,8 +570,6 @@ def userLogin():
                     print("Email in database:", emailShelveData)
                     print("Email Input:", emailInput)
                     break
-                else:
-                    print("User email not found.")
 
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
@@ -585,14 +584,11 @@ def userLogin():
                     print("Correct password!")
                 else:
                     print("Password incorrect.")
+            else:
+                print("User email not found.")
 
             if email_found and password_matched:
                 print("User validated...")
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
-                print("Account type:", email_key.get_acc_type())
 
                 # checking if the user is banned
                 accGoodStatus = email_key.get_status()
@@ -685,6 +681,7 @@ def requestPasswordReset():
                 emailShelveData = ""
 
                 # Checking the email input and see if it matches with any in the database
+                print("Retrieving emails from database.")
                 for key in userDict:
                     emailShelveData = userDict[key].get_email()
                     if emailInput == emailShelveData:
@@ -693,13 +690,9 @@ def requestPasswordReset():
                         print("Email in database:", emailShelveData)
                         print("Email Input:", emailInput)
                         break
-                    else:
-                        print("User email not found.")
-
+                        
                 if email_found:
                     print("User email found...")
-                    print("Email in database:", emailShelveData)
-                    print("Email Input:", emailInput)
 
                     # checking if the user is banned
                     accGoodStatus = email_key.get_status()
@@ -716,9 +709,8 @@ def requestPasswordReset():
                         print("User account banned, email not sent.")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
                 else:
+                    print("User email not found.")
                     # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
-                    print("Email in database:", emailShelveData)
-                    print("Email Input:", emailInput)
                     return render_template('users/guest/request_password_reset.html', form=create_request_form, emailSent=True, emailInput=emailInput)
             else:
                 # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
@@ -761,8 +753,7 @@ def resetPassword(token):
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        hashedPassword = hash_password(password)
-                        userKey.set_password(hashedPassword)
+                        userKey.set_password(password)
                         db["Users"] = userDict
                         db.close()
                         print("Password Reset Successful.")
@@ -833,14 +824,11 @@ def userSignUp():
 
                 # If there were no duplicates and passwords entered were the same, create a new user
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
-                    hashedPwd = hash_password(passwordInput)
-                    print("Hashed password:", hashedPwd)
-
                     # setting user ID for the user
                     userID = generate_ID(userDict)
                     print("User ID setted: ", userID)
 
-                    user = Student.Student(userID, usernameInput, emailInput, hashedPwd)
+                    user = Student.Student(userID, usernameInput, emailInput, passwordInput)
 
                     userDict[userID] = user
                     db["Users"] = userDict
@@ -1013,14 +1001,11 @@ def teacherSignUp():
 
                 if (pwd_were_not_matched == False) and (email_duplicates == False) and (username_duplicates == False):
                     print("User info validated.")
-                    hashedPwd = hash_password(passwordInput)
-                    print("Hashed password:", hashedPwd)
-
                     # setting user ID for the teacher
                     userID = generate_ID(userDict)
                     print("User ID setted: ", userID)
 
-                    user = Teacher.Teacher(userID, usernameInput, emailInput, hashedPwd)
+                    user = Teacher.Teacher(userID, usernameInput, emailInput, passwordInput)
                     user.set_teacher_join_date(date.today())
 
                     userDict[userID] = user
@@ -1170,6 +1155,7 @@ def adminLogin():
             emailShelveData = ""
 
             # Checking the email input and see if it matches with any in the database
+            print("Retrieving admin emails from admin database.")
             for key in adminDict:
                 emailShelveData = adminDict[key].get_email()
                 if emailInput == emailShelveData:
@@ -1178,8 +1164,6 @@ def adminLogin():
                     print("Email in database:", emailShelveData)
                     print("Email Input:", emailInput)
                     break
-                else:
-                    print("User email not found.")
 
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
@@ -1193,14 +1177,11 @@ def adminLogin():
                     print("Correct password!")
                 else:
                     print("Password incorrect.")
+            else:
+                print("Admin email not found in admin database.")
 
             if email_found and password_matched:
                 print("Admin account validated...")
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
-                print("Account type:", email_key.get_acc_type())
 
                 # checking if the admin account is active
                 accActiveStatus = email_key.get_status()
@@ -1309,23 +1290,17 @@ def adminChangeUsername():
 
                 if updatedUsername != currentUsername:
                     # checking duplicates for username
+                    username_duplicates = False
+                    print("Retrieving usernames from database.")
                     for key in adminDict:
-                        print("retrieving")
                         usernameShelveData = adminDict[key].get_username()
                         if updatedUsername == usernameShelveData:
-                            print("Username in database:", usernameShelveData)
-                            print("Username input:", updatedUsername)
                             print("Verdict: Username already taken.")
                             username_duplicates = True
                             break
-                        else:
-                            print("Username in database:", usernameShelveData)
-                            print("Username input:", updatedUsername)
-                            print("Verdict: Username is unique.")
-                            username_duplicates = False
 
                     if username_duplicates == False:
-
+                        print("Verdict: Username is unique.")
                         # updating username of the user
                         userKey.set_username(updatedUsername)
                         db['Admins'] = adminDict
@@ -1382,23 +1357,18 @@ def adminChangeEmail():
                 currentEmail = userKey.get_email()
 
                 # Checking duplicates for email
+                email_duplicates = False
                 if updatedEmail != currentEmail:
+                    print("Retrieving emails from database.")
                     for key in adminDict:
-                        print("retrieving")
                         emailShelveData = adminDict[key].get_email()
                         if updatedEmail == emailShelveData:
-                            print("Email in database:", emailShelveData)
-                            print("Email input:", updatedEmail)
                             print("Verdict: User email already exists.")
                             email_duplicates = True
-                            break
-                        else:
-                            print("Email in database:", emailShelveData)
-                            print("Email input:", updatedEmail)
-                            print("Verdict: User email is unique.")
-                            email_duplicates = False
+                            break          
 
                     if email_duplicates == False:
+                        print("Verdict: User email is unique.")
                         # updating email of the admin
                         userKey.set_email(updatedEmail)
                         db['Admins'] = adminDict
@@ -1500,8 +1470,7 @@ def adminChangePassword():
                         return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        hashedPwd = hash_password(updatedPassword)
-                        userKey.set_password(hashedPwd)
+                        userKey.set_password(updatedPassword)
                         db['Admins'] = adminDict
                         print("Password updated")
                         db.close()
@@ -1573,8 +1542,7 @@ def userManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                hashedPwd = hash_password(password)
-                                userKey.set_password(hashedPwd)
+                                userKey.set_password(password)
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -1719,8 +1687,7 @@ def userSearchManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                hashedPwd = hash_password(password)
-                                userKey.set_password(hashedPwd)
+                                userKey.set_password(password)
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -2556,23 +2523,17 @@ def updateUsername():
 
                 if updatedUsername != currentUsername:
                     # checking duplicates for username
+                    username_duplicates = False
                     for key in userDict:
                         print("retrieving")
                         usernameShelveData = userDict[key].get_username()
                         if updatedUsername == usernameShelveData:
-                            print("Username in database:", usernameShelveData)
-                            print("Username input:", updatedUsername)
                             print("Verdict: Username already taken.")
                             username_duplicates = True
                             break
-                        else:
-                            print("Username in database:", usernameShelveData)
-                            print("Username input:", updatedUsername)
-                            print("Verdict: Username is unique.")
-                            username_duplicates = False
 
                     if username_duplicates == False:
-
+                        print("Verdict: Username is unique.")
                         # updating username of the user
                         userKey.set_username(updatedUsername)
                         db['Users'] = userDict
@@ -2643,22 +2604,17 @@ def updateEmail():
                 currentEmail = userKey.get_email()
                 if updatedEmail != currentEmail:
                     # Checking duplicates for email
+                    email_duplicates = False
                     for key in userDict:
                         print("retrieving")
                         emailShelveData = userDict[key].get_email()
                         if updatedEmail == emailShelveData:
-                            print("Email in database:", emailShelveData)
-                            print("Email input:", updatedEmail)
                             print("Verdict: User email already exists.")
                             email_duplicates = True
                             break
-                        else:
-                            print("Email in database:", emailShelveData)
-                            print("Email input:", updatedEmail)
-                            print("Verdict: User email is unique.")
-                            email_duplicates = False
-
+                            
                     if email_duplicates == False:
+                        print("Verdict: Email is unique.")
                         # updating email of the user
                         userKey.set_email(updatedEmail)
                         userKey.set_email_verification("Not Verified")
@@ -2779,8 +2735,7 @@ def updatePassword():
                         return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         # updating password of the user once validated
-                        hashedPwd = hash_password(updatedPassword)
-                        userKey.set_password(hashedPwd)
+                        userKey.set_password(updatedPassword)
                         userEmail = userKey.get_email()
                         db['Users'] = userDict
                         print("Password updated")

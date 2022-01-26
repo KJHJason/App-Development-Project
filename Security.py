@@ -16,10 +16,9 @@ import html, re # importing html for escaping inputs and re for compiling regula
 # minimum requirement as of OWASP; Use Argon2id with a minimum configuration of 15 MiB of memory (15728KB), an iteration count of 2, and 1 degree of parallelism.
 # OWASP website: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-def hash_password(pwd):
-    ph = PasswordHasher()
-    return ph.hash(pwd)
+# Password will be automatically hashed when an object is created in User.py.
 
+# for verifying a hashed value with a plaintext to see if it matches
 def verify_password(hashed, pwd):
     ph = PasswordHasher()
     # try and except as argon2 will raise an exception if the hashes are not matched
