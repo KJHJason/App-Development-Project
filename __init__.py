@@ -4332,8 +4332,23 @@ def teacherPage(teacherUID):
 
         if userFound and accGoodStanding:
         #checks if user account is available
+            userDict = {}
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("User data in shelve is empty.")
+                    session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
+            teacherObject = userDict.get(teacherUID)
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            bio = Teacher.get_bio(userKey)
+            bio = teacherObject.get_bio()
             return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio)
 
         else:
