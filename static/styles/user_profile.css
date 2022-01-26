@@ -340,6 +340,10 @@
   margin-bottom: 10px;
 }
 
+.upload-icon:hover {
+  color: #273C4D;;
+}
+
 @media (max-width: 468px) {
   .upload-icon {
     font-size: 3em;
