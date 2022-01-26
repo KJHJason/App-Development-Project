@@ -27,4 +27,5 @@ Libraries needed:
   <li>dicebear Version 0.1.2 [pip install dicebear==0.1.2]</li>
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
+  <li>pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib</li>
 </ol>	
