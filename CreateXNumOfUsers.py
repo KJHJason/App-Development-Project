@@ -27,7 +27,7 @@ for i in range(getLatestTestI, noOfUser+getLatestTestI):
     email = "test" + str(i) + "@gmail.com"
     username = "test" + str(i)
     uid = generate_ID(userDict)
-    user = Student.Student(uid, username, email, "123123")
+    user = Student(uid, username, email, "123123")
     userDict[uid] = user
     print(f"User {username}, created with the ID, {uid}.")
 
