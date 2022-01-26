@@ -1,5 +1,8 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">
+{% endblock %}
 {% block title %}Profile Settings | CourseFinity{% endblock %}
 
 {% block content %}
@@ -241,12 +244,21 @@
                         <div class="col-md-5 image-center">
                             <img src="{{ imagesrcPath }}" alt="User Profile Icon" id="user-icon-setting">
                             <div class="mb-9">
-                                <form action="" method="POST" enctype="multipart/form-data">
-                                    <input type="hidden" name="submittedForm" value="image">
-                                    <label for="imageFile" class="form-label">Upload Profile Image</label>
-                                    <input class="form-control" type="file" id="imageFile" name="profileImage" accept="image/*" oninput="filesize(this)" required>
-                                    <button type="submit" class="btn btn-success profile-icon float-end">Save Profile Icon</button>
-                                </form>
+                                <button class="btn btn-primary" id="editProfileButton">Edit Profile Image</button>
+                                <div id="imageForm" style="display: none;">
+                                    <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
+                                        <input type="hidden" name="submittedForm" value="image">
+                                        <div class="dz-default dz-message">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <br>
+                                            <span>Click here or drop files here</span>
+                                        </div>
+                                        <button type="submit" id="submit-button" hidden>Save Profile Icon</button>
+                                        <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
+                                    </form>
+                                    <label for="submit-button" class="btn btn-success profile-icon float-end" >Upload</label>
+                                    <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
+                                </div>
                             </div>
                             {% if accType == "Teacher" %}
                             <div class="border border-2 alert alert-light alert-dismissible fade show margin-card text-dark" role="alert">
@@ -411,6 +423,7 @@
             emailTokenInvalidModal.show();
         </script>
     {% endif %}
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script src="{{ url_for('static', filename='scripts/user_profile.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>

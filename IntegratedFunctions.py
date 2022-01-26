@@ -280,7 +280,7 @@ def overwrite_file(file, oldFilePath, newFilePath):
     os.remove(oldFilePath)
     file.save(newFilePath)
 
-# use this function to resize your image to the desired dimensions
+# use this function to resize your image to the desired dimensions and also compresses it
 # do note that the dimensions argument must be in a tuple, e.g. (500, 500)
 def resize_image(imagePath, dimensions):
     # try and except as a user might have use a unsupported image file and manually change it to .png, .jpg, etc. in which the Pillow library will raise a runtime error as it is unable to open the image
@@ -288,25 +288,16 @@ def resize_image(imagePath, dimensions):
         image = Image.open(imagePath)
         resizedImage = image.resize(dimensions)
         os.remove(imagePath)
-        resizedImage.save(imagePath)
+        resizedImage.save(imagePath, optimize=True, quality=75)
         return True
     except:
-        print("Error in resizing user's profile image...")
+        print("Error in resizing and compressing image...")
         return False
 
 # use this function to construct a path for storing files such as images in the web app directory
 # pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
 def construct_path(relativeUploadPath, filename):
     return os.path.join(app.root_path, relativeUploadPath, filename)
-
-# to check if the uploaded file size is within the maximum file size specified by you below in the web app configurations.
-# do note that the 2nd argument, maximumFileSize, must be in bytes (e.g. 3 * 1024 * 1024 which is 3145728 bytes or 3MiB)
-# also, in order to get the file size before saving onto the server directory, you need javascript to set a cookie that contain the file size in bytes as when I was reading the Flask documentation, I could not find any methods to get the file size when the user submits the form to upload a file
-def allow_file_size(fileSize, maximumFileSize):
-    if int(fileSize) <= maximumFileSize:
-        return True
-    else:
-        return False
 
 # function for retrieving user's profile picture using dicebear library
 def get_user_profile_pic(username, profileFileName, profileFilePath):

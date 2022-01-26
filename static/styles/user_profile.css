@@ -1,3 +1,5 @@
+/* UI base css */
+
 #left-user {
   height: 100%;
   margin-bottom: 20px;
@@ -143,6 +145,8 @@
   }
 }
 
+/* Form fields css */
+
 .payment_logo {
   width: 50px;
   height: auto;
@@ -150,6 +154,14 @@
 
 .form-buttons {
   display: inline-block;
+}
+
+/* user management table css */
+
+.users_profile {
+	height: 40px;
+	width: auto;
+	border-radius: 50%;
 }
 
 @media (max-width: 500px) {
@@ -162,6 +174,33 @@
   border: 2px solid #aaa;
   border-radius: 5px;
 }
+
+.table_text {
+  max-width: 180px;
+}
+
+.table_full_data_text {
+  max-width: 200px;
+}
+
+.verified_email {
+  color: #198754;
+}
+
+.verified_email:hover {
+  text-decoration: none;
+  color: #198754;
+}
+
+.not_verified_email {
+  color: #dc3545;
+}
+
+.not_verified_email:hover {
+  color: #dc3545;
+}
+
+/* teacher's UI css */
 
 .wrapper {
   background-color: #212529;
@@ -218,6 +257,7 @@
     display: block;
   }
 }
+
 .cashout_button{
   margin-top:20px;
   width:max(20%, 120px);
@@ -225,30 +265,7 @@
   margin-left:auto;
 }
 
-.table_text {
-  max-width: 180px;
-}
-
-.table_full_data_text {
-  max-width: 200px;
-}
-
-.verified_email {
-  color: #198754;
-}
-
-.verified_email:hover {
-  text-decoration: none;
-  color: #198754;
-}
-
-.not_verified_email {
-  color: #dc3545;
-}
-
-.not_verified_email:hover {
-  color: #dc3545;
-}
+/* Other css for macros/UXD */
 
 .accepted_cards {
   text-align: right;
@@ -274,14 +291,8 @@
   margin-right: 10px;
 }
 
-.users_profile {
-	height: 40px;
-	width: auto;
-	border-radius: 50%;
-}
-
-
 /*          /////           Ticket Management          /////           */
+
 .ticket_id_text {
     max-width: 200px;
 }
@@ -314,4 +325,35 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     height:100%;
+}
+
+/* Dropzone.js css to overwrite default */
+
+.dropzone {
+  margin-top: 10px;
+  border: 4px dashed #ddd;
+}
+
+.upload-icon {
+  color: #009DF8;
+  font-size: 5em;
+  margin-bottom: 10px;
+}
+
+.upload-icon:hover {
+  color: #273C4D;;
+}
+
+@media (max-width: 468px) {
+  .upload-icon {
+    font-size: 3em;
+  }
+}
+
+.btn-margin {
+  margin-right: 10px;
+}
+
+#editProfileButton {
+  margin-top: 10px;
 }
