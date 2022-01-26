@@ -280,7 +280,7 @@ def overwrite_file(file, oldFilePath, newFilePath):
     os.remove(oldFilePath)
     file.save(newFilePath)
 
-# use this function to resize your image to the desired dimensions
+# use this function to resize your image to the desired dimensions and also compresses it
 # do note that the dimensions argument must be in a tuple, e.g. (500, 500)
 def resize_image(imagePath, dimensions):
     # try and except as a user might have use a unsupported image file and manually change it to .png, .jpg, etc. in which the Pillow library will raise a runtime error as it is unable to open the image
@@ -288,20 +288,10 @@ def resize_image(imagePath, dimensions):
         image = Image.open(imagePath)
         resizedImage = image.resize(dimensions)
         os.remove(imagePath)
-        resizedImage.save(imagePath)
+        resizedImage.save(imagePath, optimize=True, quality=75)
         return True
     except:
-        print("Error in resizing image...")
-        return False
-
-def compress_image(imagePath):
-    try:
-        image = Image.open(imagePath)
-        os.remove(imagePath)
-        image.save(imagePath, quality=25)
-        return True
-    except:
-        print("Error in compressing image...")
+        print("Error in resizing and compressing image...")
         return False
 
 # use this function to construct a path for storing files such as images in the web app directory

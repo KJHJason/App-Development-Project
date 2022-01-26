@@ -2272,7 +2272,7 @@ def dashboard():
 """User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
+@limiter.limit("150/second") # to prevent ddos attacks
 def userProfile():
     if "userSession" in session and "adminSession" not in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
@@ -2322,6 +2322,9 @@ def userProfile():
 
                     file = request.files["profileImage"]
 
+                    totalChunks = int(request.form["dztotalchunkcount"])
+                    currentChunk = int(request.form['dzchunkindex'])
+
                     extensionType = get_extension(file.filename)
                     if extensionType != False:
                         file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
@@ -2333,52 +2336,73 @@ def userProfile():
                         # will only accept .png, .jpg, .jpeg
                         print("File extension accepted and is within size limit.")
 
-                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
-
                         userImageFileName = file.filename
                         newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
 
-                        # constructing a file path to see if the user has already uploaded an image and if the file exists
-                        userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
+                        if Path(newFilePath).is_file() and currentChunk == 0:
+                            os.remove(newFilePath)
 
-                        # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                        # if file already exist, it will remove and save the image and rename it to userID.png (e.g. 0.png) which in a way is overwriting the existing image
-                        # else it will just save normally and rename it to userID.png (e.g. 0.png)
-                        if Path(userOldImageFilePath).is_file():
-                            print("User has already uploaded a profile image before.")
-                            overwrite_file(file, userOldImageFilePath, newFilePath)
-                            print("Image file has been overwrited.")
+                        print("Total file size:", int(request.form['dztotalfilesize']))
+
+                        try:
+                            with open(newFilePath, "ab") as imageData: # ab flag for opening a file for appending data in binary format
+                                imageData.seek(int(request.form['dzchunkbyteoffset']))
+                                print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
+                                imageData.write(file.stream.read())
+                                imageData.close()
+                        except OSError:
+                            print('Could not write to file')
+                            return make_response("Error writing to file", 500)
+                        except:
+                            print("Unexpected error.")
+                            return make_response("Unexpected error", 500)
+
+                        if currentChunk + 1 == totalChunks:
+                            # This was the last chunk, the file should be complete and the size we expect
+                            if os.path.getsize(newFilePath) != int(request.form['dztotalfilesize']):
+                                print(f"File {file.filename} was completed, but has a size mismatch. Was {os.path.getsize(newFilePath)} but we expected {request.form['dztotalfilesize']} ")
+                                return make_response("Image was not successfully uploaded! Please try again!", 500)
+                            else:
+                                print(f'File {file.filename} has been uploaded successfully')
+                                # constructing a file path to see if the user has already uploaded an image and if the file exists
+                                userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
+
+                                # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                                # since dropzone will actually send multiple requests, 
+                                if Path(userOldImageFilePath).is_file() and userOldImageFilePath != newFilePath:
+                                    print("User has already uploaded a profile image before.")
+                                    os.remove(userOldImageFilePath)
+                                    print("Old Image file has been deleted.")
+
+                                # resizing the image to a 1:1 ratio and compresses it
+                                imageResized = resize_image(newFilePath, (250, 250))
+                                
+                                if imageResized:
+                                    # if file was successfully resized, it means the image is a valid image
+                                    userKey.set_profile_image(userImageFileName)
+                                    db['Users'] = userDict
+                                    db.close()
+
+                                    session["imageChanged"] = True
+                                    return make_response(("Profile Image Uploaded!", 200))
+                                else:
+                                    # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
+                                    userKey.set_profile_image("")
+                                    db['Users'] = userDict
+                                    db.close()
+                                    os.remove(newFilePath) # removes corrupted image file
+                                    session["imageFailed"] = True
+                                    return make_response(("Error in uploading image file!", 500))
                         else:
-                            file.save(newFilePath)
-                            print("Image file has been saved.")
-
-                        # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
-                        imageResized = resize_image(newFilePath, (250, 250))
-                        
-                        if imageResized:
-                            # if file was successfully resized, it means the image is a valid image
-                            compress_image(newFilePath) # compresses the image
-                            userKey.set_profile_image(userImageFileName)
-                            db['Users'] = userDict
                             db.close()
-
-                            session["imageChanged"] = True
-                            return redirect(url_for("userProfile"))
-                        else:
-                            # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file in which the code below will reset the user's profile image but the corrupted image will still be stored on the server until it is overwritten
-                            userKey.set_profile_image("")
-                            db['Users'] = userDict
-                            db.close()
-                            session["imageFailed"] = True
-                            return redirect(url_for("userProfile"))
+                            print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
+                            return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
                     else:
                         db.close()
-                        print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_PROFILE_IMAGE_FILESIZE']))
-                        session["imageFailed"] = True
-                        return redirect(url_for("userProfile"))
+                        return make_response("Image extension not supported!", 500)
                 else:
                     db.close()
-                    print("Form value tampered...")
+                    print("Form value tampered or POST request sent without form value...")
                     return redirect(url_for("userProfile"))
             else:
                 db.close()
@@ -4454,11 +4478,10 @@ def course_thumbnail_upload():
                             file.save(newFilePath)
                             print("Image file has been saved.")
 
-                            # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                            # resizing the image to a 1:1 ratio and compresses it
                             imageResized = resize_image(newFilePath, (500, 500))
                             if imageResized:
                                 # if file was successfully resized, it means the image is a valid image
-                                compress_image(newFilePath) # compresses the image
                                 userKey.set_profile_image(userImageFileName)
                                 db['Users'] = userDict
                                 db.close()
