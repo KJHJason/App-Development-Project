@@ -241,10 +241,12 @@ def home():
             return redirect(url_for("home"))
     else:
         # guests
-        print("User did not disable cookies.")
         if not request.cookies.get("guestSeenTags"):
+            print("Guest user do not have cookie.")
+            session["sessionCookieCreated"] = True
             return redirect(url_for("guestCookies"))
         else:
+            print("Guest user has a cookie.")
             userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
 
             # for recommendation algorithm
@@ -339,8 +341,14 @@ def home():
 @limiter.limit("10/second")
 def guestCookies():
     res = make_response(redirect(url_for("home")))
-    if not request.cookies.get("guestSeenTags"):
-        # encoding the cookie value with base64 such that the guest cannot tamper with the values in the dictionary too easily
+    cookieCreated = False
+    if "sessionCookieCreated" in session:
+        cookieCreated = session["sessionCookieCreated"]
+        print("Retrieved session cookie.")
+    else:
+        print("Guest user had disabled cookie.")
+    if not request.cookies.get("guestSeenTags") and cookieCreated:
+        # encoding the cookie value with base64 such that the guest cannot replace the cookie with tampered values in the dictionary too easily
         res.set_cookie(
             "guestSeenTags",
             value=b64encode(json.dumps({"Programming": 0,
@@ -371,14 +379,7 @@ def guestCookies():
             "Other_Academics": 0}).encode("utf-8")),
             expires=datetime.now() + timedelta(days=90)
         )
-    print(request.cookies.get("guestSeenTags"))
-    if "cookieCreated" in session:
-        cookieCreated = session["cookieCreated"]
-    else:
-        session["cookieCreated"] = True
-        cookieCreated = False
-    print(cookieCreated)
-    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
+    if not request.cookies.get("guestSeenTags") and cookieCreated == False:
         return redirect("/home/no_cookies") # if the user had disabled cookies
     return res
 
@@ -428,56 +429,96 @@ def homeNoCookies():
 def guestEditCookie(teacherUID, courseID, courseTag):
     redirectURL = "/" + teacherUID + "/" + courseID
     res = make_response(redirect(redirectURL))
-    try:
-        userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
-        if courseTag in userTagDict:
-            userTagDict[courseTag] += 1
+    cookieCreated = False
+    if "sessionCookieCreated" in session:
+        cookieCreated = session["sessionCookieCreated"]
+        print("Retrieved session cookie.")
+    else:
+        print("Guest user had disabled cookie.")
+    if request.cookies.get("guestSeenTags") and cookieCreated:
+        # if user have an existing cookie with the name guestSeenTags
+        try:
+            userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+            if courseTag in userTagDict:
+                userTagDict[courseTag] += 1
+                res.set_cookie(
+                    "guestSeenTags",
+                    value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+                    expires=datetime.now() + datetime.timedelta(days=90)
+                )
+        except:
+            print("Error with editing guest's cookie.")
+            # if the guest user had tampered with the cookie value
             res.set_cookie(
                 "guestSeenTags",
-                value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-                expires=datetime.now() + datetime.timedelta(days=90)
+                value=b64encode(json.dumps({"Programming": 0,
+                "Web_Development": 0,
+                "Game_Development": 0,
+                "Mobile_App_Development": 0,
+                "Software_Development": 0,
+                "Other_Development": 0,
+                "Entrepreneurship": 0,
+                "Project_Management": 0,
+                "BI_Analytics": 0,
+                "Business_Strategy": 0,
+                "Other_Business": 0,
+                "3D_Modelling": 0,
+                "Animation": 0,
+                "UX_Design": 0,
+                "Design_Tools": 0,
+                "Other_Design": 0,
+                "Digital_Photography": 0,
+                "Photography_Tools": 0,
+                "Video_Production": 0,
+                "Video_Design_Tools": 0,
+                "Other_Photography_Videography": 0,
+                "Science": 0,
+                "Math": 0,
+                "Language": 0,
+                "Test_Prep": 0,
+                "Other_Academics": 0}).encode("utf-8")),
+                expires=datetime.now() + timedelta(days=90)
             )
-    except:
-        print("Error with editing guest's cookie.")
-        # if the guest user had tampered with the cookie value
+    elif not request.cookies.get("guestSeenTags") and cookieCreated:
+        # if user do not have an existing cookie with the name guestSeenTags
+        originalCourseTagDict = {"Programming": 0,
+                                "Web_Development": 0,
+                                "Game_Development": 0,
+                                "Mobile_App_Development": 0,
+                                "Software_Development": 0,
+                                "Other_Development": 0,
+                                "Entrepreneurship": 0,
+                                "Project_Management": 0,
+                                "BI_Analytics": 0,
+                                "Business_Strategy": 0,
+                                "Other_Business": 0,
+                                "3D_Modelling": 0,
+                                "Animation": 0,
+                                "UX_Design": 0,
+                                "Design_Tools": 0,
+                                "Other_Design": 0,
+                                "Digital_Photography": 0,
+                                "Photography_Tools": 0,
+                                "Video_Production": 0,
+                                "Video_Design_Tools": 0,
+                                "Other_Photography_Videography": 0,
+                                "Science": 0,
+                                "Math": 0,
+                                "Language": 0,
+                                "Test_Prep": 0,
+                                "Other_Academics": 0}
+        try:
+            originalCourseTagDict[courseTag] += 1
+        except:
+            print("Tag does not exist.")
+
         res.set_cookie(
             "guestSeenTags",
-            value=b64encode(json.dumps({"Programming": 0,
-            "Web_Development": 0,
-            "Game_Development": 0,
-            "Mobile_App_Development": 0,
-            "Software_Development": 0,
-            "Other_Development": 0,
-            "Entrepreneurship": 0,
-            "Project_Management": 0,
-            "BI_Analytics": 0,
-            "Business_Strategy": 0,
-            "Other_Business": 0,
-            "3D_Modelling": 0,
-            "Animation": 0,
-            "UX_Design": 0,
-            "Design_Tools": 0,
-            "Other_Design": 0,
-            "Digital_Photography": 0,
-            "Photography_Tools": 0,
-            "Video_Production": 0,
-            "Video_Design_Tools": 0,
-            "Other_Photography_Videography": 0,
-            "Science": 0,
-            "Math": 0,
-            "Language": 0,
-            "Test_Prep": 0,
-            "Other_Academics": 0}).encode("utf-8")),
-            expires=datetime.now() + timedelta(days=90)
+            value=b64encode(json.dumps(originalCourseTagDict).encode("utf-8")),
+            expires=datetime.now() + datetime.timedelta(days=90)
         )
 
-    if "cookieCreated" in session:
-        cookieCreated = session["cookieCreated"]
-    else:
-        session["cookieCreated"] = True
-        cookieCreated = False
-    print(cookieCreated)
-    if not request.cookies.get("guestSeenTags") and cookieCreated != True:
+    if not request.cookies.get("guestSeenTags") and cookieCreated == False:
         redirectURL = redirectURL + "/no_cookies"
         return redirect(redirectURL) # if the user had disabled cookies
     return res
@@ -3299,13 +3340,6 @@ def teacherCashOut():
 
 """Search Function by Royston"""
 
-# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE UPDATED TEMPLATE FOR GENERAL PAGES AND START FROM SCRATCH
-
-
-""""End of Search Function by Royston"""
-
-"""Search Function by Royston (Test)"""
-
 @app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 @limiter.limit("30/second") # to prevent ddos attacks
 def search(pageNum):
@@ -3561,7 +3595,7 @@ def search(pageNum):
             db.close()
             return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL, accType="Guest")
 
-"""End of Search Function by Royston (Test)"""
+"""End of Search Function by Royston"""
 
 """Purchase History by Royston"""
 
@@ -3622,17 +3656,11 @@ def purchaseHistory(pageNum):
                     course = courseDict[courseID]
                     courseType = purchasedCourses.get(courseID).get("Course Type")
 
-                    coursePricePaying = 0
-                    if courseType == "Zoom" or courseType == "Both":
-                        coursePricePaying += float(course.get_zoomPrice())
-                    if courseType == "Video" or courseType == "Both":
-                        coursePricePaying += float(course.get_videoPrice())
-
                     courseInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
-                        "Price":coursePricePaying,
+                        "Price":"{:,.2f}".format(course.get_price()),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
@@ -3699,9 +3727,7 @@ def purchaseReview():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             purchasedCourses = userKey.get_purchases()
-            reviewID = userKey.get_reviewID()
             print("Purchased course exists?: ", purchasedCourses)
-            print("ReviewID exists?: ", reviewID)
             courseDict = {}
             db = shelve.open("user", "c")
 
@@ -3710,23 +3736,25 @@ def purchaseReview():
             except:
                 print("Error in retrieving review from review.db")
                 db.close()
-                return render_template('users/loggedin/purchasehistory.html')
+                return redirect(url_for("purchasehistory"))
 
             createReview = Forms.CreateReviewText(request.form)
             if request.method == 'POST' and createReview.validate():
                 review = createReview.review.data
                 print(review)
-                courseDict.append(review)
+                course = courseDict.get_courseID()
+                course.set_reviewID(review)
                 courseDict["Courses"] = db
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
                 print("Review creation failed")
                 db.close()
-                return render_template('users/loggedin/purchasereview.html')
+                return redirect(url_for("purchasehistory"))
 
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchasereview.html', accType=accType, reviewID=reviewID, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -3746,7 +3774,7 @@ def purchaseReview():
 
 @app.route("/purchaseview")
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseView():
+def purchaseView(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3770,58 +3798,76 @@ def purchaseView():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            purchaseHistoryList = []
-            showCourse = ""
-            purchaseID = bool(userKey.get_purchaseID())
-            print("PurchaseID exists?: ", purchaseID)
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            courseID = ""
+            courseType = ""
+            historyCheck = True
+            historyList = []
+            # Get purchased courses
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
 
-            if purchaseID == True:
-                # improve on your try and except handling here or delete unnecessary db.close() to prevent runtime errors
+            if purchasedCourses != {}:
                 try:
-                    historyDict = {}
-                    dbCourse = shelve.open("course", "r")
-                    historyDict = dbCourse[""]
-                    for courseID in purchaseHistoryList(5):
-                        history = dbCourse[courseID]
-
-                        #id will be an integer
-
-                        video = {id :
-                            {historyDict : {"Title":history.get_title(),
-                            "Description":history.get_description(),
-                            "Thumbnail":history.get_thumbnail(),
-                            "VideoCheck":history.get_courseType()["Video"],
-                            "ZoomCheck":history.get_courseType()["Zoom"],
-                            "Price":history.get_price(),
-                            "Owner":history.get_owner()}
-                            }
-                        }
-                    for i in purchaseHistoryList:
-                        showCourse(video[i])
-
-                    db.close()
-
+                    courseDict = {}
+                    db = shelve.open("user", "r")
+                    courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
+                    db.close()
 
-            else:
+                # Get specific course with course ID
+                for courseID in list(purchasedCourses.keys()):
+                    print(courseID)
+
+                    # Find the correct course
+                    course = courseDict[courseID]
+                    courseType = purchasedCourses.get(courseID).get("Course Type")
+
+                    courseInformation = {"Title":course.get_title(),
+                        "Description":course.get_description(),
+                        "Thumbnail":course.get_thumbnail(),
+                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "Price":course.get_price(),
+                        "Owner":course.get_userID()}
+                    historyList.append(courseInformation)
+                print(historyList)
                 db.close()
-                print("Nothing to view here.")
-                return redirect(url_for("purchaseview"))\
-             # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-        else:
-            db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
+            else:
+                print("Purchase view is Empty")
+                historyCheck = False
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(purchasedCourses) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                return redirect("/purchaseview/0")
+            elif courseListLen > 0 and pageNum == 0:
+                return redirect("/purchaseview/1")
+            elif pageNum > maxPages:
+                redirectRoute = "/purchaseview/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
