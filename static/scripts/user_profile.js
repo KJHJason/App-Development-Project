@@ -43,7 +43,7 @@ Dropzone.options.dropper = {
 
         myDropzone.on("success", function () {
             function redirectUser() {
-                location.href="/user_profile"
+                location.reload();
             }
             setInterval(redirectUser, 1500);
         });

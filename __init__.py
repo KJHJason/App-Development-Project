@@ -2291,7 +2291,7 @@ def userProfile():
 
                     totalChunks = int(request.form["dztotalchunkcount"])
                     currentChunk = int(request.form['dzchunkindex'])
-
+                    
                     extensionType = get_extension(file.filename)
                     if extensionType != False:
                         file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
@@ -2327,7 +2327,7 @@ def userProfile():
                         if currentChunk + 1 == totalChunks:
                             # This was the last chunk, the file should be complete and the size we expect
                             if os.path.getsize(newFilePath) != int(request.form['dztotalfilesize']):
-                                print(f"File {file.filename} was completed, but has a size mismatch. Was {os.path.getsize(newFilePath)} but we expected {request.form['dztotalfilesize']} ")
+                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {os.path.getsize(newFilePath)} but had expected {request.form['dztotalfilesize']}")
                                 return make_response("Image was not successfully uploaded! Please try again!", 500)
                             else:
                                 print(f'File {file.filename} has been uploaded successfully')
@@ -2350,7 +2350,6 @@ def userProfile():
                                     db['Users'] = userDict
                                     db.close()
 
-                                    session["imageChanged"] = True
                                     return make_response(("Profile Image Uploaded!", 200))
                                 else:
                                     # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
@@ -2358,7 +2357,6 @@ def userProfile():
                                     db['Users'] = userDict
                                     db.close()
                                     os.remove(newFilePath) # removes corrupted image file
-                                    session["imageFailed"] = True
                                     return make_response(("Error in uploading image file!", 500))
                         else:
                             db.close()
@@ -2381,14 +2379,12 @@ def userProfile():
                 else:
                     teacherBio = ""
 
-                print(teacherBio)
-
                 userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
                 userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                 # checking if the user have uploaded a profile image before and if the image file exists
                 imagesrcPath = get_user_profile_pic(userUsername, userProfileImage, userProfileImagePath)
-
+                print(session)
                 # checking sessions if any of the user's acc info has changed
                 if "username_changed" in session:
                     usernameChanged = True
@@ -2413,22 +2409,6 @@ def userProfile():
                 else:
                     passwordChanged = False
                     print("Password recently changed?:", passwordChanged)
-
-                if "imageFailed" in session:
-                    imageFailed = True
-                    session.pop("imageFailed", None)
-                    print("Fail to upload image because of wrong extension?:", imageFailed)
-                else:
-                    imageFailed = False
-                    print("Fail to upload image because of wrong extension?:", imageFailed)
-
-                if "imageChanged" in session:
-                    imageChanged = True
-                    session.pop("imageChanged", None)
-                    print("Profile icon recently changed?:", imageChanged)
-                else:
-                    imageChanged = False
-                    print("Profile icon recently changed?:", imageChanged)
 
                 if "recentChangeAccType" in session:
                     recentChangeAccType = True
@@ -2472,7 +2452,7 @@ def userProfile():
                 else:
                     teacherUID = ""
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imageFailed=imageFailed, imageChanged=imageChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
