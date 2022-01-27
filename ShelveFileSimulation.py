@@ -14,16 +14,10 @@ from python_files.Admin import Admin
 from python_files.Teacher import Teacher
 from python_files.Student import Student
 from python_files.Course import Course
-from python_files.Security import sanitise
+from python_files.Security import sanitise, generate_admin_id
 from python_files.IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
-import shelve, shortuuid
-
-def generate_admin_id(adminDict):
-    generatedID = str(shortuuid.ShortUUID().random(length=5))
-    if generatedID in adminDict:
-        generate_admin_id(adminDict) # using recursion if there is a collision to generate a new unique ID
-    return generatedID
+import shelve
 
 # Open shelve
 userBase = shelve.open("user", "c")

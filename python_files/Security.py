@@ -1,5 +1,6 @@
 from argon2 import PasswordHasher
 import html, re # importing html for escaping inputs and re for compiling regular expression for validating email addresses
+import shortuuid
 
 # Done by Jason
 
@@ -56,3 +57,23 @@ def validate_email(email):
         return False
 
 """End of Email Validation using regex/regular expression"""
+
+"""Start of Admin Console Functions"""
+
+def validate_pwd_length(pwd, pwdMinimumLength):
+    if len(pwd) < pwdMinimumLength:
+        print("\nError: Please enter a password with at least {} characters!" .format(pwdMinimumLength))
+        return False
+    else:
+        print("Verdict: Password length accepted, within {} characters minimum requirement." .format(pwdMinimumLength))
+        return True
+
+# using shortuuid to generate a 5 character id for the admins.
+# out of 10 tests that generated one hundred thousand id(s), there was an average of 16 collisions which is feasible as the number of CourseFinity's support team will only be in the hundreds or thousands.
+def generate_admin_id(adminDict):
+    generatedID = str(shortuuid.ShortUUID().random(length=5))
+    if generatedID in adminDict:
+        generate_admin_id(adminDict) # using recursion if there is a collision to generate a new unique ID
+    return generatedID
+
+"""End of Admin Console Functions"""
