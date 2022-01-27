@@ -4313,10 +4313,12 @@ def teacherPage(teacherUID):
         if userFound and accGoodStanding:
         #checks if user account is available
             userDict = {}
+            courseDict = {}
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
+                    courseDict = db['Course']
                 else:
                     db.close()
                     print("User data in shelve is empty.")
@@ -4327,9 +4329,10 @@ def teacherPage(teacherUID):
                 print("Error in retrieving Users from user.db")
                 return redirect(url_for("home"))
             teacherObject = userDict.get(teacherUID)
+            courseObject = courseDict.get(teacherUID)
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
-            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio)
+            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, courseObject=courseObject)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
