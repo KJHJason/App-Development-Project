@@ -1724,7 +1724,7 @@ def userSearchManagement(pageNum):
                 if query in userDict: # if admin searches for the user using the user id
                     print("Query is a user's ID.")
                     userList.append(userDict.get(query))
-                if validate_email(query):
+                elif validate_email(query):
                     print("Query is an email.")
                     for key in userDict:
                         userKey = userDict[key]
@@ -3209,11 +3209,13 @@ def teacherCashOut():
                             session["cashedOut"] = True
                             userKey.set_earnings(0)
                             userKey.set_accumulated_earnings(0)
+                            db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
                         elif typeOfCollection == "collectingAccumulated":
                             session["cashedOut"] = True
                             userKey.set_accumulated_earnings(0)
+                            db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
                         else:

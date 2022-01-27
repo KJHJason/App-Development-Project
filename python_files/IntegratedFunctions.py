@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import url_for
 from src import Avatar
 from calendar import monthrange
-from datetime import date, datetime
+from datetime import date
 from .Graph import userbaseGraph
 
 """Done by Jason"""
@@ -305,7 +305,10 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
+        imagesrcPath = Avatar(type="initials", seed=username)
+
         if profileFileNameBool != False:
+            # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
             db = shelve.open("user", "c")
             try:
                 if 'Users' in db:
@@ -313,17 +316,17 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
                 else:
                     db.close()
                     print("User data in shelve is empty.")
-                    return False
+                    return imagesrcPath
             except:
                 db.close()
                 print("Error in retrieving Users from user.db")
-                return False
+                return imagesrcPath
+
             userObject = userDict.get(userSession)
             userObject.set_profile_image("")
             db["Users"] = userDict
             db.close()
-
-        imagesrcPath = Avatar(type="initials", seed=username)
+            
     return imagesrcPath
 
 # function for retrieving user's profile picture using dicebear library based on only the user's object given
