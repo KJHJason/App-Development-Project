@@ -300,18 +300,38 @@ def construct_path(relativeUploadPath, filename):
     return os.path.join(app.root_path, relativeUploadPath, filename)
 
 # function for retrieving user's profile picture using dicebear library
-def get_user_profile_pic(username, profileFileName, profileFilePath):
-    if profileFileName != "" and Path(profileFilePath).is_file():
+def get_user_profile_pic(username, profileFileName, profileFilePath, userSession):
+    profileFileNameBool = bool(profileFileName)
+    if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
+        if profileFileNameBool != False:
+            db = shelve.open("user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("User data in shelve is empty.")
+                    return False
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return False
+            userObject = userDict.get(userSession)
+            userObject.set_profile_image("")
+            db["Users"] = userDict
+            db.close()
+
         imagesrcPath = Avatar(type="initials", seed=username)
     return imagesrcPath
 
 # function for retrieving user's profile picture using dicebear library based on only the user's object given
 def retrieve_user_profile_pic(userKey):
     profileFileName = userKey.get_profile_image()
+    profileFileNameBool = bool(profileFileName)
     profileFilePath = construct_path(PROFILE_UPLOAD_PATH, profileFileName)
-    if profileFileName != "" and Path(profileFilePath).is_file():
+    if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
         imagesrcPath = Avatar(type="initials", seed=userKey.get_username())
