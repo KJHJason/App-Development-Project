@@ -1602,6 +1602,15 @@ def userManagement(pageNum):
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
 
+                    # auto fixing user profile image if the user has uploaded but the image is no longer on the web server directory
+                    for value in paginatedUserList:
+                        userProfileFileName = value.get_profile_image()
+                        if (bool(userProfileFileName) == True) and (Path(construct_path(PROFILE_UPLOAD_PATH, userProfileFileName)).is_file() == False):
+                            value.set_profile_image("")
+
+                    db["Users"] = userDict
+                    db.close()
+
                     if "invalidEmail" in session:
                         invalidEmail = True
                         session.pop("invalidEmail", None)
@@ -1776,6 +1785,15 @@ def userSearchManagement(pageNum):
 
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
+
+                    # auto fixing user profile image if the user has uploaded but the image is no longer on the web server directory
+                    for value in paginatedUserList:
+                        userProfileFileName = value.get_profile_image()
+                        if (bool(userProfileFileName) == True) and (Path(construct_path(PROFILE_UPLOAD_PATH, userProfileFileName)).is_file() == False):
+                            value.set_profile_image("")
+
+                    db["Users"] = userDict
+                    db.close()
 
                     if "invalidEmail" in session:
                         invalidEmail = True
