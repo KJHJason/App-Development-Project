@@ -221,36 +221,28 @@ def validate_session_open_file(userSession):
 def check_duplicates(userInput, userDict, infoToCheck):
     if infoToCheck == "username":
         # checking duplicates for username
+        print("Retrieving usernames from database.")
         for key in userDict:
-            print("retrieving")
             usernameShelveData = userDict[key].get_username()
             if userInput == usernameShelveData:
                 print("Username in database:", usernameShelveData)
                 print("Username input:", userInput)
                 print("Verdict: Username already taken.")
                 return True
-            else:
-                print("Username in database:", usernameShelveData)
-                print("Username input:", userInput)
-                print("Verdict: Username is unique.")
         return False
 
     elif infoToCheck == "email":
         # Checking duplicates for email
+        print("Retrieving emails from database.")
         for key in userDict:
-            print("retrieving")
             emailShelveData = userDict[key].get_email()
             if userInput == emailShelveData:
                 print("Email in database:", emailShelveData)
                 print("Email input:", userInput)
                 print("Verdict: User email already exists.")
                 return True
-            else:
-                print("Email in database:", emailShelveData)
-                print("Email input:", userInput)
-                print("Verdict: User email is unique.")
         return False
-
+    
     else:
         raise Exception('Third argument for get_key() can only take in "username" or "email"!')
 
