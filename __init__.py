@@ -3648,6 +3648,9 @@ def purchaseHistory(pageNum):
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
+
+                session["getHistoryList"] = historyList
+
                 db.close()
             else:
                 print("Purchase History is Empty")
@@ -3710,6 +3713,8 @@ def createPurchaseReview():
             else:
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
+
+            historyList = session.get("getHistoryList", None)
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
@@ -3727,13 +3732,13 @@ def createPurchaseReview():
             if request.method == 'POST' and createReview.validate():
                 review = createReview.review.data
                 print(review)
+                reviewID = {"ReviewID":review,"UserID":user}
                 course = courseDict.get_courseID()
-                course.add_reviewID(review)
-                
+                course.add_reviewID(reviewID)
                 courseDict["Courses"] = db
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, historyList = historyList)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
@@ -3790,10 +3795,11 @@ def purchaseView(pageNum):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            historyList = session.get("getHistoryList", None)
+            videoList = []
             courseID = ""
             courseType = ""
             historyCheck = True
-            historyList = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
@@ -3821,8 +3827,8 @@ def purchaseView(pageNum):
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
-                    historyList.append(courseInformation)
-                print(historyList)
+                    videoList.append(courseInformation)
+                print(videoList)
                 db.close()
             else:
                 print("Purchase view is Empty")
