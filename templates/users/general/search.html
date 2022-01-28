@@ -10,7 +10,6 @@
 {% block title %}Search | CourseFinity{% endblock %}
 
 {% block content %}
-<a id="topbutton"><i class="fas fa-chevron-up"></i></a> <!-- go to top button -->
 <div class="container">
     <h2>You Searched For "{{ searchInput }}"</h2>
 
@@ -134,8 +133,4 @@
     {% endif %}
 
   </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ url_for('static', filename='scripts/go_to_top.js') }}"></script>
 {% endblock %}
