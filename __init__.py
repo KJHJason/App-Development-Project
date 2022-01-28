@@ -3714,7 +3714,7 @@ def createPurchaseReview():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
-            historyList = session.get("getHistoryList", None)
+            historyList = session.get("getHistoryList")
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
@@ -3795,7 +3795,7 @@ def purchaseView(pageNum):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            historyList = session.get("getHistoryList", None)
+            historyList = session.get("getHistoryList")
             videoList = []
             courseID = ""
             courseType = ""
