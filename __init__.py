@@ -4521,9 +4521,9 @@ Previous Next
 
 # THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE TEMPLATE AND START FROM SCRATCH
 # Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
-@app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
+@app.route('/teacher_page/<teacherPageUID>', methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
-def teacherPage(teacherUID):
+def teacherPage(teacherPageUID):
     if "adminSession" in session or "userSession" in session:
     #checks if session is admin or user
         if "adminSession" in session:
@@ -4542,6 +4542,7 @@ def teacherPage(teacherUID):
                 if 'Users' in db:
                     userDict = db['Users']
                     courseDict = db['Course']
+                    db.close()
                 else:
                     db.close()
                     print("User data in shelve is empty.")
@@ -4551,11 +4552,31 @@ def teacherPage(teacherUID):
                 db.close()
                 print("Error in retrieving Users from user.db")
                 return redirect(url_for("home"))
-            teacherObject = userDict.get(teacherUID)
-            courseObject = courseDict.get(teacherUID)
+
+            teacherObject = userDict.get(teacherPageUID)
+            teacherCourseList = []
+
+            for value in courseDict.values():
+                if value.get_userID() == teacherPageUID:
+                    teacherCourseList.append(value)
+            try:
+                # Get last 3 elements from the list
+                lastThreeCourseList = teacherCourseList[-3:]
+            except:
+                lastThreeCourseList = teacherCourseList[::-1]
+                print("Teacher has not enough courses")
+
+            # Featured courses are highest rated courses
+            popularCourseList = []
+            if len(teacherCourseList) >= 3:
+                for i in range(3):
+                    popularCourseList.append(max(teacherCourseList, key=lambda x: x.get_rating()))
+                
+
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
-            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, courseObject=courseObject)
+            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList = teacherCourseList, lastThreeCousreList = lastThreeCourseList)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -4568,9 +4589,9 @@ def teacherPage(teacherUID):
 
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/teacher_courses/<teacherUID>', methods=["GET", "POST"])
+@app.route('/teacher_courses/<teacherCoursesUID>', methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
-def teacherCourses(teacherUID):
+def teacherCourses(teacherCoursesUID):
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -4626,64 +4647,27 @@ def course_thumbnail_upload():
             if accType == "Teacher":
                 teacherUID = userSession
                 if request.method == "POST":
-                    typeOfFormSubmitted = request.form.get("submittedForm")
-                    if typeOfFormSubmitted == "image":
-                        if "profileImage" not in request.files:
-                            print("No file sent.")
-                            return redirect(url_for("userProfile"))
-
-                        file = request.files["profileImage"]
-
-                        extensionType = get_extension(file.filename)
-                        if extensionType != False:
-                            # renaming the file name of the submitted image data payload
-                            file.filename = userSession + extensionType
-                            filename = file.filename
-                        else:
-                            filename = "invalid"
-
-                        if file and allowed_image_file(filename):
-                            # will only accept .png, .jpg, .jpeg
-                            print("File extension accepted.")
-
-                            # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
-
-                            userImageFileName = file.filename
-                            newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
-
-                            file.save(newFilePath)
-                            print("Image file has been saved.")
-
-                            # resizing the image to a 1:1 ratio and compresses it
-                            imageResized = resize_image(newFilePath, (500, 500))
-                            if imageResized:
-                                # if file was successfully resized, it means the image is a valid image
-                                userKey.set_profile_image(userImageFileName)
-                                db['Users'] = userDict
+                    if form.validate():
+                        #add course object to courseDict
+                        courseDict = {}
+                        db = shelve.open(app.config["DATABASE_FOLDER"] + "/course", "c")
+                        try:
+                            if 'Course' in db:
+                                courseDict = db['Course']
                                 db.close()
-
-                                session["imageChanged"] = True
-                                return redirect(url_for("userProfile"))
                             else:
-                                # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file in which the code below will reset the user's profile image but the corrupted image will still be stored on the server until it is overwritten
-                                userKey.set_profile_image("")
-                                db['Users'] = userDict
                                 db.close()
-                                session["imageFailed"] = True
-                                return redirect(url_for("userProfile"))
-                        else:
+                                print("Course data in shelve is empty.")
+                                session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                                return redirect(url_for("home"))
+                        except:
                             db.close()
-                            print("Image extension not allowed or exceeded maximum image size of {} bytes" .format(app.config['MAX_THUMBNAIL_IMAGE_FILESIZE']))
-                            session["imageFailed"] = True
-                            return redirect(url_for("userProfile"))
-                    else:
-                        db.close()
-                        print("Form value tampered...")
-                        return redirect(url_for("userProfile"))
+                            print("Error in retrieving Course from course.db")
+                            return redirect(url_for("home"))
                 else:
                     teacherUID = ""
                 db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, imageFailed=imageFailed, imageChanged=imageChanged)
+                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 print("User not found or is banned")
@@ -4700,6 +4684,8 @@ def course_thumbnail_upload():
                 # return redirect(url_for("userLogin"))
 
 """Course Creation by Clarence"""
+
+
 """General Pages"""
 
 @app.route('/cookie_policy')
