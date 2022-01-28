@@ -2807,14 +2807,8 @@ def changeAccountType():
         print("Account type:", accType)
 
         if userFound and accGoodStatus:
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
-
-            imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Student":
-                if request.method == "POST":
+                if request.method == "POST" and request.form["changeAccountType"] == "changeToTeacher":
                     # changing the user's account type to teacher by deleting the student object and creating a new teacher object, and hence, changing the user ID as a whole.
                     username = userKey.get_username()
                     password = userKey.get_password()
@@ -2867,13 +2861,13 @@ def changeAccountType():
 
                     db["Users"] = userDict
                     db.close()
-                    session["userSession"] = userID
                     print("Account type updated to teacher.")
                     session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
                     return redirect(url_for("userProfile"))
                 else:
+                    print("Not POST request or did not have relevant hidden field.")
                     db.close()
-                    return render_template("users/student/change_account_type.html", accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    return redirect(url_for("userProfile"))
             else:
                 db.close()
                 print("User is not a student.")

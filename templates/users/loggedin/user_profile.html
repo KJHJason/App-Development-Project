@@ -251,7 +251,7 @@
                                         <td>
                                             <h6 class="margin-btm">{{ accType }}</h6>
                                             {% if accType == "Student" %}
-                                            <span><a href="/change_account_type">Become a Teacher!</a></span>
+                                            <span><a href="#" onclick="return false;" data-bs-toggle="modal" data-bs-target="#becomeTeacher">Become a Teacher!</a></span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -310,14 +310,35 @@
                                 </table>
                             </div>
                             {% if accType == "Student" %}
+                            <div class="modal fade" id="becomeTeacher" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="becomeTeacherLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="becomeTeacherLabel">Change account type to teacher?</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Are you sure that you would like to become a teacher in CourseFinity?</p>
+                                            <p>If so, please read the <a href="#" target="_blank">Teacher's Handbook</a> and any failure to comply with the rules written in the <a href="#" target="_blank">Teacher's Handbook</a> will result in <span class="text-danger">termination</span> of your account.</p>
+                                            <p class="text-danger">Warning: Changing of account type from teacher to student is not possible. Hence, please consider this opportunity seriously and carefully.</p>
+                                            <p>Otherwise, please click the back button and continue to enjoy learning various skills!</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                                            <form action="/change_account_type" method="POST">
+                                                <input type="hidden" name="changeAccountType" value="changeToTeacher">
+                                                <button type="submit" class="btn btn-primary">Become a teacher!</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="border border-2 alert alert-light alert-dismissible fade show text-dark" role="alert">
                                 <h4>Did you know?</h4>
                                 <p>If you have a passion for teaching, you can become an educator on CourseFinity!</p>
                                 <p>CourseFinity will only take 25% of your monthly revenue. Additionally, for the first three months, you will earn 100% of your monthly revenue!</p>
                                 <p>Click on the button below or click on "Become a Teacher!" above!</p>
-                                <form action="/change_account_type" method="GET">
-                                    <button type="submit" class="btn btn-primary btn-lg">Change account type</button>
-                                </form>
+                                <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#becomeTeacher">Change account type</button>
                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                             {% endif %}
