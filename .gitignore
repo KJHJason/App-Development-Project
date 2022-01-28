@@ -1,19 +1,15 @@
 user.bak
 user.dat
 user.dir
-__pycache__/__init__.cpython-39.pyc
 admin.bak
 admin.dat
 admin.dir
-__pycache__/Admin.cpython-39.pyc
 test.py
 testflask.py
-__pycache__/Graph.cpython-39.pyc
 UIDCollisionTest.py
-__pycache__/Common.cpython-39.pyc
 venv/*
-venv/Lib/site-packages/pip/_internal/operations/__pycache__/freeze.cpython-39.pyc
-venv/Lib/site-packages/pip/_internal/commands/__pycache__/freeze.cpython-39.pyc
+__pycache__/__init__.cpython-39.pyc
+__pycache__/AdminAccountConsole.cpython-39.pyc
 python_files/__pycache__/__init__.cpython-39.pyc
 python_files/__pycache__/Admin.cpython-39.pyc
 python_files/__pycache__/CardValidation.cpython-39.pyc
@@ -29,4 +25,3 @@ python_files/__pycache__/Security.cpython-39.pyc
 python_files/__pycache__/Student.cpython-39.pyc
 python_files/__pycache__/Teacher.cpython-39.pyc
 python_files/__pycache__/User.cpython-39.pyc
-__pycache__/AdminAccountConsole.cpython-39.pyc
