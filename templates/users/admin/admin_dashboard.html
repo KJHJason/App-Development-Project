@@ -123,7 +123,10 @@
                 options: {
                     scales: {
                         y: {
-                            min: 0
+                            min: 0,
+                            ticks: {
+                                precision: 0 // make y-axis to show whole numbers
+                            }
                         }
                     },
                     plugins: {

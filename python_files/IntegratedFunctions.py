@@ -707,7 +707,7 @@ def saveNoOfUserPerDay():
     graphDateList = []
     userDict = {}
     db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
-    currentTime = date.today().strftime("%d-%m-%Y")
+    currentDate = date.today().strftime("%d-%m-%Y")
     try:
         if 'userGraphData' in db and "Users" in db:
             graphList = db['userGraphData']
@@ -716,17 +716,23 @@ def saveNoOfUserPerDay():
             print("No data in user shelve files")
             db["userGraphData"] = graphList
             db['Users'] = userDict
-        for dates in graphList:
-            graphDateList.append(dates.get_date())
-        if currentTime not in graphDateList:
-            graphData = userbaseGraph(len(userDict))
-            graphList.append(graphData)
-            db["userGraphData"] = graphList
     except:
-        db.close()
         print("Error in retrieving Users/userGraphData from user.db")
-    print(graphDateList)
-    print(graphList)
+
+    for dates in graphList:
+        graphDateList.append(dates.get_date())
+    if currentDate in graphDateList:
+        print("Data already exists, overwriting old data.")
+        graphList.pop(graphDateList.index(currentDate))
+        graphData = userbaseGraph(len(userDict))
+        graphList.append(graphData)
+        db["userGraphData"] = graphList
+    else:
+        print("Data does not exist, creating new data.")
+        graphData = userbaseGraph(len(userDict))
+        graphList.append(graphData)
+        db["userGraphData"] = graphList
+    db.close()
 
 """Done by Jason"""
 

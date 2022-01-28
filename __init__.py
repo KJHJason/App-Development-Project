@@ -2164,7 +2164,7 @@ def dashboard():
         # userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
 
         if userFound and accActive:
-            # add in your code here
+            saveNoOfUserPerDay() # refreshes the graph data every time an admin visits the dashboard page
             graphList = []
             db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
             try:
