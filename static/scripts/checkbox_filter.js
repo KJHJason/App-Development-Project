@@ -22,6 +22,32 @@ function toggle(id) {
     document.getElementById('checkedFilters').value = JSON.stringify(filters);
 }
 
-function searchSubmit() {
-    document.getElementById("search-form").submit();
+function ticketToggle(ticketID) {
+    document.getElementById("ticketID").value = ticketID;
+    document.getElementById("ticketAction").value = "Toggle";
+    document.getElementById("action-form").submit();
+}
+
+function ticketDelete(ticketID) {
+    document.getElementById("ticketID").value = ticketID;
+    document.getElementById("ticketAction").value = "Delete";
+    document.getElementById("action-form").submit();
+}
+
+function allChoices() {
+    document.getElementById('checkedFilters').value = JSON.stringify(['Open', 'Closed', 'Guest', 'Student', 'Teacher', 'General', 'Account', 'Business', 'Bugs', 'Jobs', 'News', 'Others']);
+    var filters = document.getElementsByClassName("filter");
+    for (var count = 0; count < filters.length; count++) {
+        var filter = filters[count];
+        filter.checked = true;
+    }
+}
+
+function noChoices() {
+    document.getElementById('checkedFilters').value = JSON.stringify([]);
+    var filters = document.getElementsByClassName("filter");
+    for (var count = 0; count < filters.length; count++) {
+        var filter = filters[count];
+        filter.checked = false;
+    }
 }

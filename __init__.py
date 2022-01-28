@@ -4133,7 +4133,7 @@ def contactUs():
                     try:
                         send_contact_us_email(ticketID, subject, name, email)
                     except:
-                        print("Email server is down, please try again later")
+                        print("Email server is down, please try again later.")
 
                     dbAdmin.close()
 
@@ -4216,6 +4216,7 @@ def supportTicketManagement(pageNum):
         if userFound and accActive:
 
             ticketSearch = Forms.TicketSearchForm(request.form)
+            ticketAction = Forms.TicketAction(request.form)
 
             dbAdmin = shelve.open("admin", "c")
             # Remember to validate
@@ -4231,6 +4232,7 @@ def supportTicketManagement(pageNum):
             # add in your code here
 
             ticketList = []
+            search = False
 
             # Initialise filtration system
             if "Checked Filters" not in session:
@@ -4239,12 +4241,51 @@ def supportTicketManagement(pageNum):
             # GET is a client request for data from the web server,
             # while POST and PUT are used to send messages that upload data to the web server
 
-            # Search does not work if there are no entries
-            if request.method == "POST":
+            # Only if there are entries
+            if request.method == "POST" and ticketDict != {}:
 
-                if ticketSearch.validate() and ticketDict != {}:
+                # Change Filter Parameters; only if form submitted
+                print(ticketSearch.data)
+                print(ticketAction.data)
+                if not(ticketSearch.checkedFilters.data == None and ticketSearch.query.data == None):
+                    print(ticketSearch.checkedFilters.data)
                     session["Checked Filters"] = json.loads(ticketSearch.checkedFilters.data)
-                    session["Query"] = ticketSearch.query.data
+                    print(ticketSearch.query.data)
+                    if ticketSearch.query.data == None:
+                        session["Query"] = ""
+                    else:
+                        session["Query"] = ticketSearch.query.data.lower()
+                    search = True
+
+                # Ticket Toggling
+                if ticketAction.ticketAction.data == "Toggle":
+                    print("Toggling")
+                    print(ticketAction.ticketID.data)
+                    ticket = ticketDict[ticketAction.ticketID.data]
+                    if ticket["Status"] == "Open":
+                        ticket["Status"] = "Closed"
+                    else:
+                        ticket["Status"] = "Open"
+                    ticketDict[ticketAction.ticketID.data] = ticket
+                    print(ticketDict)
+
+                # Ticket Deleting
+                elif ticketAction.ticketAction.data == "Delete":
+                    print("Deleting")
+                    if ticketAction.ticketID.data in ticketDict:
+                        ticketID = ticketAction.ticketID.data
+                        ticket = ticketDict(ticketID)
+                        issueTitle = ticket["Subject"]
+                        name = ticket["Name"]
+                        email = ticket["Email"]
+                        try:
+                            send_ticket_closed_email(ticketID, issueTitle, name, email)
+                        except:
+                            print("Email server is down, please try again later.")
+                        ticketDict.pop(ticketID)
+
+
+            print(ticketDict)
 
             # Preparing filtration system
             query = session["Query"]
@@ -4273,14 +4314,13 @@ def supportTicketManagement(pageNum):
                             filtered = True
 
 
-                if not filtered and (query in ticket['Name'] or query in ticket['Email'] or query in ticketID):
+                if not filtered and (query in ticket['Name'].lower() or query in ticket['Email'].lower() or query in ticketID.lower()):
                     ticketList.append(ticket)
 
             renderedFilters = session['Checked Filters']
 
-
-
-            #print([key for key in list(session.items())])
+            dbAdmin['Tickets'] = ticketDict
+            dbAdmin.close() # remember to close your shelve files!
 
             maxItemsPerPage = 10 # declare the number of items that can be seen per pages
             ticketListLen = len(ticketList) # get the length of the userList
@@ -4303,9 +4343,7 @@ def supportTicketManagement(pageNum):
                 nextPage = pageNum + 1
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                dbAdmin.close() # remember to close your shelve files!
-                return render_template('users/admin/support_ticket_management.html', nextPage = nextPage, previousPage = previousPage, ticketList=paginatedTicketList, count=ticketListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ticketSearch = ticketSearch, renderedFilters=json.dumps(renderedFilters))
+                return render_template('users/admin/support_ticket_management.html', nextPage = nextPage, previousPage = previousPage, ticketList=paginatedTicketList, count=ticketListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, ticketSearch = ticketSearch, ticketAction=ticketAction, renderedFilters=json.dumps(renderedFilters), query=query, search=search)
 
         else:
             print("Admin account is not found or is not active.")
@@ -4317,6 +4355,154 @@ def supportTicketManagement(pageNum):
         return redirect(url_for("contactUs"))
 
 """End of Support Ticket Management by Wei Ren"""
+
+"""Admin Statistics by Wei Ren"""
+@app.route("/admin_statistics/<string:statistic>/<int:year>/<int:month>/<int:day>")
+@limiter.limit("30/second") # to prevent ddos attacks
+
+def adminStatistics(statistic, year, month, day):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+        print(adminSession)
+        userFound, accActive = admin_validate_session_open_file(adminSession)
+
+        if userFound and accActive:
+
+            # Remember to validate
+            try:
+                if "Statistics" in dbAdmin:
+                    statisticDict = dbAdmin['Statistics']
+                else:
+                    print("admin.db has no statistic entries.")
+                    statisticDict = create_statistic_dict('Courses Created','Courses Purchased','User Sign Ups','Teacher Sign Ups','Tickets Created','Tickets Open','Users Banned','Users Deleted')
+            except:
+                print("Error in retrieving statistics from admin.db")
+
+            # add in your code here
+            
+
+
+            # print(statisticDict)
+
+            dbAdmin.close() # remember to close the admin shelve file!
+            return render_template('users/admin/admin_statistics.html')
+        else:
+            print("Admin account is not found or is not active.")
+            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            # determine if it make sense to redirect the admin to the home page or the admin login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("adminLogin"))
+    else:
+        return redirect(url_for("home"))
+
+"""
+
+            graphList = []
+            db = shelve.open("user", "c")
+            try:
+                if 'userGraphData' in db and "Users" in db:
+                    graphList = db['userGraphData']
+                else:
+                    print("No data in user shelve files")
+                    db["userGraphData"] = graphList
+            except:
+                print("Error in retrieving userGraphData from user.db")
+            finally:
+                db.close()
+
+            print("Retrieved graph data:", graphList)
+            try:
+                lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
+            except:
+                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+
+            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            print("Selected graph data:", selectedGraphDataList)
+
+            # for matplotlib and chartjs graphs
+            xAxisData = [] # dates
+            yAxisData = [] # number of users
+            for objects in selectedGraphDataList:
+                xAxisData.append(str(objects.get_date()))
+                yAxisData.append(objects.get_noOfUser())
+
+            # for csv
+            graphDict = {}
+            for objects in graphList:
+                graphDict[objects.get_date()] = objects.get_noOfUser()
+
+            # try and except as matplotlib may fail since it is outside of main thread
+            try:
+                fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
+                plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
+
+                x = xAxisData # date labels for x-axis
+                y = yAxisData # data for y-axis
+
+                plt.plot(x, y, color="#009DF8", linewidth=3)
+
+                # graph configurations
+                plt.ylabel('Total Numbers of Users')
+                plt.title("Total Userbase by Day")
+                plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
+                fig.autofmt_xdate() # auto formats the date label to be tilted
+                fig.tight_layout() # eliminates padding
+
+                figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
+                plt.savefig(figureFilename)
+            except:
+                print("Error in saving graph image...")
+
+            csvFileName = "static/data/user_base/csv/user_base.csv"
+
+            # # below code for simulation purposes
+            # xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
+            # yAxisData = [12, 240, 500] # number of users
+            # graphDict = {
+            #     "21/1/2022": 4,
+            #     "22/1/2022": 20,
+            #     "23/1/2022": 25,
+            #     "24/1/2022": 100
+            # }
+
+            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
+            with open(csvFileName, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["Dates", "Number Of Users"])
+                for key, value in graphDict.items():
+                    writer.writerow([key, value])
+
+            print("X-axis data:", xAxisData)
+            print("Y-axis data:", yAxisData)"""
+"""
+x-axis:
+ - Time (Over 24 hours)
+ - Time (Days)
+ - Time (Weeks)
+ - Time (Months)
+ - Time (Quarterly)
+ - Time (Year)
+
+y-axis:
+ - Courses Created
+ - Courses Purchased
+ - User Sign Ups
+ - Teacher Sign Ups
+ - Tickets Opened
+ - Tickets Active (and then closed)
+ - Users Banned (and then unbanned)
+ - Users Deleted
+
+Previous Next
+
+
+
+"""
+
+
+"""End of Admin Statistics by Wei Ren"""
+
 
 """Teacher's Channel Page by Clarence"""
 
