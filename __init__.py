@@ -2385,6 +2385,18 @@ def userProfile():
                     else:
                         db.close()
                         return make_response("Image extension not supported!", 500)
+                elif typeOfFormSubmitted == "resetUserIcon":
+                    print("Deleting user's profile image...")
+                    userImageFileName = userKey.get_profile_image()
+                    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                    # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
+                    if bool(userImageFileName) != False and Path(profileFilePath).is_file():
+                        os.remove(profileFilePath)
+                    userKey.set_profile_image("")
+                    db['Users'] = userDict
+                    db.close()
+                    print("User profile image deleted.")
+                    return redirect(url_for("userProfile"))
                 else:
                     db.close()
                     print("Form value tampered or POST request sent without form value...")
@@ -2400,6 +2412,7 @@ def userProfile():
                     teacherBio = ""
 
                 userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
+                userProfileFilenameSaved = bool(userProfileImage)
                 userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                 # checking if the user have uploaded a profile image before and if the image file exists
@@ -2472,7 +2485,7 @@ def userProfile():
                 else:
                     teacherUID = ""
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
         else:
             db.close()
             print("User not found or is banned.")

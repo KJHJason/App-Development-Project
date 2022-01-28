@@ -23,6 +23,14 @@
   border-radius: 50%;
 }
 
+.delete_profile_icon {
+  text-decoration: none;
+}
+
+.delete_profile_icon:hover {
+  text-decoration: underline;
+}
+
 .payment_exist {
   height: 600px;
 }
