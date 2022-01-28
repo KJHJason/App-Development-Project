@@ -1,6 +1,6 @@
 from python_files.Admin import Admin
 from python_files.Security import sanitise, validate_email, generate_admin_id, validate_pwd_length
-import shelve
+import shelve, pathlib
 
 cmd_menu = """
 Welcome to the admin console!
@@ -27,6 +27,7 @@ Hence, please only force shut down the program if necessary.
 # Command line 6 feature/operation done by Royston
 
 def main():
+    adminDatabaseFilePath = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases" + "/admin"
     while True:
         print(cmd_menu)
         cmd_input = input("Enter number: ")
@@ -68,7 +69,7 @@ def main():
                                 print("\nPassword for admin entered matched.")
                                 # Retrieving data from shelve for duplicate data checking
                                 adminDict = {}
-                                db = shelve.open("admin", "c")
+                                db = shelve.open(adminDatabaseFilePath, "c")
                                 try:
                                     if 'Admins' in db:
                                         adminDict = db['Admins']
@@ -143,7 +144,7 @@ def main():
                     break
                 if email != False:
                     adminDict = {}
-                    db = shelve.open("admin", "c")
+                    db = shelve.open(adminDatabaseFilePath, "c")
                     try:
                         if 'Admins' in db:
                             adminDict = db['Admins']
@@ -257,7 +258,7 @@ def main():
                 if email != False:
 
                     adminDict = {}
-                    db = shelve.open("admin", "c")
+                    db = shelve.open(adminDatabaseFilePath, "c")
                     try:
                         if 'Admins' in db:
                             adminDict = db['Admins']
@@ -331,7 +332,7 @@ def main():
                     break
                 if email != False:
                     adminDict = {}
-                    db = shelve.open("admin", "c")
+                    db = shelve.open(adminDatabaseFilePath, "c")
                     try:
                         if 'Admins' in db:
                             adminDict = db['Admins']
@@ -403,7 +404,7 @@ def main():
                 email = sanitise(input("Enter email or admin id for the admin account: "))
                 if email != False:
                     adminDict = {}
-                    db = shelve.open("admin", "c")
+                    db = shelve.open(adminDatabaseFilePath, "c")
                     try:
                         if 'Admins' in db:
                             adminDict = db['Admins']
@@ -460,7 +461,7 @@ def main():
 
         elif cmd_input == "6":
             adminDict = {}
-            db = shelve.open("admin", "c")
+            db = shelve.open(adminDatabaseFilePath, "c")
             try:
                 if 'Admins' in db:
                     adminDict = db['Admins']

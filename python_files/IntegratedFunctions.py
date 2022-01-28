@@ -41,7 +41,7 @@ def validate_session_get_userKey_open_file(userSession):
     userDict = {}
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
-        db = shelve.open("user", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
         userDict = db['Users']
         print("File found.")
         db.close()
@@ -91,7 +91,7 @@ def general_page_open_file(userID):
     adminImagesrcPath = "/static/images/user/default.png"
     try:
         adminDict = {}
-        db = shelve.open("admin", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "r")
         adminDict = db['Admins']
         print("File found.")
         db.close()
@@ -114,7 +114,7 @@ def general_page_open_file(userID):
                 return userFound, False, "", adminImagesrcPath
     try:
         userDict = {}
-        db = shelve.open("user", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
         userDict = db['Users']
         print("File found.")
         db.close()
@@ -142,7 +142,7 @@ def general_page_open_file_with_userKey(userID):
     adminImagesrcPath = "/static/images/user/default.png"
     try:
         adminDict = {}
-        db = shelve.open("admin", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "r")
         adminDict = db['Admins']
         print("File found.")
         db.close()
@@ -165,7 +165,7 @@ def general_page_open_file_with_userKey(userID):
                 return adminKey, userFound, False, "", adminImagesrcPath
     try:
         userDict = {}
-        db = shelve.open("user", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
         userDict = db['Users']
         print("File found.")
         db.close()
@@ -193,7 +193,7 @@ def validate_session_open_file(userSession):
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
         userDict = {}
-        db = shelve.open("user", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
         userDict = db['Users']
         print("File found.")
         db.close()
@@ -301,7 +301,7 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
 
         if profileFileNameBool != False:
             # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
-            db = shelve.open("user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -343,7 +343,7 @@ def admin_validate_session_open_file(adminSession):
     # Retrieving data from shelve to check validity of the session and to check if the files has been deleted
     try:
         adminDict = {}
-        db = shelve.open("admin", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "r")
         adminDict = db['Admins']
         print("File found.")
         db.close()
@@ -387,7 +387,7 @@ def admin_get_key_and_validate(adminSession, adminDict):
 def admin_get_key_and_validate_open_file(adminSession):
     adminKey = ""
     try:
-        db = shelve.open("admin", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "r")
         adminDict = db["Admins"]
         print("File found.")
         db.close()
@@ -706,7 +706,7 @@ def saveNoOfUserPerDay():
     graphList = []
     graphDateList = []
     userDict = {}
-    db = shelve.open("user", "c")
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
     currentTime = date.today().strftime("%d-%m-%Y")
     try:
         if 'userGraphData' in db and "Users" in db:

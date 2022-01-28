@@ -1,4 +1,4 @@
-import shelve, uuid
+import shelve, uuid, pathlib
 from python_files.Student import Student
 
 def generate_ID(inputDict):
@@ -8,7 +8,7 @@ def generate_ID(inputDict):
     return generatedID
 
 userDict = {}
-db = shelve.open("user", "c")
+db = shelve.open(str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases" + "/user", "c")
 try:
     if 'Users' in db:
         userDict = db['Users']

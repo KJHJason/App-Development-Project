@@ -17,11 +17,13 @@ from python_files.Course import Course
 from python_files.Security import sanitise, generate_admin_id
 from python_files.IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
-import shelve
+import shelve, pathlib
+
+databaseFolder = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases"
 
 # Open shelve
-userBase = shelve.open("user", "c")
-adminBase = shelve.open("admin", "c")
+userBase = shelve.open(databaseFolder + "/user", "c")
+adminBase = shelve.open(databaseFolder + "/admin", "c")
 
 # Remove all prior entries
 userDict = {}
