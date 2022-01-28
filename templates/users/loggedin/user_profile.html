@@ -66,45 +66,6 @@
 </div>
 {% endif %}
 
-{% if imageChanged %}
-<div class="modal fade" id="imageChangedModal" tabindex="-1" aria-labelledby="imageChangedModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="imageChangedModalLabel">Profile Image Changed</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <h6>Your profile image has been succesfully uploaded and changed.</h6>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-        </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% if imageFailed %}
-<div class="modal fade" id="imageFailedModal" tabindex="-1" aria-labelledby="imageFailedModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="imageFailedModalLabel">Failed to change your profile image!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <h6>Your profile image <span class="text-danger">has not been succesfully</span> uploaded and changed.</h6>
-            <h6>Do note that only images with the extension <span class="text-danger">png, jpg, or jpeg are only accepted</span> and the image size must be <span class="text-danger">2MB or less</span>.</h6>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-        </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 {% if RecentChangeAccType %}
 <div class="modal fade" id="RecentChangeAccTypeModal" tabindex="-1" aria-labelledby="RecentChangeAccTypeModalLabel" aria-hidden="true">
     <div class="modal-dialog">
