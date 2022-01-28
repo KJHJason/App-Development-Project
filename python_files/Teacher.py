@@ -13,7 +13,7 @@ class Teacher(Common):
     """Done by Jason"""
     
     def set_earnings(self, earnings):
-        self.__earnings = earnings
+        self.__earnings = float(earnings)
     def get_earnings(self):
         return self.__earnings
 
@@ -23,7 +23,7 @@ class Teacher(Common):
         return self.__bio
 
     def set_accumulated_earnings(self, earnings):
-        self.__accumulated_earnings = earnings
+        self.__accumulated_earnings = float(earnings)
     def get_accumulated_earnings(self):
         return self.__accumulated_earnings
 
