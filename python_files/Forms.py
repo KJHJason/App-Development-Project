@@ -104,12 +104,16 @@ class ContactUs(Form):
     enquiry = TextAreaField("Enquiry: Easter Sunday", [validators.DataRequired()])
 
 class TicketSearchForm(Form):# Very cursed. I love lack of Checkbox Field.
-    query = StringField([validators.Optional()], default="")
+    query = HiddenField([validators.Optional()])
     checkedFilters = HiddenField([validators.DataRequired(), validators.InputRequired()])
 
 #   filterStatus = RadioField("Ticket Status", [validators.DataRequired()], choices = ['Open','Closed'], default = 'Open')
 #   filterAccount = RadioField("Account Type", [validators.DataRequired()], choices = ['Guest','Student','Teacher'], default = 'Guest')
 #   filterSubject = RadioField("Subject", [validators.DataRequired()], choices = ['General','Account','Business','Bugs','Jobs','News','Other'], default = 'General')
+
+class TicketAction(Form):
+    ticketID = HiddenField("Greetings to you, the lucky finder of this Golden Ticket!",[validators.DataRequired()], default = "")
+    ticketAction = HiddenField("I shake you warmly by the hand!",[validators.DataRequired()], default = "")
 
 """"End of WTForms by Wei Ren"""
 

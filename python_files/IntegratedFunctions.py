@@ -810,5 +810,135 @@ def ellipsis(text, textType):
     return text
 # Weights taken here: https://gist.github.com/imaurer/d330e68e70180c985b380f25e195b90c
 
+def send_ticket_closed_email(ticketID, issueTitle, name, email):
+    title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID + " Closed"
+    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
+    message.html = f"""<p>Hello {name},</p>
+
+<p>Your ticket #{ticketID} has been closed as the issue has been dealt with by our staff.</p>
+
+<p>If you believe this was an error, please contact our staff as soon as possible to resolve this issue.</p>
+
+<p>Thank you.</p>
+
+<p>Sincerely,<br>
+<b>CourseFinity Team</b></p>
+"""
+    mail.send(message)
+
+# Use this to initialise statistics dictionary
+"""
+{'Courses Created':{'2021':{'January':{{'1st':{'1:00':<value>,
+                                               '2:00':<value>,
+                                               '3:00':<value>,
+                                                ... ...
+                                       {'2nd':{}},
+                                        ... ...
+                                      },
+                            'February':{},
+                            'March':{},
+                             ... ...
+                           },
+                    '2022':{'January':{}},
+                     ... ...
+                   },
+ 'Courses Purchased':{},
+  ... ...
+}
+"""
+def create_statistic_dict(*args):
+
+    # Initialised up to 5 years from now
+    years = [(date.today().year+count) for count in range(5)]
+
+    statisticDict = {}
+    timeDict = {'1:00': 0,'2:00': 0,'3:00': 0,'4:00': 0,'5:00': 0,'6:00': 0,'7:00': 0,'8:00': 0,'9:00': 0,'10:00': 0,'11:00': 0,'12:00': 0,'13:00': 0,'14:00': 0,'15:00': 0,'16:00': 0,'17:00': 0,'18:00': 0,'19:00': 0,'20:00': 0,'21:00': 0,'22:00': 0,'23:00': 0,'24:00': 0}
+    months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+    dates = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th','16th','17th','18th','19th','20th','21st','22nd','23rd','24th','25th','26th','27th','28th','29th','30th','31st']
+
+    for statisticType in args:
+        yearDict = {}
+        for year in years:
+            monthDict = {}
+            for month in months:
+                dateDict = {}
+                if month in ['January','March','May','July','August','November']:
+                    length = 30
+                elif month in ['April','June','September','October','December']:
+                    length = 31
+                elif month == "February" and year % 4 == 0 and not (year % 100 == 0 and year % 400 != 0):
+                    length = 29
+                else:
+                    length = 28
+
+                for dateIndex in range(length):
+                    dateDict[dates[dateIndex]] = timeDict
+
+                monthDict[month] = dateDict
+            yearDict[str(year)] = monthDict
+        statisticDict[statisticType] = yearDict
+    return statisticDict
+
+
+def add_next_statistic_year(statisticDict):
+    timeDict = {'1:00': 0,'2:00': 0,'3:00': 0,'4:00': 0,'5:00': 0,'6:00': 0,'7:00': 0,'8:00': 0,'9:00': 0,'10:00': 0,'11:00': 0,'12:00': 0,'13:00': 0,'14:00': 0,'15:00': 0,'16:00': 0,'17:00': 0,'18:00': 0,'19:00': 0,'20:00': 0,'21:00': 0,'22:00': 0,'23:00': 0,'24:00': 0}
+    months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+    dates = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th','16th','17th','18th','19th','20th','21st','22nd','23rd','24th','25th','26th','27th','28th','29th','30th','31st']
+
+    latestYear = int(list(statisticDict[list(statisticDict.keys())[0]].keys())[-1])
+    year = latestYear + 1
+
+    monthDict = {}
+    for month in months:
+        dateDict = {}
+        if month in ['January','March','May','July','August','November']:
+            length = 30
+        elif month in ['April','June','September','October','December']:
+            length = 31
+        elif month == "February" and year % 4 == 0 and not (year % 100 == 0 and year % 400 != 0):
+            length = 29
+        else:
+            length = 28
+
+        for dateIndex in range(length):
+            dateDict[dates[dateIndex]] = timeDict
+
+        monthDict[month] = dateDict
+
+    for statisticType in list(statisticDict.keys()):
+        statisticDict[statisticType][str(year)] = monthDict
+
+    return statisticDict
+
+
+def add_statistic_type(statisticDict, type):
+    timeDict = {'1:00': 0,'2:00': 0,'3:00': 0,'4:00': 0,'5:00': 0,'6:00': 0,'7:00': 0,'8:00': 0,'9:00': 0,'10:00': 0,'11:00': 0,'12:00': 0,'13:00': 0,'14:00': 0,'15:00': 0,'16:00': 0,'17:00': 0,'18:00': 0,'19:00': 0,'20:00': 0,'21:00': 0,'22:00': 0,'23:00': 0,'24:00': 0}
+    months = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+    dates = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th','11th','12th','13th','14th','15th','16th','17th','18th','19th','20th','21st','22nd','23rd','24th','25th','26th','27th','28th','29th','30th','31st']
+
+    years = list(statisticDict[list(statisticDict.keys())[0]].keys())
+
+    yearDict = {}
+    for year in years:
+        monthDict = {}
+        for month in months:
+            dateDict = {}
+            if month in ['January','March','May','July','August','November']:
+                length = 30
+            elif month in ['April','June','September','October','December']:
+                length = 31
+            elif month == "February" and year % 4 == 0 and not (year % 100 == 0 and year % 400 != 0):
+                length = 29
+            else:
+                length = 28
+
+            for dateIndex in range(length):
+                dateDict[dates[dateIndex]] = timeDict
+
+            monthDict[month] = dateDict
+        yearDict[str(year)] = monthDict
+    statisticDict[type] = yearDict
+
+    return statisticDict
 
 """Done by Wei Ren"""
