@@ -3685,7 +3685,7 @@ def purchaseHistory(pageNum):
 # THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseReview():
+def createPurchaseReview():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3702,6 +3702,7 @@ def purchaseReview():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             purchasedCourses = userKey.get_purchases()
+            user = userSession
             print("Purchased course exists?: ", purchasedCourses)
             courseDict = {}
             db = shelve.open("user", "c")
@@ -3718,7 +3719,8 @@ def purchaseReview():
                 review = createReview.review.data
                 print(review)
                 course = courseDict.get_courseID()
-                course.set_reviewID(review)
+                course.add_reviewID(review)
+                
                 courseDict["Courses"] = db
 
                 db.close() # remember to close your shelve files!

@@ -95,33 +95,29 @@ class Common(User):
 
     """End of Done by Jason"""
 
-    """Done by Wei Ren"""
-    
-    def set_reviewID(self, reviewID):
-        self.__reviewID.append(reviewID)
-    def remove_reviewID(self, reviewID):
-        if reviewID in self.__reviewIDs:
-            self.__reviewIDs.remove(reviewID)
-        else:
-            return False
+    """Done by Royston"""
 
-    def add_purchaseID(self, purchaseID):
-        self.__purchaseIDs.append(purchaseID)
-    def get_purchaseID(self):
-        return self.__purchaseID
-    def remove_purchaseID(self, purchaseID):
-        if purchaseID in self.__purchaseIDs:
-            self.__purchaseID.remove(purchaseID)
-        else:
-            return False
-    
     def add_reviewID(self, reviewID):
-        self.__reviewIDs.append(reviewID)
+        self.__reviewID.append(reviewID)
     def get_reviewID(self):
         return self.__reviewID
     def remove_reviewID(self, reviewID):
-        if reviewID in self.__reviewIDs:
-            self.__reviewIDs.remove(reviewID)
+        if reviewID in self.__reviewID:
+            self.__reviewID.remove(reviewID)
+        else:
+            return False
+
+    """End of Done by Royston"""
+
+    """Done by Wei Ren"""
+    
+    def add_purchaseID(self, purchaseID):
+        self.__purchaseID.append(purchaseID)
+    def get_purchaseID(self):
+        return self.__purchaseID
+    def remove_purchaseID(self, purchaseID):
+        if purchaseID in self.__purchaseID:
+            self.__purchaseID.remove(purchaseID)
         else:
             return False
 
