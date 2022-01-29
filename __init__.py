@@ -4590,7 +4590,7 @@ def teacherCourses(teacherCoursesUID):
 
         if userFound and accGoodStanding:
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursesUID=teacherCoursesUID)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -4603,9 +4603,11 @@ def teacherCourses(teacherCoursesUID):
 
 """Course Creation by Clarence"""
 
-@app.route("/create_course")
+
+@app.route("/create_course", methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
 def course_thumbnail_upload():
+    createCourseForm = Forms.CreateCourse(request.form)
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -4639,14 +4641,14 @@ def course_thumbnail_upload():
             if accType == "Teacher":
                 teacherUID = userSession
                 if request.method == "POST":
-                    if form.validate():
+                    if createCourseForm.validate():
                         #add course object to courseDict then save to user shelve
                         db["Courses"] = courseDict
                         db.close()
                 else:
                     teacherUID = ""
                 db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createCourseForm)
             else:
                 db.close()
                 print("User not found or is banned")
