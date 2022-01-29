@@ -3946,17 +3946,10 @@ def shoppingCart(pageNum):
                     for courseID in list(shoppingCart.keys()):
                         courseType = shoppingCart[courseID]
 
-                        cost = 0
-                        if courseType == "Zoom" or courseType == "Both":
-                            cost += float(courseDict[courseID].get_zoomPrice())
-                        if courseType == "Video" or courseType == "Both":
-                            cost += float(courseDict[courseID].get_videoPrice())
-
-
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
-                        userKey.addCartToPurchases(courseID, courseType, date, time, cost, orderID, payerID)
+                        userKey.addCartToPurchases(courseID, courseType, date, time, orderID, payerID)
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -4012,16 +4005,6 @@ def shoppingCart(pageNum):
                     # Getting course type chosen
                     courseType = shoppingCart[courseID]
 
-                    # Getting price paying (individual course)
-                    coursePricePaying = 0
-                    if courseType == "Zoom" or courseType == "Both":
-                        coursePricePaying += float(course.get_zoomPrice())
-                    if courseType == "Video" or courseType == "Both":
-                        coursePricePaying += float(course.get_videoPrice())
-
-                    # Getting subtototal
-                    subtotal += coursePricePaying
-
                     # Getting course owner username
                     courseOwnerUsername = userDict[course.get_userID()].get_username()
 
@@ -4033,9 +4016,7 @@ def shoppingCart(pageNum):
                                        "courseType" : courseType,
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
-                                       "coursePricePaying" : "{:,.2f}".format(coursePricePaying),
-                                       "courseZoomCondition" : course.get_zoomCondition(),
-                                       "courseVideoCondition":course.get_videoCondition(),
+                                       "coursePricePaying" : course.get_price(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
                                        "courseOwnerLink" : None,
