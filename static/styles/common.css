@@ -333,9 +333,9 @@ footer ul {
 	color: #FFD700;
 }
 
-.content {
-	margin-top: 20px;
-	margin-bottom: 20px;
+.container{
+	margin-top:50px;
+	margin-bottom:50px;
 }
 
 .btn-link {

@@ -6,6 +6,7 @@
 
 {% block content %}
 <div class="container">
+    
     <a href="/"><h4>Back</h4></a>
     <h2>Purchase History</h2>
     {% if historyCheck == False %}
@@ -33,9 +34,7 @@
                         <p class="info">Zoom Session</p>
                         <a href="{{ link }}" class="view">View Zoom Link</a>
                         {% endif %}
-                        <form action="/purchasereview" method="POST">
-                            <button type="submit">Submit Review</button>
-                        </form>
+                        <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
                     </div>
                     <div class="information col">
                         <!--Placeholders-->
