@@ -3342,6 +3342,8 @@ def search(pageNum):
             checker = ""
             courseDict = {}
             courseTitleList = []
+            saveSearch = ""
+            searchInput = session.get("getSearchInput")
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
@@ -3350,8 +3352,11 @@ def search(pageNum):
                 print("Error in obtaining course.db data")
                 return redirect(url_for("home"))
 
-            searchInput = str(request.args.get("q"))
-            print(searchInput)
+            if searchInput == None:
+                searchInput = str(request.args.get("q"))
+                print(searchInput)
+            else:
+                pass
 
             searchURL = "?searchq=" + searchInput
 
@@ -3387,6 +3392,8 @@ def search(pageNum):
                 checker = True
             else:
                 checker = False
+            
+            session["getSearchInput"] = searchInput
 
             db.close()
 
@@ -3420,7 +3427,7 @@ def search(pageNum):
                     teacherUID = ""
 
                 db.close()
-                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID, searchURL=searchURL)
+                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID, searchURL=searchURL,saveSearch=saveSearch)
         else:
             print("Admin/User account is not found or is not active/banned.")
             checker = ""
@@ -3744,7 +3751,7 @@ def createPurchaseReview():
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
                 print("Review creation failed")
                 db.close()
-                return redirect(url_for("purchasehistory"))
+                return redirect(url_for("home"))
 
         else:
             print("User not found or is banned.")
