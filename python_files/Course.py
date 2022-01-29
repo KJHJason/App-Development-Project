@@ -48,7 +48,7 @@ class Course():
         self.__ratings = []
         self.__schedule = []
         self.__views = 0
-        self.__reviewID = {}
+        self.__review = []
 
     """Done by Jason"""
 
@@ -68,13 +68,13 @@ class Course():
 
     """Done by Royston"""
 
-    def add_reviewID(self, reviewID):
-        self.__reviewID.append(reviewID)
-    def get_reviewID(self):
-        return self.__reviewID
-    def remove_reviewID(self, reviewID):
-        if reviewID in self.__reviewID:
-            self.__reviewID.remove(reviewID)
+    def add_review(self, review):
+        self.__review.append(review)
+    def get_review(self):
+        return self.__review
+    def remove_review(self, review):
+        if review in self.__review:
+            self.__review.remove(review)
         else:
             return False
 

@@ -3472,8 +3472,6 @@ def search(pageNum):
             checker = ""
             courseDict = {}
             courseTitleList = []
-            saveSearch = ""
-            searchInput = session.get("getSearchInput")
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
@@ -3482,11 +3480,7 @@ def search(pageNum):
                 print("Error in obtaining course.db data")
                 return redirect(url_for("home"))
 
-            if searchInput == None:
-                searchInput = str(request.args.get("q"))
-                print(searchInput)
-            else:
-                pass
+            searchInput = str(request.args.get("q"))
 
             searchURL = "?searchq=" + searchInput
 
@@ -3522,8 +3516,6 @@ def search(pageNum):
                 checker = True
             else:
                 checker = False
-            
-            session["getSearchInput"] = searchInput
 
             db.close()
 
@@ -3557,7 +3549,7 @@ def search(pageNum):
                     teacherUID = ""
 
                 db.close()
-                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID, searchURL=searchURL,saveSearch=saveSearch)
+                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
         else:
             print("Admin/User account is not found or is not active/banned.")
             checker = ""
@@ -3572,7 +3564,6 @@ def search(pageNum):
                 return redirect(url_for("home"))
 
             searchInput = str(request.args.get("q"))
-            print(searchInput)
 
             searchURL = "?searchq=" + searchInput
 
@@ -3636,7 +3627,7 @@ def search(pageNum):
                 nextPage = pageNum + 1
 
                 db.close()
-                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL, accType="Guest")
+                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
     else:
         checker = ""
         courseDict = {}
@@ -3650,7 +3641,6 @@ def search(pageNum):
             return redirect(url_for("home"))
 
         searchInput = str(request.args.get("q"))
-        print(searchInput)
 
         searchURL = "?searchq=" + searchInput
 
@@ -3686,6 +3676,8 @@ def search(pageNum):
             checker = True
         else:
             checker = False
+        
+        session["getSearchInput"] = "/search/" + str(pageNum) + "/" + searchURL
 
         db.close()
 
@@ -3714,7 +3706,7 @@ def search(pageNum):
             nextPage = pageNum + 1
 
             db.close()
-            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL, accType="Guest")
+            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
 
 """End of Search Function by Royston"""
 
@@ -3777,7 +3769,8 @@ def purchaseHistory(pageNum):
                     course = courseDict[courseID]
                     courseType = purchasedCourses.get(courseID).get("Course Type")
 
-                    courseInformation = {"Title":course.get_title(),
+                    courseInformation = {"CourseID":course,
+                        "Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
@@ -3785,8 +3778,6 @@ def purchaseHistory(pageNum):
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
-
-                session["getHistoryList"] = historyList
 
                 db.close()
             else:
@@ -3832,16 +3823,16 @@ def purchaseHistory(pageNum):
 """Purchase Review by Royston"""
 
 # THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
-@app.route("/purchasereview", methods=["GET","POST"])
+@app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
-def createPurchaseReview():
+def createPurchaseReview(courseID):
+    createReview = Forms.CreateReviewText(request.form)
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # userFound, accGoodStatus = validate_session_open_file(userSession)
         # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
@@ -3851,12 +3842,12 @@ def createPurchaseReview():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
-            historyList = session.get("getHistoryList")
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
             courseDict = {}
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            print(courseID)
 
             try:
                 courseDict = db["Courses"]
@@ -3865,24 +3856,26 @@ def createPurchaseReview():
                 db.close()
                 return redirect(url_for("purchasehistory"))
 
-            createReview = Forms.CreateReviewText(request.form)
-            if request.method == 'POST' and createReview.validate():
-                review = createReview.review.data
-                print(review)
-                reviewID = {"ReviewID":review,"UserID":user}
-                course = courseDict.get_courseID()
-                course.add_reviewID(reviewID)
-                courseDict["Courses"] = db
+            if courseID in purchasedCourses:
+                if request.method == 'POST' and createReview.validate():
+                    review = createReview.review.data
+                    print("What is the review?: ",review)
+                    reviewDict = {"Review": review, "UserID": user}
+                    courseDict["Courses"] = db
 
-                db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, historyList = historyList)
+                    session["reviewAdded"] = True
+
+                    db.close() # remember to close your shelve files!
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict)
+                else:
+                    db.close()
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
-                print("Review creation failed")
+                print("User has not purchased the course.")
                 db.close()
                 return redirect(url_for("home"))
-
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
