@@ -298,37 +298,42 @@ def resize_image(imagePath, dimensions):
 def construct_path(relativeUploadPath, filename):
     return os.path.join(app.root_path, relativeUploadPath, filename)
 
-# function for retrieving user's profile picture using dicebear library
-def get_user_profile_pic(username, profileFileName, profileFilePath, userSession):
+# function for retrieving user's profile picture using dicebear library based on the user ID
+# Condition: Only use this function when there is no shelve files opened previously
+def get_user_profile_pic(userID):
+    imagesrcPath = ""
+
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if 'Users' in db:
+            userDict = db['Users']
+        else:
+            db.close()
+            print("User data in shelve is empty.")
+            return imagesrcPath, False
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return imagesrcPath, False
+
+    userKey = userDict.get(userID)
+    profileFileName = userKey.get_profile_image()
     profileFileNameBool = bool(profileFileName)
+    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, profileFileName)
     profileReset = False
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=username, options=app.config["DICEBEAR_OPTIONS"]).url_svg
-
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
         if profileFileNameBool != False:
-            print("Image file does not exist anymore, deleting...")
+            print("Image file does not exist anymore, resetting user's profile image...")
             # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                else:
-                    db.close()
-                    print("User data in shelve is empty.")
-                    return imagesrcPath
-            except:
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return imagesrcPath
-
-            userObject = userDict.get(userSession)
+            userObject = userDict.get(userID)
             userObject.set_profile_image("")
             db["Users"] = userDict
-            db.close()
             profileReset = True
-            
+            print("User's profile image reset successfully.")
+    db.close()
     return imagesrcPath, profileReset
 
 # function for retrieving user's profile picture using dicebear library based on only the user's object given

@@ -2541,12 +2541,10 @@ def userProfile():
                 else:
                     teacherBio = ""
 
-                userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
-                userProfileFilenameSaved = bool(userProfileImage)
-                userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
-
+                
                 # checking if the user have uploaded a profile image before and if the image file exists
-                imagesrcPath, profileReset = get_user_profile_pic(userUsername, userProfileImage, userProfileImagePath, userSession)
+                userProfileFilenameSaved = bool(userKey.get_profile_image())
+                imagesrcPath, profileReset = get_user_profile_pic(userSession)
                 if profileReset:
                     userProfileFilenameSaved = False
 
