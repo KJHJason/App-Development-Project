@@ -4099,7 +4099,7 @@ def contactUs():
 
                 if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
 
-                    dbAdmin = shelve.open("admin", "c")
+                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
                     # Remember to validate
                     try:
                         if "Tickets" in dbAdmin:
@@ -4160,7 +4160,7 @@ def contactUs():
 
         if request.method == "POST" and contactForm.validate():
 
-            dbAdmin = shelve.open("admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:
@@ -4219,7 +4219,7 @@ def supportTicketManagement(pageNum):
             ticketSearch = Forms.TicketSearchForm(request.form)
             ticketAction = Forms.TicketAction(request.form)
 
-            dbAdmin = shelve.open("admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:
