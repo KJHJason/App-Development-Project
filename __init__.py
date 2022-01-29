@@ -3644,7 +3644,7 @@ def purchaseHistory(pageNum):
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
-                        "Price":"{:,.2f}".format(course.get_price()),
+                        "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
@@ -3946,10 +3946,12 @@ def shoppingCart(pageNum):
                     for courseID in list(shoppingCart.keys()):
                         courseType = shoppingCart[courseID]
 
+                        cost = 0
+
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
-                        userKey.addCartToPurchases(courseID, courseType, date, time, orderID, payerID)
+                        userKey.addCartToPurchases(courseID, courseType, date, time,cost, orderID, payerID)
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -4004,6 +4006,9 @@ def shoppingCart(pageNum):
 
                     # Getting course type chosen
                     courseType = shoppingCart[courseID]
+
+                    # Getting subtototal
+                    subtotal += float(course.get_price())
 
                     # Getting course owner username
                     courseOwnerUsername = userDict[course.get_userID()].get_username()
