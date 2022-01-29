@@ -24,7 +24,7 @@ Libraries needed:
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk==1.13.1]</li>
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo==1.1.0]</li>
   <li>shortuuid Version 1.0.8 [pip install shortuuid==1.0.8]</li>
-  <li>dicebear Version 0.1.2 [pip install dicebear==0.1.2]</li>
+  <li>dicebear Version 0.2.13 [pip install dicebear==0.2.13]</li>
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
 </ol>	
