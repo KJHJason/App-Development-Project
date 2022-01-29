@@ -338,4 +338,12 @@ footer ul {
 	margin-bottom: 20px;
 }
 
+.btn-link {
+	text-decoration: none;
+}
+
+.btn-link:hover {
+	text-decoration: underline;
+}
+
 /* ============ End of Others ============ */

@@ -110,8 +110,6 @@ def home():
             courseTeacherID = courseDict.get(highestViewedCourse).get_userID()
             # based on the teacher user ID and check if the teacher is banned
             if userDict.get(courseTeacherID).get_status() == "Good":
-                print("Username:", userDict.get(courseTeacherID).get_username() )
-                print("User status:", userDict.get(courseTeacherID).get_status() )
                 # append course object if the teacher is not banned
                 trendingCourseList.append(courseDict.get(highestViewedCourse))
                 courseDictCopy.pop(highestViewedCourse)
