@@ -11,7 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from python_files import Student, Teacher, Forms
 from python_files import Payment
-from python_files.Security import verify_password, sanitise, validate_email
+from python_files.Security import hash_password, verify_password, sanitise, validate_email
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
 
@@ -882,7 +882,7 @@ def resetPassword(token):
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        userKey.set_password(password)
+                        userKey.set_password(hash_password(password))
                         db["Users"] = userDict
                         db.close()
                         print("Password Reset Successful.")
@@ -1262,7 +1262,7 @@ def adminLogin():
         create_login_form = Forms.CreateLoginForm(request.form)
         if request.method == "POST" and create_login_form.validate():
             emailInput = sanitise(create_login_form.email.data.lower())
-            passwordInput = create_login_form.password.data
+            passwordInput = str(create_login_form.password.data)
             try:
                 adminDict = {}
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "r")
@@ -1599,7 +1599,7 @@ def adminChangePassword():
                         return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        userKey.set_password(updatedPassword)
+                        userKey.set_password(hash_password(updatedPassword))
                         db['Admins'] = adminDict
                         print("Password updated")
                         db.close()
@@ -1671,7 +1671,7 @@ def userManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                userKey.set_password(password)
+                                userKey.set_password(hash_password(password))
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -1825,7 +1825,7 @@ def userSearchManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                userKey.set_password(password)
+                                userKey.set_password(hash_password(password))
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -2875,7 +2875,7 @@ def updatePassword():
                         return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         # updating password of the user once validated
-                        userKey.set_password(updatedPassword)
+                        userKey.set_password(hash_password(updatedPassword))
                         userEmail = userKey.get_email()
                         db['Users'] = userDict
                         print("Password updated")

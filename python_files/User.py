@@ -1,5 +1,3 @@
-from argon2 import PasswordHasher
-
 # Done by Jason
 
 class User:
@@ -7,7 +5,7 @@ class User:
         self.__user_id = user_id
         self.__username = username
         self.__email = email
-        self.__password = PasswordHasher().hash(password) # using argon2 to hash the password
+        self.__password = password
         self.__acc_type = acc_type
         self.__status = status
         self.__profile_image = ""

@@ -17,7 +17,8 @@ from shortuuid import ShortUUID # for ID generation using shortuuid as compared 
 # minimum requirement as of OWASP; Use Argon2id with a minimum configuration of 15 MiB of memory (15728KB), an iteration count of 2, and 1 degree of parallelism.
 # OWASP website: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
 
-# Password will be automatically hashed when an object is created in User.py.
+def hash_password(password):
+    return PasswordHasher().hash(password)
 
 # for verifying a hashed value with a plaintext to see if it matches
 def verify_password(hashed, pwd):
