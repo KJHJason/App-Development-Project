@@ -4527,7 +4527,7 @@ def teacherPage(teacherPageUID):
             try:
                 if 'Users' in db:
                     userDict = db['Users']
-                    courseDict = db['Course']
+                    courseDict = db['Courses']
                     db.close()
                 else:
                     db.close()
