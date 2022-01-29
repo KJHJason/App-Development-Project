@@ -4616,10 +4616,10 @@ def course_thumbnail_upload():
         try:
             if 'Users' in db:
                 userDict = db['Users']
-                if "Course" in db:
-                    courseDict = db['Course']
+                if "Courses" in db:
+                    courseDict = db['Courses']
                 else:
-                    db["Course"] = courseDict
+                    db["Courses"] = courseDict
             else:
                 db.close()
                 print("User data in shelve is empty.")
@@ -4641,7 +4641,7 @@ def course_thumbnail_upload():
                 if request.method == "POST":
                     if form.validate():
                         #add course object to courseDict then save to user shelve
-                        db["Course"] = courseDict
+                        db["Courses"] = courseDict
                         db.close()
                 else:
                     teacherUID = ""
