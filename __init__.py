@@ -4017,6 +4017,8 @@ def shoppingCart(pageNum):
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
                                        "coursePricePaying" : course.get_price(),
+                                       "courseZoomCondition" : course.get_course_type(),
+                                       "courseVideoCondition":course.get_course_type(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
                                        "courseOwnerLink" : None,
