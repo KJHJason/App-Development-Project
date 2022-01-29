@@ -5,7 +5,7 @@ from flask_mail import Message
 import shelve, os, uuid, string, random, shortuuid
 from pathlib import Path
 from flask import url_for
-from src import Avatar
+from dicebear import DAvatar, DStyle
 from calendar import monthrange
 from datetime import date
 from .Graph import userbaseGraph
@@ -305,7 +305,7 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = Avatar(type="initials", seed=username)
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=username)
 
         if profileFileNameBool != False:
             print("Image file does not exist anymore, deleting...")
@@ -339,7 +339,7 @@ def retrieve_user_profile_pic(userKey):
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = Avatar(type="initials", seed=userKey.get_username())
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username())
     return imagesrcPath
 
 def delete_user_profile(userImageFileName):
