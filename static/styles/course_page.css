@@ -40,3 +40,7 @@
 .td_cells_min_width {
     min-width: 900px;
 }
+
+.td_cells_min_width_reviews {
+    min-width: 600px;
+}
