@@ -102,7 +102,7 @@
             let chart = document.getElementById("totalUserChart").getContext("2d");
             let pythonData = "{{ xAxisData }}";
             let dataForChartString = decodeEntities(pythonData);
-            dataForChart = dataForChartString.replaceAll("'","");
+            let dataForChart = dataForChartString.replaceAll("'","");
             dataForChart = dataForChart.replace("[", "")
             dataForChart = dataForChart.replace("]", "")
             dataForChart = dataForChart.split(",")
