@@ -24,8 +24,10 @@
     {% endblock %}
 
     <a id="topbutton"><i class="fas fa-chevron-up"></i></a> <!-- go to top button -->
-    {% block content %}
-    {% endblock %}
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
     
     {% block footer %}
         {% include 'includes/_footer.html' %}

@@ -28,8 +28,11 @@
     {% endblock %}
 
     <a id="topbutton"><i class="fas fa-chevron-up"></i></a> <!-- go to top button -->
-    {% block content %}
-    {% endblock %}
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+    
     
     <!-- START Bootstrap-Cookie-Alert from https://github.com/Wruczek/Bootstrap-Cookie-Alert -->
     <div class="alert text-center cookiealert" role="alert">
