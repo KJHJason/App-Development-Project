@@ -2,7 +2,17 @@ from python_files.Admin import Admin
 from python_files.Security import sanitise, validate_email, generate_admin_id, validate_pwd_length
 import shelve, pathlib
 
-cmd_menu = """
+# Command line 1-2 feature/operations done by Jason
+# CRUD operations by admin ID instead of via email only by Jason
+# Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
+
+# Command line 3-5 feature/operations done by Clarence
+
+# Command line 6 feature/operation done by Royston
+
+def main():
+    
+    cmd_menu = """
 Welcome to the admin console!
 
 Please select the following command number to continue:
@@ -19,16 +29,6 @@ In the event of the program freezing, press CTRL + C to force shut down the prog
 However, it may result in data corruption.
 Hence, please only force shut down the program if necessary.
 """
-
-# Command line 1-2 feature/operations done by Jason
-# CRUD operations by admin ID instead of via email only by Jason
-# Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
-
-# Command line 3-5 feature/operations done by Clarence
-
-# Command line 6 feature/operation done by Royston
-
-def main():
     adminDatabaseFilePath = str(pathlib.Path.cwd()) + "\\databases" + "\\admin"
     while True:
         print(cmd_menu)
