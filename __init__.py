@@ -2541,7 +2541,9 @@ def userProfile():
                 userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
 
                 # checking if the user have uploaded a profile image before and if the image file exists
-                imagesrcPath = get_user_profile_pic(userUsername, userProfileImage, userProfileImagePath, userSession)
+                imagesrcPath, profileReset = get_user_profile_pic(userUsername, userProfileImage, userProfileImagePath, userSession)
+                if profileReset:
+                    userProfileFilenameSaved = False
 
                 # checking sessions if any of the user's acc info has changed
                 if "username_changed" in session:
@@ -4042,12 +4044,7 @@ def shoppingCart(pageNum):
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
-
-            userProfileImage = userKey.get_profile_image() # will return a filename, e.g. "0.png"
-            userProfileImagePath = construct_path(PROFILE_UPLOAD_PATH, userProfileImage)
-
-            # checking if the user have uploaded a profile image before and if the image file exists
-            imagesrcPath = get_user_profile_pic(userKey.get_username(), userProfileImage, userProfileImagePath, userSession)
+            imagesrcPath = retrieve_user_profile_pic(userKey)
 
             # insert your C,R,U,D operation here to deal with the user shelve data files
             removeCourseForm = Forms.RemoveShoppingCartCourse(request.form)

@@ -301,12 +301,14 @@ def construct_path(relativeUploadPath, filename):
 # function for retrieving user's profile picture using dicebear library
 def get_user_profile_pic(username, profileFileName, profileFilePath, userSession):
     profileFileNameBool = bool(profileFileName)
+    profileReset = False
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
         imagesrcPath = Avatar(type="initials", seed=username)
 
         if profileFileNameBool != False:
+            print("Image file does not exist anymore, deleting...")
             # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
@@ -325,8 +327,9 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
             userObject.set_profile_image("")
             db["Users"] = userDict
             db.close()
+            profileReset = True
             
-    return imagesrcPath
+    return imagesrcPath, profileReset
 
 # function for retrieving user's profile picture using dicebear library based on only the user's object given
 def retrieve_user_profile_pic(userKey):
