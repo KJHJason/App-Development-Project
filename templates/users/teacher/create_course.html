@@ -1,5 +1,6 @@
 {% extends "user_base.html" %}
 {% block head %}
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/create_courses.css') }}">
 {% endblock %}
 
@@ -57,6 +58,7 @@
             <div class="login-form bg-dark mt-4 p-4 rounded" id="userForm">
                 <form action="" method="POST" class="row g-3">
                     <h4 class="text-white">Create Course</h4>
+                    
                     <!-- Title -->
                     <div class="col-md-12 text-white">
                         {{ render_field(form.title, class="form-control") }}
@@ -78,7 +80,7 @@
                                 <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
                             </form>
                             <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
-                            <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
+                            <label for="remove-thumbnail" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
                         </div>
                     </div>
 

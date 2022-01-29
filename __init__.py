@@ -4505,10 +4505,8 @@ Previous Next
 """End of Admin Statistics by Wei Ren"""
 
 
-"""Teacher's Channel Page by Clarence"""
+"""Teacher's Channel Page(General view) by Clarence"""
 
-# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX OR USE THE TEMPLATE AND START FROM SCRATCH
-# Also, this has potential inteferrence, if the user is a Teacher and is viewing this page, the teacherUID on the navbar that redirects them to their own page will be overwritten with this teacher's page. So be aware of it and fix this potential bug.
 @app.route('/teacher_page/<teacherPageUID>', methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherPageUID):
@@ -4604,9 +4602,9 @@ def teacherCourses(teacherCoursesUID):
 """Course Creation by Clarence"""
 
 
-@app.route("/create_course", methods=["GET", "POST"])
+@app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
-def course_thumbnail_upload():
+def course_thumbnail_upload(teacherUID):
     createCourseForm = Forms.CreateCourse(request.form)
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4666,6 +4664,73 @@ def course_thumbnail_upload():
 
 """Course Creation by Clarence"""
 
+"""User's Own Channel Page(Teacher) by Clarence"""
+
+@app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
+@limiter.limit("30/second")  # to prevent ddos attacks
+def teacherOwnPage(teacherUID):
+    if "adminSession" in session or "userSession" in session:
+    #checks if session is admin or user
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStanding, accType = validate_session_get_userKey_open_file(userSession)
+
+        if userFound and accGoodStanding:
+        #checks if user account is available
+            userDict = {}
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                    courseDict = db['Course']
+                    db.close()
+                else:
+                    db.close()
+                    print("User data in shelve is empty.")
+                    session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
+
+            teacherObject = userDict.get(teacherUID)
+            teacherCourseList = []
+
+            for value in courseDict.values():
+                if value.get_userID() == teacherUID:
+                    teacherCourseList.append(value)
+            try:
+                # Get last 3 elements from the list
+                lastThreeCourseList = teacherCourseList[-3:]
+            except:
+                lastThreeCourseList = teacherCourseList[::-1]
+                print("Teacher has not enough courses")
+
+            # Featured courses are highest rated courses
+            popularCourseList = []
+            if len(teacherCourseList) >= 3:
+                for i in range(3):
+                    popularCourseList.append(max(teacherCourseList, key=lambda x: x.get_rating()))
+                
+
+
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            bio = teacherObject.get_bio()
+            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList = teacherCourseList, lastThreeCousreList = lastThreeCourseList)
+
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/teacher_page.html", accType="Guest")
+    else:
+        return render_template("users/general/teacher_page.html", accType="Guest")
+
+"""End of Teacher's Channel Page(Teacher view) by Clarence"""
 
 """General Pages"""
 

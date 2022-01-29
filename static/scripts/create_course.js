@@ -11,7 +11,7 @@ Dropzone.options.dropper = {
     acceptedFiles: ".jpeg,.jpg,.png",
     chunking: true,
     forceChunking: true,
-    url: '/user_profile',
+    url: '/create_course',
     maxFilesize: 50, // megabytes
     chunkSize: 1000000, // bytes
     retryChunks: true,
