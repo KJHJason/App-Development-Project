@@ -65,16 +65,20 @@
                     <!-- Thumbnail -->
                     <div class="col-md-12 text-white">
                         <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
-                        <p>
-                            Upload Your Thumbnail Here!<br>
-                            <input type="text" name="textline" size="30">
-                        </p>
-                        <p>
-                            Please upload a photo of filetype png, jpg, or jpeg under 5MB<br>
-                            <input type="file" name="datafile" size="40">
-                        </p>
-                        <div>
-                            <input type="submit" value="Send">
+                        <button class="btn btn-primary" id="uploadThumbnailButton">Uplaod Thumbnail</button>
+                        <div id="imageForm" style="display: none;">
+                            <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
+                                <input type="hidden" name="submittedForm" value="image">
+                                <div class="dz-default dz-message">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <br>
+                                    <span>Click here or drop files here</span>
+                                </div>
+                                <button type="submit" id="submit-button" hidden>Save Profile Icon</button>
+                                <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
+                            </form>
+                            <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
+                            <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
                         </div>
                     </div>
 
