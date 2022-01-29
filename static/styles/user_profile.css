@@ -210,62 +210,6 @@
 
 /* teacher's UI css */
 
-.wrapper {
-  background-color: #212529;
-  color: #FFF;
-  width: 80%;
-  height: 100%;
-  margin: 50px auto;
-  border-radius: 10px;
-  padding: 30px;
-  box-shadow: 0 8px 8px -4px #212529;
-}
-.wrapper h2 {
-  margin-bottom: 50px;
-}
-
-.nav_buttons {
-  display: inline-flexbox;
-}
-
-.nav_buttons a {
-  float: left;
-}
-
-#anchor2 {
-  display: none;
-}
-
-.nav_buttons button {
-  float: right
-}
-
-@media (max-width: 450px) {
-  .wrapper {
-    width: 100%;
-    margin: 50px auto;
-    padding: 20px;
-  }
-  .nav_buttons {
-    display: box;
-  }
-  .nav_buttons a {
-    float: none;
-    width: 100%;
-  }
-  .nav_buttons button {
-    float: none;
-    max-width: 150px;
-    margin: 30px 0;
-  }
-  #anchor1 {
-    display: none;
-  }
-  #anchor2 {
-    display: block;
-  }
-}
-
 .cashout_button{
   margin-top:20px;
   width:max(20%, 120px);
@@ -329,14 +273,6 @@
 #editProfileButton {
   margin-top: 10px;
 }
-
-
-
-
-
-
-
-
 
 /*          /////           Ticket Management          /////           */
 

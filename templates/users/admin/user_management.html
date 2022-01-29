@@ -308,12 +308,12 @@
                                                     Actions
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
                                                     {% if user.get_profile_image() != "" %}
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
                                                     {% endif %}
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.get_user_id() }}">Ban</a></li>
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#banUserModal{{ user.get_user_id() }}">Ban</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
                                             </div>
                                             {% elif user.get_status() == "Banned" %}
@@ -362,12 +362,12 @@
                                                     Actions
                                                 </button>
                                                 <ul class="dropdown-menu" aria-labelledby="actionsButtons">
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#usernameChangeModal{{ user.get_user_id() }}">Change Username</a></li>
                                                     {% if user.get_profile_image() != "" %}
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileImageChangeModal{{ user.get_user_id() }}">Reset Profile Image</a></li>
                                                     {% endif %}
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#unbanUserModal{{ user.get_user_id() }}">Unban</a></li>
-                                                    <li><a href="javascript:void(0)" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#unbanUserModal{{ user.get_user_id() }}">Unban</a></li>
+                                                    <li><a href="#" onclick="return false;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recoverAccountModal{{ user.get_user_id() }}">Recover Account</a></li>
                                                 </ul>
                                             </div>
                                             {% endif %}

@@ -2807,14 +2807,8 @@ def changeAccountType():
         print("Account type:", accType)
 
         if userFound and accGoodStatus:
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
-
-            imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Student":
-                if request.method == "POST":
+                if request.method == "POST" and request.form["changeAccountType"] == "changeToTeacher":
                     # changing the user's account type to teacher by deleting the student object and creating a new teacher object, and hence, changing the user ID as a whole.
                     username = userKey.get_username()
                     password = userKey.get_password()
@@ -2867,13 +2861,13 @@ def changeAccountType():
 
                     db["Users"] = userDict
                     db.close()
-                    session["userSession"] = userID
                     print("Account type updated to teacher.")
                     session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
                     return redirect(url_for("userProfile"))
                 else:
+                    print("Not POST request or did not have relevant hidden field.")
                     db.close()
-                    return render_template("users/student/change_account_type.html", accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    return redirect(url_for("userProfile"))
             else:
                 db.close()
                 print("User is not a student.")
@@ -3650,10 +3644,13 @@ def purchaseHistory(pageNum):
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
-                        "Price":"{:,.2f}".format(course.get_price()),
+                        "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
                 print(historyList)
+
+                session["getHistoryList"] = historyList
+
                 db.close()
             else:
                 print("Purchase History is Empty")
@@ -3716,6 +3713,8 @@ def createPurchaseReview():
             else:
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
+
+            historyList = session.get("getHistoryList")
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
@@ -3733,13 +3732,13 @@ def createPurchaseReview():
             if request.method == 'POST' and createReview.validate():
                 review = createReview.review.data
                 print(review)
+                reviewID = {"ReviewID":review,"UserID":user}
                 course = courseDict.get_courseID()
-                course.add_reviewID(review)
-                
+                course.add_reviewID(reviewID)
                 courseDict["Courses"] = db
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, historyList = historyList)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
@@ -3796,10 +3795,11 @@ def purchaseView(pageNum):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            historyList = session.get("getHistoryList")
+            videoList = []
             courseID = ""
             courseType = ""
             historyCheck = True
-            historyList = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
@@ -3827,8 +3827,8 @@ def purchaseView(pageNum):
                         "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
-                    historyList.append(courseInformation)
-                print(historyList)
+                    videoList.append(courseInformation)
+                print(videoList)
                 db.close()
             else:
                 print("Purchase view is Empty")
@@ -3947,16 +3947,11 @@ def shoppingCart(pageNum):
                         courseType = shoppingCart[courseID]
 
                         cost = 0
-                        if courseType == "Zoom" or courseType == "Both":
-                            cost += float(courseDict[courseID].get_zoomPrice())
-                        if courseType == "Video" or courseType == "Both":
-                            cost += float(courseDict[courseID].get_videoPrice())
-
 
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
-                        userKey.addCartToPurchases(courseID, courseType, date, time, cost, orderID, payerID)
+                        userKey.addCartToPurchases(courseID, courseType, date, time,cost, orderID, payerID)
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -4012,15 +4007,8 @@ def shoppingCart(pageNum):
                     # Getting course type chosen
                     courseType = shoppingCart[courseID]
 
-                    # Getting price paying (individual course)
-                    coursePricePaying = 0
-                    if courseType == "Zoom" or courseType == "Both":
-                        coursePricePaying += float(course.get_zoomPrice())
-                    if courseType == "Video" or courseType == "Both":
-                        coursePricePaying += float(course.get_videoPrice())
-
                     # Getting subtototal
-                    subtotal += coursePricePaying
+                    subtotal += float(course.get_price())
 
                     # Getting course owner username
                     courseOwnerUsername = userDict[course.get_userID()].get_username()
@@ -4033,9 +4021,9 @@ def shoppingCart(pageNum):
                                        "courseType" : courseType,
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
-                                       "coursePricePaying" : "{:,.2f}".format(coursePricePaying),
-                                       "courseZoomCondition" : course.get_zoomCondition(),
-                                       "courseVideoCondition":course.get_videoCondition(),
+                                       "coursePricePaying" : course.get_price(),
+                                       "courseZoomCondition" : course.get_course_type(),
+                                       "courseVideoCondition":course.get_course_type(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
                                        "courseOwnerLink" : None,
@@ -4111,7 +4099,7 @@ def contactUs():
 
                 if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
 
-                    dbAdmin = shelve.open("admin", "c")
+                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
                     # Remember to validate
                     try:
                         if "Tickets" in dbAdmin:
@@ -4172,7 +4160,7 @@ def contactUs():
 
         if request.method == "POST" and contactForm.validate():
 
-            dbAdmin = shelve.open("admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:
@@ -4231,7 +4219,7 @@ def supportTicketManagement(pageNum):
             ticketSearch = Forms.TicketSearchForm(request.form)
             ticketAction = Forms.TicketAction(request.form)
 
-            dbAdmin = shelve.open("admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:

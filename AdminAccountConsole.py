@@ -21,9 +21,11 @@ Hence, please only force shut down the program if necessary.
 """
 
 # Command line 1-2 feature/operations done by Jason
-# Search by admin ID by Jason ID
+# CRUD operations by admin ID instead of via email only by Jason
 # Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
+
 # Command line 3-5 feature/operations done by Clarence
+
 # Command line 6 feature/operation done by Royston
 
 def main():
