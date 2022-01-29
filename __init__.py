@@ -4520,6 +4520,7 @@ def teacherPage(teacherPageUID):
         userKey, userFound, accGoodStanding, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStanding:
+            print("Hello jason")
         #checks if user account is available
             userDict = {}
             courseDict = {}
@@ -4527,7 +4528,7 @@ def teacherPage(teacherPageUID):
             try:
                 if 'Users' in db:
                     userDict = db['Users']
-                    courseDict = db['Course']
+                    courseDict = db['Courses']
                     db.close()
                 else:
                     db.close()
@@ -4541,7 +4542,7 @@ def teacherPage(teacherPageUID):
 
             teacherObject = userDict.get(teacherPageUID)
             teacherCourseList = []
-
+            print("teacher course list is defined")
             for value in courseDict.values():
                 if value.get_userID() == teacherPageUID:
                     teacherCourseList.append(value)
@@ -4552,17 +4553,19 @@ def teacherPage(teacherPageUID):
                 lastThreeCourseList = teacherCourseList[::-1]
                 print("Teacher has not enough courses")
 
-            # Featured courses are highest rated courses
+            # Popular courses are highest rated courses
             popularCourseList = []
             if len(teacherCourseList) >= 3:
                 for i in range(3):
-                    popularCourseList.append(max(teacherCourseList, key=lambda x: x.get_rating()))
-                
+                    popularCourseList.append(
+                        max(teacherCourseList, key=lambda x: x.get_rating()))
 
+            lastThreeCourseLen = len(teacherCourseList)
+            popularCourseLen = len(popularCourseList)
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
-            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList = teacherCourseList, lastThreeCousreList = lastThreeCourseList)
+            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseListLen=popularCourseList)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -4600,7 +4603,6 @@ def teacherCourses(teacherCoursesUID):
 """End of Teacher's Courses Page by Clarence"""
 
 """Course Creation by Clarence"""
-
 
 @app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
 @limiter.limit("30/second")  # to prevent ddos attacks
@@ -4666,7 +4668,7 @@ def course_thumbnail_upload(teacherUID):
 
 """User's Own Channel Page(Teacher) by Clarence"""
 
-@app.route('/teacher_page/<teacherUID>', methods=["GET", "POST"])
+@app.route('/my_channel/<teacherUID>')
 @limiter.limit("30/second")  # to prevent ddos attacks
 def teacherOwnPage(teacherUID):
     if "adminSession" in session or "userSession" in session:
@@ -4683,10 +4685,11 @@ def teacherOwnPage(teacherUID):
             userDict = {}
             courseDict = {}
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            print("hello 1")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
-                    courseDict = db['Course']
+                    courseDict = db['Courses']
                     db.close()
                 else:
                     db.close()
@@ -4694,10 +4697,12 @@ def teacherOwnPage(teacherUID):
                     session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                     return redirect(url_for("home"))
             except:
+                print("Hello 2")
                 db.close()
                 print("Error in retrieving Users from user.db")
                 return redirect(url_for("home"))
 
+            print("Hello 3")
             teacherObject = userDict.get(teacherUID)
             teacherCourseList = []
 
@@ -4711,24 +4716,34 @@ def teacherOwnPage(teacherUID):
                 lastThreeCourseList = teacherCourseList[::-1]
                 print("Teacher has not enough courses")
 
-            # Featured courses are highest rated courses
+            # Popular courses are highest rated courses
             popularCourseList = []
-            if len(teacherCourseList) >= 3:
-                for i in range(3):
-                    popularCourseList.append(max(teacherCourseList, key=lambda x: x.get_rating()))
-                
+            teacherCourseListCopy = []
+            popularCourseLen = len(popularCourseList)
 
+
+            if popularCourseLen >= 3:
+                for i in range(3):
+                    popularCourseList.append(max(teacherCourseListCopy, key=lambda x: x.get_rating()))
+                    teacherCourseListCopy.pop(popularCourseList)
+            else:
+                for i in range(popularCourseLen):
+                    popularCourseList.append(max(teacherCourseListCopy, key=lambda x: x.get_rating()))
+                    teacherCourseListCopy.pop(popularCourseList)
+            lastThreeCourseLen = len(teacherCourseList)
+            print("iwd", popularCourseList)
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
-            return render_template('users/teacher/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList = teacherCourseList, lastThreeCousreList = lastThreeCourseList)
+
+            return render_template('users/teacher/my_channel.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseList=popularCourseList)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/teacher_page.html", accType="Guest")
+            return render_template("users/teacher/my_channel.html", accType="Guest")
     else:
-        return render_template("users/general/teacher_page.html", accType="Guest")
+        return render_template("users/teacher/my_channel.html", accType="Guest")
 
 """End of Teacher's Channel Page(Teacher view) by Clarence"""
 
