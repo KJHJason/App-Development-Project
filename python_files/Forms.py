@@ -128,7 +128,7 @@ class CreateCourse(Form):
     videocondiction
     tags = StringField("")
     zoomschedule'''
-    title = StringField("Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
+    title = StringField("Course Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
     description = StringField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
     #thumbnail use HTML to validate size, type
     zoomCondition = BooleanField("Zoom Included")

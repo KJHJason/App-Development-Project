@@ -79,4 +79,12 @@ https://developer.paypal.com/developer/applications/edit/SB:QVVUaDgzSk16OG1MTkdO
 
 Pretty Print JSON
 https://jsonformatter.org/json-pretty-print
+
+
+Email:
+sb-gzjpl11768707@personal.example.com
+
+Password:
+c&V#>L_8
 */
+
