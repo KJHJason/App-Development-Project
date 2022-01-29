@@ -305,7 +305,7 @@ def get_user_profile_pic(username, profileFileName, profileFilePath, userSession
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=username)
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=username, options=app.config["DICEBEAR_OPTIONS"]).url_svg
 
         if profileFileNameBool != False:
             print("Image file does not exist anymore, deleting...")
@@ -339,7 +339,7 @@ def retrieve_user_profile_pic(userKey):
     if profileFileNameBool != False and Path(profileFilePath).is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username())
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
     return imagesrcPath
 
 def delete_user_profile(userImageFileName):

@@ -156,7 +156,7 @@
                                             {% if user.get_profile_image() != "" %}
                                             <img src="/static/images/user/{{ user.get_profile_image() }}" alt="User uploaded profile image" class="users_profile">
                                             {% else %}
-                                            <img src="https://avatars.dicebear.com/api/initials/{{ user.get_username() }}.svg" alt="User default profile image" class="users_profile">
+                                            <img src="https://avatars.dicebear.com/api/initials/{{ user.get_username() }}.svg?size=250&" alt="User default profile image" class="users_profile">
                                             {% endif %}
                                         </td>
                                         <td class="text-truncate"><a href="javascript:usernameCopyToClipBoard('{{ user.get_user_id() }}')" id="usernameTooltip{{ user.get_user_id() }}" class="table_full_data_text username_text" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ user.get_user_id() }}')">{{ user.get_username() }}</a></td>

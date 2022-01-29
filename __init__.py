@@ -9,6 +9,7 @@ from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
+from dicebear import DOptions
 from python_files import Student, Teacher, Forms
 from python_files import Payment
 from python_files.Security import hash_password, verify_password, sanitise, validate_email
@@ -23,8 +24,12 @@ app.config["SECRET_KEY"] = "a secret key" # for demonstration purposes, if deplo
 scheduler = BackgroundScheduler()
 
 # Maximum file size for uploading anything to the web app's server
-app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
-app.config["MAX_THUMBNAIL_IMAGE_FILESIZE"] = 5 * 1024 *1024 #5MiB
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024 # 200MiB
+
+# Configurations for dicebear api for user profile image options
+app.config["DICEBEAR_OPTIONS"] = options = DOptions(
+    size=250
+)
 
 # creating an absolute path for storing the shelve files
 app.config["DATABASE_FOLDER"] = str(pathlib.Path.cwd()) + "\\databases"
