@@ -29,7 +29,7 @@ Hence, please only force shut down the program if necessary.
 # Command line 6 feature/operation done by Royston
 
 def main():
-    adminDatabaseFilePath = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases" + "/admin"
+    adminDatabaseFilePath = str(pathlib.Path.cwd()) + "\\databases" + "\\admin"
     while True:
         print(cmd_menu)
         cmd_input = input("Enter number: ")
@@ -38,7 +38,7 @@ def main():
                 username = sanitise(input("Enter username for admin account (0 to exit): "))
                 if username == "0":
                     break
-                email = sanitise(input("Enter email for admin account (0 to exit): "))
+                email = sanitise(input("Enter email for admin account (0 to exit): ")).lower()
                 if email == "0":
                     break
                 emailValid = False
@@ -403,7 +403,9 @@ def main():
 
         elif cmd_input == "5":
             while True:
-                email = sanitise(input("Enter email or admin id for the admin account: "))
+                email = sanitise(input("Enter email or admin id for the admin account (0 to exit): "))
+                if email == "0":
+                    break
                 if email != False:
                     adminDict = {}
                     db = shelve.open(adminDatabaseFilePath, "c")
@@ -496,7 +498,7 @@ def main():
             print("\nThank you and have a nice day.")
             break
         else:
-            print("\nError: Invalid command, please enter the number 1 or 0 as specified in the control panel guide.")
+            print("\nError: Invalid command, please enter a number between 1 to 6 as specified in the control panel guide.")
 
 if __name__ == '__main__':
     main()

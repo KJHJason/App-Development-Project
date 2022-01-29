@@ -27,7 +27,7 @@ app.config['MAX_CONTENT_LENGTH'] = 1000 * 1024 * 1024 # 1000MiB/1GiB
 app.config["MAX_THUMBNAIL_IMAGE_FILESIZE"] = 5 * 1024 *1024 #5MiB
 
 # creating an absolute path for storing the shelve files
-app.config["DATABASE_FOLDER"] = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases"
+app.config["DATABASE_FOLDER"] = str(pathlib.Path.cwd()) + "\\databases"
 
 # configuration for email
 # Make sure to enable access for less secure apps
@@ -85,14 +85,14 @@ print("Your video link is: " + response['link']) """
 def home():
     courseDict = {}
     try:
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
         courseDict = db['Courses']
         db.close()
         print("File found.")
     except:
         print("File could not be found.")
         # since the shelve files could not be found, it will create a placeholder/empty shelve files
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         db["Courses"] = courseDict
         db.close()
 
@@ -391,14 +391,14 @@ def homeNoCookies():
     if "userSession" not in session and "adminSession" not in session: # since if the user is logged in, it means that their cookie is enabled as the login uses session cookies
         courseDict = {}
         try:
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
             courseDict = db['Courses']
             db.close()
             print("File found.")
         except:
             print("File could not be found.")
             # since the shelve files could not be found, it will create a placeholder/empty shelve files
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             db["Courses"] = courseDict
             db.close()
 
@@ -545,14 +545,14 @@ def userLogin():
             passwordInput = create_login_form.password.data
             userDict = {}
             try:
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 userDict = db['Users']
                 db.close()
                 print("File found.")
             except:
                 print("File could not be found.")
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
                 db["Users"] = userDict
                 db.close()
 
@@ -664,7 +664,7 @@ def requestPasswordReset():
             emailInput = sanitise(create_request_form.email.data.lower())
             userDict = {}
             try:
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 userDict = db['Users']
                 db.close()
                 print("File found.")
@@ -673,7 +673,7 @@ def requestPasswordReset():
                 print("File could not be found.")
                 fileFound = False
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
                 db["Users"] = userDict
                 db.close()
 
@@ -737,7 +737,7 @@ def resetPassword(token):
 
                 if password == confirmPassword:
                     userDict = {}
-                    db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+                    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
                     try:
                         if 'Users' in db:
                             userDict = db['Users']
@@ -808,7 +808,7 @@ def userSignUp():
 
                 # Retrieving data from shelve for duplicate data checking
                 userDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
                 try:
                     if 'Users' in db:
                         userDict = db['Users']
@@ -900,7 +900,7 @@ def verifyEmailToken(token):
         if validateToken != None:
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -985,7 +985,7 @@ def teacherSignUp():
 
                 # Retrieving data from shelve for duplicate data checking
                 userDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")  # "c" flag as to create the files if there were no files to retrieve from and also to create the user if the validation conditions are met
                 try:
                     if 'Users' in db:
                         userDict = db['Users']
@@ -1051,7 +1051,7 @@ def signUpPayment():
             if teacherID == userSession:
                 # Retrieving data from shelve and to set the teacher's payment method info data
                 userDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
                 try:
                     if 'Users' in db:
                         # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
@@ -1138,7 +1138,7 @@ def adminLogin():
             passwordInput = create_login_form.password.data
             try:
                 adminDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "r")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "r")
                 adminDict = db['Admins']
                 db.close()
                 print("File found.")
@@ -1146,7 +1146,7 @@ def adminLogin():
                 print("File could not be found.")
                 # since the shelve files could not be found, it will create a placeholder/empty shelve files so that user can submit the login form but will still be unable to login
                 adminDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
                 db["Admins"] = adminDict
                 db.close()
 
@@ -1270,7 +1270,7 @@ def adminChangeUsername():
         print(adminSession)
         create_update_username_form = Forms.CreateChangeUsername(request.form)
         if request.method == "POST" and create_update_username_form.validate():
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             try:
                 if 'Admins' in db:
                     adminDict = db['Admins']
@@ -1338,7 +1338,7 @@ def adminChangeEmail():
         print(adminSession)
         create_update_email_form = Forms.CreateChangeEmail(request.form)
         if request.method == "POST" and create_update_email_form.validate():
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             try:
                 if 'Admins' in db:
                     adminDict = db['Admins']
@@ -1415,7 +1415,7 @@ def adminChangePassword():
             # for jinja2
             errorMessage = False
 
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             try:
                 if 'Admins' in db:
                     adminDict = db['Admins']
@@ -1510,7 +1510,7 @@ def userManagement(pageNum):
         userFound, accActive = admin_validate_session_open_file(adminSession)
         if userFound and accActive:
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -1656,7 +1656,7 @@ def userSearchManagement(pageNum):
         userFound, accActive = admin_validate_session_open_file(adminSession)
         if userFound and accActive:
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -1882,7 +1882,7 @@ def deleteUser(userID):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -1938,7 +1938,7 @@ def banUser(userID):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -1992,7 +1992,7 @@ def unbanUser(userID):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -2051,7 +2051,7 @@ def changeUserUsername(userID):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -2113,7 +2113,7 @@ def resetProfileImage(userID):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
             userDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -2166,7 +2166,7 @@ def dashboard():
         if userFound and accActive:
             saveNoOfUserPerDay() # refreshes the graph data every time an admin visits the dashboard page
             graphList = []
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'userGraphData' in db and "Users" in db:
                     graphList = db['userGraphData']
@@ -2268,7 +2268,7 @@ def userProfile():
 
         # Retrieving data from shelve and to set the teacher's payment method info data
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -2505,7 +2505,7 @@ def updateUsername():
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -2587,7 +2587,7 @@ def updateEmail():
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -2676,7 +2676,7 @@ def updatePassword():
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -2786,7 +2786,7 @@ def changeAccountType():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -2897,7 +2897,7 @@ def userPayment():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3023,7 +3023,7 @@ def userEditPayment():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3102,7 +3102,7 @@ def deleteCard():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3165,7 +3165,7 @@ def teacherCashOut():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3343,7 +3343,7 @@ def search(pageNum):
             courseDict = {}
             courseTitleList = []
             try:
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
 
             except:
@@ -3427,7 +3427,7 @@ def search(pageNum):
             courseDict = {}
             courseTitleList = []
             try:
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
 
             except:
@@ -3505,7 +3505,7 @@ def search(pageNum):
         courseDict = {}
         courseTitleList = []
         try:
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
             courseDict = db["Courses"]
 
         except:
@@ -3591,7 +3591,7 @@ def purchaseHistory(pageNum):
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3626,7 +3626,7 @@ def purchaseHistory(pageNum):
             if purchasedCourses != {}:
                 try:
                     courseDict = {}
-                    db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                     courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
@@ -3719,7 +3719,7 @@ def createPurchaseReview():
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
             courseDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
 
             try:
                 courseDict = db["Courses"]
@@ -3771,7 +3771,7 @@ def purchaseView(pageNum):
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -3807,7 +3807,7 @@ def purchaseView(pageNum):
             if purchasedCourses != {}:
                 try:
                     courseDict = {}
-                    db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "r")
+                    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                     courseDict = db["Courses"]
                 except:
                     print("Unable to open up course shelve")
@@ -3891,7 +3891,7 @@ def shoppingCart(pageNum):
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -4099,7 +4099,7 @@ def contactUs():
 
                 if request.method == "POST" and contactForm.validate(): # Teacher or student submitting form
 
-                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
                     # Remember to validate
                     try:
                         if "Tickets" in dbAdmin:
@@ -4160,7 +4160,7 @@ def contactUs():
 
         if request.method == "POST" and contactForm.validate():
 
-            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:
@@ -4219,7 +4219,7 @@ def supportTicketManagement(pageNum):
             ticketSearch = Forms.TicketSearchForm(request.form)
             ticketAction = Forms.TicketAction(request.form)
 
-            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             # Remember to validate
             try:
                 if "Tickets" in dbAdmin:
@@ -4525,7 +4525,7 @@ def teacherPage(teacherPageUID):
         #checks if user account is available
             userDict = {}
             courseDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'Users' in db:
                     userDict = db['Users']
@@ -4603,7 +4603,6 @@ def teacherCourses(teacherCoursesUID):
 
 """Course Creation by Clarence"""
 
-
 @app.route("/create_course")
 @limiter.limit("30/second")  # to prevent ddos attacks
 def course_thumbnail_upload():
@@ -4612,10 +4611,15 @@ def course_thumbnail_upload():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        courseDict = {}
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
+                if "Course" in db:
+                    courseDict = db['Course']
+                else:
+                    db["Course"] = courseDict
             else:
                 db.close()
                 print("User data in shelve is empty.")
@@ -4636,22 +4640,9 @@ def course_thumbnail_upload():
                 teacherUID = userSession
                 if request.method == "POST":
                     if form.validate():
-                        #add course object to courseDict
-                        courseDict = {}
-                        db = shelve.open(app.config["DATABASE_FOLDER"] + "/course", "c")
-                        try:
-                            if 'Course' in db:
-                                courseDict = db['Course']
-                                db.close()
-                            else:
-                                db.close()
-                                print("Course data in shelve is empty.")
-                                session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                                return redirect(url_for("home"))
-                        except:
-                            db.close()
-                            print("Error in retrieving Course from course.db")
-                            return redirect(url_for("home"))
+                        #add course object to courseDict then save to user shelve
+                        db["Course"] = courseDict
+                        db.close()
                 else:
                     teacherUID = ""
                 db.close()  # remember to close your shelve files!
@@ -4794,7 +4785,7 @@ def function():
 
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/user", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
             if 'Users' in db:
                 userDict = db['Users']
@@ -5066,7 +5057,7 @@ def function():
         adminSession = session["adminSession"]
         print(adminSession)
 
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
         try:
             if 'Admins' in db:
                 adminDict = db['Admins']

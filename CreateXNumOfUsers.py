@@ -8,7 +8,7 @@ def generate_ID(inputDict):
     return generatedID
 
 userDict = {}
-db = shelve.open(str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases" + "/user", "c")
+db = shelve.open(str(pathlib.Path.cwd()) + "\\databases" + "\\user", "c")
 try:
     if 'Users' in db:
         userDict = db['Users']

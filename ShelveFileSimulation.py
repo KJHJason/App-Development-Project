@@ -19,11 +19,11 @@ from python_files.IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
 import shelve, pathlib
 
-databaseFolder = str(pathlib.Path(__file__).parent.resolve()).replace("\\", "/") + "/databases"
+databaseFolder = str(pathlib.Path.cwd()) + "\\databases"
 
 # Open shelve
-userBase = shelve.open(databaseFolder + "/user", "c")
-adminBase = shelve.open(databaseFolder + "/admin", "c")
+userBase = shelve.open(databaseFolder + "\\user", "c")
+adminBase = shelve.open(databaseFolder + "\\admin", "c")
 
 # Remove all prior entries
 userDict = {}
@@ -235,7 +235,7 @@ courseDict[courseID] = course
 #General
 adminID = generate_admin_id(adminDict)
 username = "The Archivist"
-email = sanitise("O5-2@SCP.com".lower())
+email = sanitise("O52@SCP.com".lower())
 password = "27sb2we9djaksidu8a"
 admin = Admin(adminID, username, email, password)
 
@@ -249,7 +249,7 @@ adminDict[adminID] = admin
 #General
 adminID = generate_admin_id(adminDict)
 username = "Tamlin"
-email = sanitise("O5-13@SCP.com".lower())
+email = sanitise("O513@SCP.com".lower())
 password = "o4jru5fjr49f8ieri4"
 admin = Admin(adminID, username, email, password)
 
