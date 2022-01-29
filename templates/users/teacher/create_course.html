@@ -84,14 +84,32 @@
                         </div>
                     </div>
 
-                    <!-- zoomCondition -->
+                    <!-- zoomCondition
                     <div class="col-md-12 form_checkbox">
                         {{ render_field(form.zoomCondition, class="form-control") }}
                     </div>
 
-                    <!-- videoCondition -->
+                     videoCondition
                     <div class="col-md-12 form_checkbox">
                         {{ render_field(form.videoCondition, class="form-control") }}
+                    </div> -->
+                    <!--Zoom OR Video Radio Buttons-->
+                    <div class ="main-wrapper">
+                        <div class="buttons-wrapper">
+                            <input type="radio" id="input1" name = inputs>
+                            <label for="input1">
+                                <div class="circle"></div>
+                                <div class="entry-level">Video</div>
+                            </label>
+
+                            <input type="radio" id="input2" name=inputs>
+                            <label for="input2">
+                                <div class="circle"></div>
+                                <div class="entry-level">Zoom</div>
+                            </label>
+
+                            <div class="highlight"></div>
+                        </div>
                     </div>
 
                     <!-- coursePrice -->
@@ -103,7 +121,7 @@
                         <label class="form-label text-white" for="teacher_condition2">I understand that videos uploaded must comply with CourseFinity's terms and conditions.</label>
                     </div>
                     <div class="col-md-12">
-                        <button type="submit" class="btn btn-colour text-white float-end">Create</button>
+                        <button type="submit" id="submit" class="btn btn-colour text-white float-end">Create</button>
                     </div>
                 </form>
             </div>
