@@ -56,7 +56,7 @@
 	<div class="row">
 		<h2 class="headings">Trending</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
-		{% if trendingCourseLen > 1 %}
+		{% if trendingCourseLen >= 1 %}
 			{% for course in trendingCourseList %}
 			<div class="col">
 				<div class="card h-100">
@@ -130,7 +130,7 @@
 	<div class="row">
 		<h2 class="headings">Recommendations</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
-		{% if recommendCourseLen > 1 %}
+		{% if recommendCourseLen >= 1 %}
 			{% for course in recommendCourseList %}
 			<div class="col">
 				<div class="card h-100">

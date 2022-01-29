@@ -84,9 +84,11 @@ print("Your video link is: " + response['link']) """
 @limiter.limit("30/second") # to prevent ddos attacks
 def home():
     courseDict = {}
+    userDict = {}
     try:
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
         courseDict = db['Courses']
+        userDict = db['Users']
         db.close()
         print("File found.")
     except:
@@ -94,6 +96,7 @@ def home():
         # since the shelve files could not be found, it will create a placeholder/empty shelve files
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         db["Courses"] = courseDict
+        db["Users"] = userDict
         db.close()
 
     # for trending algorithm
@@ -103,12 +106,25 @@ def home():
         courseDictCopy = copy.deepcopy(courseDict)
         while count != 3:
             highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID].get_views())
-            trendingCourseList.append(courseDict.get(highestViewedCourse))
-            courseDictCopy.pop(highestViewedCourse)
-            count += 1
+            # retrieve teacher user ID
+            courseTeacherID = courseDict.get(highestViewedCourse).get_userID()
+            # based on the teacher user ID and check if the teacher is banned
+            if userDict.get(courseTeacherID).get_status() == "Good":
+                print("Username:", userDict.get(courseTeacherID).get_username() )
+                print("User status:", userDict.get(courseTeacherID).get_status() )
+                # append course object if the teacher is not banned
+                trendingCourseList.append(courseDict.get(highestViewedCourse))
+                courseDictCopy.pop(highestViewedCourse)
+                count += 1
+            else:
+                # remove the course object from the courseDictCopy if the teacher is banned
+                courseDictCopy.pop(highestViewedCourse)
     except:
         print("No courses or not enough courses (requires 3 courses)")
-        trendingCourseList = get_random_courses(courseDict)
+        trendingCourseList = []
+        for values in courseDict.values():
+            if userDict.get(values.get_userID()).get_status() == "Good":
+                trendingCourseList.append(values)
 
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -152,38 +168,69 @@ def home():
                                 # hence choosing one other random course objects
                                 while True:
                                     randomisedCourse = random.choice(list(courseDict.values()))
-                                    if randomisedCourse not in userPurchasedCourses:
-                                        recommendCourseList.append(randomisedCourse)
-                                        break
+                                    if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                                        if randomisedCourse not in userPurchasedCourses:
+                                            recommendCourseList.append(randomisedCourse)
+                                            courseDict.pop(randomisedCourse.get_courseID())
+                                            break
+                                        else:
+                                            # user has purchased the course
+                                            courseDict.pop(randomisedCourse.get_courseID())
+                                    else:
+                                        # if the teacher of the course has been banned
+                                        courseDict.pop(randomisedCourse.get_courseID())
                             except:
                                 print("No course found.")
                     else:
                         # meaning that the user has either not seen any tags or has watched an equal balance of various tags
                         # hence choosing three random course objects
-                        count = 0
                         try:
-                            while count != 3:
+                            while len(recommendCourseList) != 3:
                                 randomisedCourse = random.choice(list(courseDict.values()))
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
-                                    recommendCourseList.append(randomisedCourse)
-                                    count += 1
+                                if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                                    if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                        recommendCourseList.append(randomisedCourse)
+                                        courseDict.pop(randomisedCourse.get_courseID())
+                                    else:
+                                        # user has purchased the course
+                                        courseDict.pop(randomisedCourse.get_courseID())
+                                else:
+                                    # if the teacher of the course has been banned
+                                    courseDict.pop(randomisedCourse.get_courseID())
                         except:
                             print("No courses found.")
 
                     recommendedCourseListByHighestTag = []
 
+                    # checking current length of the recommendCourseList if the length is less than 3, then adding courses to make it a length of 3
                     courseListLen = len(recommendCourseList)
-                    if courseListLen == 0:
+                    if courseListLen == 0: # condition will be true when the user has two unique highest tags
                         recommendedCourseListBySecondHighestTag = []
                         for key in courseDict:
                             courseObject = courseDict[key]
                             courseTag = courseObject.get_tags()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
-                                    recommendedCourseListByHighestTag.append(courseObject)
+                                    if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                        recommendedCourseListByHighestTag.append(courseObject)
+                                    else:
+                                        # if the teacher of the course has been banned
+                                        courseDict.pop(randomisedCourse.get_courseID())
+                                else:
+                                    # user has bought the course
+                                    courseDict.pop(randomisedCourse.get_courseID())
                             elif courseTag == secondHighestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
-                                    recommendedCourseListBySecondHighestTag.append(courseObject)
+                                    if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                        recommendedCourseListBySecondHighestTag.append(courseObject)
+                                    else:
+                                        # if the teacher of the course has been banned
+                                        courseDict.pop(randomisedCourse.get_courseID())
+                                else:
+                                    # user has bought the course
+                                    courseDict.pop(randomisedCourse.get_courseID())
+
+                        # appending course object for recommendations
                         count = 0
                         try:
                             while count != 2:
@@ -191,21 +238,34 @@ def home():
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
                                     recommendCourseList.append(randomisedCourse)
                                     count += 1
-                            count = 0
-                            while count != 1:
+                                else:
+                                    courseDict.pop(randomisedCourse.get_courseID())
+                            while count != 3:
                                 randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
                                     recommendCourseList.append(randomisedCourse)
                                     count += 1
+                                else:
+                                    courseDict.pop(randomisedCourse.get_courseID())
                         except:
                             print("Not enough courses with the user's corresponding tags.")
-                    elif courseListLen == 1:
+
+                    elif courseListLen == 1: # condition will be true when the user has only one unique highest tag
                         for key in courseDict:
                             courseObject = courseDict[key]
                             courseTag = courseObject.get_tags()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
-                                    recommendedCourseListByHighestTag.append(courseObject)
+                                    if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                        recommendedCourseListByHighestTag.append(courseObject)
+                                    else:
+                                        # if the teacher of the course has been banned
+                                        courseDict.pop(randomisedCourse.get_courseID())
+                                else:
+                                    # user has bought the course
+                                    courseDict.pop(randomisedCourse.get_courseID())
+
+                        # appending course object for recommendations
                         count = 0
                         try:
                             while count != 2:
@@ -213,18 +273,28 @@ def home():
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
                                     recommendCourseList.append(randomisedCourse)
                                     count += 1
+                                else:
+                                    # already has been recommended or bought
+                                    courseDict.pop(randomisedCourse.get_courseID())
                         except:
                             print("Not enough courses with the user's corresponding tags.")
 
                     # in the event where there is insufficient tags to recommend, it will randomly choose another course object
                     if len(recommendCourseList) != 3:
                         while len(recommendCourseList) != 3:
-                            randomisedCourse = random.choice(list(courseDict.values()))
-                            if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
-                                recommendCourseList.append(randomisedCourse)
+                            try:
+                                randomisedCourse = random.choice(list(courseDict.values()))
+                            except:
+                                break
+                            if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+                                    recommendCourseList.append(randomisedCourse)
+                            else:
+                                courseDict.pop(randomisedCourse.get_courseID())
                 else:
                     for value in courseDict.values():
-                        recommendCourseList.append(value)
+                        if userDict.get(value.get_courseID()).get_status() == "Good":
+                            recommendCourseList.append(value)
 
                 # logged in users
                 if accType == "Teacher":
@@ -267,34 +337,54 @@ def home():
                             # hence choosing one other random course objects
                             while True:
                                 randomisedCourse = random.choice(list(courseDict.values()))
-                                recommendCourseList.append(randomisedCourse)
+                                if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                                    recommendCourseList.append(randomisedCourse)
+                                    break
+                                else:
+                                    courseDict.pop(randomisedCourse.get_courseID())
                         except:
                             print("No course found.")
                 else:
                     # meaning that the user has either not seen any tags or has watched an equal balance of various tags
                     # hence choosing three random course objects
-                    count = 0
                     try:
-                        while count != 3:
+                        while len(recommendCourseList) != 3:
                             randomisedCourse = random.choice(list(courseDict.values()))
-                            if randomisedCourse not in recommendCourseList:
-                                recommendCourseList.append(randomisedCourse)
-                                count += 1
+                            if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                                if randomisedCourse not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourse)
+                                else:
+                                    # if course has been recommended already
+                                    courseDict.pop(randomisedCourse.get_courseID())
+                            else:
+                                # if teacher has been banned
+                                courseDict.pop(randomisedCourse.get_courseID())
                     except:
                         print("No courses found.")
 
                 recommendedCourseListByHighestTag = []
 
+                # checking current length of the recommendCourseList if the length is less than 3, then adding courses to make it a length of 3
                 courseListLen = len(recommendCourseList)
-                if courseListLen == 0:
+                if courseListLen == 0: # condition will be true when the user has two unique highest tags
                     recommendedCourseListBySecondHighestTag = []
                     for key in courseDict:
                         courseObject = courseDict[key]
                         courseTag = courseObject.get_tags()
                         if courseTag == highestWatchedByTag:
-                            recommendedCourseListByHighestTag.append(courseObject)
+                            if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                recommendedCourseListByHighestTag.append(courseObject)
+                            else:
+                                # if the teacher of the course has been banned
+                                courseDict.pop(randomisedCourse.get_courseID())
                         elif courseTag == secondHighestWatchedByTag:
-                            recommendedCourseListBySecondHighestTag.append(courseObject)
+                            if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                recommendedCourseListBySecondHighestTag.append(courseObject)
+                            else:
+                                # if the teacher of the course has been banned
+                                courseDict.pop(randomisedCourse.get_courseID())
+
+                    # appending course object for recommendations
                     count = 0
                     try:
                         while count != 2:
@@ -302,20 +392,30 @@ def home():
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
                                 count += 1
-                        count = 0
-                        while count != 1:
+                            else:
+                                # course has been already recommended
+                                courseDict.pop(randomisedCourse.get_courseID())
+                        while count != 3:
                             randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
                                 count += 1
+                            else:
+                                # course has been already recommended
+                                courseDict.pop(randomisedCourse.get_courseID())
                     except:
                         print("Not enough courses with the user's corresponding tags.")
-                elif courseListLen == 1:
+
+                elif courseListLen == 1: # condition will be true when the user has one unique highest tag
                     for key in courseDict:
                         courseObject = courseDict[key]
                         courseTag = courseObject.get_tags()
                         if courseTag == highestWatchedByTag:
-                            recommendedCourseListByHighestTag.append(courseObject)
+                            if userDict.get(courseObject.get_userID()).get_status() == "Good":
+                                recommendedCourseListByHighestTag.append(courseObject)
+                            else:
+                                # if the teacher of the course has been banned
+                                courseDict.pop(randomisedCourse.get_courseID())
                     count = 0
                     try:
                         while count != 2:
@@ -323,18 +423,29 @@ def home():
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
                                 count += 1
+                            else:
+                                # course has been already recommended
+                                recommendedCourseListByHighestTag.pop(randomisedCourse)
                     except:
                         print("Not enough courses with the user's corresponding tags.")
 
                 # in the event where there is insufficient tags to recommend, it will randomly choose another course object
                 if len(recommendCourseList) != 3:
                     while len(recommendCourseList) != 3:
-                        randomisedCourse = random.choice(list(courseDict.values()))
-                        if randomisedCourse not in recommendCourseList:
-                            recommendCourseList.append(randomisedCourse)
+                        try:
+                            randomisedCourse = random.choice(list(courseDict.values()))
+                        except:
+                            break
+                        if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                            if randomisedCourse not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourse)
+                        else:
+                            # if the teacher of the course has been banned
+                            courseDict.pop(randomisedCourse.get_courseID())
             else:
                 for value in courseDict.values():
-                    recommendCourseList.append(value)
+                    if userDict.get(value.get_courseID()).get_status() == "Good":
+                        recommendCourseList.append(value)
 
         return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
@@ -390,9 +501,11 @@ def guestCookies():
 def homeNoCookies():
     if "userSession" not in session and "adminSession" not in session: # since if the user is logged in, it means that their cookie is enabled as the login uses session cookies
         courseDict = {}
+        userDict = {}
         try:
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
             courseDict = db['Courses']
+            userDict = db['Users']
             db.close()
             print("File found.")
         except:
@@ -400,6 +513,7 @@ def homeNoCookies():
             # since the shelve files could not be found, it will create a placeholder/empty shelve files
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             db["Courses"] = courseDict
+            db['Users'] = userDict
             db.close()
 
         # for trending algorithm
@@ -409,12 +523,25 @@ def homeNoCookies():
             courseDictCopy = copy.deepcopy(courseDict)
             while count != 3:
                 highestViewedCourse = max(courseDictCopy, key=lambda courseID: courseDictCopy[courseID].get_views())
-                trendingCourseList.append(courseDict.get(highestViewedCourse))
-                courseDictCopy.pop(highestViewedCourse)
-                count += 1
+                # retrieve teacher user ID
+                courseTeacherID = courseDict.get(highestViewedCourse).get_userID()
+                # based on the teacher user ID and check if the teacher is banned
+                if userDict.get(courseTeacherID).get_status() == "Good":
+                    print("Username:", userDict.get(courseTeacherID).get_username() )
+                    print("User status:", userDict.get(courseTeacherID).get_status() )
+                    # append course object if the teacher is not banned
+                    trendingCourseList.append(courseDict.get(highestViewedCourse))
+                    courseDictCopy.pop(highestViewedCourse)
+                    count += 1
+                else:
+                    # remove the course object from the courseDictCopy if the teacher is banned
+                    courseDictCopy.pop(highestViewedCourse)
         except:
             print("No courses or not enough courses (requires 3 courses)")
-            trendingCourseList = get_random_courses(courseDict)
+            trendingCourseList = []
+            for values in courseDict.values():
+                if userDict.get(values.get_userID()).get_status() == "Good":
+                    trendingCourseList.append(values)
 
         recommendCourseList = get_random_courses(courseDict)
 

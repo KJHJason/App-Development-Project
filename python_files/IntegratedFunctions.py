@@ -691,15 +691,39 @@ def checkUniqueElements(inputToCheck):
     return uniqueNumbersOfViews
 
 def get_random_courses(courseDict):
+    userDict = {}
+    try:
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+        userDict = db['Users']
+        db.close()
+        print("File found.")
+    except:
+        print("File could not be found.")
+        # since the shelve files could not be found, it will create a placeholder/empty shelve files
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        db["Users"] = userDict
+        db.close()
+
     recommendCourseList = []
     if len(courseDict) > 3:
         while len(recommendCourseList) != 3:
-            randomisedCourse = random.choice(list(courseDict.values()))
-            if randomisedCourse not in recommendCourseList:
-                recommendCourseList.append(randomisedCourse)
+            try:
+                randomisedCourse = random.choice(list(courseDict.values()))
+            except:
+                break
+            if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
+                if randomisedCourse not in recommendCourseList:
+                    recommendCourseList.append(randomisedCourse)
+                else:
+                    # if course has been recommended already
+                    courseDict.pop(randomisedCourse.get_courseID())
+            else:
+                # if the teacher of the course has been banned
+                courseDict.pop(randomisedCourse.get_courseID())
     else:
         for value in courseDict.values():
-            recommendCourseList.append(value)
+            if userDict.get(value.get_userID()).get_status() == "Good":
+                recommendCourseList.append(value)
     return recommendCourseList
 
 def saveNoOfUserPerDay():

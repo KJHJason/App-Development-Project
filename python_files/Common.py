@@ -14,6 +14,7 @@ class Common(User):
         # Added by Wei Ren for Courses
         self.__shoppingCart = {} # Course IDs & Type here
         self.__purchasedCourses = {} # Course IDs, Type, Timing, Cost here
+                                     # E.g. {courseID: {type: "Video", purchasedDate: "2020-01-01", cost: "100"}}
         self.__tags_viewed = {"Programming": 0, 
                               "Web_Development": 0,
                               "Game_Development": 0,
@@ -41,12 +42,18 @@ class Common(User):
                               "Test_Prep": 0,
                               "Other_Academics": 0}
     
-    """Done by Jason"""
+    """Done by Royston"""
 
-    def set_purchases(self, purchasesDict):
+    def add_purchase(self, courseID, value): 
+        self.__purchasedCourses[courseID] = value # courseID will be the key and the value will be a dictionary
+    def set_purchases(self, purchasesDict): # if there's a need to replace a user's purchase dictionary
         self.__purchasedCourses = purchasesDict
     def get_purchases(self): # Get a dictionary of the user's purchased courses
         return self.__purchasedCourses
+
+    """End of Done by Royston"""
+
+    """Done by Jason"""
 
     def set_tags_viewed(self, tagsDict):
         self.__tags_viewed = tagsDict
