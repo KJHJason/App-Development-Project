@@ -27,5 +27,4 @@ Libraries needed:
   <li>dicebear Version 0.1.2 [pip install dicebear==0.1.2]</li>
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
-  <li>hyperwallet-sdk-1.7.0 [pip install hyperwallet-sdk==1.7.0]</li>
 </ol>	
