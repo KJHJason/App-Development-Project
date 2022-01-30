@@ -3311,7 +3311,7 @@ def search(pageNum):
 
             searchInput = str(request.args.get("q"))
 
-            searchURL = "?searchq=" + searchInput
+            searchURL = "?q=" + searchInput
 
             searchfound = []
             for courseID in courseDict:
@@ -3394,7 +3394,7 @@ def search(pageNum):
 
             searchInput = str(request.args.get("q"))
 
-            searchURL = "?searchq=" + searchInput
+            searchURL = "?q=" + searchInput
 
             searchfound = []
             for courseID in courseDict:
@@ -3471,7 +3471,7 @@ def search(pageNum):
 
         searchInput = str(request.args.get("q"))
 
-        searchURL = "?searchq=" + searchInput
+        searchURL = "?q=" + searchInput
 
         searchfound = []
         for courseID in courseDict:
@@ -3732,7 +3732,7 @@ def createPurchaseReview(courseID):
 
 @app.route("/purchaseview")
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseView(pageNum):
+def purchaseView():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3800,30 +3800,6 @@ def purchaseView(pageNum):
             else:
                 print("Purchase view is Empty")
                 historyCheck = False
-
-            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(purchasedCourses) # get the length of the userList
-            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-            if pageNum < 0:
-                return redirect("/purchaseview/0")
-            elif courseListLen > 0 and pageNum == 0:
-                return redirect("/purchaseview/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/purchaseview/" + str(maxPages)
-                return redirect(redirectRoute)
-            else:
-                # pagination algorithm starts here
-                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
-
-                paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                previousPage = pageNum - 1
-                nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
                 return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
