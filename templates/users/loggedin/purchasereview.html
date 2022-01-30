@@ -13,16 +13,13 @@
 		</ol>
 	</nav>
 	<div class="box">
-		<h2>Course: {{ Title }}</h2>
-		<h5>Create a review (Less than 200 words):</h5>
-		<form action="home" method="POST">
-			<div>
-				{{ render_field(form.title, class="form-control") }}
-				<br>
-				{{ render_field(form.review, class="form-control") }}
-				<button type="submit" class="btn btn-primary">Submit</button>
-			</div>
-		</form>
+		<h2>Create a review (Less than 200 words):</h2>
+		<div>
+			{{ render_field(form.title, class="form-control") }}
+			<br>
+			{{ render_field(form.review, class="form-control") }}
+			<a href="/" class="btn btn-link">Submit Your Review</a>
+		</div>
 	</div>
 </div>
 {% endblock %}

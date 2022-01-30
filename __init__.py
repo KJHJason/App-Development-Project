@@ -3620,6 +3620,7 @@ def purchaseHistory(pageNum):
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
+                    session["courseIDGrab"] = courseID
                 print(historyList)
 
                 db.close()
@@ -3688,6 +3689,7 @@ def createPurchaseReview(courseID):
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
+            courseID = session.get("courseIDGrab")
             courseDict = {}
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             print(courseID)
@@ -3699,7 +3701,7 @@ def createPurchaseReview(courseID):
                 db.close()
                 return redirect(url_for("purchasehistory"))
 
-            if courseID in purchasedCourses:
+            if courseID in list(purchasedCourses.keys()):
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
                     print("What is the review?: ",review)
@@ -3707,11 +3709,14 @@ def createPurchaseReview(courseID):
                     courseDict["Courses"] = db
 
                     session["reviewAdded"] = True
+                    session.pop("courseIDGrab", None)
+                    print("Review addition was successful")
 
                     db.close() # remember to close your shelve files!
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict)
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict,form=createReview)
                 else:
                     db.close()
+                    print("Error in Process")
                     return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview)
 
             else:
@@ -4714,6 +4719,40 @@ def teacherOwnPage(teacherUID):
         return render_template("users/teacher/my_channel.html", accType="Guest")
 
 """End of Teacher's Channel Page(Teacher view) by Clarence"""
+
+"""Template app.route(") (use this when adding a new app route) by Clarence"""
+
+@app.route('/course_page/<teacherCoursePageUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
+def insertName(teacherCoursePageUID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your code below
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherCoursePageUID = userSession
+            else:
+                teacherCoursePageUID = ""
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursePageUID=teacherCoursePageUID)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by Clarence"""
 
 """General Pages"""
 
