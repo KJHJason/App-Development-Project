@@ -3640,6 +3640,10 @@ def purchaseHistory(pageNum):
 
                 db.close() # remember to close your shelve files!
                 return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+        else:
+            print("Invalid Session")
+            db.close()
+            return redirect(url_for("home"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3673,7 +3677,6 @@ def createPurchaseReview(courseID):
 
             purchasedCourses = userKey.get_purchases()
             createReview = Forms.CreateReviewText(request.form)
-            user = userSession
             print("Purchased course exists?: ", purchasedCourses)
             courseID = session.get("courseIDGrab")
             courseDict = {}
@@ -3691,7 +3694,7 @@ def createPurchaseReview(courseID):
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
                     course = courseDict[courseID]
-                    reviewID = {"Review":review, "UserID":user}
+                    reviewID = {"Review": review, "UserID": userSession}
                     course.add_review(reviewID)
                     print("What is the review info?: ",reviewID)
 
