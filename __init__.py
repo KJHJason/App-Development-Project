@@ -1664,10 +1664,13 @@ def userManagement(pageNum):
 
                 # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
                 if pageNum < 0:
+                    session["pageNum"] = 0
                     return redirect("/user_management/page/0")
                 elif userListLen > 0 and pageNum == 0:
+                    session["pageNum"] = 1
                     return redirect("/user_management/page/1")
                 elif pageNum > maxPages:
+                    session["pageNum"] = maxPages
                     redirectRoute = "/user_management/page/" + str(maxPages)
                     return redirect(redirectRoute)
                 else:
@@ -1824,12 +1827,15 @@ def userSearchManagement(pageNum):
 
                 # redirecting for handling different situation where if the user manually keys in the url
                 if pageNum < 0:
+                    session["pageNum"] = 0
                     redirectRoute = "/user_management/search/0/" + parametersURL
                     return redirect(redirectRoute)
                 elif userListLen > 0 and pageNum == 0:
+                    session["pageNum"] = 1
                     redirectRoute = "/user_management/search/1" + "/" + parametersURL
                     return redirect(redirectRoute)
                 elif pageNum > maxPages:
+                    session["pageNum"] = maxPages
                     redirectRoute = "/user_management/search/" + str(maxPages) +"/" + parametersURL
                     return redirect(redirectRoute)
                 else:
@@ -1839,7 +1845,7 @@ def userSearchManagement(pageNum):
                     paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
-                    session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+                    session["pageNum"] = pageNum
 
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
@@ -3354,10 +3360,13 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
@@ -3368,6 +3377,8 @@ def search(pageNum):
                 searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
+                
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
@@ -3437,10 +3448,13 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
@@ -3451,6 +3465,8 @@ def search(pageNum):
                 searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
@@ -3516,10 +3532,13 @@ def search(pageNum):
         pageNum = int(pageNum)
         # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
         if pageNum < 0:
+            session["pageNum"] = 0
             return redirect("/search/0/" + searchURL)
         elif courseListLen > 0 and pageNum == 0:
+            session["pageNum"] = 1
             return redirect("/search/1" + "/" + searchURL)
         elif pageNum > maxPages:
+            session["pageNum"] = maxPages
             redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
             return redirect(redirectRoute)
         else:
@@ -3528,6 +3547,8 @@ def search(pageNum):
             pageNumForPagination = pageNum - 1 # minus for the paginate function
             paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
             searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+            session["pageNum"] = pageNum
 
             paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3620,10 +3641,13 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/purchasehistory/0")
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/purchasehistory/1")
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/purchasehistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
@@ -3634,6 +3658,8 @@ def purchaseHistory(pageNum):
                 purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
