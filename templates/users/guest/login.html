@@ -5,63 +5,28 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
-{% if emailVerified %}
-<div class="modal fade" id="emailVerifiedModal" tabindex="-1" aria-labelledby="emailVerifiedModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="emailVerifiedModalLabel">Email Verified</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <h6>Your email address has been verified!</h6>
-            <h6>Please do not hesitate to contact us at <a href="mailto:support@coursefinity.com">support@coursefinity.com</a> if you have any questions.</h6>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-        </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% if emailAlreadyVerified %}
-<div class="modal fade" id="emailAlreadyVerifiedModal" tabindex="-1" aria-labelledby="emailAlreadyVerifiedModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="emailAlreadyVerifiedModalLabel">Email Already Verified</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <h6>You have already verified your email address. There is no need to verify it again.</h6>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-        </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            {% for category, message in messages %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">{{ category }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>{{ message }}</h6>
+            </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+            </div>
         </div>
     </div>
-</div>
-{% endif %}
-
-{% if emailTokenInvalid %}
-<div class="modal fade" id="emailTokenInvalidModal" tabindex="-1" aria-labelledby="emailTokenInvalidModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="emailTokenInvalidModalLabel">Email Verification Link Expired</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <h6>Email verification link is invalid or has expired. Please generate a new link and try again later.</h6>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-        </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+    {% endif %}
+{% endwith %}
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
     <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
@@ -76,7 +41,7 @@
 <div class="container">
     <div class="row">
         <div class="LSUForm col">
-            <div class="login-form bg-dark mt-4 p-4 rounded" id="userForm">
+            <div class="bg-dark p-4 rounded" id="userForm">
                 {% if failedAttempt %}
                 <div class="alert alert-danger d-flex align-items-center" role="alert">
                     <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
@@ -91,15 +56,6 @@
                     <div>
                         <h6 class="warning_text">Your account have been banned.</h6>
                         <h6 class="warning_text">Please contact us if you think that this was a mistake.</h6>
-                    </div>
-                </div>
-                {% endif %}
-                {% if passwordUpdated %}
-                <div class="alert alert-success d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
-                    <div>
-                        <h6>Your password has been updated!</h6>
-                        <h6>You can now login with your updated password.</h6>
                     </div>
                 </div>
                 {% endif %}
@@ -130,22 +86,12 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% if emailVerified %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
         <script>
-            var emailVerifiedModal = new bootstrap.Modal(document.getElementById('emailVerifiedModal'), {});
-            emailVerifiedModal.show();
+            var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+            alertModal.show();
         </script>
-    {% endif %}
-    {% if emailAlreadyVerified %}
-        <script>
-            var emailAlreadyVerifiedModal = new bootstrap.Modal(document.getElementById('emailAlreadyVerifiedModal'), {});
-            emailAlreadyVerifiedModal.show();
-        </script>
-    {% endif %}
-    {% if emailTokenInvalid %}
-        <script>
-            var emailTokenInvalidModal = new bootstrap.Modal(document.getElementById('emailTokenInvalidModal'), {});
-            emailTokenInvalidModal.show();
-        </script>
-    {% endif %}
+        {% endif %}
+    {% endwith %}
 {% endblock %}
