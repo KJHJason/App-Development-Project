@@ -27,7 +27,7 @@ scheduler = BackgroundScheduler()
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024 # 200MiB
 
 # Configurations for dicebear api for user profile image options
-app.config["DICEBEAR_OPTIONS"] = options = DOptions(
+app.config["DICEBEAR_OPTIONS"] = DOptions(
     size=250
 )
 
@@ -139,20 +139,6 @@ def home():
 
         if userFound and accGoodStatus:
             if accType != "Admin":
-                # checking if the teacher recently added their payment method when signing up
-                if "teacherPaymentAdded" in session:
-                    teacherPaymentAdded = True
-                    session.pop("teacherPaymentAdded", None)
-                else:
-                    teacherPaymentAdded = False
-
-                # checking if the user recently completed a purchase
-                if "paymentComplete" in session:
-                    paymentComplete = True
-                    session.pop("paymentComplete", None)
-                else:
-                    paymentComplete = False
-
                 # for recommendation algorithm
                 recommendCourseList = []
                 if len(courseDict) > 3:
@@ -304,7 +290,7 @@ def home():
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
@@ -1086,7 +1072,7 @@ def verifyEmailToken(token):
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherSignUp():
     if "userSession" not in session and "adminSession" not in session:
-        create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
+        create_teacher_sign_up_form = Forms.CreateSignUpForm(request.form)
 
         if request.method == 'POST' and create_teacher_sign_up_form.validate():
             # Declaring the 2 variables below to prevent UnboundLocalError
@@ -1226,7 +1212,7 @@ def signUpPayment():
                                 db.close()
 
                                 session.pop("teacher", None) # deleting data from the session after registering the payment method
-                                session["teacherPaymentAdded"] = True
+                                flash("Your payment method has been successfully added! You can still edit your payment method in the user account settings. Good luck and have fun teaching!","Payment Method Added")
                                 return redirect(url_for("home"))
                             else:
                                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
@@ -1678,10 +1664,13 @@ def userManagement(pageNum):
 
                 # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
                 if pageNum < 0:
+                    session["pageNum"] = 0
                     return redirect("/user_management/page/0")
                 elif userListLen > 0 and pageNum == 0:
+                    session["pageNum"] = 1
                     return redirect("/user_management/page/1")
                 elif pageNum > maxPages:
+                    session["pageNum"] = maxPages
                     redirectRoute = "/user_management/page/" + str(maxPages)
                     return redirect(redirectRoute)
                 else:
@@ -1838,12 +1827,15 @@ def userSearchManagement(pageNum):
 
                 # redirecting for handling different situation where if the user manually keys in the url
                 if pageNum < 0:
+                    session["pageNum"] = 0
                     redirectRoute = "/user_management/search/0/" + parametersURL
                     return redirect(redirectRoute)
                 elif userListLen > 0 and pageNum == 0:
+                    session["pageNum"] = 1
                     redirectRoute = "/user_management/search/1" + "/" + parametersURL
                     return redirect(redirectRoute)
                 elif pageNum > maxPages:
+                    session["pageNum"] = maxPages
                     redirectRoute = "/user_management/search/" + str(maxPages) +"/" + parametersURL
                     return redirect(redirectRoute)
                 else:
@@ -1853,7 +1845,7 @@ def userSearchManagement(pageNum):
                     paginatedUserList = paginate(userList, pageNumForPagination, maxItemsPerPage)
                     paginationList = get_pagination_button_list(pageNum, maxPages)
 
-                    session["pageNum"] = pageNum # for uxd so that the admin can be on the same page after managing the user such as deleting the user account, etc.
+                    session["pageNum"] = pageNum
 
                     previousPage = pageNum - 1
                     nextPage = pageNum + 1
@@ -3325,7 +3317,7 @@ def search(pageNum):
 
             searchInput = str(request.args.get("q"))
 
-            searchURL = "?searchq=" + searchInput
+            searchURL = "?q=" + searchInput
 
             searchfound = []
             for courseID in courseDict:
@@ -3368,10 +3360,13 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
@@ -3382,6 +3377,8 @@ def search(pageNum):
                 searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
+                
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
@@ -3408,7 +3405,7 @@ def search(pageNum):
 
             searchInput = str(request.args.get("q"))
 
-            searchURL = "?searchq=" + searchInput
+            searchURL = "?q=" + searchInput
 
             searchfound = []
             for courseID in courseDict:
@@ -3451,10 +3448,13 @@ def search(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/search/0/" + searchURL)
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/search/1" + "/" + searchURL)
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
                 return redirect(redirectRoute)
             else:
@@ -3465,6 +3465,8 @@ def search(pageNum):
                 searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
@@ -3485,7 +3487,7 @@ def search(pageNum):
 
         searchInput = str(request.args.get("q"))
 
-        searchURL = "?searchq=" + searchInput
+        searchURL = "?q=" + searchInput
 
         searchfound = []
         for courseID in courseDict:
@@ -3530,10 +3532,13 @@ def search(pageNum):
         pageNum = int(pageNum)
         # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
         if pageNum < 0:
+            session["pageNum"] = 0
             return redirect("/search/0/" + searchURL)
         elif courseListLen > 0 and pageNum == 0:
+            session["pageNum"] = 1
             return redirect("/search/1" + "/" + searchURL)
         elif pageNum > maxPages:
+            session["pageNum"] = maxPages
             redirectRoute = "/search/" + str(maxPages) + "/" + searchURL
             return redirect(redirectRoute)
         else:
@@ -3542,6 +3547,8 @@ def search(pageNum):
             pageNumForPagination = pageNum - 1 # minus for the paginate function
             paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
             searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+            session["pageNum"] = pageNum
 
             paginationList = get_pagination_button_list(pageNum, maxPages)
 
@@ -3587,6 +3594,7 @@ def purchaseHistory(pageNum):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
+
             courseID = ""
             courseType = ""
             historyCheck = True
@@ -3634,10 +3642,13 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/purchasehistory/0")
             elif courseListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/purchasehistory/1")
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/purchasehistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
@@ -3649,11 +3660,17 @@ def purchaseHistory(pageNum):
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
+                session["pageNum"] = pageNum
+
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
                 return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+        else:
+            print("Invalid Session")
+            db.close()
+            return redirect(url_for("home"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -3670,7 +3687,6 @@ def purchaseHistory(pageNum):
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def createPurchaseReview(courseID):
-    createReview = Forms.CreateReviewText(request.form)
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3686,8 +3702,15 @@ def createPurchaseReview(courseID):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
+            pageNum = session.get("pageNum")
+
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+
             purchasedCourses = userKey.get_purchases()
-            user = userSession
+            createReview = Forms.CreateReviewText(request.form)
             print("Purchased course exists?: ", purchasedCourses)
             courseID = session.get("courseIDGrab")
             courseDict = {}
@@ -3702,22 +3725,26 @@ def createPurchaseReview(courseID):
                 return redirect(url_for("purchasehistory"))
 
             if courseID in list(purchasedCourses.keys()):
+                redirectURL = "/purchasehistory/" + str(pageNum)
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
-                    print("What is the review?: ",review)
-                    reviewDict = {"Review": review, "UserID": user}
+                    course = courseDict[courseID]
+                    reviewID = {"Review": review, "UserID": userSession}
+                    course.add_review(reviewID)
+                    print("What is the review info?: ",reviewID)
+
                     courseDict["Courses"] = db
 
                     session["reviewAdded"] = True
                     session.pop("courseIDGrab", None)
-                    print("Review addition was successful")
-
+                    print("Review addition was successful", course.get_review())
+                    flash("Your review submission was successful. To check your review, visit the course page.", "Review submission successful!")
                     db.close() # remember to close your shelve files!
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict,form=createReview)
+                    return redirect(redirectURL)
                 else:
                     db.close()
                     print("Error in Process")
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview)
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview, pageNum=pageNum)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
@@ -3743,7 +3770,7 @@ def createPurchaseReview(courseID):
 
 @app.route("/purchaseview")
 @limiter.limit("30/second") # to prevent ddos attacks
-def purchaseView(pageNum):
+def purchaseView():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3811,30 +3838,6 @@ def purchaseView(pageNum):
             else:
                 print("Purchase view is Empty")
                 historyCheck = False
-
-            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-            courseListLen = len(purchasedCourses) # get the length of the userList
-            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-            pageNum = int(pageNum)
-            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-            if pageNum < 0:
-                return redirect("/purchaseview/0")
-            elif courseListLen > 0 and pageNum == 0:
-                return redirect("/purchaseview/1")
-            elif pageNum > maxPages:
-                redirectRoute = "/purchaseview/" + str(maxPages)
-                return redirect(redirectRoute)
-            else:
-                # pagination algorithm starts here
-                courseList = historyList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                pageNumForPagination = pageNum - 1 # minus for the paginate function
-                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-                purchasedCourses = paginate(historyList[::-1], pageNumForPagination, maxItemsPerPage)
-
-                paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                previousPage = pageNum - 1
-                nextPage = pageNum + 1
 
                 db.close() # remember to close your shelve files!
                 return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
@@ -3932,8 +3935,7 @@ def shoppingCart(pageNum):
                     userDict[userKey.get_user_id()] = userKey
                     db['Users'] = userDict
 
-                    session["paymentComplete"] = True
-
+                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course successfully purchased!")
                     return redirect(url_for('home'))
 
                 elif removeCourseForm.validate():
@@ -4301,10 +4303,13 @@ def supportTicketManagement(pageNum):
             maxPages = math.ceil(ticketListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/support_ticket_management/0")
             elif ticketListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/support_ticket_management/1")
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/support_ticket_management/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
@@ -4312,6 +4317,8 @@ def supportTicketManagement(pageNum):
                 ticketList = ticketList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedTicketList = paginate(ticketList, pageNumForPagination, maxItemsPerPage)
+
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1

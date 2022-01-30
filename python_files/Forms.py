@@ -26,12 +26,6 @@ class CreateSignUpForm(Form):
     password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
     cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
 
-class CreateTeacherSignUpForm(Form):
-    username = StringField("Username:", [validators.Length(min=1, max=30), validators.DataRequired()])
-    email = EmailField("Email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
-    password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-    cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-
 class CreateChangeUsername(Form):
     updateUsername = StringField("Enter a new username:", [validators.Length(min=1, max=30), validators.DataRequired()])
 

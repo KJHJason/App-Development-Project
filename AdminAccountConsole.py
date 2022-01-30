@@ -1,7 +1,14 @@
 from python_files.Admin import Admin
 from python_files.Security import sanitise, generate_admin_id, validate_pwd_length
-from python_files.IntegratedFunctions import validate_email
-import shelve, pathlib
+import shelve, pathlib, re
+
+# exact function copy from the IntegratedFunctions.py due to circular import error
+def validate_email(email):
+    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # compile the regex so that it does not have to rewrite the regex
+    if(re.fullmatch(regex, email)):
+        return True
+    else:
+        return False
 
 # Command line 1-2 feature/operations done by Jason
 # CRUD operations by admin ID instead of via email only by Jason

@@ -22,7 +22,6 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 # use this function to validate email addresses using regular expressions
 def validate_email(email):
     regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # compile the regex so that it does not have to rewrite the regex
-
     if(re.fullmatch(regex, email)):
         return True
     else:
