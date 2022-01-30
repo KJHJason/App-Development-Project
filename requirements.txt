@@ -13,4 +13,4 @@ PyVimeo==1.1.0
 shortuuid==1.0.8
 setuptools==60.1.0
 WTForms==3.0.0
-Phonenumbers==8.12.42
+phonenumbers==8.12.42
