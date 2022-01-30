@@ -36,7 +36,7 @@
 
 <div class="container">
 	<div class="row">
-		<h2 class="headings">Trending</h2>
+		<h2>Trending</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
 		{% if trendingCourseLen >= 1 %}
 			{% for course in trendingCourseList %}
@@ -110,7 +110,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<h2 class="headings">Recommendations</h2>
+		<h2 id="recommendations">Recommendations</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
 		{% if recommendCourseLen >= 1 %}
 			{% for course in recommendCourseList %}
