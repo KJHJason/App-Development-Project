@@ -3640,7 +3640,6 @@ def purchaseHistory(pageNum):
             courseListLen = len(purchasedCourses) # get the length of the userList
             maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             pageNum = int(pageNum)
-            session["pageNum"] = pageNum
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
                 session["pageNum"] = 0
