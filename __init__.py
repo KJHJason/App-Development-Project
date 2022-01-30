@@ -139,20 +139,6 @@ def home():
 
         if userFound and accGoodStatus:
             if accType != "Admin":
-                # checking if the teacher recently added their payment method when signing up
-                if "teacherPaymentAdded" in session:
-                    teacherPaymentAdded = True
-                    session.pop("teacherPaymentAdded", None)
-                else:
-                    teacherPaymentAdded = False
-
-                # checking if the user recently completed a purchase
-                if "paymentComplete" in session:
-                    paymentComplete = True
-                    session.pop("paymentComplete", None)
-                else:
-                    paymentComplete = False
-
                 # for recommendation algorithm
                 recommendCourseList = []
                 if len(courseDict) > 3:
@@ -304,7 +290,7 @@ def home():
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, teacherPaymentAdded=teacherPaymentAdded, paymentComplete=paymentComplete, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
@@ -1226,7 +1212,7 @@ def signUpPayment():
                                 db.close()
 
                                 session.pop("teacher", None) # deleting data from the session after registering the payment method
-                                session["teacherPaymentAdded"] = True
+                                flash("Your payment method has been successfully added! You can still edit your payment method in the user account settings. Good luck and have fun teaching!","Payment Method Added")
                                 return redirect(url_for("home"))
                             else:
                                 return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
@@ -3935,8 +3921,7 @@ def shoppingCart(pageNum):
                     userDict[userKey.get_user_id()] = userKey
                     db['Users'] = userDict
 
-                    session["paymentComplete"] = True
-
+                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course successfully purchased!")
                     return redirect(url_for('home'))
 
                 elif removeCourseForm.validate():
