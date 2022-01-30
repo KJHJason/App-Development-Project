@@ -4,25 +4,28 @@
 {% endblock %}
 {% block title %}Purchase History | CourseFinity{% endblock %}
 
-{% if reviewAdded == True %}
-<div class="modal fade" id="addedCardModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addedCardModalLabel">Payment Method Added</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<h6>Your review has been successfully submitted.</h6>
-				<h6>You can view it under the course page.</h6>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-			</div>
-		</div>
-	</div>
-</div>
-{% endif %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            {% for category, message in messages %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">{{ category }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>{{ message }}</h6>
+            </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endwith %}
 
 {% block content %}
 <div class="container">
@@ -157,4 +160,15 @@
     </nav>
     {% endif %}
   </div>
+{% endblock %}
+
+{% block extra_js %}
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		<script>
+			var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+			alertModal.show();
+		</script>
+		{% endif %}
+	{% endwith %}
 {% endblock %}
