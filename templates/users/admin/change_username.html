@@ -14,22 +14,18 @@
     <div class="row">
         <div class="LSUForm col">
             <div class="login-form bg-dark mt-4 p-4 rounded updateForm" id="userForm">
-                {% if username_duplicates %}
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                    <div>
-                        <h6 class="warning_text">Username already taken!</h6>
-                    </div>
-                </div>
-                {% endif %}
-                {% if sameUsername %}
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                    <div>
-                        <h6 class="warning_text">You cannot change your username to your current username!</h6>
-                    </div>
-                </div>
-                {% endif %}
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                            <div>
+                                <h6 class="warning_text">{{ message }}</h6>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
                 <form action="" method="POST" class="row g-3 ">
                     <h4 class="text-white">Change Username</h4>
                     <div class="col-12 text-white">

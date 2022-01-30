@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib
 from flask_limiter import Limiter
@@ -10,7 +10,7 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms
+from python_files import Student, Teacher, Forms, Course
 from python_files import Payment
 from python_files.Security import sanitise
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -881,7 +881,7 @@ def resetPassword(token):
                         db["Users"] = userDict
                         db.close()
                         print("Password Reset Successful.")
-                        session["passwordUpdated"] = True
+                        flash("Your password has been updated! You can now login with your updated password.", "Password Reset Successful!")
                         return redirect(url_for("userLogin"))
                     else:
                         print("User account banned.")
@@ -994,13 +994,14 @@ def verifyEmail():
         if userFound and accGoodStatus:
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
-                session["emailVerifySent"] = True
                 try:
                     send_another_verify_email(email, userID)
+                    flash("We have sent you a verification link to verify your email. Please make sure to check your email spam folder as well. Do note that the link will expire in 1 day.", "Verification Email Sent")
                 except:
                     print("Email server is down or its port is blocked")
+                    flash("We have tried to send you a verification link to verify your email but it seems like the email server is down. Please try again later!", "Verification Email Sent")
             else:
-                session["emailFailed"] = False
+                flash("Your email is already verified, there is no need to verify it again.", "Email Already Verified")
                 print("User's email already verified.")
             return redirect(url_for("userProfile"))
         else:
@@ -1045,29 +1046,33 @@ def verifyEmailToken(token):
                     userKey.set_email_verification("Verified")
                     db["Users"] = userDict
                     db.close()
-                    session["emailVerified"] = True
+                    
                     if "userSession" in session:
+                        flash("Your email has been successfully verified!", "Email Verified")
                         return redirect(url_for("userProfile"))
                     else:
+                        flash("Your email has been successfully verified!", "Email Verified")
                         return redirect(url_for("userLogin"))
                 else:
                     db.close()
-                    session["emailFailed"] = True
                     if "userSession" in session:
+                        flash("You have already verified your email.", "Email Already Verified")
                         return redirect(url_for("userProfile"))
                     else:
                         print("Email already verified")
+                        flash("You have already verified your email.", "Email Already Verified")
                         return redirect(url_for("userLogin"))
             else:
                 db.close()
                 print("User account banned.")
                 return redirect(url_for("home"))
         else:
-            session["emailTokenInvalid"] = True
             print("Invalid/Expired Token.")
             if "userSession" in session:
+                flash("Sorry! The link has been expired, please request for a new email verification link.", "Email Verification Expired")
                 return redirect(url_for("userProfile"))
             else:
+                flash("Sorry! The link has been expired, please request for a new email verification link.", "Email Verification Expired")
                 return redirect(url_for("userLogin"))
     else:
         print("Admin is logged in.")
@@ -1340,33 +1345,7 @@ def adminProfile():
             username = userKey.get_username()
             email = userKey.get_email()
             admin_id = userKey.get_user_id()
-
-            # checking sessions if any of the user's acc info has changed
-            if "username_changed" in session:
-                usernameChanged = True
-                session.pop("username_changed", None)
-                print("Username recently changed?:", usernameChanged)
-            else:
-                usernameChanged = False
-                print("Username recently changed?:", usernameChanged)
-
-            if "email_updated" in session:
-                emailChanged = True
-                session.pop("email_updated", None)
-                print("Email recently changed?:", emailChanged)
-            else:
-                emailChanged = False
-                print("Email recently changed?:", emailChanged)
-
-            if "password_changed" in session:
-                passwordChanged = True
-                session.pop("password_changed", None)
-                print("Password recently changed?:", passwordChanged)
-            else:
-                passwordChanged = False
-                print("Password recently changed?:", passwordChanged)
-
-            return render_template('users/admin/admin_profile.html', username=username, email=email, usernameChanged=usernameChanged, emailChanged=emailChanged, passwordChanged=passwordChanged, admin_id=admin_id)
+            return render_template('users/admin/admin_profile.html', username=username, email=email, admin_id=admin_id)
         else:
 
             print("Admin account is not found or is not active.")
@@ -1421,17 +1400,17 @@ def adminChangeUsername():
                         userKey.set_username(updatedUsername)
                         db['Admins'] = adminDict
                         print("Username updated")
-
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                        session["username_changed"] = True
+                        flash(f"Username has been successfully changed from {currentUsername} to {updatedUsername}.", "Username Updated!")
 
                         db.close()
                         return redirect(url_for("adminProfile"))
                     else:
-                        return render_template('users/admin/change_username.html', form=create_update_username_form, username_duplicates=True)
+                        flash("Sorry, Username has already been taken!")
+                        return render_template('users/admin/change_username.html', form=create_update_username_form)
                 else:
                     print("Update username input same as user's current username")
-                    return render_template('users/admin/change_username.html', form=create_update_username_form, sameUsername=True)
+                    flash("Sorry, you cannot change your username to your current username!")
+                    return render_template('users/admin/change_username.html', form=create_update_username_form)
             else:
                 db.close()
                 print("Admin account is not found or is not active.")
@@ -1489,19 +1468,18 @@ def adminChangeEmail():
                         userKey.set_email(updatedEmail)
                         db['Admins'] = adminDict
                         print("Email updated")
-
-                        # sending a session data so that when it redirects the admin to the admin profile page, jinja2 will render out an alert of the change of email
-                        session["email_updated"] = True
-
+                        flash("Email has been successfully changed!", "Email Updated!")
                         db.close()
                         return redirect(url_for("adminProfile"))
                     else:
                         db.close()
-                        return render_template('users/admin/change_email.html', form=create_update_email_form, email_duplicates=True)
+                        flash("Sorry, the email you have entered is already taken by another user!")
+                        return render_template('users/admin/change_email.html', form=create_update_email_form)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/admin/change_email.html', form=create_update_email_form, sameEmail=True)
+                    flash("Sorry, you cannot change your email to your current email!")
+                    return render_template('users/admin/change_email.html', form=create_update_email_form)
             else:
                 db.close()
                 print("Admin account is not found or is not active.")
@@ -1569,25 +1547,29 @@ def adminChangePassword():
                     print("Current password input hash did not match with the one in the shelve database")
 
                 # if there any validation error, errorMessage will become True for jinja2 to render the error message
-                if passwordVerification == False or passwordNotMatched:
+                if passwordVerification == False:
                     db.close()
-                    errorMessage = True
-                    return render_template('users/admin/change_password.html', form=create_update_password_form, errorMessage=errorMessage)
+                    flash("Entered current password is incorrect!")
+                    return render_template('users/admin/change_password.html', form=create_update_password_form)
                 else:
-                    if oldPassword:
+                    if passwordNotMatched:
                         db.close()
-                        print("User cannot change password to their current password!")
-                        return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
+                        flash("New password and confirm password inputs did not match!")
+                        return render_template('users/admin/change_password.html', form=create_update_password_form)
                     else:
-                        # updating password of the user once validated
-                        userKey.set_password(updatedPassword)
-                        db['Admins'] = adminDict
-                        print("Password updated")
-                        db.close()
-
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                        session["password_changed"] = True
-                        return redirect(url_for("adminProfile"))
+                        if oldPassword:
+                            db.close()
+                            print("User cannot change password to their current password!")
+                            flash("Sorry, you cannot change your password to your current password!")
+                            return render_template('users/admin/change_password.html', form=create_update_password_form)
+                        else:
+                            # updating password of the user once validated
+                            userKey.set_password(updatedPassword)
+                            db['Admins'] = adminDict
+                            print("Password updated")
+                            db.close()
+                            flash("Your password has been successfully updated!", "Password Updated")
+                            return redirect(url_for("adminProfile"))
             else:
                 db.close()
                 print("Admin account is not found or is not active.")
@@ -1659,8 +1641,10 @@ def userManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
+                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1670,17 +1654,17 @@ def userManagement(pageNum):
                         else:
                             db.close()
                             print("Inputted new user's email is not unique.")
-                            session["duplicateEmail"] = True
+                            flash("Error: Inputted user's new email has been taken by another user, please enter a new and unique email and try again.", "User Account Recovery Failed")
                             return redirect(redirectURL)
                     else:
                         db.close()
                         print("User's new email inputted is the same as the old email.")
-                        session["sameEmail"] = True
+                        flash("Error: Inputted user's new email is the same as user's old email, please enter a new user email and try again.", "User Account Recovery Failed")
                         return redirect(redirectURL)
                 else:
                     db.close()
                     print("Inputted new user's email is invalid.")
-                    session["invalidEmail"] = True
+                    flash("Error: Inputted user's new email is invalid, please try again.", "User Account Recovery Failed")
                     return redirect(redirectURL)
             else:
                 userList = []
@@ -1721,31 +1705,7 @@ def userManagement(pageNum):
                     db["Users"] = userDict
                     db.close()
 
-                    if "invalidEmail" in session:
-                        invalidEmail = True
-                        session.pop("invalidEmail", None)
-                    else:
-                        invalidEmail = False
-
-                    if "sameEmail" in session:
-                        sameEmail = True
-                        session.pop("sameEmail", None)
-                    else:
-                        sameEmail = False
-
-                    if "duplicateEmail" in session:
-                        duplicateEmail = True
-                        session.pop("duplicateEmail", None)
-                    else:
-                        duplicateEmail = False
-
-                    if "duplicateUsername" in session:
-                        duplicateUsername = True
-                        session.pop("duplicateUsername", None)
-                    else:
-                        duplicateUsername = False
-
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=False, duplicateUsername=duplicateUsername, parameter="")
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, searched=False, parameter="")
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -1813,8 +1773,10 @@ def userSearchManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
+                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
+                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -1824,17 +1786,17 @@ def userSearchManagement(pageNum):
                         else:
                             db.close()
                             print("Inputted new user's email is not unique.")
-                            session["duplicateEmail"] = True
+                            flash("Error: Inputted user's new email has been taken by another user, please enter a new and unique email and try again.", "User Account Recovery Failed")
                             return redirect(redirectURL)
                     else:
                         db.close()
                         print("User's new email inputted is the same as the old email.")
-                        session["sameEmail"] = True
+                        flash("Error: Inputted user's new email is the same as user's old email, please enter a new user email and try again.", "User Account Recovery Failed")
                         return redirect(redirectURL)
                 else:
                     db.close()
                     print("Inputted new user's email is invalid.")
-                    session["invalidEmail"] = True
+                    flash("Error: Inputted user's new email is invalid, please try again.", "User Account Recovery Failed")
                     return redirect(redirectURL)
             else:
                 query = request.args.get("user")
@@ -1905,33 +1867,9 @@ def userSearchManagement(pageNum):
                     db["Users"] = userDict
                     db.close()
 
-                    if "invalidEmail" in session:
-                        invalidEmail = True
-                        session.pop("invalidEmail", None)
-                    else:
-                        invalidEmail = False
-
-                    if "sameEmail" in session:
-                        sameEmail = True
-                        session.pop("sameEmail", None)
-                    else:
-                        sameEmail = False
-
-                    if "duplicateEmail" in session:
-                        duplicateEmail = True
-                        session.pop("duplicateEmail", None)
-                    else:
-                        duplicateEmail = False
-
-                    if "duplicateUsername" in session:
-                        duplicateUsername = True
-                        session.pop("duplicateUsername", None)
-                    else:
-                        duplicateUsername = False
-
                     session["searchedPageRoute"] = "/user_management/search/" + str(pageNum) + "/" + parametersURL
 
-                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, invalidEmail=invalidEmail, sameEmail=sameEmail, duplicateEmail=duplicateEmail, searched=True, submittedParameters=parametersURL, duplicateUsername=duplicateUsername, parameter=parameter)
+                    return render_template('users/admin/user_management.html', userList=paginatedUserList, count=userListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, form=admin_reset_password_form, searched=True, parameter=parameter)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
@@ -2013,10 +1951,12 @@ def deleteUser(userID):
                 db.close()
                 delete_user_profile(userImageFileName)
                 print(f"User account with the ID, {userID}, has been deleted.")
+                flash(f"User with user ID, {userID}, has been successfully deleted.", "User has been deleted")
                 return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
+                flash(f"User with user ID, {userID}, was not found in the database.", "Failed to delete user")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -2067,10 +2007,12 @@ def banUser(userID):
                 db['Users'] = userDict
                 db.close()
                 print(f"User account with the ID, {userID}, has been banned.")
+                flash(f"User with user ID, {userID}, has been successfully banned.", "User has been banned")
                 return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
+                flash(f"User with user ID, {userID}, was not found in the database.", "Failed to ban user")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -2123,13 +2065,15 @@ def unbanUser(userID):
                 print(f"User account with the ID, {userID}, has been unbanned.")
                 try:
                     send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
+                    flash(f"{userKey.get_username()} has been unbanned. Additionally, an email has been sent to {userKey.get_email()}", "User account has been unbanned!")
                 except:
                     print("Email server is down or its port is blocked")
-                print("Successfully sent an email.")
+                    flash(f"{userKey.get_username()} has been unbanned. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} to alert the user of the unban!", "User account has been unbanned but email not sent!")
                 return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
+                flash(f"User with user ID, {userID}, was not found in the database.", "Failed to unban user")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -2183,15 +2127,17 @@ def changeUserUsername(userID):
                     db['Users'] = userDict
                     db.close()
                     print("Username successfully changed.")
+                    flash(f"User with user ID, {userID}, has its username changed to {username} from {userKey.get_username()}.", "User's username changed")
                     return redirect(redirectURL)
                 else:
                     db.close()
                     print("Duplicate username.")
-                    session["duplicateUsername"] = True
+                    flash(f"Failed to change user's username with user ID, {userID}, as the username, {username} has already been taken", "Failed to change user's username")
                     return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
+                flash(f"User with user ID, {userID}, was not found in the database.", "Failed to change user's username")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -2244,10 +2190,12 @@ def resetProfileImage(userID):
                 db.close()
                 delete_user_profile(userImageFileName)
                 print(f"User account with the ID, {userID}, has its profile picture reset.")
+                flash(f"User account with the ID, {userID}, profile picture has been reset and deleted from the web server successfully.", "User's profile picture has been reset!")
                 return redirect(redirectURL)
             else:
                 db.close()
                 print("Error in retrieving user object.")
+                flash(f"User with user ID, {userID}, was not found in the database.", "Failed to delete user's profile picture")
                 return redirect(redirectURL)
         else:
             print("Admin account is not found or is not active.")
@@ -2409,6 +2357,7 @@ def userProfile():
                     db['Users'] = userDict
                     db.close()
                     print("Teacher bio saved.")
+                    flash("Your bio has been successfully saved.", "Bio Updated!")
                     return redirect(url_for("userProfile"))
                 elif typeOfFormSubmitted == "image":
                     if "profileImage" not in request.files:
@@ -2477,7 +2426,7 @@ def userProfile():
                                     userKey.set_profile_image(userImageFileName)
                                     db['Users'] = userDict
                                     db.close()
-
+                                    flash("Your profile image has been successfully saved.", "Profile Image Updated")
                                     return make_response(("Profile Image Uploaded!", 200))
                                 else:
                                     # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
@@ -2504,6 +2453,7 @@ def userProfile():
                     db['Users'] = userDict
                     db.close()
                     print("User profile image deleted.")
+                    flash("Your profile image has been successfully deleted.", "Profile Image Deleted")
                     return redirect(url_for("userProfile"))
                 else:
                     db.close()
@@ -2519,81 +2469,18 @@ def userProfile():
                 else:
                     teacherBio = ""
 
-                
                 # checking if the user have uploaded a profile image before and if the image file exists
                 userProfileFilenameSaved = bool(userKey.get_profile_image())
                 imagesrcPath, profileReset = get_user_profile_pic(userSession)
                 if profileReset:
                     userProfileFilenameSaved = False
 
-                # checking sessions if any of the user's acc info has changed
-                if "username_changed" in session:
-                    usernameChanged = True
-                    session.pop("username_changed", None)
-                    print("Username recently changed?:", usernameChanged)
-                else:
-                    usernameChanged = False
-                    print("Username recently changed?:", usernameChanged)
-
-                if "email_updated" in session:
-                    emailChanged = True
-                    session.pop("email_updated", None)
-                    print("Email recently changed?:", emailChanged)
-                else:
-                    emailChanged = False
-                    print("Email recently changed?:", emailChanged)
-
-                if "password_changed" in session:
-                    passwordChanged = True
-                    session.pop("password_changed", None)
-                    print("Password recently changed?:", passwordChanged)
-                else:
-                    passwordChanged = False
-                    print("Password recently changed?:", passwordChanged)
-
-                if "recentChangeAccType" in session:
-                    recentChangeAccType = True
-                    session.pop("recentChangeAccType", None)
-                    print("Recently changed account type to teacher?:", recentChangeAccType)
-                else:
-                    recentChangeAccType = False
-                    print("Recently changed account type to teacher?:", recentChangeAccType)
-
-                # email verification notifications checking
-                # for notifying if the token has been sent to their email
-                if "emailVerifySent" in session:
-                    emailSent = True
-                    session.pop("emailVerifySent", None)
-                else:
-                    emailSent = False
-
-                # for notifying if they have already verified their email (traversal attack)
-                if "emailFailed" in session:
-                    emailAlreadyVerified = True
-                    session.pop("emailFailed", None)
-                else:
-                    emailAlreadyVerified = False
-
-                # for notifying if they have verified their email from the link in their email
-                if "emailVerified" in session:
-                    emailVerified = True
-                    session.pop("emailVerified", None)
-                else:
-                    emailVerified = False
-
-                # for notifying if the email verification link has expired/is invalid
-                if "emailTokenInvalid" in session:
-                    emailTokenInvalid = True
-                    session.pop("emailTokenInvalid", None)
-                else:
-                    emailTokenInvalid = False
-
                 if accType == "Teacher":
                     teacherUID = userSession
                 else:
                     teacherUID = ""
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, emailChanged=emailChanged, usernameChanged=usernameChanged, passwordChanged=passwordChanged, imagesrcPath=imagesrcPath, recentChangeAccType=recentChangeAccType, emailVerification=emailVerification, emailSent=emailSent, emailAlreadyVerified=emailAlreadyVerified, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
+                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, imagesrcPath=imagesrcPath, emailVerification=emailVerification, emailVerified=emailVerified, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2646,7 +2533,6 @@ def updateUsername():
                     # checking duplicates for username
                     username_duplicates = False
                     for key in userDict:
-                        print("retrieving")
                         usernameShelveData = userDict[key].get_username()
                         if updatedUsername == usernameShelveData:
                             print("Verdict: Username already taken.")
@@ -2662,17 +2548,18 @@ def updateUsername():
 
                         # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
                         session["username_changed"] = True
-
+                        flash(f"Username has been successfully changed from {currentUsername} to {updatedUsername}.", "Username Updated!")
                         db.close()
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, username_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
+                        flash("Sorry, Username has already been taken!")
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
                 else:
                     db.close()
                     print("Update username input same as user's current username")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, sameUsername=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
+                    flash("Sorry, you cannot change your username to your current username!")
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
             else:
                 db.close()
                 return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
@@ -2727,7 +2614,6 @@ def updateEmail():
                     # Checking duplicates for email
                     email_duplicates = False
                     for key in userDict:
-                        print("retrieving")
                         emailShelveData = userDict[key].get_email()
                         if updatedEmail == emailShelveData:
                             print("Verdict: User email already exists.")
@@ -2746,22 +2632,22 @@ def updateEmail():
                         db['Users'] = userDict
                         db.close()
                         print("Email updated")
-
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of email
-                        session["email_updated"] = True
-
                         try:
                             send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
+                            flash("Email has been successfully changed! An email has been sent with a link to verify your updated email.", "Email Updated!")
                         except:
                             print("Email server down or email server port is blocked.")
+                            flash("Your email has been successfully changed! However, we are unable to send an email to your updated email with a link for email verification. Please wait and try again later.", "Email Updated!")
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, email_duplicates=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        flash("Sorry, the email you have entered is already taken by another user!")
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, sameEmail=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    flash("Sorry, you cannot change your email to your current email!")
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
@@ -2813,9 +2699,6 @@ def updatePassword():
                 passwordNotMatched = True
                 passwordVerification = False
 
-                # for jinja2
-                errorMessage = False
-
                 currentPassword = create_update_password_form.currentPassword.data
                 updatedPassword = create_update_password_form.updatePassword.data
                 confirmPassword = create_update_password_form.confirmPassword.data
@@ -2839,32 +2722,36 @@ def updatePassword():
                     print("Current password input hash did not match with the one in the shelve database")
 
                 # if there any validation error, errorMessage will become True for jinja2 to render the error message
-                if passwordVerification == False or passwordNotMatched:
+                if passwordVerification == False:
                     db.close()
-                    errorMessage = True
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, errorMessage=errorMessage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    flash("Entered current password is incorrect!")
+                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
-                    if oldPassword:
+                    if passwordNotMatched:
                         db.close()
-                        print("User cannot change password to their current password!")
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        flash("New password and confirm password inputs did not match!")
+                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
-                        # updating password of the user once validated
-                        userKey.set_password(updatedPassword)
-                        userEmail = userKey.get_email()
-                        db['Users'] = userDict
-                        print("Password updated")
-                        db.close()
+                        if oldPassword:
+                            db.close()
+                            print("User cannot change password to their current password!")
+                            flash("Sorry, you cannot change your password to your current password!")
+                            return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        else:
+                            # updating password of the user once validated
+                            userKey.set_password(updatedPassword)
+                            userEmail = userKey.get_email()
+                            db['Users'] = userDict
+                            print("Password updated")
+                            db.close()
 
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of password
-                        session["password_changed"] = True
-
-                        try:
-                            send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
-                        except:
-                            print("Email server is down or its port is blocked")
-
-                        return redirect(url_for("userProfile"))
+                            try:
+                                send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
+                            except:
+                                print("Email server is down or its port is blocked")
+                                
+                            flash("Your password has been successfully updated!", "Password Updated")
+                            return redirect(url_for("userProfile"))
             else:
                 db.close()
                 return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
@@ -2964,7 +2851,7 @@ def changeAccountType():
                     db["Users"] = userDict
                     db.close()
                     print("Account type updated to teacher.")
-                    session["recentChangeAccType"] = True # making a session so that jinja2 can render a notification of the account type change
+                    flash("Congratulations! You have successfully become a teacher! Please do not hesitate to contact us if you have any concerns, we will be happy to help!", "Account Type Updated to Teacher")
                     return redirect(url_for("userProfile"))
                 else:
                     print("Not POST request or did not have relevant hidden field.")
@@ -2974,6 +2861,7 @@ def changeAccountType():
                 db.close()
                 print("User is not a student.")
                 # if the user is not a student but visits this webpage, it will redirect the user to the user profile page
+                flash("You are already a teacher.", "Alert!")
                 return redirect(url_for("userProfile"))
         else:
             db.close()
@@ -3285,23 +3173,6 @@ def teacherCashOut():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
-            if "cashedOut" in session:
-                cashedOut = True
-                session.pop("cashedOut", None)
-            else:
-                cashedOut = False
-
-            if "failedToCashOut" in session:
-                failedToCashOut = True
-                session.pop("failedToCashOut", None)
-            else:
-                failedToCashOut = False
-
-            if "noPayment" in session:
-                noPayment = True
-                session.pop("noPayment", None)
-            else:
-                noPayment = False
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             joinedDate = userKey.get_teacher_join_date()
@@ -3335,14 +3206,14 @@ def teacherCashOut():
 
                         # deducting from the teacher object
                         if typeOfCollection == "collectingAll" and lastDayOfMonth:
-                            session["cashedOut"] = True
+                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_earnings(0)
                             userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
                         elif typeOfCollection == "collectingAccumulated":
-                            session["cashedOut"] = True
+                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
@@ -3350,17 +3221,17 @@ def teacherCashOut():
                         else:
                             db.close()
                             print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
-                            session["failedToCashOut"] = True
+                            flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
                             return redirect(url_for("teacherCashOut"))
                     else:
                         db.close()
-                        session["noPayment"] = True
+                        flash("You have not added a payment method yet. Please add a payment method to cash out.", "No Payment Method")
                         print("POST request sent but user does not have a valid payment method to cash out to.")
                         return redirect(url_for("teacherCashOut"))
                 else:
                     db.close()
                     print("POST request sent but user have already collected their revenue or user did not earn any this month.")
-                    session["failedToCashOut"] = True
+                    flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
                     return redirect(url_for("teacherCashOut"))
             else:
                 db.close()
@@ -3409,7 +3280,7 @@ def teacherCashOut():
                 else:
                     teacherUID = ""
 
-                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, failedToCashOut=failedToCashOut, cashedOut=cashedOut, accumulatedCollect=accumulatedCollect, noPayment=noPayment, teacherUID=teacherUID)
+                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned")
