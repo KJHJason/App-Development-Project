@@ -1,78 +1,92 @@
 /* css for the custom error pages: */
-body {
-	text-align: center;
-	font-family: sans-serif;
-	font-weight: bolder;
-	background-color: #212529;
+body,
+html {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: rgba(33, 37, 41, 0.95);
+  font-family: 'Montserrat', sans-serif;
+  color: #fff
 }
-.content-area {
-	color: #fff;
-	position: relative;
-	height: 100vh;
+
+html {
+  background: url('https://static.pexels.com/photos/818/sea-sunny-beach-holiday.jpg');
+  background-size: cover;
+  background-position: bottom
 }
-.container {
-	margin: auto;
-	height: 100%;
-	max-width: 60vw;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
+
+.error {
+  text-align: center;
+  padding: 16px;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  -webkit-transform: translateY(-50%)
 }
-a {
-	margin-top: 20px;
-	font-size: 1.33em;
-	text-transform: uppercase;
-	color: #fff;
-	position: relative;
-	background: #009DF8;
-	border: 1px solid #fff;
-	padding: 20px;
-	box-shadow: 4px 4px 0px 0px #006faf;
-	letter-spacing: 2px;
-	transition: all 0.3s ease-in-out;
-	left: 0;
-	top: 0;
+
+h1 {
+  margin: -10px 0 -30px;
+  font-size: calc(17vw + 40px);
+  opacity: .8;
 }
-a:hover {
-	left: 4px;
-	top: 4px;
-	box-shadow: 0 0 0 0 #006faf;
-}
-#error {
-	font-size: 10em;
-	margin: 0;
-}
-#copyright-error {
-	color: #fff;
-}
-@media (max-width: 1200px) {
-	.container {
-		max-width: 80vw;
+
+@media (max-width: 400px) {
+	h1 {
+		margin-bottom: 10px;
 	}
 }
-@media (max-width: 768px) {
-	.container {
-		max-width: 100vw;
-	}
-	a {
-		font-size: 1.2em;
-	}
+
+p {
+  opacity: .8;
+  font-size: 20px;
+  margin: 8px 0 38px 0;
+  font-weight: bold
 }
-@media (max-width: 576px) {
-	#error {
-		font-size: 40vw;
-	}
-	a {
-		font-size: 1em;
-		padding: 15px;
-	}
+
+input,
+button,
+input:focus,
+button:focus {
+  border: 0;
+  outline: 0!important;
 }
-@media (max-width: 350px) {
-	#error {
-		font-size: 40vw;
-	}
-	a, #copyright-error {
-		font-size: 5vw;
-	}
+
+input {
+  width: 300px;
+  padding: 14px;
+  max-width: calc(100% - 80px);
+  border-radius: 6px 0 0 6px;
+  font-weight: 400;
+  font-family: 'Montserrat', sans-serif;
+}
+
+button {
+  width: 40px;
+  padding: 14.5px 16px 14.5px 12.5px;
+  vertical-align: top;
+  border-radius: 0 6px 6px 0;
+  color: grey;
+  background: silver;
+  cursor: pointer;
+  transition: all 0.4s
+}
+
+button:hover {
+  color: white;
+  background: #009DF8
+}
+
+.fa-arrow-left {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  font-size: 2em;
+  color:white;
+  text-decoration:none
+}
+
+#copyright_year {
+  margin-top: 15px;
 }
