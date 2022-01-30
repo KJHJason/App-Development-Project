@@ -13,3 +13,5 @@ PyVimeo==1.1.0
 shortuuid==1.0.8
 setuptools==60.1.0
 WTForms==3.0.0
+twilio==7.5.1
+PyJWT==2.3.0
