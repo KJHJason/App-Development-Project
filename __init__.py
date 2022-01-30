@@ -1086,7 +1086,7 @@ def verifyEmailToken(token):
 @limiter.limit("30/second") # to prevent ddos attacks
 def teacherSignUp():
     if "userSession" not in session and "adminSession" not in session:
-        create_teacher_sign_up_form = Forms.CreateTeacherSignUpForm(request.form)
+        create_teacher_sign_up_form = Forms.CreateSignUpForm(request.form)
 
         if request.method == 'POST' and create_teacher_sign_up_form.validate():
             # Declaring the 2 variables below to prevent UnboundLocalError
