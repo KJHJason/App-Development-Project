@@ -27,5 +27,5 @@ Libraries needed:
   <li>dicebear Version 0.2.13 [pip install dicebear==0.2.13]</li>
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
-  <li>Phonenumbers Version 8.12.42 [pip install Phonenumbers==8.12.42]</li>
+  <li>phonenumbers Version 8.12.42 [pip install phonenumbers==8.12.42]</li>
 </ol>	
