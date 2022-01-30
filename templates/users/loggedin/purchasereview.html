@@ -15,10 +15,12 @@
 	<div class="box">
 		<h2>Create a review (Less than 200 words):</h2>
 		<div>
-			{{ render_field(form.title, class="form-control") }}
-			<br>
-			{{ render_field(form.review, class="form-control") }}
-			<a href="/" class="btn btn-link">Submit Your Review</a>
+			<form action="" method="POST">
+				{{ render_field(form.title, class="form-control") }}
+				<br>
+				{{ render_field(form.review, class="form-control") }}
+				<button type="submit" class="btn btn-primary mb-2" style="margin-top:20px;">Submit</button>
+			</form>
 		</div>
 	</div>
 </div>

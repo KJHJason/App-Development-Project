@@ -3670,7 +3670,6 @@ def purchaseHistory(pageNum):
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def createPurchaseReview(courseID):
-    createReview = Forms.CreateReviewText(request.form)
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -3687,6 +3686,7 @@ def createPurchaseReview(courseID):
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
             purchasedCourses = userKey.get_purchases()
+            createReview = Forms.CreateReviewText(request.form)
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
             courseID = session.get("courseIDGrab")
@@ -3704,8 +3704,11 @@ def createPurchaseReview(courseID):
             if courseID in list(purchasedCourses.keys()):
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
-                    print("What is the review?: ",review)
-                    reviewDict = {"Review": review, "UserID": user}
+                    course = courseDict[courseID]
+                    reviewID = {"Review":review, "UserID":user}
+                    course.add_review(reviewID)
+                    print("What is the review info?: ",reviewID)
+
                     courseDict["Courses"] = db
 
                     session["reviewAdded"] = True
@@ -3713,7 +3716,7 @@ def createPurchaseReview(courseID):
                     print("Review addition was successful")
 
                     db.close() # remember to close your shelve files!
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict,form=createReview)
+                    return redirect(url_for("purchaseHistory"))
                 else:
                     db.close()
                     print("Error in Process")
