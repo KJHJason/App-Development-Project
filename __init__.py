@@ -27,7 +27,7 @@ scheduler = BackgroundScheduler()
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024 # 200MiB
 
 # Configurations for dicebear api for user profile image options
-app.config["DICEBEAR_OPTIONS"] = options = DOptions(
+app.config["DICEBEAR_OPTIONS"] = DOptions(
     size=250
 )
 
