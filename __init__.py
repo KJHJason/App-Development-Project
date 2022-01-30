@@ -3713,10 +3713,10 @@ def createPurchaseReview(courseID):
 
                     session["reviewAdded"] = True
                     session.pop("courseIDGrab", None)
-                    print("Review addition was successful")
+                    print("Review addition was successful", course.get_review())
 
                     db.close() # remember to close your shelve files!
-                    return redirect(url_for("purchaseHistory"))
+                    return redirect("/purchasehistory/1")
                 else:
                     db.close()
                     print("Error in Process")
