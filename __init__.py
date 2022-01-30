@@ -3573,6 +3573,7 @@ def purchaseHistory(pageNum):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
+
             courseID = ""
             courseType = ""
             historyCheck = True
@@ -3618,6 +3619,7 @@ def purchaseHistory(pageNum):
             courseListLen = len(purchasedCourses) # get the length of the userList
             maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             pageNum = int(pageNum)
+            session["pageNum"] = pageNum
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
                 return redirect("/purchasehistory/0")
@@ -3675,6 +3677,13 @@ def createPurchaseReview(courseID):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
+            pageNum = session.get("pageNum")
+
+            if "pageNum" in session:
+                pageNum = session["pageNum"]
+            else:
+                pageNum = 0
+
             purchasedCourses = userKey.get_purchases()
             createReview = Forms.CreateReviewText(request.form)
             print("Purchased course exists?: ", purchasedCourses)
@@ -3691,6 +3700,7 @@ def createPurchaseReview(courseID):
                 return redirect(url_for("purchasehistory"))
 
             if courseID in list(purchasedCourses.keys()):
+                redirectURL = "/purchasehistory/" + str(pageNum)
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
                     course = courseDict[courseID]
@@ -3703,13 +3713,13 @@ def createPurchaseReview(courseID):
                     session["reviewAdded"] = True
                     session.pop("courseIDGrab", None)
                     print("Review addition was successful", course.get_review())
-
+                    flash("Your review submission was successful. To check your review, visit the course page.", "Review submission successful!")
                     db.close() # remember to close your shelve files!
-                    return redirect("/purchasehistory/1")
+                    return redirect(redirectURL)
                 else:
                     db.close()
                     print("Error in Process")
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview)
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview, pageNum=pageNum)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
