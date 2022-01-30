@@ -3777,6 +3777,7 @@ def purchaseHistory(pageNum):
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
+                    session["courseIDGrab"] = courseID
                 print(historyList)
 
                 db.close()
@@ -3845,6 +3846,7 @@ def createPurchaseReview(courseID):
             purchasedCourses = userKey.get_purchases()
             user = userSession
             print("Purchased course exists?: ", purchasedCourses)
+            courseID = session.get("courseIDGrab")
             courseDict = {}
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             print(courseID)
@@ -3856,7 +3858,7 @@ def createPurchaseReview(courseID):
                 db.close()
                 return redirect(url_for("purchasehistory"))
 
-            if courseID in purchasedCourses:
+            if courseID in list(purchasedCourses.keys()):
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
                     print("What is the review?: ",review)
@@ -3864,11 +3866,14 @@ def createPurchaseReview(courseID):
                     courseDict["Courses"] = db
 
                     session["reviewAdded"] = True
+                    session.pop("courseIDGrab", None)
+                    print("Review addition was successful")
 
                     db.close() # remember to close your shelve files!
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict)
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, reviewDict = reviewDict,form=createReview)
                 else:
                     db.close()
+                    print("Error in Process")
                     return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview)
 
             else:
