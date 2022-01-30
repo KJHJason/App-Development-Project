@@ -1,7 +1,7 @@
 {% extends "user_base.html" %}
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
-<link rel="stylesheet" href="{{ url_for('static', filename='styles/create_courses.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/create_course.css') }}">
 {% endblock %}
 
 {% block title %}Create Course | CourseFinity{% endblock %}
@@ -67,7 +67,7 @@
                     <!-- Thumbnail -->
                     <div class="col-md-12 text-white">
                         <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
-                        <button class="btn btn-primary" id="uploadThumbnailButton">Uplaod Thumbnail</button>
+                        <button class="btn btn-primary" id="uploadThumbnailButton">Upload Thumbnail</button>
                         <div id="imageForm" style="display: none;">
                             <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
                                 <input type="hidden" name="submittedForm" value="image">
@@ -95,17 +95,18 @@
                     </div> -->
                     <!--Zoom OR Video Radio Buttons-->
                     <div class ="main-wrapper">
+                        <label for="radio-buttons">Does your course provide zoom or video lessons?</label>
                         <div class="buttons-wrapper">
                             <input type="radio" id="input1" name = inputs>
                             <label for="input1">
                                 <div class="circle"></div>
-                                <div class="entry-level">Video</div>
+                                <div class="entry-level">Video Lessons</div>
                             </label>
 
                             <input type="radio" id="input2" name=inputs>
                             <label for="input2">
                                 <div class="circle"></div>
-                                <div class="entry-level">Zoom</div>
+                                <div class="entry-level">Zoom Lessons</div>
                             </label>
 
                             <div class="highlight"></div>
