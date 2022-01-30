@@ -10,47 +10,29 @@
 {% block title %}Home | CourseFinity{% endblock %}
 
 {% block content %}
-{% if teacherPaymentAdded %}
-<div class="modal fade" id="addedCardModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="addedCardModalLabel">Payment Method Added</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<h6>Your card details has been successfully added.</h6>
-				<h6>You can still edit your payment method in the user account settings.</h6>
-				<h6>Have fun teaching!</h6>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-			</div>
-		</div>
-	</div>
-</div>
-{% endif %}
 
-{% if paymentComplete %}
-<div class="modal fade" id="paymentCompleteModal" tabindex="-1" aria-labelledby="addedCardModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="paymentCompleteModalLabel">Payment Method Added</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<h6>Your purchase is successful.</h6>
-				<h6>For more info on courses, check your purchase history.</h6>
-				<h6>Have fun learning!</h6>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-			</div>
-		</div>
-	</div>
-</div>
-{% endif %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            {% for category, message in messages %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">{{ category }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>{{ message }}</h6>
+            </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endwith %}
 
 <div class="container">
 	<div class="row">
@@ -217,16 +199,12 @@
 {% endblock %}
 
 {% block extra_js %}
-	{% if teacherPaymentAdded %}
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
 		<script>
-			var addedCardModal = new bootstrap.Modal(document.getElementById('addedCardModal'), {});
-			addedCardModal.show();
+			var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+			alertModal.show();
 		</script>
-	{% endif %}
-	{% if paymentComplete %}
-		<script>
-			var paymentCompleteModal = new bootstrap.Modal(document.getElementById('paymentCompleteModal'), {});
-			paymentCompleteModal.show();
-		</script>
-	{% endif %}
+		{% endif %}
+	{% endwith %}
 {% endblock %}
