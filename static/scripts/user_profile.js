@@ -15,6 +15,9 @@ $(document).ready(function(){
 });
 
 // Dropzone.js for segmenting data payload to chunks of data
+// Useful resources:
+// https://stackoverflow.com/questions/46728205/dropzone-submit-button-on-upload/46732882
+// https://docs.dropzone.dev/
 Dropzone.options.dropper = {
     maxFiles: 1,
     paramName: 'profileImage',
@@ -28,30 +31,34 @@ Dropzone.options.dropper = {
     retryChunksLimit: 3,
     autoProcessQueue: false,
     init: function() {
-        let myDropzone = this;
+        let userProfileImageDropzone = this;
         
-        myDropzone.on("addedfile", function() {
+        // when the user uploads more than one image, this function will remove the old user profile image and replaces it with the new user profile image that was added by the user
+        userProfileImageDropzone.on("addedfile", function() {
             $(".dz-progress").hide();
-            if (myDropzone.files[1] == null) return;
-            myDropzone.removeFile(myDropzone.files[0]);
+            if (userProfileImageDropzone.files[1] == null) return;
+            userProfileImageDropzone.removeFile(userProfileImageDropzone.files[0]);
         });
 
+        // tells dropzone to upload the image data to the web server when the user clicks on the upload button
         document.getElementById('submit-button').addEventListener("click", function (e) {
             e.preventDefault();
-            myDropzone.processQueue();
+            userProfileImageDropzone.processQueue();
         });
 
-        myDropzone.on("success", function () {
+        // sending the chunks of data when user clicks on the upload button
+        userProfileImageDropzone.on('sending', function(file, xhr, formData) {
+            /* Append inputs to FormData */
+            $(".dz-progress").show();
+            formData.append("profileImage", document.getElementById('dropper').value);
+        });
+        
+        // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
+        userProfileImageDropzone.on("success", function () {
             function redirectUser() {
                 location.reload();
             }
             setInterval(redirectUser, 1500);
-        });
-
-        myDropzone.on('sending', function(file, xhr, formData) {
-            /* Append inputs to FormData */
-            $(".dz-progress").show();
-            formData.append("imageProfile", document.getElementById('dropper').value);
         });
     }
 };

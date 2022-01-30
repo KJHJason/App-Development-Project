@@ -2,7 +2,7 @@ from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from flask_mail import Message
-import shelve, os, uuid, string, random, shortuuid
+import shelve, os, uuid, string, random, shortuuid, re
 from pathlib import Path
 from flask import url_for
 from dicebear import DAvatar, DStyle
@@ -16,6 +16,18 @@ from .Graph import userbaseGraph
 PROFILE_UPLOAD_PATH = 'static/images/user'
 THUMBNAIL_UPLOAD_PATH = 'static/images/courses/thumbnails'
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
+
+# useful resources:
+# https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
+# use this function to validate email addresses using regular expressions
+def validate_email(email):
+    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # compile the regex so that it does not have to rewrite the regex
+
+    if(re.fullmatch(regex, email)):
+        return True
+    else:
+        return False
+
 
 # use this function if you want to validate, check if the user is banned, and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
@@ -773,7 +785,7 @@ def saveNoOfUserPerDay():
         db["userGraphData"] = graphList
     db.close()
 
-"""Done by Jason"""
+"""End of Done by Jason"""
 
 """Done by Wei Ren"""
 
@@ -986,4 +998,4 @@ def add_statistic_type(statisticDict, type):
 
     return statisticDict
 
-"""Done by Wei Ren"""
+"""End of Done by Wei Ren"""
