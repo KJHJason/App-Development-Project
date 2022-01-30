@@ -27,6 +27,5 @@ Libraries needed:
   <li>dicebear Version 0.2.13 [pip install dicebear==0.2.13]</li>
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
-  <li>twilio Version 7.5.1 [pip3 install twilio]</li>
-  <li>PyJWT Version 2.3.0 [pip3 install twilio]</li>
+  <li>Phonenumbers Version 8.12.42 [pip install Phonenumbers==8.12.42]</li>
 </ol>	
