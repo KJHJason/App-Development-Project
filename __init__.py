@@ -4294,10 +4294,13 @@ def supportTicketManagement(pageNum):
             maxPages = math.ceil(ticketListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
+                session["pageNum"] = 0
                 return redirect("/support_ticket_management/0")
             elif ticketListLen > 0 and pageNum == 0:
+                session["pageNum"] = 1
                 return redirect("/support_ticket_management/1")
             elif pageNum > maxPages:
+                session["pageNum"] = maxPages
                 redirectRoute = "/support_ticket_management/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
@@ -4305,6 +4308,8 @@ def supportTicketManagement(pageNum):
                 ticketList = ticketList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
                 pageNumForPagination = pageNum - 1 # minus for the paginate function
                 paginatedTicketList = paginate(ticketList, pageNumForPagination, maxItemsPerPage)
+
+                session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
