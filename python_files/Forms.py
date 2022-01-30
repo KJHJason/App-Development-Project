@@ -58,7 +58,8 @@ class AdminResetPasswordForm(Form):
 """WTForms by Royston"""
 
 class CreateReviewText(Form):
-    review = StringField("Review:", [validators.Length(min=20, max=2000), validators.DataRequired()])
+    review = TextAreaField("Review:", [validators.Length(min=20, max=2000), validators.DataRequired()])
+    title = StringField("Title:", [validators.Length(min=20, max=100), validators.DataRequired()])
 
 """End of WTForms by Royston"""
 

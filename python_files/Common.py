@@ -9,7 +9,7 @@ class Common(User):
         self.__card_type = ""
         self.__email_verification = "Not Verified"
         self.__purchaseID = []
-        self.__reviewID = {}
+        self.__reviewID = []
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
         self.__shoppingCart = {} # Course IDs & Type here

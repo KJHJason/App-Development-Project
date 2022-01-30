@@ -1,23 +1,28 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/purchasereview.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/breadcrumb.css') }}">{% endblock %}
 {% block title %}Purchase Review | CourseFinity{% endblock %}
 {% from "includes/_formHelper.html" import render_field %}
 
 {% block content %}
-<ul class="breadcrumb">
-    <li><a href="/purchasehistory">Purchase History</a></li>
-    <li>Write A Review</li>
-</ul>
-  <div class="container">
-    <div class="box">
-      <h2>Course: {{courseInformation["Title"]}}</h2>
-      <h5>Create a review (Less than 200 words):</h5>
-      <form action="home" method="POST">
-        <div>
-          <textarea class="form-control" id="exampleFormControlTextarea1" rows="6"></textarea>
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<div class="container">
+	<nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="/purchasehistory">Purchase History</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Review</li>
+		</ol>
+	</nav>
+	<div class="box">
+		<h2>Course: {{ Title }}</h2>
+		<h5>Create a review (Less than 200 words):</h5>
+		<form action="home" method="POST">
+			<div>
+				{{ render_field(form.title, class="form-control") }}
+				<br>
+				{{ render_field(form.review, class="form-control") }}
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>
 {% endblock %}
