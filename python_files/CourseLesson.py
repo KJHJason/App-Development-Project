@@ -2,10 +2,11 @@
 """Edited by Clarence"""
 
 class Lesson():
-    def __init__(self, title, description, thumbnail):
+    def __init__(self, title, description, thumbnail, lessonID):
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
+        self.__lessonID = lessonID
 
     def set_title(self, title):
         self.__title = title
@@ -21,26 +22,34 @@ class Lesson():
         self.__thumbnail = thumbnail
     def get_thumbnail(self):
         return self.__thumbnail
+    
+    def set_lessonID(self, lessonID):
+        self.__lessonID = lessonID
+    def get_lessonID(self):
+        return self.__lessonID
 
 
 # Video Data
 class VideoLesson(Lesson):
-    def __init__(self, title, description, thumbnail, videoData):
-        super().__init__(title, description, thumbnail)
-        self.__videoData = videoData
+    def __init__(self, title, description, thumbnail, lessonID, videoAbsolutePath):
+        super().__init__(title, description, thumbnail, lessonID)
+        self.__videoAbsolutePath = videoAbsolutePath
 
-    def set_videoData(self, videoData):
-        self.__videoData = videoData
-    def get_videoData(self):
-        return self.__videoData
+    def set_videoAbsolutePath(self, videoAbsolutePath):
+        self.__videoAbsolutePath = videoAbsolutePath
+    def get_videoAbsolutePath(self):
+        return self.__videoAbsolutePath
 
 # Zoom Link --> To be changed
 # Different timings for different students for different courses
 class ZoomLesson(Lesson):
-    def __init__(self, title, description, thumbnail):
+    def __init__(self, title, description, thumbnail, zoomURL, zoomPassword):
         super().__init__(title, description, thumbnail)
         self.__timings = []
         self.__userTimings = {}
+        self.__zoomURL = zoomURL
+        self.__zoomPassword = zoomPassword
+
 
     def set_timing(self, date, time):
         self.__timings.append([date, time])
@@ -60,3 +69,13 @@ class ZoomLesson(Lesson):
 
     def get_user_timing(self, userID):  # [date, time]
         return self.__userTimings[userID]
+
+    def set_zoomLink(self, zoomURL):
+        self.__zoomURL = zoomURL
+    def get_zoomLink(self):
+        return self.__zoomURL
+
+    def set_zoomPassword(self, zoomPassword):
+        self.__zoomPassword = zoomPassword
+    def get_zoomPassword(self):
+        return self.__zoomPassword

@@ -33,7 +33,7 @@ from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
 
 class Course():
-    def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, status, userID, username):
+    def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, userID, username):
         self.__courseID = courseID
         self.__userID = userID  # Owner of course
         self.__username = username # username of the course owner
@@ -42,11 +42,9 @@ class Course():
         self.__thumbnail = thumbnail
         self.__price = price
         self.__course_type = courseType # "Zoom" or "Video"
-        self.__status = status  # Is course available?
         self.__overallRating = 0
         self.__tag = tag #  PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE Common.py
         self.__ratings = []
-        self.__schedule = []
         self.__views = 0
         self.__review = []
 
@@ -116,12 +114,15 @@ class Course():
     def get_price(self):
         return self.__price
 
-    def switch_to_video(self):
-        if self.__course_type == "Zoom": # if True:
-            self.__course_type = "Video"
-    def switch_to_zoom(self):
-        if self.__course_type == "Video": # if True:
-            self.__course_type = "Zoom"
+    # def switch_to_video(self):
+    #     if self.__course_type == "Zoom": # if True:
+    #         self.__course_type = "Video"
+    # def switch_to_zoom(self):
+    #     if self.__course_type == "Video": # if True:
+    #         self.__course_type = "Zoom"
+
+    def set_course_type(self, courseType):
+        self.__course_type = courseType
     def get_course_type(self):
         return self.__course_type
 
@@ -151,27 +152,26 @@ class Course():
                 self.__ratings.remove(rating)
                 break
 
-    def add_scheduleVideoLesson(self, title, description, thumbnail, videoData):
-        videoLesson = VideoLesson(title, description, thumbnail, videoData)
-        self.__schedule.append(videoLesson)
-    def remove_scheduleVideoLesson(self, title, description):
-        for VideoLesson in self.__schedule:
-            if VideoLesson.get_title() == title and VideoLesson.get_description() == description:
-                self.__schedule.remove(VideoLesson)
-                break
+    # def add_VideoLesson(self, title, description, thumbnail, videoData):
+    #     videoLesson = VideoLesson(title, description, thumbnail, videoData)
+    #     self.__schedule.append(videoLesson)
+    # def remove_scheduleVideoLesson(self, title, description):
+    #     for VideoLesson in self.__schedule:
+    #         if VideoLesson.get_title() == title and VideoLesson.get_description() == description:
+    #             self.__schedule.remove(VideoLesson)
+    #             break
 
-    def add_scheduleZoomLesson(self, title, description, thumbnail):
-        zoomLesson = ZoomLesson(title, description, thumbnail)
-        self.__schedule.append(zoomLesson)
-    def remove_scheduleZoomLesson(self, title, description):
-        for ZoomLesson in self.__schedule:
-            if ZoomLesson.get_title() == title and ZoomLesson.get_description() == description:
-                self.__schedule.remove(ZoomLesson)
+    # def add_scheduleZoomLesson(self, title, description, thumbnail):
+    #     zoomLesson = ZoomLesson(title, description, thumbnail)
+    #     self.__schedule.append(zoomLesson)
+    # def remove_scheduleZoomLesson(self, title, description):
+    #     for ZoomLesson in self.__schedule:
+    #         if ZoomLesson.get_title() == title and ZoomLesson.get_description() == description:
+    #             self.__schedule.remove(ZoomLesson)
 
-    def get_schedule(self):
-        return self.__schedule
+    # def get_schedule(self):
+    #     return self.__schedule
 
-    def get_lesson(self, lesson):
-        return self.__schedule[int(lesson)]
-
+    # def get_lesson(self, lesson):
+    #     return self.__schedule[int(lesson)]
     """End of Done by Wei Ren"""

@@ -10,7 +10,7 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course
+from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files import Payment
 from python_files.Security import sanitise
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -4729,7 +4729,6 @@ def insertName(teacherCoursePageUID):
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        courseDict = {}
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
@@ -4748,7 +4747,43 @@ def insertName(teacherCoursePageUID):
 
         if userFound and accGoodStatus:
             # add in your code below
-            courseTitle = ""
+            courseObject = {}
+            courseDict = db['Courses']
+            
+            #Getting course attributes
+            for value in courseDict.values():
+                if value.get_courseID() == teacherCoursePageUID:
+                    courseTitle = value.get_title()
+                    courseDescription = value.get_description()
+                    coursePrice = value.get_price()
+                    courseRating = value.get_averageRating()
+                    courseThumbnail = value.get_thumbnail()
+                    courseID = value.get_courseID()
+                    courseType = value.get_course_type()
+                    break
+            createCourse = Course.Course(courseID, courseTitle, courseDescription, coursePrice, courseRating, courseThumbnail, courseType)
+            
+            #Getting Lesson attributes
+            lessonList = {}
+            lessonDict = db['Lessons']
+            for value in lessonDict.values():
+                lessonTitle = value.get_title()
+                lessonDescription = value.get_description()
+                lessonThumbnail = value.get_thumbnail()
+                lessonID = value.get_lessonID()
+
+            #Getting Zoom Attributes
+            zoomDict = db['Zoom']
+            for value in zoomDict.values():
+                zoomURL = value.get_zoomURL()
+                zoomPassword = value.get_zoomPassword()
+                break
+
+            #Geting Video Attributes
+            videoDict = db['Videos']
+            for value in videoDict.values():
+                
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherCoursePageUID = userSession
