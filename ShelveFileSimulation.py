@@ -14,7 +14,7 @@ from python_files.Admin import Admin
 from python_files.Teacher import Teacher
 from python_files.Student import Student
 from python_files.Course import Course
-from python_files.Security import sanitise, hash_password, generate_admin_id
+from python_files.Security import sanitise, generate_admin_id
 from python_files.IntegratedFunctions import generate_ID, generate_course_ID
 from datetime import date
 import shelve, pathlib
@@ -54,7 +54,7 @@ userID = generate_ID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
 password = "123!@#"
-user = Student(userID, username, email, hash_password(password))
+user = Student(userID, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userID] = user
@@ -67,7 +67,7 @@ userID = generate_ID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
 password = "456$%^"
-user = Student(userID, username, email, hash_password(password))
+user = Student(userID, username, email, password)
 
 #Courses (Royston)
 
@@ -81,7 +81,7 @@ userID = generate_ID(userDict)
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
 password = "789&*("
-user = Teacher(userID, username, email, hash_password(password))
+user = Teacher(userID, username, email, password)
 
 #Teacher
 user.set_earnings("100")
@@ -131,7 +131,7 @@ userID = generate_ID(userDict)
 username = "Sara"
 email = sanitise("tourism@gmail.com".lower())
 password = "0-=)_+"
-user = Teacher(userID, username, email, hash_password(password))
+user = Teacher(userID, username, email, password)
 
 #Teacher
 user.set_earnings("100")
@@ -237,7 +237,7 @@ adminID = generate_admin_id(adminDict)
 username = "The Archivist"
 email = sanitise("O52@SCP.com".lower())
 password = "27sb2we9djaksidu8a"
-admin = Admin(adminID, username, email, hash_password(password))
+admin = Admin(adminID, username, email, password)
 
 #Admin
 
@@ -251,7 +251,7 @@ adminID = generate_admin_id(adminDict)
 username = "Tamlin"
 email = sanitise("O513@SCP.com".lower())
 password = "o4jru5fjr49f8ieri4"
-admin = Admin(adminID, username, email, hash_password(password))
+admin = Admin(adminID, username, email, password)
 
 #Admin
 

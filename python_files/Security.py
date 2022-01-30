@@ -1,35 +1,7 @@
-from argon2 import PasswordHasher
-import html, re # importing html for escaping inputs and re for compiling regular expression for validating email addresses
+import html # importing html for escaping inputs
 from shortuuid import ShortUUID # for ID generation using shortuuid as compared to uuid
 
 # Done by Jason
-
-# helpful resources: 
-# https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
-# https://lindevs.com/generate-argon2id-password-hash-using-python/
-# https://passlib.readthedocs.io/en/stable/lib/passlib.hash.argon2.html
-# https://stackoverflow.com/questions/58431973/argon2-library-that-hashes-passwords-without-a-secret-and-with-a-random-salt-tha
-
-"""Password hashing"""
-
-# things to note, argon2 by default will generate a random salt and use 65536KB of memory and time is 3 iterations, and 4 degrees of parallelism when hashing
-
-# minimum requirement as of OWASP; Use Argon2id with a minimum configuration of 15 MiB of memory (15728KB), an iteration count of 2, and 1 degree of parallelism.
-# OWASP website: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
-
-def hash_password(password):
-    return PasswordHasher().hash(password)
-
-# for verifying a hashed value with a plaintext to see if it matches
-def verify_password(hashed, pwd):
-    ph = PasswordHasher()
-    # try and except as argon2 will raise an exception if the hashes are not matched
-    try:
-        return ph.verify(hashed, pwd) # will return True if both the hash matches
-    except:
-        return False
-
-"""End of Password hashing"""
 
 """Input sanitisation"""
 
@@ -43,21 +15,6 @@ def sanitise(userInput):
         return False
 
 """End of input sanitisation"""
-
-"""Email Validation using regex/regular expression"""
-
-# useful resources:
-# https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
-
-def validate_email(email):
-    regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+') # compile the regex so that it does not have to rewrite the regex
-
-    if(re.fullmatch(regex, email)):
-        return True
-    else:
-        return False
-
-"""End of Email Validation using regex/regular expression"""
 
 """Start of Admin Console Functions"""
 

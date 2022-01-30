@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from dicebear import DOptions
 from python_files import Student, Teacher, Forms
 from python_files import Payment
-from python_files.Security import hash_password, verify_password, sanitise, validate_email
+from python_files.Security import sanitise
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
 
@@ -705,11 +705,7 @@ def userLogin():
 
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
-                passwordShelveData = email_key.get_password()
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
-
-                password_matched = verify_password(passwordShelveData, passwordInput)
+                password_matched = email_key.verify_password(passwordInput)
 
                 # printing for debugging purposes
                 if password_matched:
@@ -734,10 +730,6 @@ def userLogin():
                     print("User account banned.")
                     return render_template('users/guest/login.html', form=create_login_form, banned=True)
             else:
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
                 return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
             # for notifying if they have verified their email from the link in their email
@@ -885,7 +877,7 @@ def resetPassword(token):
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        userKey.set_password(hash_password(password))
+                        userKey.set_password(password)
                         db["Users"] = userDict
                         db.close()
                         print("Password Reset Successful.")
@@ -1299,11 +1291,7 @@ def adminLogin():
 
             # if the email is found in the shelve database, it will then validate the password input and see if it matches with the one in the database
             if email_found:
-                passwordShelveData = email_key.get_password()
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
-
-                password_matched = verify_password(passwordShelveData, passwordInput)
+                password_matched = email_key.verify_password(passwordInput)
 
                 if password_matched:
                     print("Correct password!")
@@ -1328,10 +1316,6 @@ def adminLogin():
                     print("Admin account inactive.")
                     return render_template('users/guest/admin_login.html', form=create_login_form, notActive=True)
             else:
-                print("Email in database:", emailShelveData)
-                print("Email Input:", emailInput)
-                print("Password in database:", passwordShelveData)
-                print("Password Input:", passwordInput)
                 print("Failed to login.")
                 return render_template('users/guest/admin_login.html', form=create_login_form, failedAttempt=True)
         else:
@@ -1566,9 +1550,6 @@ def adminChangePassword():
                 updatedPassword = create_update_password_form.updatePassword.data
                 confirmPassword = create_update_password_form.confirmPassword.data
 
-                # Retrieving current password of the user
-                currentStoredPassword = userKey.get_password()
-
                 # validation starts
                 print("Updated password input:", updatedPassword)
                 print("Confirm password input", confirmPassword)
@@ -1578,11 +1559,8 @@ def adminChangePassword():
                 else:
                     print("New and confirm password inputs did not match")
 
-                print("Current password:", currentStoredPassword)
-                print("Current password input:", currentPassword)
-
-                passwordVerification = verify_password(currentStoredPassword, currentPassword)
-                oldPassword = verify_password(currentStoredPassword, updatedPassword)
+                passwordVerification = userKey.verify_password(currentPassword)
+                oldPassword = userKey.verify_password(updatedPassword)
 
                 # printing message for debugging purposes
                 if passwordVerification:
@@ -1602,7 +1580,7 @@ def adminChangePassword():
                         return render_template('users/admin/change_password.html', form=create_update_password_form, samePassword=True)
                     else:
                         # updating password of the user once validated
-                        userKey.set_password(hash_password(updatedPassword))
+                        userKey.set_password(updatedPassword)
                         db['Admins'] = adminDict
                         print("Password updated")
                         db.close()
@@ -1674,7 +1652,7 @@ def userManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                userKey.set_password(hash_password(password))
+                                userKey.set_password(password)
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -1828,7 +1806,7 @@ def userSearchManagement(pageNum):
                         if duplicateEmail == False:
                             if userKey != None:
                                 # changing the password of the user
-                                userKey.set_password(hash_password(password))
+                                userKey.set_password(password)
                                 userKey.set_email(email)
                                 userKey.set_email_verification("Not Verified")
                                 db["Users"] = userDict
@@ -2842,9 +2820,6 @@ def updatePassword():
                 updatedPassword = create_update_password_form.updatePassword.data
                 confirmPassword = create_update_password_form.confirmPassword.data
 
-                # Retrieving current password of the user
-                currentStoredPassword = userKey.get_password()
-
                 # validation starts
                 print("Updated password input:", updatedPassword)
                 print("Confirm password input", confirmPassword)
@@ -2854,11 +2829,8 @@ def updatePassword():
                 else:
                     print("New and confirm password inputs did not match")
 
-                print("Current password:", currentStoredPassword)
-                print("Current password input:", currentPassword)
-
-                passwordVerification = verify_password(currentStoredPassword, currentPassword)
-                oldPassword = verify_password(currentStoredPassword, updatedPassword)
+                passwordVerification = userKey.verify_password(currentPassword)
+                oldPassword = userKey.verify_password(updatedPassword)
 
                 # printing message for debugging purposes
                 if passwordVerification:
@@ -2878,7 +2850,7 @@ def updatePassword():
                         return render_template('users/loggedin/change_password.html', form=create_update_password_form, samePassword=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         # updating password of the user once validated
-                        userKey.set_password(hash_password(updatedPassword))
+                        userKey.set_password(updatedPassword)
                         userEmail = userKey.get_email()
                         db['Users'] = userDict
                         print("Password updated")

@@ -1,5 +1,6 @@
 from python_files.Admin import Admin
-from python_files.Security import sanitise, hash_password, validate_email, generate_admin_id, validate_pwd_length
+from python_files.Security import sanitise, generate_admin_id, validate_pwd_length
+from python_files.IntegratedFunctions import validate_email
 import shelve, pathlib
 
 # Command line 1-2 feature/operations done by Jason
@@ -121,7 +122,7 @@ Hence, please only force shut down the program if necessary.
                                             break
                                         else:
                                             adminID = generate_admin_id(adminDict)
-                                            admin = Admin(adminID, username, email, hash_password(password))
+                                            admin = Admin(adminID, username, email, password)
                                             adminDict[adminID] = admin
                                             print("\nAdmin account created/updated in the admin account database")
                                             db["Admins"] = adminDict
@@ -192,7 +193,7 @@ Hence, please only force shut down the program if necessary.
                                         pwdMatched = False
 
                                     if pwdMatched:
-                                        adminKey.set_password(hash_password(password))
+                                        adminKey.set_password(password)
                                         db["Admins"] = adminDict
                                         db.close()
                                         print(f"\nAdmin password updated successfully for the account with the email, {email} .")
@@ -230,7 +231,7 @@ Hence, please only force shut down the program if necessary.
                                         pwdMatched = False
 
                                     if pwdMatched:
-                                        adminObject.set_password(hash_password(password))
+                                        adminObject.set_password(password)
                                         db["Admins"] = adminDict
                                         db.close()
                                         print(f"\nAdmin password updated successfully for admin id, {email}.")
