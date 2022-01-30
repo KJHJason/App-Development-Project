@@ -4844,6 +4844,40 @@ def teacherOwnPage(teacherUID):
 
 """End of Teacher's Channel Page(Teacher view) by Clarence"""
 
+"""Template app.route(") (use this when adding a new app route) by Clarence"""
+
+@app.route('/course_page/<teacherCoursePageUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@limiter.limit("30/second") # to prevent ddos attacks
+def insertName(teacherCoursePageUID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your code below
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherCoursePageUID = userSession
+            else:
+                teacherCoursePageUID = ""
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursePageUID=teacherCoursePageUID)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by Clarence"""
+
 """General Pages"""
 
 @app.route('/cookie_policy')

@@ -132,7 +132,5 @@ class CreateCourse(Form):
     title = StringField("Course Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
     description = StringField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
     #thumbnail use HTML to validate size, type
-    zoomCondition = BooleanField("Zoom Included")
-    videoCondition = BooleanField("Video Included") #Validate in init if user selected at least one
     coursePrice = StringField("Price for Course (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
 """End of WTForms by Clarence"""
