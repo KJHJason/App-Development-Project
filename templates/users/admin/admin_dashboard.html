@@ -33,7 +33,9 @@
                 <div class="container">
                     <div class="row">
                         <div class="col">
-                            <canvas id="totalUserChart"></canvas>
+                            <div class="canvasWrapper">
+                                <canvas id="totalUserChart"></canvas>
+                            </div>
                             <br>
                             <div class=d-inline>
                                 <p class="float-start">Last updated (in 24hr format): {{ lastUpdated }}</p>
@@ -54,24 +56,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    {% if usernameChanged %}
-        <script>
-            var usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'), {});
-            usernameModal.show();
-        </script>
-    {% endif %}
-    {% if emailChanged %}
-        <script>
-            var emailModal = new bootstrap.Modal(document.getElementById('emailModal'), {});
-            emailModal.show();
-        </script>
-    {% endif %}
-    {% if passwordChanged %}
-        <script>
-            var pwdModal = new bootstrap.Modal(document.getElementById('PasswordModal'), {});
-            pwdModal.show();
-        </script>
-    {% endif %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js" integrity="sha512-TW5s0IT/IppJtu76UbysrBH9Hy/5X41OTAbQuffZFU6lQ1rdcLHzpU5BzVvr/YFykoiMYZVWlr/PX1mDcfM9Qg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="{{ url_for('static', filename='scripts/bootstrap_util.js') }}"></script>
     <script src="{{ url_for('static', filename='scripts/copy_to_clipboard.js') }}"></script>
@@ -121,6 +105,8 @@
                     }],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             min: 0,

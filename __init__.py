@@ -650,12 +650,6 @@ def guestEditCookie(teacherUID, courseID, courseTag):
 def userLogin():
     if "userSession" not in session and "adminSession" not in session:
         create_login_form = Forms.CreateLoginForm(request.form)
-        if "passwordUpdated" in session:
-            passwordUpdated = True
-            session.pop("passwordUpdated", None)
-        else:
-            passwordUpdated = False
-
         if request.method == "POST" and create_login_form.validate():
             emailInput = sanitise(create_login_form.email.data.lower())
             passwordInput = create_login_form.password.data
@@ -718,26 +712,7 @@ def userLogin():
             else:
                 return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
         else:
-            # for notifying if they have verified their email from the link in their email
-            if "emailVerified" in session:
-                emailVerified = True
-                session.pop("emailVerified", None)
-            else:
-                emailVerified = False
-            # for notifying if the email verification link has expired/is invalid
-            if "emailTokenInvalid" in session:
-                emailTokenInvalid = True
-                session.pop("emailTokenInvalid", None)
-            else:
-                emailTokenInvalid = False
-            # for notifying if they have already verified their email (traversal attack)
-            if "emailFailed" in session:
-                emailAlreadyVerified = True
-                session.pop("emailFailed", None)
-            else:
-                emailAlreadyVerified = False
-
-            return render_template('users/guest/login.html', form=create_login_form, passwordUpdated=passwordUpdated, emailVerified=emailVerified, emailTokenInvalid=emailTokenInvalid, emailAlreadyVerified=emailAlreadyVerified)
+            return render_template('users/guest/login.html', form=create_login_form)
     else:
         return redirect(url_for("home"))
 
@@ -748,9 +723,7 @@ def logout():
         session.clear()
     else:
         return redirect(url_for("home"))
-
-    # sending a session data so that when it redirects the user to the homepage, jinja2 will render out a logout alert
-    session["recentlyLoggedOut"] = True
+    flash("You have successfully logged out.", "You have logged out!")
     return redirect(url_for("home"))
 
 """End of User login and logout by Jason"""
@@ -2226,13 +2199,12 @@ def dashboard():
             finally:
                 db.close()
 
-            print("Retrieved graph data:", graphList)
             try:
                 lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
             except:
                 lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
-            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
+            selectedGraphDataList = graphList[-30:] # get last 30 elements from the list to show the total number of user per day for the last 30 days
             print("Selected graph data:", selectedGraphDataList)
 
             # for matplotlib and chartjs graphs
@@ -2271,17 +2243,7 @@ def dashboard():
 
             csvFileName = "static/data/user_base/csv/user_base.csv"
 
-            # # below code for simulation purposes
-            # xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
-            # yAxisData = [12, 240, 500] # number of users
-            # graphDict = {
-            #     "21/1/2022": 4,
-            #     "22/1/2022": 20,
-            #     "23/1/2022": 25,
-            #     "24/1/2022": 100
-            # }
-
-            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
+            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 30 days
             with open(csvFileName, "w", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["Dates", "Number Of Users"])
@@ -4789,7 +4751,7 @@ def insertName(teacherCoursePageUID):
             #Geting Video Attributes
             videoDict = db['Videos']
             for value in videoDict.values():
-                
+                pass
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":

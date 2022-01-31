@@ -16,7 +16,8 @@ from python_files.Student import Student
 from python_files.Course import Course
 from python_files.Security import sanitise, generate_admin_id
 from python_files.IntegratedFunctions import generate_ID, generate_course_ID
-from datetime import date
+from python_files.Graph import userbaseGraph
+from datetime import date, timedelta
 import shelve, pathlib
 
 databaseFolder = str(pathlib.Path.cwd()) + "\\databases"
@@ -30,7 +31,7 @@ userDict = {}
 adminDict = {}
 courseDict = {}
 ticketDict = {}
-
+graphList = []
 
 """
 {"Users":{userID:User()}
@@ -101,19 +102,12 @@ description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do e
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
 zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
-status = "Available" ## Available or Unavailable
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, userID, username)
 
-# def __init__(self, userID, title, comment, rating)
 course.add_rating("2", "Very Good", "Please make more.", "4")
 
-# def __init__(self, title, description, thumbnail, **kwargs):
-course.add_scheduleZoomLesson("Step 1: See Documentation","We learn Flask Documentation","")
-course.get_lesson(0).set_timing("2022-07-03","15:30")
-course.add_scheduleZoomLesson("Step 2: Practice","At least 5 Codeforces a Week","")
-course.get_lesson(1).set_timing("2022-07-10","15:30")
 course.set_views(13)
 
 user.set_courseTeaching(courseID)
@@ -152,20 +146,14 @@ title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 videoPrice = "{:,.2f}".format(69)
-status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Math", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, videoPrice, "Math", title, description, thumbnail, userID, username)
 
 
-# def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
 
-# def __init__(self, title, description, thumbnail, videoData):
-course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
-
-course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 course.set_views(1)
 
 user.set_courseTeaching(courseID)
@@ -178,19 +166,14 @@ title = "How to be a Daniel"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
 videoPrice = "{:,.2f}".format(69)
-status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
 
-# def __init__(self, title, description, thumbnail, videoData):
-course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
-
-course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 course.set_views(123)
 
 user.set_courseTeaching(courseID)
@@ -207,19 +190,14 @@ title = "How to be a Daniel 2"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
 videoPrice = "{:,.2f}".format(69)
-status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
 
-# def __init__(self, title, description, thumbnail, videoData):
-course.add_scheduleVideoLesson("Step 1: Calculate the Circumference of the Sun","He is probably travelling there.","","")
-
-course.add_scheduleVideoLesson("Step 2: Going out into the field.","Follow the journey of the man who went out to get milk.","","")
 course.set_views(1000)
 
 user.set_courseTeaching(courseID)
@@ -255,6 +233,15 @@ admin = Admin(adminID, username, email, password)
 
 #Admin
 
+"""Admin 3"""
+#General
+adminID = generate_admin_id(adminDict)
+username = "test"
+email = sanitise("test@test.com".lower())
+password = "123123123"
+admin = Admin(adminID, username, email, password)
+
+#Admin
 
 # Get corresponding userID for updating/adding to dictionary
 adminDict[adminID] = admin
@@ -270,10 +257,21 @@ user.add_to_cart(course.get_courseID(),"Zoom") # Course ID '0' is "Making Web Ap
 print(user.get_shoppingCart())
 
 
+# set some data for user base graph for admin dashboard
+todayDate = date.today()
+
+graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(500), userbaseGraph(700), userbaseGraph(800), userbaseGraph(900), userbaseGraph(1001), userbaseGraph(1200), userbaseGraph(1500), userbaseGraph(1800), userbaseGraph(2600), userbaseGraph(3900), userbaseGraph(5000), userbaseGraph(8000), userbaseGraph(9000), userbaseGraph(9500), userbaseGraph(9900), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000)]  
+
+for i in range(len(graphList)-1, -1, -1):
+    graphList[i].set_date(todayDate - timedelta(days=30-i))
+
+print(graphList)
+
 # Overwrite entire shelve with updated dictionary
 userBase["Users"] = userDict
 adminBase["Admins"] = adminDict
 userBase["Courses"] = courseDict
+userBase["userGraphData"] = graphList
 adminBase["Tickets"] = ticketDict
 
 # Make sure to close!
