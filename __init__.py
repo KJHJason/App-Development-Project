@@ -50,7 +50,7 @@ paypalrestsdk.configure({
   "client_secret": os.environ.get("PAYPAL_SECRET") })
 
 # Flask limiter configuration
-limiter = Limiter(app, key_func=get_remote_address)
+limiter = Limiter(app, key_func=get_remote_address, default_limits=["30 per second"])
 
 # vimeo api configurations
 client = vimeo.VimeoClient(
@@ -86,7 +86,6 @@ print("Your video link is: " + response['link']) """
 """Home page by Jason"""
 
 @app.route('/')
-@limiter.limit("30/second") # to prevent ddos attacks
 def home():
     courseDict = {}
     userDict = {}
@@ -486,7 +485,6 @@ def guestCookies():
     return res
 
 @app.route('/home/no_cookies')
-@limiter.limit("30/second") # to prevent ddos attacks
 def homeNoCookies():
     if "userSession" not in session and "adminSession" not in session: # since if the user is logged in, it means that their cookie is enabled as the login uses session cookies
         courseDict = {}
@@ -717,7 +715,6 @@ def userLogin():
         return redirect(url_for("home"))
 
 @app.route('/logout')
-@limiter.limit("30/second") # to prevent ddos attacks
 def logout():
     if "userSession" in session or "adminSession" in session:
         session.clear()
@@ -731,7 +728,6 @@ def logout():
 """Reset Password by Jason"""
 
 @app.route('/reset_password', methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def requestPasswordReset():
     if "userSession" not in session and "adminSession" not in session:
         create_request_form = Forms.RequestResetPasswordForm(request.form)
@@ -806,7 +802,6 @@ def requestPasswordReset():
         return redirect(url_for("home"))
 
 @app.route("/reset_password/<token>", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def resetPassword(token):
     if "userSession" not in session and "adminSession" not in session:
         validateToken = verify_reset_token(token)
@@ -860,7 +855,6 @@ def resetPassword(token):
 """Student signup process by Jason"""
 
 @app.route('/signup', methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def userSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_signup_form = Forms.CreateSignUpForm(request.form)
@@ -942,7 +936,6 @@ def userSignUp():
 """Email verification by Jason"""
 
 @app.route("/generate_verify_email_token")
-@limiter.limit("30/second") # to prevent ddos attacks
 def verifyEmail():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -975,7 +968,6 @@ def verifyEmail():
             return redirect(url_for("userLogin"))
 
 @app.route("/verify_email/<token>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def verifyEmailToken(token):
     if "adminSession" not in session:
         validateToken = verify_email_token(token)
@@ -1042,7 +1034,6 @@ def verifyEmailToken(token):
 """Teacher's signup process by Jason"""
 
 @app.route('/teacher_signup', methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def teacherSignUp():
     if "userSession" not in session and "adminSession" not in session:
         create_teacher_sign_up_form = Forms.CreateSignUpForm(request.form)
@@ -1128,7 +1119,6 @@ def teacherSignUp():
             return redirect(url_for("home"))
 
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def signUpPayment():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -1292,7 +1282,6 @@ def adminLogin():
 """Admin profile settings by Jason"""
 
 @app.route('/admin_profile', methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def adminProfile():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1315,7 +1304,6 @@ def adminProfile():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_username", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangeUsername():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1383,7 +1371,6 @@ def adminChangeUsername():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_email", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangeEmail():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1451,7 +1438,6 @@ def adminChangeEmail():
         return redirect(url_for("home"))
 
 @app.route("/admin_change_password", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def adminChangePassword():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1546,7 +1532,6 @@ def adminChangePassword():
 """User Management for Admins by Jason"""
 
 @app.route("/user_management/page/<int:pageNum>", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def userManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1679,7 +1664,6 @@ def userManagement(pageNum):
         return redirect(url_for("home"))
 
 @app.route("/user_management/search/<int:pageNum>/", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def userSearchManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1847,7 +1831,6 @@ def userSearchManagement(pageNum):
 
 # if the user tempers with the html search input and removed the require attribute or if the user tries to XSS the site.
 @app.route("/user_management/search/not_allowed")
-@limiter.limit("30/second") # to prevent ddos attacks
 def userSearchManagementError():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1874,7 +1857,6 @@ def userSearchManagementError():
         return redirect(url_for("home"))
 
 @app.post("/delete_user/uid/<userID>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def deleteUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1932,7 +1914,6 @@ def deleteUser(userID):
         return redirect(url_for("home"))
 
 @app.post("/ban/uid/<userID>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def banUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -1988,7 +1969,6 @@ def banUser(userID):
         return redirect(url_for("home"))
 
 @app.post("/unban/uid/<userID>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def unbanUser(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -2049,7 +2029,6 @@ def unbanUser(userID):
         return redirect(url_for("home"))
 
 @app.post("/change_username/uid/<userID>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def changeUserUsername(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -2113,7 +2092,6 @@ def changeUserUsername(userID):
         return redirect(url_for("home"))
 
 @app.post("/reset_profile_image/uid/<userID>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def resetProfileImage(userID):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -2175,7 +2153,6 @@ def resetProfileImage(userID):
 """Admin Data Visualisation (Total user per day) by Jason"""
 
 @app.route("/admin_dashboard")
-@limiter.limit("30/second") # to prevent ddos attacks
 def dashboard():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -2269,7 +2246,7 @@ def dashboard():
 """User Profile Settings by Jason"""
 
 @app.route('/user_profile', methods=["GET","POST"])
-@limiter.limit("150/second") # to prevent ddos attacks
+@limiter.limit("80/second") # to prevent ddos attacks
 def userProfile():
     if "userSession" in session and "adminSession" not in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
@@ -2448,7 +2425,6 @@ def userProfile():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_username", methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def updateUsername():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2530,7 +2506,6 @@ def updateUsername():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_email", methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def updateEmail():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2618,7 +2593,6 @@ def updateEmail():
             return redirect(url_for("userLogin"))
 
 @app.route("/change_password", methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def updatePassword():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2722,7 +2696,6 @@ def updatePassword():
             return redirect(url_for("userLogin"))
 
 @app.route('/change_account_type', methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def changeAccountType():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2834,7 +2807,6 @@ def changeAccountType():
 """User payment method settings by Jason"""
 
 @app.route('/payment_method', methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def userPayment():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -2958,7 +2930,6 @@ def userPayment():
             return redirect(url_for("userLogin"))
 
 @app.route('/edit_payment', methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def userEditPayment():
     if "userSession" in session and "adminSession" not in session:
         # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
@@ -3039,7 +3010,6 @@ def userEditPayment():
             return redirect(url_for("userLogin"))
 
 @app.post('/delete_card')
-@limiter.limit("30/second") # to prevent ddos attacks
 def deleteCard():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3102,7 +3072,6 @@ def deleteCard():
 """Teacher Cashout System by Jason"""
 
 @app.route("/teacher_cashout", methods=['GET', 'POST'])
-@limiter.limit("30/second") # to prevent ddos attacks
 def teacherCashOut():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3252,7 +3221,6 @@ def teacherCashOut():
 """Search Function by Royston"""
 
 @app.route('/search/<int:pageNum>/', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
 def search(pageNum):
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -3525,7 +3493,6 @@ def search(pageNum):
 """Purchase History by Royston"""
 
 @app.route("/purchasehistory/<int:pageNum>")
-@limiter.limit("30/second") # to prevent ddos attacks
 def purchaseHistory(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3647,7 +3614,6 @@ def purchaseHistory(pageNum):
 
 # THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def createPurchaseReview(courseID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3731,7 +3697,6 @@ def createPurchaseReview(courseID):
 """Purchase View by Royston"""
 
 @app.route("/purchaseview")
-@limiter.limit("30/second") # to prevent ddos attacks
 def purchaseView():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -3813,21 +3778,9 @@ def purchaseView():
 
 """End of Purchase View by Royston"""
 
-
-"""Template Redirect Shopping Cart by Jason because Opera is bad"""
-
-@app.route("/shopping_cart", methods = ["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
-def shoppingCartDefault():
-    return redirect("/shopping_cart/1")
-
-"""End of Redirect Shopping Cart by Jason because Opera is bad"""
-
-
-"""Template Shopping Cart by Wei Ren"""
+"""Shopping Cart by Wei Ren"""
 
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def shoppingCart(pageNum):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4016,7 +3969,6 @@ def shoppingCart(pageNum):
 """Contact Us by Wei Ren"""
 
 @app.route("/contact_us", methods = ["GET", "POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def contactUs():
     contactForm = Forms.ContactUs(request.form)
 
@@ -4142,7 +4094,6 @@ def contactUs():
 """Support Ticket Management by Wei Ren"""
 
 @app.route("/support_ticket_management/<int:pageNum>", methods = ["GET", "POST"])
-@limiter.limit("30/second") # to prevent ddos attacks
 def supportTicketManagement(pageNum):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -4300,9 +4251,8 @@ def supportTicketManagement(pageNum):
 """End of Support Ticket Management by Wei Ren"""
 
 """Admin Statistics by Wei Ren"""
-@app.route("/admin_statistics/<string:statistic>/<int:year>/<int:month>/<int:day>")
-@limiter.limit("30/second") # to prevent ddos attacks
 
+@app.route("/admin_statistics/<string:statistic>/<int:year>/<int:month>/<int:day>")
 def adminStatistics(statistic, year, month, day):
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -4450,7 +4400,6 @@ Previous Next
 """Teacher's Channel Page(General view) by Clarence"""
 
 @app.route('/teacher_page/<teacherPageUID>', methods=["GET", "POST"])
-@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherPage(teacherPageUID):
     if "adminSession" in session or "userSession" in session:
     #checks if session is admin or user
@@ -4521,7 +4470,6 @@ def teacherPage(teacherPageUID):
 """Teacher's Courses Page by Clarence"""
 
 @app.route('/teacher_courses/<teacherCoursesUID>', methods=["GET", "POST"])
-@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherCourses(teacherCoursesUID):
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4547,7 +4495,6 @@ def teacherCourses(teacherCoursesUID):
 """Course Creation by Clarence"""
 
 @app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
-@limiter.limit("30/second")  # to prevent ddos attacks
 def course_thumbnail_upload(teacherUID):
     createCourseForm = Forms.CreateCourse(request.form)
     if "userSession" in session and "adminSession" not in session:
@@ -4611,7 +4558,6 @@ def course_thumbnail_upload(teacherUID):
 """User's Own Channel Page(Teacher) by Clarence"""
 
 @app.route('/my_channel/<teacherUID>')
-@limiter.limit("30/second")  # to prevent ddos attacks
 def teacherOwnPage(teacherUID):
     if "adminSession" in session or "userSession" in session:
     #checks if session is admin or user
@@ -4692,7 +4638,6 @@ def teacherOwnPage(teacherUID):
 """Template app.route(") (use this when adding a new app route) by Clarence"""
 
 @app.route('/course_page/<teacherCoursePageUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
 def insertName(teacherCoursePageUID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4777,7 +4722,6 @@ def insertName(teacherCoursePageUID):
 """General Pages"""
 
 @app.route('/cookie_policy')
-@limiter.limit("30/second") # to prevent ddos attacks
 def cookiePolicy():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4801,7 +4745,6 @@ def cookiePolicy():
         return render_template("users/general/cookie_policy.html", accType="Guest")
 
 @app.route('/terms_and_conditions')
-@limiter.limit("30/second") # to prevent ddos attacks
 def termsAndConditions():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4825,7 +4768,6 @@ def termsAndConditions():
         return render_template("users/general/terms_and_conditions.html", accType="Guest")
 
 @app.route('/privacy_policy')
-@limiter.limit("30/second") # to prevent ddos attacks
 def privacyPolicy():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4849,7 +4791,6 @@ def privacyPolicy():
         return render_template("users/general/privacy_policy.html", accType="Guest")
 
 @app.route("/faq")
-@limiter.limit("30/second") # to prevent ddos attacks
 def faq():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -4887,7 +4828,6 @@ def faq():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
-@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4949,7 +4889,6 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
-@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4993,7 +4932,6 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
 def insertName():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -5038,7 +4976,6 @@ def insertName():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
 def insertName():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -5078,7 +5015,6 @@ def insertName():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-@limiter.limit("30/second") # to prevent ddos attacks
 def insertName():
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -5119,7 +5055,6 @@ def insertName():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
-@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -5160,7 +5095,6 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
-@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]
@@ -5213,7 +5147,6 @@ def function():
 """Template app.route(") (use this when adding a new app route) by INSERT_YOUR_NAME"""
 
 @app.route("/")
-@limiter.limit("30/second") # to prevent ddos attacks
 def function():
     if "adminSession" in session:
         adminSession = session["adminSession"]
