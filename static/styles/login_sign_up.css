@@ -53,3 +53,20 @@
 .forgetPWD:hover {
     color: #009DF8;
 }
+
+/* for OTP QR code */
+.QRCode {
+    width: 250px;
+    height: auto;
+  }
+
+  .QRCode_wrapper {
+      text-align: center;
+  }
+
+  @media (max-width: 767px) {
+      .QRCode {
+          width: 60%;
+          height: auto;
+      }
+  }

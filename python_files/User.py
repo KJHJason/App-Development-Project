@@ -17,6 +17,7 @@ class User:
         self.__acc_type = acc_type
         self.__status = status
         self.__profile_image = ""
+        self.__otp_setup_key = ""
 
     def set_user_id(self, user_id):
         self.__user_id = user_id
@@ -65,3 +66,8 @@ class User:
             return PasswordHasher().verify(self.__password, password) # will return True if both the hash matches
         except:
             return False
+
+    def set_otp_setup_key(self, setupKey):
+        self.__otp_setup_key = setupKey
+    def get_otp_setup_key(self):
+        return self.__otp_setup_key

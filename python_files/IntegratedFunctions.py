@@ -5,7 +5,7 @@ from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from requests import get as pyGet, post as pyPost
 from flask_mail import Message
-import shelve, os, uuid, string, random, shortuuid, re
+import shelve, os, uuid, string, random, shortuuid, re, glob
 from pathlib import Path
 from flask import url_for
 from dicebear import DAvatar, DStyle
@@ -771,6 +771,14 @@ def saveNoOfUserPerDay():
         graphList.append(graphData)
         db["userGraphData"] = graphList
     db.close()
+
+# useful resources: https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
+# Function for deleting any QR code due to security reasons
+def delete_QR_code_images():
+    folderPath = str(app.root_path) + "/static/images/qrcode"
+    for path in Path(folderPath).glob("**/*"):
+        if path.is_file():
+            path.unlink()
 
 """End of Done by Jason"""
 

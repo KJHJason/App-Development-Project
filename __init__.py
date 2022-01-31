@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers
+import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers, pyotp, qrcode
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -726,6 +726,76 @@ def logout():
     return redirect(url_for("home"))
 
 """End of User login and logout by Jason"""
+
+"""2FA by Jason"""
+
+@app.route('/2FA', methods=['GET', 'POST'])
+@limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
+def twoFactorAuthenticationSetup():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+        userDict = {}
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear()
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            create_2fa_form = Forms.twoFAForm(request.form)
+            if request.method == "POST" and create_2fa_form.validate():
+                secret = request.form.get("secret")
+                otpInput = create_2fa_form.twoFAOTP.data
+                isValid = pyotp.TOTP(secret).verify(otpInput)
+                print(pyotp.TOTP(secret).now())
+                if isValid:
+                    userKey.set_otp_setup_key(secret)
+                    flash("2FA setup was successful! You will now be prompted to enter your 2FA OTP everytime you login.", "2FA setup successful!")
+                    delete_QR_code_images()
+                    return redirect(url_for("userProfile"))
+                else:
+                    flash("Invalid OTP Entered! Please try again!")
+                    return redirect(url_for("twoFactorAuthenticationSetup"))
+            else:
+                db.close()
+                secret = pyotp.random_base32()
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+                qrCodePath = "static/images/qrcode/" + userSession + ".png"
+                qrCodeForOTP = pyotp.totp.TOTP(secret).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
+                img = qrcode.make(qrCodeForOTP)
+                if Path(qrCodePath).is_file():
+                    os.remove(qrCodePath)
+                img.save(qrCodePath)
+                return render_template('users/loggedin/2fa.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
+        else:
+            db.close()
+            print("User not found or is banned")
+            session.clear()
+            return redirect(url_for("userLogin"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("userLogin")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of 2FA by Jason"""
 
 """Reset Password by Jason"""
 
@@ -5179,6 +5249,7 @@ if __name__ == '__main__':
     """ scheduler.configure(timezone="Asia/Singapore") # configure timezone to always follow Singapore's timezone
     # adding a scheduled job to save data for the graph everyday at 11.59 p.m. below
     scheduler.add_job(saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", second="0", id="collectUserbaseData")
+    scheduler.add_job(delete_QR_code_images, "interval", seconds=15, id="delete_otp_images")
     scheduler.start()
     app.run(debug=True, use_reloader=False) """
     app.run(debug=True)
