@@ -70,12 +70,12 @@ class ZoomLesson(Lesson):
     def get_user_timing(self, userID):  # [date, time]
         return self.__userTimings[userID]
 
-    def set_zoomLink(self, zoomURL):
+    def set_zoom_link(self, zoomURL):
         self.__zoomURL = zoomURL
-    def get_zoomLink(self):
+    def get_zoom_link(self):
         return self.__zoomURL
 
-    def set_zoomPassword(self, zoomPassword):
+    def set_zoom_password(self, zoomPassword):
         self.__zoomPassword = zoomPassword
-    def get_zoomPassword(self):
+    def get_zoom_password(self):
         return self.__zoomPassword

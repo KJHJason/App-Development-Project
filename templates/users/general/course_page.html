@@ -13,7 +13,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="#">Teacher Name</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Course Name</li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ course.get_title }}</li>
                 </ol>
             </nav>
             {% for lesson in lessons %}
@@ -24,25 +24,43 @@
                             <div class="row page_wrapper">
                                 <div class="col-8 no_padding">
                                     <div class="course_info_left">
-                                        <h3>{{ render_field(form.courseTitle, class="form-control", value=courseTitle) }}</h3>
-                                        <p><span class="fw-bold">Course Detail:</span> {{ render_field(form.courseDescription, class="form-control", value=courseDescription) }}</p>
+                                        <h3>{{ course.get_title() }}</h3>
+                                        <p><span class="fw-bold">Course Detail:</span> {{ course.get_description() }}</p>
                                         <h6>By <a href="#"><!-- Link for teacher's page here, Represented by Techer's name --></a></h6>
                                     </div>
                                     <div>
                                         <h5 class="course_structure_title">Course Structure:</h5>
                                         <!-- Check if Couse is Video or Zoom -->
                                         <!-- If video, generate videos -->
-                                        {% if courseType == "video" %}
+                                        {% if course.get_course_type() == "video" %}
+                                        {% for lesson in lessons %}
                                         <div class="card mb-3 course_card">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <img src="{{ render_field(form.courseThumbnail, class="form-control", value=courseThumbnail) }}
-                                                        class="img-fluid rounded-start" alt="Default Course Thumbnail">
+                                                    <img src="{{ lesson.get_thumbnail() }}" class="img-fluid rounded-start" alt="Lesson Thumbnail">
                                                 </div>
                                                 <div class="col-8">
                                                     <div class="card-body">
-                                                        <h5 class="card-title">{{ render_field(lesson['lessonTitle'], class="form-control", value=lessonTitle) }}</h5>
-                                                        <p class="card-text">{{ render_field(form.lesson["lessonDescription"], class="form-control", value=cardExpiry) }}</p>
+                                                        <h5 class="card-title">{{ lesson.get_title() }}</h5>
+                                                        <p class="card-text">{{ lesson.get_description() }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% elif course.get_course_type() == "zoom" %}
+                                        <div class="card mb-3 course_card">
+                                            <div class="row g-0">
+                                                <div class="col-4">
+                                                    <img src="{{ lesson.get_thumbnail() }}" class="img-fluid rounded-start" alt="Lesson Thumbnail">
+                                                </div>
+                                                <div class="col-8">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">{{ lesson.get_title() }}</h5>
+                                                        <p class="card-text">{{ lesson.get_description() }}</p>
+                                                        {% if userPurchased == True %}
+                                                        <p><span class="fw-bold">Zoom Link:</span> {{ zoomLesson.get_zoom_link() }}</p>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>

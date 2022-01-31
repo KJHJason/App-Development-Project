@@ -49,6 +49,7 @@ class Course():
         self.__review = []
         self.__lessonDict = {}
 
+
     """Done by Jason"""
 
     def set_views(self, views):
@@ -180,5 +181,5 @@ class Course():
         self.__lessonDict = lessonDict
     def get_lessonDict(self):
         return self.__lessonDict
-        
+
     """End of Done by Wei Ren"""
