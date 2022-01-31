@@ -1,5 +1,20 @@
 from .User import User
 
+# to check for unique values in a list or dictionary
+def checkUniqueElements(inputToCheck):
+    listOf = []
+    if isinstance(inputToCheck, dict):
+        for values in inputToCheck.values():
+            listOf.append(values)
+        uniqueNumbersOfViews = len(set(listOf)) # get numbers of unique values in dictionary
+    elif isinstance(inputToCheck, list):
+        for value in inputToCheck:
+            listOf.append(value)
+        uniqueNumbersOfViews = len(set(listOf)) # get numbers of unique values in the list
+    else:
+        raise Exception("Function checkUniqueElements can only accept dictionary or lists!")
+    return uniqueNumbersOfViews
+
 class Common(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
         super().__init__(user_id, username, email, password, acc_type, status)
@@ -60,6 +75,13 @@ class Common(User):
             self.__tags_viewed[seenTag] += 1
         else:
             print("No such tag found.")
+    def get_highest_tag(self):
+        tagDict = self.__tags_viewed
+        uniqueNumbersOfViews = checkUniqueElements(tagDict)
+        if uniqueNumbersOfViews > 1:
+            return max(tagDict, key=tagDict.get)
+        else:
+            return "No highly watched tag"
     # for scalability reasons but would not be used in this project
     def add_tag(self, newTag):
         self.__tags_viewed[newTag] = 0

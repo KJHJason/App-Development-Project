@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from dicebear import DOptions
 from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files import Payment
+from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
@@ -2162,13 +2163,16 @@ def dashboard():
         if userFound and accActive:
             saveNoOfUserPerDay() # refreshes the graph data every time an admin visits the dashboard page
             graphList = []
+            userDict = {}
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
             try:
                 if 'userGraphData' in db and "Users" in db:
                     graphList = db['userGraphData']
+                    userDict = db['Users']
                 else:
                     print("No data in user shelve files")
                     db["userGraphData"] = graphList
+                    db['Users'] = userDict
             except:
                 print("Error in retrieving userGraphData from user.db")
             finally:
@@ -2216,19 +2220,30 @@ def dashboard():
             except:
                 print("Error in saving graph image...")
 
-            csvFileName = "static/data/user_base/csv/user_base.csv"
+            csvFilePath = "static/data/user_base/csv/user_base.csv"
 
             # for generating the csv data to collate all data as the visualisation on the web app only can show the last 30 days
-            with open(csvFileName, "w", newline="") as file:
+            with open(csvFilePath, "w", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["Dates", "Number Of Users"])
                 for key, value in graphDict.items():
                     writer.writerow([key, value])
+                file.close()
 
-            print("X-axis data:", xAxisData)
-            print("Y-axis data:", yAxisData)
+            userDataCSVFilePath = "static/data/users/csv/user_database.csv"
+            # for generating the csv data to collate all user data for other purposes such as marketing, etc.
+            with open(userDataCSVFilePath, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["UserID","Username", "Email", "Email Verification", "Account Type", "Account Status", "Number of Courses Teaching","Highly Watched Tag", "No. of Purchases"])
+                for key, value in userDict.items():
+                    try:
+                        numOfCourseTeaching = len(value.get_coursesTeaching())
+                    except:
+                        numOfCourseTeaching = "N/A"
+                    writer.writerow([key, value.get_username(), value.get_email(), value.get_email_verification(), value.get_acc_type(), value.get_status(), numOfCourseTeaching, value.get_highest_tag(), len(value.get_purchases())])
+                file.close()
 
-            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFileName=csvFileName)
+            return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFilePath=csvFilePath, userDataCSVFilePath=userDataCSVFilePath)
         else:
             print("Admin account is not found or is not active.")
             # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage

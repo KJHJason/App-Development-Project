@@ -704,21 +704,6 @@ def generate_password():
     generatedPassword = "".join(random.sample(combinations, lengthOfPass)) # join the generated list for the password
     return generatedPassword
 
-# to check for unique values in a list or dictionary
-def checkUniqueElements(inputToCheck):
-    listOf = []
-    if isinstance(inputToCheck, dict):
-        for values in inputToCheck.values():
-            listOf.append(values)
-        uniqueNumbersOfViews = len(set(listOf)) # get numbers of unique values in dictionary
-    elif isinstance(inputToCheck, list):
-        for value in inputToCheck:
-            listOf.append(value)
-        uniqueNumbersOfViews = len(set(listOf)) # get numbers of unique values in the list
-    else:
-        raise Exception("Function checkUniqueElements can only accept dictionary or lists!")
-    return uniqueNumbersOfViews
-
 def get_random_courses(courseDict):
     userDict = {}
     try:
