@@ -1,9 +1,9 @@
-user.bak
-user.dat
-user.dir
-admin.bak
-admin.dat
-admin.dir
+databases/user.bak
+databases/user.dat
+databases/user.dir
+databases/admin.bak
+databases/admin.dat
+databases/admin.dir
 test.py
 testflask.py
 UIDCollisionTest.py
