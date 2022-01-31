@@ -47,6 +47,7 @@ class Course():
         self.__ratings = []
         self.__views = 0
         self.__review = []
+        self.__lessonDict = {}
 
     """Done by Jason"""
 
@@ -174,4 +175,10 @@ class Course():
 
     # def get_lesson(self, lesson):
     #     return self.__schedule[int(lesson)]
+
+    def set_lessonDict(self, lessonDict):
+        self.__lessonDict = lessonDict
+    def get_lessonDict(self):
+        return self.__lessonDict
+        
     """End of Done by Wei Ren"""

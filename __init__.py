@@ -4661,9 +4661,12 @@ def insertName(teacherCoursePageUID):
 
         if userFound and accGoodStatus:
             # add in your code below
-            courseObject = {}
             courseDict = db['Courses']
-            
+            courseFound = False
+            lessonFound = False
+            lessonDict = {}
+            lessonInfo = {}
+            lessons = []
             #Getting course attributes
             for value in courseDict.values():
                 if value.get_courseID() == teacherCoursePageUID:
@@ -4674,17 +4677,36 @@ def insertName(teacherCoursePageUID):
                     courseThumbnail = value.get_thumbnail()
                     courseID = value.get_courseID()
                     courseType = value.get_course_type()
+                    courseFound = True
+                    
+                    #Getting lesson attributes
+                    lessonDict = value.get_lessonDict()
+                    for lesson in lessonDict.values():
+                        lessonInfo['lessonTitle'] = lesson.get_title()
+                        lessonInfo['lessonDescription'] = lesson.get_description()
+                        lessonInfo["lessonThumbnail"] = lesson.get_thumbnail()
+                        lessonInfo["lessonID"] = lesson.get_lessonID()
+
+                        lessons.append(lessonInfo)
+                        lessonDict["lessonID"] = lessonInfo
+                        lessonFound = True
+
+                        break
+                    if lessonFound != True:
+                        return redirect("/404")
+
                     break
-            createCourse = Course.Course(courseID, courseTitle, courseDescription, coursePrice, courseRating, courseThumbnail, courseType)
+            if courseFound != True:
+                return redirect("/404")
             
-            #Getting Lesson attributes
-            lessonList = {}
-            lessonDict = db['Lessons']
-            for value in lessonDict.values():
-                lessonTitle = value.get_title()
-                lessonDescription = value.get_description()
-                lessonThumbnail = value.get_thumbnail()
-                lessonID = value.get_lessonID()
+            lessonFound = False
+                
+
+
+            #Geting Video Attributes
+            videoDict = db['Videos']
+            for value in videoDict.values():
+                videoAbsolutePath = value.get_viseoAbsolutePath()
 
             #Getting Zoom Attributes
             zoomDict = db['Zoom']
@@ -4693,17 +4715,14 @@ def insertName(teacherCoursePageUID):
                 zoomPassword = value.get_zoomPassword()
                 break
 
-            #Geting Video Attributes
-            videoDict = db['Videos']
-            for value in videoDict.values():
-                pass
+
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherCoursePageUID = userSession
             else:
                 teacherCoursePageUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursePageUID=teacherCoursePageUID)
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursePageUID=teacherCoursePageUID, courseID = courseID, courseTitle = courseTitle, courseDescription = courseDescription, coursePrice = coursePrice, courseRating = courseRating, courseThumbnail = courseThumbnail, courseType = courseType, lessonID = lessonID, lessonTitle = lessonTitle, lessonDescription = lessonDescription, lessonThumbnail = lessonThumbnail, zoomURL = zoomURL, zoomPassword = zoomPassword, videoAbsolutePath = videoAbsolutePath)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
