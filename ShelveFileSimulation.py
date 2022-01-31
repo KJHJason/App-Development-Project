@@ -141,7 +141,7 @@ price = "{:,.2f}".format(69)
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, price, "Math", title, description, thumbnail, serID, username)
+course = Course(courseID, courseType, price, "Math", title, description, thumbnail, userID, username)
 
 
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
