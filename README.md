@@ -28,4 +28,6 @@ Libraries needed:
   <li>matplotlib Version 3.5.1 [pip install matplotlib==3.5.1]</li>
   <li>APScheduler Version 3.8.1 [pip install apscheduler==3.8.1]</li>
   <li>phonenumbers Version 8.12.42 [pip install phonenumbers==8.12.42]</li>
+  <li>qrcode Version 7.3.1 [pip install qrcode==7.3.1]</li>
+  <li>pyotp Version 2.6.0 [pip install pyotp==2.6.0]</li>
 </ol>	
