@@ -123,8 +123,8 @@ class CreateCourse(Form):
     videocondiction
     tags = StringField("")
     zoomschedule'''
-    title = StringField("Course Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
-    description = StringField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
+    courseTitle = StringField("Course Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
+    courseDescription = StringField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
     #thumbnail use HTML to validate size, type
-    coursePrice = StringField("Price for Course (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
+    coursePrice = IntegerField("Price for Course (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
 """End of WTForms by Clarence"""

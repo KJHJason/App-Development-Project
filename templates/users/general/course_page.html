@@ -16,6 +16,7 @@
                     <li class="breadcrumb-item active" aria-current="page">Course Name</li>
                 </ol>
             </nav>
+            {% for lesson in lessons %}
             <div class="table-responsive-lg">
                 <table class="table table-borderless">
                     <tr>
@@ -23,38 +24,41 @@
                             <div class="row page_wrapper">
                                 <div class="col-8 no_padding">
                                     <div class="course_info_left">
-                                        <h3><!-- Course Title Here --></h3>
-                                        <p><span class="fw-bold">Course Detail:</span> <!-- Course Description Here --></p>
+                                        <h3>{{ render_field(form.courseTitle, class="form-control", value=courseTitle) }}</h3>
+                                        <p><span class="fw-bold">Course Detail:</span> {{ render_field(form.courseDescription, class="form-control", value=courseDescription) }}</p>
                                         <h6>By <a href="#"><!-- Link for teacher's page here, Represented by Techer's name --></a></h6>
                                     </div>
                                     <div>
                                         <h5 class="course_structure_title">Course Structure:</h5>
                                         <!-- Check if Couse is Video or Zoom -->
                                         <!-- If video, generate videos -->
-                                        <!-- <div class="card mb-3 course_card">
+                                        {% if courseType == "video" %}
+                                        <div class="card mb-3 course_card">
                                             <div class="row g-0">
                                                 <div class="col-4">
-                                                    <img src="<-- Get Course Thumbnail ->
+                                                    <img src="{{ render_field(form.courseThumbnail, class="form-control", value=courseThumbnail) }}
                                                         class="img-fluid rounded-start" alt="Default Course Thumbnail">
                                                 </div>
                                                 <div class="col-8">
                                                     <div class="card-body">
-                                                        <h5 class="card-title"><-- Video title Here -></h5>
-                                                        <p class="card-text"><-- Video Description Here -></p>
+                                                        <h5 class="card-title">{{ render_field(lesson['lessonTitle'], class="form-control", value=lessonTitle) }}</h5>
+                                                        <p class="card-text">{{ render_field(form.lesson["lessonDescription"], class="form-control", value=cardExpiry) }}</p>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div> -->
+                                        </div>
+                                        {% endif %}
                                         
                                     </div>
                                 </div>
                                 <div class="col-4 course_info_wrapper no_padding columns">
                                     <!-- Get Video Thumbnail-->
+                                    {{ render_field(form.courseThumbnail, class="form-control", value=courseThumbnail) }}
                                     <img src=""
                                         class="card-img-top" alt="...">
                                     <div class="card-body">
-                                        <p class="card-text"><span class="fw-bold">Price:</span><!-- Get Course Price --></p>
-                                        <p class="card-text"><span class="fw-bold">Learning Style:</span><!-- Get Course Type--></p>
+                                        <p class="card-text"><span class="fw-bold">Price:</span>{{ render_field(form.coursePrice, class="form-control", value=coursePrice) }}</p>
+                                        <p class="card-text"><span class="fw-bold">Learning Style:</span>{{ render_field(form.courseType, class="form-control", value=courseType) }}</p>
                                         <!-- Check if Course type is Zoom or Video-->
                                             <p class="card-text"><span class="fw-bold">No of Videos:</span><!-- Get count of Videos --></p> 
                                         <p class="card-text"><span class="fw-bold">Overall Rating:</span>
@@ -74,6 +78,7 @@
                     </tr>
                 </table>
             </div>
+            {% endfor %}
             <div>
                 <h3>User Reviews</h3>
                 <div class="table-responsive-lg">
