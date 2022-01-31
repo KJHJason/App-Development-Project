@@ -138,11 +138,10 @@ title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 price = "{:,.2f}".format(69)
-status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, price, "Math", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, price, "Math", title, description, thumbnail, serID, username)
 
 
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -159,11 +158,10 @@ title = "How to be a Daniel"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
 price = "{:,.2f}".format(69)
-status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, price, "Other_Academics", title, description, thumbnail, status, userID, username)
+course = Course(courseID, courseType, price, "Other_Academics", title, description, thumbnail, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")

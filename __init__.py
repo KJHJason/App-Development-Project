@@ -2789,9 +2789,9 @@ def changeAccountType():
 
 """User payment method settings by Jason"""
 
-@app.route('/cashout_method', methods=["GET","POST"])
+@app.route('/cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
-def cashoutMethod():
+def cashoutPreference():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -2877,13 +2877,13 @@ def cashoutMethod():
                         if list(choice)[0] == countryCode:
                             cashoutForm.countryCode.data = choice
                             print(cashoutForm.countryCode.data)
+                else:
+                    print("Yes Here")
+                    userDict[userKey.get_user_id()] = userKey
+                    db['Users'] = userDict
+                    print("Payment added")
 
-                print("Yes Here")
-                userDict[userKey.get_user_id()] = userKey
-                db['Users'] = userDict
-                print("Payment added")
-
-                cashoutEdited = True
+                    cashoutEdited = True
 
             if not phoneError:
                 print("Yes Alright")

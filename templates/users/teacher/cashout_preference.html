@@ -145,8 +145,12 @@
                                             <input id="emailAddress" class="form-control" type="text" value="{{ renderedInfo['Email'] }}" disabled>
                                         </div>
                                     </div>
+
+                                    {{ cashoutForm.deleteInfo() }}
+
                                 </form>
                                 <button onclick="submit()" class="btn btn-success margin-top margin-top2 float-end">Save</button>
+                                <button onclick="delete()" class="btn btn-danger margin-top margin-top2 float-end">Delete</button>
                                 <button onclick="editRead('read')" class="btn btn-warning margin-top margin-top2 float-end">Cancel</button>
                             </div>
                         </div>
@@ -162,6 +166,11 @@
 <script>
     function submit() {
         document.getElementById("edit-form").submit();
+    }
+
+    function delete() {
+        document.getElementById("deleteInfo").value = true;
+        submit();
     }
 
     function toggle(preference) {
