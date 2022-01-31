@@ -1873,7 +1873,7 @@ def userSearchManagementError():
     else:
         return redirect(url_for("home"))
 
-@app.route("/delete_user/uid/<userID>", methods=['POST'])
+@app.post("/delete_user/uid/<userID>")
 @limiter.limit("30/second") # to prevent ddos attacks
 def deleteUser(userID):
     if "adminSession" in session:
@@ -1931,7 +1931,7 @@ def deleteUser(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/ban/uid/<userID>", methods=['POST'])
+@app.post("/ban/uid/<userID>")
 @limiter.limit("30/second") # to prevent ddos attacks
 def banUser(userID):
     if "adminSession" in session:
@@ -1987,7 +1987,7 @@ def banUser(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/unban/uid/<userID>", methods=['POST'])
+@app.post("/unban/uid/<userID>")
 @limiter.limit("30/second") # to prevent ddos attacks
 def unbanUser(userID):
     if "adminSession" in session:
@@ -2048,7 +2048,7 @@ def unbanUser(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/change_username/uid/<userID>", methods=['POST'])
+@app.post("/change_username/uid/<userID>")
 @limiter.limit("30/second") # to prevent ddos attacks
 def changeUserUsername(userID):
     if "adminSession" in session:
@@ -2112,7 +2112,7 @@ def changeUserUsername(userID):
     else:
         return redirect(url_for("home"))
 
-@app.route("/reset_profile_image/uid/<userID>", methods=['POST'])
+@app.post("/reset_profile_image/uid/<userID>")
 @limiter.limit("30/second") # to prevent ddos attacks
 def resetProfileImage(userID):
     if "adminSession" in session:
@@ -3038,7 +3038,7 @@ def userEditPayment():
         else:
             return redirect(url_for("userLogin"))
 
-@app.route('/delete_card', methods=['POST'])
+@app.post('/delete_card')
 @limiter.limit("30/second") # to prevent ddos attacks
 def deleteCard():
     if "userSession" in session and "adminSession" not in session:
