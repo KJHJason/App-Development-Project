@@ -772,10 +772,10 @@ def saveNoOfUserPerDay():
     for dates in graphList:
         graphDateList.append(dates.get_date())
     if currentDate in graphDateList:
-        print("Data already exists, overwriting old data.")
-        graphList.pop(graphDateList.index(currentDate))
-        graphData = userbaseGraph(len(userDict))
-        graphList.append(graphData)
+        print("Data already exists, updating old data.")
+        graphListValue = graphList[graphDateList.index(currentDate)]
+        graphListValue.set_noOfUser(len(userDict))
+        graphListValue.update_last_updated()
         db["userGraphData"] = graphList
     else:
         print("Data does not exist, creating new data.")
