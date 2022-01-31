@@ -3642,13 +3642,13 @@ def purchaseHistory(pageNum):
             pageNum = int(pageNum)
             # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
             if pageNum < 0:
-                session["pageNum"] = 0
+                session["pageNumber"] = 0
                 return redirect("/purchasehistory/0")
             elif courseListLen > 0 and pageNum == 0:
-                session["pageNum"] = 1
+                session["pageNumber"] = 1
                 return redirect("/purchasehistory/1")
             elif pageNum > maxPages:
-                session["pageNum"] = maxPages
+                session["pageNumber"] = maxPages
                 redirectRoute = "/purchasehistory/" + str(maxPages)
                 return redirect(redirectRoute)
             else:
@@ -3660,7 +3660,7 @@ def purchaseHistory(pageNum):
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
 
-                session["pageNum"] = pageNum
+                session["pageNumber"] = pageNum
 
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
@@ -3702,10 +3702,10 @@ def createPurchaseReview(courseID):
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
-            pageNum = session.get("pageNum")
+            pageNum = session.get("pageNumber")
 
-            if "pageNum" in session:
-                pageNum = session["pageNum"]
+            if "pageNumber" in session:
+                pageNum = session["pageNumber"]
             else:
                 pageNum = 0
 
