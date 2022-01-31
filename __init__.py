@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib
+import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
+from requests import get as pyGet, post as pyPost
 from flask_mail import Mail
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
@@ -769,7 +770,7 @@ def requestPasswordReset():
                         print("Email in database:", emailShelveData)
                         print("Email Input:", emailInput)
                         break
-                        
+
                 if email_found:
                     print("User email found...")
 
@@ -997,7 +998,7 @@ def verifyEmailToken(token):
                     userKey.set_email_verification("Verified")
                     db["Users"] = userDict
                     db.close()
-                    
+
                     if "userSession" in session:
                         flash("Your email has been successfully verified!", "Email Verified")
                         return redirect(url_for("userProfile"))
@@ -1086,9 +1087,6 @@ def teacherSignUp():
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, passwordInput)
                     user.set_teacher_join_date(date.today())
-
-                    userDict[userID] = user
-                    db["Users"] = userDict
 
                     session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
 
@@ -1406,7 +1404,7 @@ def adminChangeEmail():
                         if updatedEmail == emailShelveData:
                             print("Verdict: User email already exists.")
                             email_duplicates = True
-                            break          
+                            break
 
                     if email_duplicates == False:
                         print("Verdict: User email is unique.")
@@ -2299,7 +2297,7 @@ def userProfile():
 
                     totalChunks = int(request.form["dztotalchunkcount"])
                     currentChunk = int(request.form['dzchunkindex'])
-                    
+
                     extensionType = get_extension(file.filename)
                     if extensionType != False:
                         file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
@@ -2343,7 +2341,7 @@ def userProfile():
                                 userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
 
                                 # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                                # since dropzone will actually send multiple requests, 
+                                # since dropzone will actually send multiple requests,
                                 if Path(userOldImageFilePath).is_file() and userOldImageFilePath != newFilePath:
                                     print("User has already uploaded a profile image before.")
                                     os.remove(userOldImageFilePath)
@@ -2351,7 +2349,7 @@ def userProfile():
 
                                 # resizing the image to a 1:1 ratio and compresses it
                                 imageResized = resize_image(newFilePath, (250, 250))
-                                
+
                                 if imageResized:
                                     # if file was successfully resized, it means the image is a valid image
                                     userKey.set_profile_image(userImageFileName)
@@ -2548,7 +2546,7 @@ def updateEmail():
                             print("Verdict: User email already exists.")
                             email_duplicates = True
                             break
-                            
+
                     if email_duplicates == False:
                         print("Verdict: Email is unique.")
                         # updating email of the user
@@ -2677,7 +2675,7 @@ def updatePassword():
                                 send_password_change_notification(userEmail) # sending an email to alert the user of the change of password so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team or if the email was not changed, he/she can reset his/her password in the reset password page
                             except:
                                 print("Email server is down or its port is blocked")
-                                
+
                             flash("Your password has been successfully updated!", "Password Updated")
                             return redirect(url_for("userProfile"))
             else:
@@ -2731,14 +2729,6 @@ def changeAccountType():
                     email = userKey.get_email()
                     userID = userSession
 
-                    # retrieving the user's payment info if the user has saved one
-                    cardExists = bool(userKey.get_card_name())
-                    if cardExists:
-                        cardName = userKey.get_card_name()
-                        cardNumber = userKey.get_card_no()
-                        cardExpiry = userKey.get_card_expiry()
-                        cardType = userKey.get_card_type()
-
                     # retrieving the user's profile image filename if the user has uploaded one
                     profileImageExists = bool(userKey.get_profile_image())
                     print("Does user have profile image:", profileImageExists)
@@ -2755,13 +2745,6 @@ def changeAccountType():
                     user = Teacher.Teacher(userID, username, email, password)
                     user.set_teacher_join_date(date.today())
                     userDict[userID] = user
-
-                    # setting the user's payment method if the user has saved their payment method before
-                    if cardExists:
-                        user.set_card_name(cardName)
-                        user.set_card_no(cardNumber)
-                        user.set_card_expiry(cardExpiry)
-                        user.set_card_type(cardType)
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
@@ -2806,8 +2789,9 @@ def changeAccountType():
 
 """User payment method settings by Jason"""
 
-@app.route('/payment_method', methods=["GET","POST"])
-def userPayment():
+@app.route('/cashout_method', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
+def cashoutMethod():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -2837,226 +2821,99 @@ def userPayment():
             else:
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            cardExist = bool(userKey.get_card_name())
-            print("Card exist?:", cardExist)
 
-            if cardExist == False:
-                create_add_payment_form = Forms.CreateAddPaymentForm(request.form)
-                if request.method == "POST" and create_add_payment_form.validate():
-                    print("POST request sent and form entries validated")
-                    cardName = sanitise(create_add_payment_form.cardName.data)
+            cashoutForm = Forms.CashoutForm(request.form)
+            actionChosen = True
+            cashoutEdited = False
+            phoneError = False
+            if request.method == "POST" and cashoutForm.validate():
+                print(cashoutForm.data)
+                print("POST request sent and form entries validated")
 
-                    cardNo = sanitise(create_add_payment_form.cardNo.data)
-                    cardValid = validate_card_number(cardNo)
+                phoneNumber = cashoutForm.phoneNumber.data
+                countryCode = cashoutForm.countryCode.data
+                print('Yes')
 
-                    cardType = get_credit_card_type(cardNo, cardValid) # get type of the credit card for specific warning so that the user would know that only Mastercard and Visa cards are only accepted
-
-                    cardExpiry = sanitise(create_add_payment_form.cardExpiry.data)
-                    cardExpiryValid = validate_expiry_date(cardExpiry)
-
-                    if cardValid and cardExpiryValid:
-                        if cardType != False:
-                            # setting the user's payment method
-                            userKey.set_card_name(cardName)
-                            userKey.set_card_no(cardNo)
-                            cardExpiry = cardExpiryStringFormatter(cardExpiry)
-                            userKey.set_card_expiry(cardExpiry)
-                            userKey.set_card_type(cardType)
-                            db['Users'] = userDict
-                            print("Payment added")
-
-                            # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of adding the payment method
-                            session["payment_added"] = True
-
-                            db.close()
-                            return redirect(url_for("userPayment"))
-                        else:
-                            return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, invalidCardType=True, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                if json.loads(cashoutForm.deleteInfo.data):
+                    return None
+                    print('Yes1')
+                elif cashoutForm.cashoutPreference.data == "Phone":
+                    print('Yes2')
+                    if cashoutForm.deleteInfo.data == True:
+                        print('Yes3')
+                        userKey.set_cashoutPreference("Email")
+                        userKey.set_cashoutPhone(None)
+                        userKey.set_cashoutVerification(False)
                     else:
-                        return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        print('Yes4')
+                        phoneNumber = countryCode + phoneNumber
+                        try:
+                            phoneObject = phonenumbers.parse(phoneNumber, None)
+                            if phonenumbers.is_possible_number(phoneObject):
+                                userKey.set_cashoutPhone(phoneNumber)
+                                if phonenumbers.is_valid_number(phoneObject):
+                                    userKey.set_phoneValidation(True)
+                                else:
+                                    userKey.set_phoneValidation(False)
+                            else:
+                                phoneError = True
+                        except phonenumbers.NumberParseException:
+                            print("Parsing Error.")
+                            phoneError = True
+                        except:
+                            print("Something went wrong.")
+                            phoneError = True
                 else:
-                    print("POST request sent but form not validated")
-                    db.close()
+                    print("Yes Else")
+                    userKey.set_cashoutPreference(cashoutForm.cashoutPreference.data)
 
-                    # checking sessions if any of the user's payment method has been deleted
-                    if "card_deleted" in session:
-                        cardDeleted = True
-                        session.pop("card_deleted", None)
-                        print("Card recently added?:", cardDeleted)
-                    else:
-                        cardDeleted = False
-                        print("Card recently added?:", cardDeleted)
+                if phoneError:
+                    print("Yes Phone Error")
+                    renderedInfo = {"Preference": "",
+                                    "Country Code": countryCode,
+                                    "Phone Number": phoneNumber}
 
-                    return render_template('users/loggedin/user_add_payment.html', form=create_add_payment_form, cardDeleted=cardDeleted, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-            else:
-                db.close()
-                cardName = userKey.get_card_name()
-                cardNo = str(userKey.get_card_no())
-                print("Original card number:", cardNo)
-                cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
-                print("Sliced card number:", cardNo)
-                cardExpiry = userKey.get_card_expiry()
-                print("Card expiry date:", cardExpiry)
-                cardType = userKey.get_card_type()
+                    for choice in cashoutForm.countryCode.choices:
+                        if list(choice)[0] == countryCode:
+                            cashoutForm.countryCode.data = choice
+                            print(cashoutForm.countryCode.data)
 
-                # checking sessions if any of the user's payment method details has changed
-                if "card_updated" in session:
-                    cardUpdated = True
-                    session.pop("card_updated", None)
-                    print("Card recently updated?:", cardUpdated)
-                else:
-                    cardUpdated = False
-                    print("Card recently updated?:", cardUpdated)
-
-                if "payment_added" in session:
-                    cardAdded = True
-                    session.pop("payment_added", None)
-                    print("Card recently added?:", cardAdded)
-                else:
-                    cardAdded = False
-                    print("Card recently added?:", cardAdded)
-
-                return render_template('users/loggedin/user_existing_payment.html', cardName=cardName, cardNo=cardNo, cardExpiry=cardExpiry, cardType=cardType, cardUpdated=cardUpdated, cardAdded=cardAdded, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-        else:
-            db.close()
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            return redirect(url_for("userLogin"))
-
-@app.route('/edit_payment', methods=["GET","POST"])
-def userEditPayment():
-    if "userSession" in session and "adminSession" not in session:
-        # checking if the user has a credit card in the shelve database to prevent directory traversal which may break the web app
-
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear()
-                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            cardExist = bool(userKey.get_card_name())
-            print("Card exist?:", cardExist)
-            cardName = userKey.get_card_name()
-
-            cardNo = str(userKey.get_card_no())
-            print("Original card number:", cardNo)
-            cardNo = cardNo[-5:-1] # string slicing to get the last 4 digits of the credit card number
-            print("Sliced card number:", cardNo)
-
-            cardType = userKey.get_card_type().capitalize()
-            if cardExist:
-                create_edit_payment_form = Forms.CreateEditPaymentForm(request.form)
-                if request.method == "POST" and create_edit_payment_form.validate():
-                    cardExpiry = sanitise(create_edit_payment_form.cardExpiry.data)
-                    cardExpiryValid = validate_expiry_date(cardExpiry)
-                    if cardExpiryValid:
-                        # changing the user's payment info
-                        cardExpiry = cardExpiryStringFormatter(cardExpiry)
-                        userKey.set_card_expiry(cardExpiry)
-                        db['Users'] = userDict
-                        print("Payment edited")
-                        db.close()
-
-                        # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
-                        session["card_updated"] = True
-
-                        return redirect(url_for("userPayment"))
-                    else:
-                        db.close()
-                        return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, cardExpiryValid=cardExpiryValid, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-                else:
-                    db.close()
-                    return render_template('users/loggedin/user_edit_payment.html', form=create_edit_payment_form, cardName=cardName, cardNo=cardNo, cardType=cardType, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-            else:
-                db.close()
-                return redirect(url_for("userProfile"))
-        else:
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
-    else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            return redirect(url_for("userLogin"))
-
-@app.post('/delete_card')
-def deleteCard():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # checking if the user has a credit card in the shelve database to prevent directory traversal if the logged in attackers send a POST request to the web app server
-            cardExist = bool(userKey.get_card_name())
-            print("Card exist?:", cardExist)
-
-            if cardExist:
-                # deleting user's payment info, specifically changing their payment info to empty strings
-                userKey.set_card_name("")
-                userKey.set_card_no("")
-                userKey.set_card_expiry("")
-                userKey.set_card_type("")
-
+                print("Yes Here")
+                userDict[userKey.get_user_id()] = userKey
                 db['Users'] = userDict
                 print("Payment added")
-                db.close()
 
-                # sending a session data so that when it redirects the user to the user profile page, jinja2 will render out an alert of the change of the card details
-                session["card_deleted"] = True
-                return redirect(url_for("userPayment"))
+                cashoutEdited = True
 
-            else:
-                db.close()
-                return redirect(url_for("userProfile"))
+            if not phoneError:
+                print("Yes Alright")
+                renderedInfo = {}
+
+                print(cashoutEdited, actionChosen, phoneError)
+
+                if userKey.get_cashoutPreference() == "Email":
+                    renderedInfo["Preference"] = "Email"
+
+                elif userKey.get_cashoutPreference() == "Phone":
+                    renderedInfo["Preference"] = "Phone"
+
+                renderedInfo["Email"] = userKey.get_email()
+
+                if userKey.get_cashoutPhone() != None:
+                    phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
+                    renderedInfo["Phone Number"] = phoneObject.national_number
+
+                    countryCode = phoneObject.country_code
+                    for choice in cashoutForm.countryCode.choices:
+                        if list(choice)[0] == countryCode:
+                            cashoutForm.countryCode.data = choice
+                            print(phoneObject.country_code_source)
+
+            db.close()
+            print("Yes Return?")
+            return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, cashoutEdited=cashoutEdited, actionChosen=actionChosen, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
         else:
+            db.close()
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
@@ -3067,9 +2924,9 @@ def deleteCard():
         else:
             return redirect(url_for("userLogin"))
 
-"""End of User payment method settings by Jason"""
 
 """Teacher Cashout System by Jason"""
+"""PayPal Integration by Wei Ren"""
 
 @app.route("/teacher_cashout", methods=['GET', 'POST'])
 def teacherCashOut():
@@ -3113,6 +2970,16 @@ def teacherCashOut():
 
             lastDayOfMonth = check_last_day_of_month(currentDate)
 
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+            try:
+                if 'Payouts' in dbAdmin:
+                    payoutDict = dbAdmin['Payouts']
+                else:
+                    print("Payout data in shelve is empty.")
+                    payoutDict = []
+            except:
+                print("Error in retrieving Payouts from admin.db")
+
             if request.method == "POST":
                 typeOfCollection = request.form.get("typeOfCollection")
                 if ((accumulatedEarnings + initialEarnings) > 0):
@@ -3126,6 +2993,59 @@ def teacherCashOut():
                         else:
                             commission = "25%"
                             totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
+
+                        # Connecting to PayPal
+                        accessToken = get_paypal_access_token()
+                        payoutID = generate_payout_ID(payoutDict)
+
+                        payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
+                                              headers = {
+                                                         "Content-Type": "application/json",
+                                                         "Authorization": "Bearer " + accessToken
+                                                        },
+                                              data = json.dumps(
+                                                                {
+                                                                 "sender_batch_header": {
+                                                                                         "sender_batch_id": payoutID,
+                                                                                         "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
+                                                                                         "email_message": "You received a payment. Thanks for using CourseFinity!"
+                                                                                        },
+                                                                 "items": [
+                                                                           {
+                                                                            "amount": {
+                                                                                       "value": totalEarned,
+                                                                                       "currency": "USD"
+                                                                                      },
+                                                                            "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
+                                                                            "sender_item_id": userKey.get_user_id(),
+                                                                            "recipient_type": "EMAIL",           # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
+                                                                            "receiver": userKey.get_email()
+                                                                           }
+                                                                          ]
+                                                                }
+                                                               )
+                                             )
+                        response = payoutSubmit.text
+                        print(response)
+
+                        """
+                        Examples of response.text:
+
+                        Successful
+                        {"batch_header":{"payout_batch_id":"KJCS252HBQV9C","batch_status":"PENDING","sender_batch_header":{"sender_batch_id":"2014021802","email_subject":"You have money!","email_message":"You received a payment. Thanks for using our service!"}},"links":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}
+
+                        Batch Previously Sent
+                        {"name":"USER_BUSINESS_ERROR","message":"User business error.","debug_id":"a1e223fd00566","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","details":[{"field":"SENDER_BATCH_ID","location":"body","issue":"Batch with given sender_batch_id already exists","link":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}],"links":[]}
+
+                        Token Not Found
+                        {"error":"invalid_token","error_description":"The token passed in was not found in the system"}
+
+                        Invalid Token
+                        {"error":"invalid_token","error_description":"Token signature verification failed"}
+                        """
+
+                        #if response.status_code == 400:
+                        #    accessToken = get_paypal_access_token()
 
                         # deducting from the teacher object
                         if typeOfCollection == "collectingAll" and lastDayOfMonth:
@@ -3307,7 +3227,7 @@ def search(pageNum):
                 searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
 
                 paginationList = get_pagination_button_list(pageNum, maxPages)
-                
+
                 session["pageNum"] = pageNum
 
                 previousPage = pageNum - 1
@@ -3451,7 +3371,7 @@ def search(pageNum):
             checker = True
         else:
             checker = False
-        
+
         session["getSearchInput"] = "/search/" + str(pageNum) + "/" + searchURL
 
         db.close()
@@ -3834,21 +3754,21 @@ def shoppingCart(pageNum):
                     date = timing.split("T")[0]
                     time = timing.split("T")[1]
 
-                    for courseID in list(shoppingCart.keys()):
-                        courseType = shoppingCart[courseID]
+                    for courseID in shoppingCart:
 
-                        cost = 0
+                        cost = courseDict[courseID].get_price()
 
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
-                        userKey.addCartToPurchases(courseID, courseType, date, time,cost, orderID, payerID)
+                        userKey.addCartToPurchases(courseID, date, time, cost, orderID, payerID)
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
 
                     userDict[userKey.get_user_id()] = userKey
                     db['Users'] = userDict
+                    db.close()
 
                     flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course successfully purchased!")
                     return redirect(url_for('home'))
@@ -3858,15 +3778,12 @@ def shoppingCart(pageNum):
 
                     print("Removing course with Course ID:", courseID)      # D for Delete
 
-                    for course in list(shoppingCart.keys()):
-                        print(course)
-                        if course == courseID:
-                            userKey.remove_from_cart(courseID)
-                            print(userKey.get_shoppingCart)
-                            userDict[userKey.get_user_id] = userKey
-                            db["Users"] = userDict
-                            db.close()
-                            break
+                    if courseID in shoppingCart:
+                        userKey.remove_from_cart(courseID)
+                        print(userKey.get_shoppingCart())
+                        userDict[userKey.get_user_id] = userKey
+                        db["Users"] = userDict
+                        db.close()
 
                     return redirect("/shopping_cart/"+str(pageNum))
 
@@ -3876,26 +3793,16 @@ def shoppingCart(pageNum):
 
             # Render the page
             else:                                                                               # R for Read
-                print(userKey.get_purchases())
+                print("Purchases:", userKey.get_purchases())
                 # Initialise lists for jinja2 tags
                 courseList = []
                 subtotal = 0
 
-                try:
-                    courseIDs = list(shoppingCart.keys())
-                except:
-                    courseIDs = []
-                    print("Shopping Cart is Empty.")
-
                 print(shoppingCart)
-                for courseID in courseIDs:
+
+                for courseID in shoppingCart:
                     # Getting course info
-                    print("Course Info [ID, Type]:", [courseID, shoppingCart[courseID]])
-
                     course = courseDict[courseID]
-
-                    # Getting course type chosen
-                    courseType = shoppingCart[courseID]
 
                     # Getting subtototal
                     subtotal += float(course.get_price())
@@ -3906,9 +3813,12 @@ def shoppingCart(pageNum):
                     # Getting course owner profile pic
                     courseOwnerProfile = None
 
+                    # Getting subtotal
+                    subtotal += float(course.get_price())
+
                     # Add additional info to list
                     courseList.append({"courseID" : courseID,
-                                       "courseType" : courseType,
+                                       "courseType" : course.get_course_type(),
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
                                        "coursePricePaying" : course.get_price(),
@@ -4261,6 +4171,7 @@ def adminStatistics(statistic, year, month, day):
 
         if userFound and accActive:
 
+            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             # Remember to validate
             try:
                 if "Statistics" in dbAdmin:
@@ -4272,7 +4183,7 @@ def adminStatistics(statistic, year, month, day):
                 print("Error in retrieving statistics from admin.db")
 
             # add in your code here
-            
+
 
 
             # print(statisticDict)
@@ -4678,7 +4589,7 @@ def insertName(teacherCoursePageUID):
                     courseID = value.get_courseID()
                     courseType = value.get_course_type()
                     courseFound = True
-                    
+
                     #Getting lesson attributes
                     lessonDict = value.get_lessonDict()
                     for lesson in lessonDict.values():
@@ -4696,17 +4607,16 @@ def insertName(teacherCoursePageUID):
                         return redirect("/404")
 
                     break
-            if courseFound != True:
-                return redirect("/404")
-            
-            lessonFound = False
-                
+            createCourse = Course.Course(courseID, courseTitle, courseDescription, coursePrice, courseRating, courseThumbnail, courseType)
 
-
-            #Geting Video Attributes
-            videoDict = db['Videos']
-            for value in videoDict.values():
-                videoAbsolutePath = value.get_viseoAbsolutePath()
+            #Getting Lesson attributes
+            lessonList = {}
+            lessonDict = db['Lessons']
+            for value in lessonDict.values():
+                lessonTitle = value.get_title()
+                lessonDescription = value.get_description()
+                lessonThumbnail = value.get_thumbnail()
+                lessonID = value.get_lessonID()
 
             #Getting Zoom Attributes
             zoomDict = db['Zoom']

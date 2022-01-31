@@ -365,3 +365,11 @@ td p .fa-envelope-open-text {
 }
 
 /*          /////           End of Ticket Management          /////           */
+
+#phone {
+    align-items: flex-end;
+}
+
+#edit button {
+    margin-left: 10px;
+}

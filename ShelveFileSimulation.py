@@ -88,12 +88,6 @@ user = Teacher(userID, username, email, password)
 user.set_earnings("100")
 user.set_teacher_join_date(date(2022, 1, 1)) ## wtforms default datefield format = YYYY-MM-DD
 
-#Card --> No Validation for Simulation
-user.set_card_name("Avery Tim")
-user.set_card_no("1122334455667788")
-user.set_card_expiry("4/2024") ## Format Important
-user.set_card_type("mastercard") ## [visa, mastercard, american express]
-
 #Courses (Royston)
 
 #Courses Teaching (Wei Ren)
@@ -130,13 +124,11 @@ user = Teacher(userID, username, email, password)
 #Teacher
 user.set_earnings("100")
 user.set_teacher_join_date(date(2020, 5, 2)) ## wtforms default datefield format = YYYY-MM-DD
-
-#Card --> No Validation for Simulation
-user.set_card_name("Sara Louise")
-user.set_card_no("987654321234567")
-user.set_card_expiry("9/2023") ## Format Important
-user.set_card_type("american express") ## [visa, mastercard, american express]
-
+"""
+#Cashout Info
+user.set_cashoutPreference("Phone")
+user.set_cashoutContact("+6512345678")
+"""
 #Courses (Royston)
 
 
@@ -145,11 +137,12 @@ user.set_card_type("american express") ## [visa, mastercard, american express]
 title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
-videoPrice = "{:,.2f}".format(69)
+price = "{:,.2f}".format(69)
+status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Math", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, price, "Math", title, description, thumbnail, status, userID, username)
 
 
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -165,11 +158,12 @@ courseDict[courseID] = course
 title = "How to be a Daniel"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
-videoPrice = "{:,.2f}".format(69)
+price = "{:,.2f}".format(69)
+status = "Available" ## Available or Unavailable
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, price, "Other_Academics", title, description, thumbnail, status, userID, username)
 
 # def __init__(self, userID, title, comment, rating)
 course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
@@ -252,7 +246,7 @@ adminDict[adminID] = admin
 # Add courses
 user = userDict[list(userDict.keys())[0]]
 course = courseDict[list(courseDict.keys())[0]]
-user.add_to_cart(course.get_courseID(),"Zoom") # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
+user.add_to_cart(course.get_courseID()) # Course ID '0' is "Making Web Apps The Easy Way (Spoilers: You can't!)"
 
 print(user.get_shoppingCart())
 
@@ -260,7 +254,7 @@ print(user.get_shoppingCart())
 # set some data for user base graph for admin dashboard
 todayDate = date.today()
 
-graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(500), userbaseGraph(700), userbaseGraph(800), userbaseGraph(900), userbaseGraph(1001), userbaseGraph(1200), userbaseGraph(1500), userbaseGraph(1800), userbaseGraph(2600), userbaseGraph(3900), userbaseGraph(5000), userbaseGraph(8000), userbaseGraph(9000), userbaseGraph(9500), userbaseGraph(9900), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000)]  
+graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(500), userbaseGraph(700), userbaseGraph(800), userbaseGraph(900), userbaseGraph(1001), userbaseGraph(1200), userbaseGraph(1500), userbaseGraph(1800), userbaseGraph(2600), userbaseGraph(3900), userbaseGraph(5000), userbaseGraph(8000), userbaseGraph(9000), userbaseGraph(9500), userbaseGraph(9900), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000)]
 
 for i in range(len(graphList)-1, -1, -1):
     graphList[i].set_date(todayDate - timedelta(days=30-i))

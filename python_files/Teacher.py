@@ -10,6 +10,11 @@ class Teacher(Common):
         # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
 
+        # Added by Wei Ren for Cashout
+        self.__cashoutPreference = "Email" # Uses normal email
+        self.__phoneValidation = False
+        self.__cashoutPhone = None
+
     """Done by Jason"""
     
     def set_earnings(self, earnings):
@@ -40,5 +45,20 @@ class Teacher(Common):
         self.__paypalID = paypalID
     def get_paypalID(self):
         return self.__paypalID
+
+    def get_cashoutPhone(self):
+        return self.__cashoutPhone
+    def set_cashoutPhone(self,cashoutPhone):
+        self.__cashoutPhone = cashoutPhone
+
+    def get_cashoutPreference(self):
+        return self.__cashoutPreference
+    def set_cashoutPreference(self, cashoutPreference):
+        self.__cashoutPreference = cashoutPreference
+
+    def get_phoneValidation(self):
+        return self.__phoneValidation
+    def set_phoneValidation(self,phoneValidation):
+        self.__phoneValidation = phoneValidation
 
     """"End of Done by Wei Ren"""

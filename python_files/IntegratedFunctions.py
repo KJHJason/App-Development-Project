@@ -1,6 +1,9 @@
+import json
+
 from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
+from requests import get as pyGet, post as pyPost
 from flask_mail import Message
 import shelve, os, uuid, string, random, shortuuid, re
 from pathlib import Path
@@ -260,7 +263,7 @@ def check_duplicates(userInput, userDict, infoToCheck):
                 print("Verdict: User email already exists.")
                 return True
         return False
-    
+
     else:
         raise Exception('Third argument for get_key() can only take in "username" or "email"!')
 
@@ -509,7 +512,7 @@ def send_reset_email(email, emailKey):
     token = get_reset_token(emailKey)
     message = Message("[CourseFinity] Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
     message.html = f"""<p>Hello,</p>
-    
+
 <p>To reset your password, visit the following link:<br>
 <a href="{url_for("resetPassword", token=token, _external=True)}" target="_blank">{url_for("resetPassword", token=token, _external=True)}</a></p>
 
@@ -524,7 +527,7 @@ If you did not make this request, please disregard this email.</p>
 def send_email_change_notification(oldEmail, newEmail):
     message = Message("[CourseFinity] Email Changed", sender="CourseFinity123@gmail.com", recipients=[oldEmail])
     message.html = f"""<p>Hello,</p>
-    
+
 <p>You have recently changed your email from {oldEmail} to {newEmail}</p>
 
 <p>If you did not make this change, your account may have been compromised.<br>
@@ -538,7 +541,7 @@ Please contact us if you require assistance with account recovery by making a su
 def send_password_change_notification(email):
     message = Message("[CourseFinity] Password Changed", sender="CourseFinity123@gmail.com", recipients=[email])
     message.html = f"""<p>Hello,</p>
-    
+
 <p>You have recently changed your password.</p>
 
 <p>If you did not make this change, your account may have been compromised.<br>
@@ -682,9 +685,9 @@ def send_contact_us_email(ticketID, issueTitle, name, email):
 
 <p>For the fastest resolution to your inquiry, please provide the Support Team with as much information as possible and keep it contained to a single ticket instead of creating a new one.</p>
 
-<p>While you are waiting, you can check out our FAQ page at <a href="{url_for("home", _external=True)}" target="_blank">{url_for("faq", _external=True)}</a> for solutions to common problems.</p>
+<p>While you are waiting, you can check out our FAQ page at <a href="{url_for("faq", _external=True)}" target="_blank">{url_for("faq", _external=True)}</a> for solutions to common problems.</p>
 
-<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)} target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
+<p>Please contact us if you have any questions or concerns. Our customer support can be reached by making a support ticket in the <a href="{url_for("contactUs", _external=True)}" target="_blank">contact us page</a>, or contacting support@coursefinity.com</p>
 
 <p>Thank you.</p>
 
@@ -996,5 +999,51 @@ def add_statistic_type(statisticDict, type):
     statisticDict[type] = yearDict
 
     return statisticDict
+
+# Using client and secret ID to acquire an access token.
+# Access token is needed for PayPal payout (but not checkout)
+def get_paypal_access_token():
+    response = pyPost('https://api-m.sandbox.paypal.com/v1/oauth2/token',
+                         headers={'Accept': 'application/json',
+                                  'Accept-Language': 'en_US',},
+                         data={'grant_type': 'client_credentials'},
+                         auth=('AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s', os.environ.get("PAYPAL_SECRET")))
+
+    responseInfo = json.loads(response.text)
+
+    return responseInfo["access_token"]
+
+# Generate a payout ID.
+# A length of 13 is used as PayPal payout IDs expire after a month.
+# At the same time, PayPal also utilises a 13 digit code for their IDs.
+def generate_payout_ID(inputDict):
+    generatedID = str(shortuuid.ShortUUID().random(length=13)) # using shortuuid to generate a 13 character ID for the course ID which will be used in the url
+    if generatedID in inputDict:
+        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
+    return generatedID
+
+"""PayPal Payout Info"""
+"""
+Standard Payouts: How it works
+https://developer.paypal.com/docs/payouts/standard/
+
+Getting an Access Token
+https://developer.paypal.com/docs/multiparty/get-started/#exchange-your-api-credentials-for-an-access-token
+
+Standard Payout Integrate API
+https://developer.paypal.com/docs/payouts/standard/integrate-api/
+
+Customising Payout Intergrate
+https://developer.paypal.com/docs/payouts/standard/integrate-api/customize/
+
+PayPal Payouts Live Test
+https://www.paypal.com/apex/product-profile/payouts/getAccessToken
+
+Payouts Rest API
+https://developer.paypal.com/api/payments.payouts-batch/v1/
+
+Error Messages
+https://developer.paypal.com/api/payments.payouts-batch/v1/#errors
+"""
 
 """End of Done by Wei Ren"""
