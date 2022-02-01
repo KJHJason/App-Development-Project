@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/course_page.css') }}">
 {% endblock %}
 
-{% block title %}Course | CourseFinity{% endblock %}
+{% block title %}{{ course.get_title }} | CourseFinity{% endblock %}
 
 {% block content %}
     <!-- content -->
@@ -16,7 +16,6 @@
                     <li class="breadcrumb-item active" aria-current="page">{{ course.get_title }}</li>
                 </ol>
             </nav>
-            {% for lesson in lessons %}
             <div class="table-responsive-lg">
                 <table class="table table-borderless">
                     <tr>
@@ -33,22 +32,23 @@
                                         <!-- Check if Couse is Video or Zoom -->
                                         <!-- If video, generate videos -->
                                         {% if course.get_course_type() == "video" %}
-                                        {% for lesson in lessons %}
-                                        <div class="card mb-3 course_card">
-                                            <div class="row g-0">
-                                                <div class="col-4">
-                                                    <img src="{{ lesson.get_thumbnail() }}" class="img-fluid rounded-start" alt="Lesson Thumbnail">
-                                                </div>
-                                                <div class="col-8">
-                                                    <div class="card-body">
-                                                        <h5 class="card-title">{{ lesson.get_title() }}</h5>
-                                                        <p class="card-text">{{ lesson.get_description() }}</p>
+                                            {% for lesson in lessons %}
+                                            <div class="card mb-3 course_card">
+                                                <div class="row g-0">
+                                                    <div class="col-4">
+                                                        <img src="{{ lesson.get_thumbnail() }}" class="img-fluid rounded-start" alt="Lesson Thumbnail">
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <div class="card-body">
+                                                            <h5 class="card-title">{{ lesson.get_title() }}</h5>
+                                                            <p class="card-text">{{ lesson.get_description() }}</p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        {% endfor %}
+                                            {% endfor %}
                                         {% elif course.get_course_type() == "zoom" %}
+                                            {% for lesson in lessons %}
                                         <div class="card mb-3 course_card">
                                             <div class="row g-0">
                                                 <div class="col-4">
@@ -65,8 +65,8 @@
                                                 </div>
                                             </div>
                                         </div>
+                                            {% endfor %}
                                         {% endif %}
-                                        
                                     </div>
                                 </div>
                                 <div class="col-4 course_info_wrapper no_padding columns">
@@ -96,7 +96,6 @@
                     </tr>
                 </table>
             </div>
-            {% endfor %}
             <div>
                 <h3>User Reviews</h3>
                 <div class="table-responsive-lg">

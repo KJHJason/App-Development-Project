@@ -25,9 +25,6 @@ User --> Teacher (Object) 1
       - Date, Time Selected 1
 '''
 
-"""Made by Wei Ren"""
-"""Edited by Clarence"""
-
 from .Rating import Rating
 from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
@@ -47,8 +44,7 @@ class Course():
         self.__ratings = []
         self.__views = 0
         self.__review = []
-        self.__lessonDict = {}
-
+        self.__lessons = [] # list of lessons objects
 
     """Done by Jason"""
 
@@ -63,6 +59,22 @@ class Course():
         self.__username = username
     def get_username(self):
         return self.__username
+
+    def add_video_lesson(self, title, description, thumbnail, videoAbsolutePath): 
+        self.__lessons.append(VideoLesson(title, description, thumbnail, videoAbsolutePath))
+    def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword):
+        self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword))
+
+    def remove_a_lesson_from_list(self, lessonID):
+        lessonsList = self.__lessons
+        for lesson in lessonsList:
+            if lesson.get_lessonID() == lessonID:
+                lessonsList.remove(lesson)
+                break
+    def set_lesson_list(self, lessonList):
+        self.__lessons = lessonList
+    def get_lesson_list(self):
+        return self.__lessons
 
     """End of Done by Jason"""
 
@@ -115,13 +127,6 @@ class Course():
         self.__price = price
     def get_price(self):
         return self.__price
-
-    # def switch_to_video(self):
-    #     if self.__course_type == "Zoom": # if True:
-    #         self.__course_type = "Video"
-    # def switch_to_zoom(self):
-    #     if self.__course_type == "Video": # if True:
-    #         self.__course_type = "Zoom"
 
     def set_course_type(self, courseType):
         self.__course_type = courseType
@@ -176,10 +181,5 @@ class Course():
 
     # def get_lesson(self, lesson):
     #     return self.__schedule[int(lesson)]
-
-    def set_lessonDict(self, lessonDict):
-        self.__lessonDict = lessonDict
-    def get_lessonDict(self):
-        return self.__lessonDict
 
     """End of Done by Wei Ren"""

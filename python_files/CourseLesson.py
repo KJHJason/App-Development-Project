@@ -1,12 +1,14 @@
+from uuid import uuid4
+
 """Made by Wei Ren"""
 """Edited by Clarence"""
 
 class Lesson():
-    def __init__(self, title, description, thumbnail, lessonID):
+    def __init__(self, title, description, thumbnail):
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
-        self.__lessonID = lessonID
+        self.__lessonID = str(uuid4().hex)
 
     def set_title(self, title):
         self.__title = title
@@ -31,8 +33,8 @@ class Lesson():
 
 # Video Data
 class VideoLesson(Lesson):
-    def __init__(self, title, description, thumbnail, lessonID, videoAbsolutePath):
-        super().__init__(title, description, thumbnail, lessonID)
+    def __init__(self, title, description, thumbnail, videoAbsolutePath):
+        super().__init__(title, description, thumbnail)
         self.__videoAbsolutePath = videoAbsolutePath
 
     def set_videoAbsolutePath(self, videoAbsolutePath):
@@ -49,7 +51,6 @@ class ZoomLesson(Lesson):
         self.__userTimings = {}
         self.__zoomURL = zoomURL
         self.__zoomPassword = zoomPassword
-
 
     def set_timing(self, date, time):
         self.__timings.append([date, time])

@@ -5014,12 +5014,11 @@ def insertName(teacherCoursePageUID):
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
         try:
-            if 'Users' in db:
+            if 'Users' in db and "Courses" in db:
                 userDict = db['Users']
+                courseDict = db['Courses']
             else:
                 db.close()
-                print("User data in shelve is empty.")
-                session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
                 return redirect(url_for("home"))
         except:
             db.close()
@@ -5029,64 +5028,27 @@ def insertName(teacherCoursePageUID):
 
         if userFound and accGoodStatus:
             # add in your code below
-            courseDict = db['Courses']
-            courseFound = False
-            lessonFound = False
-            lessonDict = {}
-            lessons = []
-            #Getting course attributes
-            for value in courseDict.values():
-                if value.get_courseID() == teacherCoursePageUID:
-                    courseObject = value
+            #Getting course object from courseDict
+            courseObject = courseDict.get(teacherCoursePageUID)
+            
+            if courseObject == None: # if courseID does not exist in courseDict
+                return redirect("/404")
 
-                lessonDict = value.get_lessonDict()
-                for lesson in lessonDict.values():
-                    lessons.append(lesson)
+            lessons = courseObject.get_lesson_list() # get a list of lesson objects
 
-                #     courseTitle = value.get_title()
-                #     courseDescription = value.get_description()
-                #     coursePrice = value.get_price()
-                #     courseRating = value.get_averageRating()
-                #     courseThumbnail = value.get_thumbnail()
-                #     courseID = value.get_courseID()
-                #     courseType = value.get_course_type()
-                #     courseFound = True
-
-                    #Getting lesson attributes
-                        # lessonInfo['lessonTitle'] = lesson.get_title()
-                        # lessonInfo['lessonDescription'] = lesson.get_description()
-                        # lessonInfo["lessonThumbnail"] = lesson.get_thumbnail()
-                        # lessonInfo["lessonID"] = lesson.get_lessonID()
-
-                        # lessons.append(lessonInfo)
-                        # lessonDict["lessonID"] = lessonInfo
-                    lessonFound = True
-                    break
-                if lessonFound != True:
-                    return redirect("/404")
-
-                break
-
-            #Getting Zoom Attributes
-            zoomDict = db['Zoom']
-            for value in zoomDict.values():
-                zoomURL = value.get_zoomURL()
-                zoomPassword = value.get_zoomPassword()
-                break
-
-            userKey.get_purchases()
-
-            if courseID in userKey.get_purchases():
+            if teacherCoursePageUID in userKey.get_purchases():
                 userPurchased = True
-
             else:
                 userPurchased = False
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
+
             if accType == "Teacher":
-                teacherCoursePageUID = userSession
+                teacherUID = userSession
             else:
-                teacherCoursePageUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursePageUID=teacherCoursePageUID, courseID = courseID, courseObject = courseObject)
+                teacherUID = ""
+
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, courseObject=courseObject, userPurchased=userPurchased, lessons=lessons)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
