@@ -3914,7 +3914,7 @@ def purchaseHistory(pageNum):
                         "Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "CourseTypeCheck":course.get_course_type(),
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
@@ -4057,8 +4057,8 @@ def createPurchaseReview(courseID):
 
 """Purchase View by Royston"""
 
-@app.route("/purchaseview")
-def purchaseView():
+@app.route("/purchaseview/<courseID>")
+def purchaseView(courseID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -4088,7 +4088,14 @@ def purchaseView():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            historyList = session.get("getHistoryList")
+
+            pageNum = session.get("pageNumber")
+
+            if "pageNumber" in session:
+                pageNum = session["pageNumber"]
+            else:
+                pageNum = 0
+
             videoList = []
             courseID = ""
             courseType = ""
@@ -4096,6 +4103,7 @@ def purchaseView():
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
+            redirectURL = "/purchasehistory/" + str(pageNum)
 
             if purchasedCourses != {}:
                 try:
@@ -4117,18 +4125,26 @@ def purchaseView():
                     courseInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "CourseTypeCheck":course.get_course_type(),
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     videoList.append(courseInformation)
                 print(videoList)
+
                 db.close()
             else:
-                print("Purchase view is Empty")
-                historyCheck = False
+                print("Invalid Purchase View")
+                db.close()
+                return redirect(redirectURL)
 
-                db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
+        else:
+            print("Invalid Session")
+            db.close()
+            return redirect(url_for("home"))
+
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
