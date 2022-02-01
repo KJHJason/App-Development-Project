@@ -703,7 +703,7 @@ def userLogin():
                     # setting the user session based on the user's user ID
                     userID = emailKey.get_user_id()
                     if bool(emailKey.get_otp_setup_key()):
-                        session["2FAUserSession"] = [userID, "login"]
+                        session["2FAUserSession"] = (userID, "login")
                         return redirect(url_for("twoFactorAuthentication"))
                     else:
                         session["userSession"] = userID
