@@ -13,6 +13,15 @@ def sanitise(userInput):
         return userInput
     else:
         return False
+    
+def sanitise_quote(userInput):
+    userInput = html.escape(userInput, quote=True) # quote = True so that the characters (") and (') are escaped/translated
+    userInput = userInput.strip()
+
+    if len(userInput) != 0: # checking the length of the string if it's empty or not (Just in case as this should have been validated when using wtforms)
+        return userInput
+    else:
+        return False
 
 """End of input sanitisation"""
 

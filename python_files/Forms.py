@@ -25,8 +25,8 @@ class CreateLoginForm(Form):
 class CreateSignUpForm(Form):
     username = StringField("Username:", [validators.Length(min=1, max=30), validators.DataRequired()])
     email = EmailField("Email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
-    password = PasswordField("Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-    cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+    password = PasswordField("Password:", [validators.Length(min=6, max=20), validators.DataRequired()])
+    cfm_password = PasswordField("Confirm Password:", [validators.Length(min=6, max=20), validators.DataRequired()])
 
 class CreateChangeUsername(Form):
     updateUsername = StringField("Enter a new username:", [validators.Length(min=1, max=30), validators.DataRequired()])
@@ -35,22 +35,22 @@ class CreateChangeEmail(Form):
     updateEmail = EmailField("Enter a new email address:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
 
 class CreateChangePasswordForm(Form):
-    currentPassword = PasswordField("Enter your current password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-    updatePassword =  PasswordField("Enter a new password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-    confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+    currentPassword = PasswordField("Enter your current password:", [validators.Length(min=6, max=20), validators.DataRequired()])
+    updatePassword =  PasswordField("Enter a new password:", [validators.Length(min=6, max=20), validators.DataRequired()])
+    confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=20), validators.DataRequired()])
 
 class RequestResetPasswordForm(Form):
     email = EmailField("Enter your email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
 
 class CreateResetPasswordForm(Form):
-    resetPassword =  PasswordField("Reset password:", [validators.Length(min=6, max=15), validators.DataRequired()])
-    confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=15), validators.DataRequired()])
+    resetPassword =  PasswordField("Reset password:", [validators.Length(min=6, max=20), validators.DataRequired()])
+    confirmPassword = PasswordField("Confirm password:", [validators.Length(min=6, max=20), validators.DataRequired()])
 
 class AdminResetPasswordForm(Form):
     email = EmailField("Enter user's new email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
 
 class twoFAForm(Form):
-    twoFAOTP = StringField("Enter OTP:", [validators.Length(min=6, max=6), validators.DataRequired()])
+    twoFAOTP = StringField("Enter 2FA OTP:", [validators.Length(min=6, max=6), validators.DataRequired()])
 
 """End of WTForms by Jason"""
 

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response, flash
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers, pyotp, qrcode
 from flask_limiter import Limiter
@@ -14,7 +14,7 @@ from dicebear import DOptions
 from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files import Payment
 from python_files.Common import checkUniqueElements
-from python_files.Security import sanitise
+from python_files.Security import sanitise, sanitise_quote
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
 
@@ -710,10 +710,12 @@ def userLogin():
                         print("User account not banned, login successful.")
                         return redirect(url_for("home"))
                 else:
+                    flash("Your account have been banned. Please contact us if you think that this was a mistake.", "Danger")
                     print("User account banned.")
-                    return render_template('users/guest/login.html', form=create_login_form, banned=True)
+                    return render_template('users/guest/login.html', form=create_login_form)
             else:
-                return render_template('users/guest/login.html', form=create_login_form, failedAttempt=True)
+                flash("Please check your entries and try again.", "Danger")
+                return render_template('users/guest/login.html', form=create_login_form)
         else:
             return render_template('users/guest/login.html', form=create_login_form)
     else:
@@ -851,131 +853,105 @@ def removeTwoFactorAuthentication():
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def twoFactorAuthentication():
     if "userSession" not in session and "adminSession" not in session:
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
-                db.close()
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear()
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        if "2FAUserSession" in session:
-            userID, originFeature = session["2FAUserSession"]
-        else:
-            db.close()
-            return redirect(url_for("userProfile"))
-
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userID, userDict)
-
-        if userFound and accGoodStatus:
-            if bool(userKey.get_otp_setup_key()):
-                create_2fa_form = Forms.twoFAForm(request.form)
-                if request.method == "POST" and create_2fa_form.validate():
-                    otpInput = sanitise(create_2fa_form.twoFAOTP.data)
-                    secret = userKey.get_otp_setup_key()
-                    isValid = pyotp.TOTP(secret).verify(otpInput)
-                    if isValid:
-                        # requires 2FA time-based OTP to be entered when user is logging in
-                        if originFeature == "login":
-                            session.pop("2FAUserSession", None)
-                            session["userSession"] = userID
-                            return redirect(url_for("home"))
-                        # requires 2FA time-based OTP to be entered when user is resetting his/her password
-                        elif originFeature == "resetPassword":
-                            emailInput = userKey.get_email()
-                            try:
-                                send_reset_email(emailInput, userKey)
-                                flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
-                            except:
-                                print("Email server is down or its port is blocked")
-                                flash(f"An email with instructions has not been sent to {emailInput} due to email server downtime. Please wait and try again or contact us!", "Danger")
-                            print("Email sent")
-                            session.pop("2FAUserSession", None)
-                            return redirect(url_for("requestPasswordReset"))
-                        else:
-                            session.clear()
-                            return redirect(url_for("home"))
-                    else:
-                        flash("Invalid OTP Entered! Please try again!")
-                        return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
-
-                else:
-                    return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
-
-            else:
-                print("Unexpected Error: User had disabled 2FA.")
-                return redirect(url_for("userLogin"))
-        else:
-            print("User not found or is banned")
-            session.clear()
-            return redirect(url_for("userLogin"))
-    else:
-        return redirect(url_for("home")) 
-
-@app.route('/admin/2FA_required', methods=['GET', 'POST'])
-@limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
-def adminTwoFactorAuthentication():
-    if "userSession" not in session and "adminSession" not in session:
-        adminDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
-        try:
-            if 'Admins' in db:
-                adminDict = db['Admins']
-                db.close()
-            else:
-                db.close()
-                print("User data in shelve is empty.")
-                session.clear()
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
         if "adminOTPSession" in session:
             userID, originFeature = session["adminOTPSession"]
-        else:
-            db.close()
-            return redirect(url_for("userProfile"))
+            adminDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
+            try:
+                if 'Admins' in db:
+                    adminDict = db['Admins']
+                    db.close()
+                else:
+                    db.close()
+                    print("User data in shelve is empty.")
+                    session.clear()
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
 
-        userKey, userFound, accActive = admin_get_key_and_validate(userID, adminDict)
+            userKey, userFound, accActive = admin_get_key_and_validate(userID, adminDict)
 
-        if userFound and accActive:
-            if bool(userKey.get_otp_setup_key()):
-                create_2fa_form = Forms.twoFAForm(request.form)
-                if request.method == "POST" and create_2fa_form.validate():
-                    otpInput = sanitise(create_2fa_form.twoFAOTP.data)
-                    secret = userKey.get_otp_setup_key()
-                    isValid = pyotp.TOTP(secret).verify(otpInput)
-                    if isValid:
-                        # requires 2FA time-based OTP to be entered when user is logging in
-                        if originFeature == "adminLogin":
-                            session.pop("2FAUserSession", None)
-                            session["userSession"] = userID
-                            return redirect(url_for("home"))
+            if userFound and accActive:
+                if bool(userKey.get_otp_setup_key()):
+                    create_2fa_form = Forms.twoFAForm(request.form)
+                    if request.method == "POST" and create_2fa_form.validate():
+                        otpInput = sanitise(create_2fa_form.twoFAOTP.data)
+                        secret = userKey.get_otp_setup_key()
+                        isValid = pyotp.TOTP(secret).verify(otpInput)
+                        if isValid:
+                            # requires 2FA time-based OTP to be entered when user is logging in
+                            if originFeature == "adminLogin":
+                                session.pop("2FAUserSession", None)
+                                session["adminSession"] = userID
+                                return redirect(url_for("home"))
+                            else:
+                                session.clear()
+                                return redirect(url_for("home"))
                         else:
-                            session.clear()
-                            return redirect(url_for("home"))
+                            flash("Invalid OTP Entered! Please try again!")
+                            return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
                     else:
-                        flash("Invalid OTP Entered! Please try again!")
                         return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
                 else:
-                    return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
+                    print("Unexpected Error: User had disabled 2FA.")
+                    return redirect(url_for("userLogin"))
             else:
-                print("Unexpected Error: User had disabled 2FA.")
+                print("User not found or is inactive")
+                session.clear()
+                return redirect(url_for("adminLogin"))
+            
+        elif "2FAUserSession" in session:
+            userID, originFeature = session["2FAUserSession"]
+            userDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                    db.close()
+                else:
+                    db.close()
+                    print("User data in shelve is empty.")
+                    session.clear()
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
+
+            userKey, userFound, accGoodStatus, accType = get_key_and_validate(userID, userDict)
+
+            if userFound and accGoodStatus:
+                if bool(userKey.get_otp_setup_key()):
+                    create_2fa_form = Forms.twoFAForm(request.form)
+                    if request.method == "POST" and create_2fa_form.validate():
+                        otpInput = sanitise(create_2fa_form.twoFAOTP.data)
+                        secret = userKey.get_otp_setup_key()
+                        isValid = pyotp.TOTP(secret).verify(otpInput)
+                        if isValid:
+                            # requires 2FA time-based OTP to be entered when user is logging in
+                            if originFeature == "login":
+                                session.pop("2FAUserSession", None)
+                                session["userSession"] = userID
+                                return redirect(url_for("home"))
+                            else:
+                                session.clear()
+                                return redirect(url_for("home"))
+                        else:
+                            flash("Invalid OTP Entered! Please try again!")
+                            return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
+                    else:
+                        return render_template("users/guest/enter_2fa.html", form=create_2fa_form)
+                else:
+                    print("Unexpected Error: User had disabled 2FA.")
+                    return redirect(url_for("userLogin"))
+            else:
+                print("User not found or is banned")
+                session.clear()
                 return redirect(url_for("userLogin"))
         else:
-            print("User not found or is inactive")
-            session.clear()
-            return redirect(url_for("adminLogin"))
+            return redirect(url_for("home"))
     else:
         return redirect(url_for("home")) 
 
@@ -1027,19 +1003,14 @@ def requestPasswordReset():
                     # checking if the user is banned
                     accGoodStatus = emailKey.get_status()
                     if accGoodStatus == "Good":
-                        if bool(emailKey.get_otp_setup_key()):
-                            print("User has 2FA enabled.")
-                            session["2FAUserSession"] = (emailKey.get_user_id(), "resetPassword")
-                            return redirect(url_for("twoFactorAuthentication"))
-                        else:
-                            try:
-                                send_reset_email(emailInput, emailKey)
-                                flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
-                            except:
-                                print("Email server is down or its port is blocked")
-                                flash(f"An email with instructions has not been sent to {emailInput} due to email server downtime. Please wait and try again or contact us!", "Danger")
-                            print("Email sent")
-                            return render_template('users/guest/request_password_reset.html', form=create_request_form)
+                        try:
+                            send_reset_email(emailInput, emailKey)
+                            flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                        except:
+                            print("Email server is down or its port is blocked")
+                            flash(f"An email with instructions has not been sent to {emailInput} due to email server downtime. Please wait and try again or contact us!", "Danger")
+                        print("Email sent")
+                        return render_template('users/guest/request_password_reset.html', form=create_request_form)
                     else:
                         # email found in database but the user is banned.
                         # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
@@ -1067,44 +1038,59 @@ def resetPassword(token):
     if "userSession" not in session and "adminSession" not in session:
         validateToken = verify_reset_token(token)
         if validateToken != None:
-            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)
+            userDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                if 'Users' in db:
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    print("No user data in user shelve files.")
+                    # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Users from user.db")
+                return redirect(url_for("home"))
+
+            userKey = userDict.get(validateToken)
+            twoFAEnabled = bool(userKey.get_otp_setup_key())
+
+            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)  
             if request.method == "POST" and create_reset_password_form.validate():
                 password = create_reset_password_form.resetPassword.data
                 confirmPassword = create_reset_password_form.confirmPassword.data
 
                 if password == confirmPassword:
-                    userDict = {}
-                    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-                    try:
-                        if 'Users' in db:
-                            userDict = db['Users']
-                        else:
-                            db.close()
-                            print("No user data in user shelve files.")
-                            # since the file data is empty either due to the admin deleting the shelve files or something else, it will redirect the user to the homepage
-                            return redirect(url_for("home"))
-                    except:
-                        db.close()
-                        print("Error in retrieving Users from user.db")
-                        return redirect(url_for("home"))
-
-                    userKey = userDict.get(validateToken)
                     # checking if the user is banned
                     accGoodStatus = userKey.get_status()
                     if accGoodStatus == "Good":
-                        userKey.set_password(password)
-                        db["Users"] = userDict
-                        db.close()
-                        print("Password Reset Successful.")
-                        flash("Your password has been updated! You can now login with your updated password.", "Password Reset Successful!")
-                        return redirect(url_for("userLogin"))
+                        if twoFAEnabled:
+                            otpInput = sanitise_quote(request.form.get("otpInput"))
+                            secret = userKey.get_otp_setup_key()
+                            isValid = pyotp.TOTP(secret).verify(otpInput)
+                        else:
+                            isValid = True
+                        if isValid:
+                            userKey.set_password(password)
+                            db["Users"] = userDict
+                            db.close()
+                            print("Password Reset Successful.")
+                            flash("Your password has been updated! You can now login with your updated password.", "Success")
+                            return redirect(url_for("userLogin"))
+                        else:
+                            flash("Invalid OTP!")
+                            return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
                     else:
                         print("User account banned.")
-                        return render_template('users/guest/reset_password.html', form=create_reset_password_form, banned=True)
+                        flash("Your account has been banned, please contact us if you think that this is a mistake.")
+                        return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
                 else:
-                    return render_template('users/guest/reset_password.html', form=create_reset_password_form, pwd_were_not_matched=True)
+                    flash("Passwords entered did not match!")
+                    return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
             else:
-                return render_template('users/guest/reset_password.html', form=create_reset_password_form)
+                db.close()
+                return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
         else:
             flash("Token is invalid or has expired.", "Danger")
             return redirect(url_for("requestPasswordReset"))
@@ -1522,7 +1508,7 @@ def adminLogin():
                     if bool(emailKey.get_otp_setup_key()):
                         print("Admin has 2FA enabled.")
                         session["adminOTPSession"] = (userID, "adminLogin")
-                        return redirect(url_for("adminTwoFactorAuthentication"))
+                        return redirect(url_for("twoFactorAuthentication"))
                     else:
                         session["adminSession"] = userID
                         print(userID)
