@@ -34,7 +34,8 @@
                             <li>Create a new account with setup key method or scan the QR code</li>
                             <li>If you chose setup key method, enter your username and secret key below</li>
                             <li>Select time-based authentication</li>
-                            <li>Submit the OTP in the form.</li>
+                            <li>Submit the time-based one time password (OTP) in the form.</li>
+                            <li class="text-warning">Do note that this setup key will change upon refreshing the page.</li>
                         </ol>
                         <h6 class="text-break">Setup Key: <a href="javascript:copyToClipBoard('OTP')" onmouseout="tooltipMouseOut('OTP')" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" id="tooltipElementOTP">{{ secret }}</a></h6>
                         <span id="tooltipValueOTP" hidden>{{ secret }}</span>
