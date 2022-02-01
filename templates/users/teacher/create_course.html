@@ -83,7 +83,46 @@
                             <label for="remove-thumbnail" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
                         </div>
                     </div>
-
+                    <label for="course-category">Choose Your Course Category!</label>
+                    <input list="course-category" name="course-category" class="dropdown" required>
+                    <datalist id="browsers">
+                        <datalist id="Development">
+                            <option value="Programming">
+                            <option value="Web Development">
+                            <option value="Game Development">
+                            <option value="Mobile App Development">
+                            <option value="Software Development">
+                            <option value="Other Development">
+                        </datalist>
+                        <datalist id="Business">
+                            <option value="Entrepreneurship">
+                            <option value="Project Management">
+                            <option value="Business Intelligence & Analytics">
+                            <option value="Business Strategy">
+                            <option value="Other Business">
+                        </datalist>
+                        <datalist id="Design">
+                            <option value="3D Modelling">
+                            <option value="Animation">
+                            <option value="UX Design">
+                            <option value="Design Tools">
+                            <option value="Other Design">
+                        </datalist>
+                        <datalist id="Photography">
+                            <option value="Digital Photography">
+                            <option value="Photography Tools">
+                            <option value="Video Production">
+                            <option value="Video Design Tools">
+                            <option value="Other Photography/Videography">
+                        </datalist>
+                        <datalist id="Academics">
+                            <option value="Science">
+                            <option value="Math">
+                            <option value="Language">
+                            <option value="Language">
+                            <option value="Other Academics">
+                        </datalist>
+                    </datalist>
                     <!-- zoomCondition
                     <div class="col-md-12 form_checkbox">
                         {{ render_field(form.zoomCondition, class="form-control") }}
