@@ -10,13 +10,13 @@ def validate_email(email):
     else:
         return False
 
-# Command line 1-2 feature/operations done by Jason
+# Command line 1-2 and 6 feature/operations done by Jason
 # CRUD operations by admin ID instead of via email only by Jason
 # Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
 
 # Command line 3-5 feature/operations done by Clarence
 
-# Command line 6 feature/operation done by Royston
+# Command line 7 feature/operation done by Royston
 
 def main():
     
@@ -29,7 +29,8 @@ Please select the following command number to continue:
 3. Deactivate an admin account
 4. Reactivate an admin account
 5. Delete an admin account
-6. View all admin accounts
+6. Remove an admin account's 2FA
+7. View all admin accounts
 0. Exit
 
 Important Notes:
@@ -472,6 +473,77 @@ Hence, please only force shut down the program if necessary.
                     print("\nError: You cannot leave the input empty! Please try again.")
 
         elif cmd_input == "6":
+            while True:
+                email = sanitise(input("Enter email or admin id for the admin account (0 to exit): "))
+                if email == "0":
+                    break
+                if email != False:
+                    adminDict = {}
+                    db = shelve.open(adminDatabaseFilePath, "c")
+                    try:
+                        if 'Admins' in db:
+                            adminDict = db['Admins']
+                            print("\nRetrieved data from admin account database")
+                            fileFound = True
+                        else:
+                            db.close()
+                            print("\nError: No admin account data in admin account database")
+                            fileFound = False
+                    except:
+                        db.close()
+                        print("\nError in retrieving Admins from admin.db")
+                        fileFound = False
+
+                    if fileFound:
+                        emailValidation = validate_email(email)
+                        if emailValidation:
+                            if fileFound:
+                                emailValid = False
+                                print("\nretrieving emails")
+                                for key in adminDict:
+                                    emailShelveData = adminDict[key].get_email()
+                                    if email == emailShelveData:
+                                        print("Verdict: Admin email Found.")
+                                        emailValid = True
+                                        adminKey = adminDict[key]
+                                        break
+                                if emailValid:
+                                    if bool(admin.get_otp_setup_key()):
+                                        adminKey.set_otp_setup_key("")
+                                        db["Admins"] = adminDict
+                                        db.close()
+                                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, has its 2FA removed successfully.")
+                                        break
+                                    else:
+                                        db.close()
+                                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, does not have 2FA setup.")
+                                else:
+                                    db.close()
+                                    print("\nError: No admin account with that email exists.")
+                        else:
+                            # if the admin searches for the admin accounts using the admin id
+                            if email in adminDict:
+                                adminObject = adminDict.get(email)
+                                if bool(adminObject.get_otp_setup_key()):
+                                    adminObject.set_otp_setup_key("")
+                                    db["Admins"] = adminDict
+                                    db.close()
+                                    print(f"\nAdmin account with the ID, {email}, has its 2FA removed successfully.")
+                                    break
+                                else:
+                                    db.close()
+                                    print(f"\nAdmin account with the ID, {email}, does not have 2FA setup.")
+                            else:
+                                db.close()
+                                print("\nError: Entered admin email or user id is invalid, please try again.")
+                    else:
+                        db.close()
+                        print("\nError: Please create an admin account and try again later.")
+                        break
+                else:
+                    print("\nError: You cannot leave the input empty! Please try again.")
+
+        elif cmd_input == "7":
             adminDict = {}
             db = shelve.open(adminDatabaseFilePath, "c")
             try:
@@ -498,7 +570,11 @@ Hence, please only force shut down the program if necessary.
                     username = adminKey.get_username()
                     email = adminKey.get_email()
                     status = adminKey.get_status()
-                    print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status}")
+                    if bool(adminKey.get_otp_setup_key()):
+                        twoFAEnabled = "Yes"
+                    else:
+                        twoFAEnabled = "No"
+                    print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status} | 2FA Enabled: {twoFAEnabled}")
             else:
                 print("Error could not be resolved...\nSolution: Please create an admin account before reading all admin accounts.")
                 
