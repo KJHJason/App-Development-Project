@@ -3558,7 +3558,7 @@ def purchaseHistory(pageNum):
                         "Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "CourseTypeCheck":userKey.get_purchasesCourseType(courseID),
+                        "CourseTypeCheck":course.get_course_type(),
                         "Price":course.get_price(),
                         "Owner":course.get_userID()}
                     historyList.append(courseInformation)
@@ -3732,7 +3732,6 @@ def purchaseView():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            historyList = session.get("getHistoryList")
             videoList = []
             courseID = ""
             courseType = ""
@@ -3772,7 +3771,7 @@ def purchaseView():
                 historyCheck = False
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
