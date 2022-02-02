@@ -62,6 +62,43 @@ client = vimeo.VimeoClient(
     secret = os.environ.get("VIMEO_SECRET")
 )
 
+# Create a variable with a hard coded path to your file system
+file_name = '{path_to_a_video_on_the_file_system}'
+
+print('Uploading: %s' % file_name)
+
+try:
+    # Upload the file and include the video title and description.
+    uri = client.upload(file_name, data={
+        'name': 'Vimeo API SDK test upload',
+        'description': CourseLesson.get_description()
+    })
+
+    # Get the metadata response from the upload and log out the Vimeo.com url
+    video_data = client.get(uri + '?fields=link').json()
+    print('"{}" has been uploaded to {}'.format(file_name, video_data['link']))
+
+    # Make an API call to edit the title and description of the video.
+    client.patch(uri, data={
+        'name': 'Vimeo API SDK test edit',
+        'description': "This video was edited through the Vimeo API's " +
+                       "Python SDK."
+    })
+
+    print('The title and description for %s has been edited.' % uri)
+
+    # Make an API call to see if the video is finished transcoding.
+    video_data = client.get(uri + '?fields=transcode.status').json()
+    print('The transcode status for {} is: {}'.format(
+        uri,
+        video_data['transcode']['status']
+    ))
+except vimeo.exceptions.VideoUploadFailure as e:
+    # We may have had an error. We can't resolve it here necessarily, so
+    # report it to the user.
+    print('Error uploading %s' % file_name)
+    print('Server reported: %s' % e.message)
+
 """ # Uploading of videos
 file_name = '{path_to_a_video_on_the_file_system}'
 uri = client.upload(file_name, data={

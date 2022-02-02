@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/basic.min.css" />
+
+    <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts/upload_lesson.js') }}"></script>
+
+    <title>File Dropper</title>
+
+</head>
+
+<body>
+    <form method="POST" action='/upload' class="dropzone dz-clickable" id="dropper" enctype="multipart/form-data">
+    </form>
+    <div class="container" id="container">
+        <h1>Dropzone.js</h1>
+        <h2 class="lead">Configuration Demo</h2>
+    
+        <ul class="nav nav-tabs">
+            <li><a href="http://www.dropzonejs.com">Back to www.dropzonejs.com</a></li>
+            <li class="active"><a href="#">Bootstrap theme</a></li>
+        </ul>
+    
+        <br>
+    
+        <blockquote>
+            <p>
+                This is a bootstrap theme of Dropzone.js with a completely different user experience.<br />
+                It is a demonstration of the powerful configuration possibilities of <a
+                    href="http://www.dropzonejs.com">Dropzone.js</a>.
+                You can make Dropzone.js look exactly how you want it to look and it's very easy to do so.
+            </p>
+        </blockquote>
+    
+        <br>
+        <div id="actions" class="row">
+            <div class="col-lg-7">
+                <!-- The fileinput-button span is used to style the file input field as button -->
+                <span class="btn btn-success fileinput-button">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>Add files...</span>
+                </span>
+                <button type="submit" class="btn btn-primary start">
+                    <i class="glyphicon glyphicon-upload"></i>
+                    <span>Start upload</span>
+                </button>
+                <button type="reset" class="btn btn-warning cancel">
+                    <i class="glyphicon glyphicon-ban-circle"></i>
+                    <span>Cancel upload</span>
+                </button>
+            </div>
+    
+            <div class="col-lg-5">
+                <!-- The global file processing state -->
+                <span class="fileupload-process">
+                    <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0"
+                        aria-valuemax="100" aria-valuenow="0">
+                        <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+                    </div>
+                </span>
+            </div>
+        </div>
+    
+        <div class="table table-striped files" id="previews">
+    
+            <div id="template" class="file-row">
+                <!-- This is used as the file preview template -->
+                <div>
+                    <span class="preview"><img data-dz-thumbnail /></span>
+                </div>
+                <div>
+                    <p class="name" data-dz-name></p>
+                    <strong class="error text-danger" data-dz-errormessage></strong>
+                </div>
+                <div>
+                    <p class="size" data-dz-size></p>
+                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                        aria-valuenow="0">
+                        <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-primary start">
+                        <i class="glyphicon glyphicon-upload"></i>
+                        <span>Start</span>
+                    </button>
+                    <button data-dz-remove class="btn btn-warning cancel">
+                        <i class="glyphicon glyphicon-ban-circle"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button data-dz-remove class="btn btn-danger delete">
+                        <i class="glyphicon glyphicon-trash"></i>
+                        <span>Delete</span>
+                    </button>
+                </div>
+            </div>
+    
+        </div>
+</body>
+</html>
