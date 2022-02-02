@@ -5018,10 +5018,10 @@ def teacherOwnPage(teacherUID):
 
 """End of Teacher's Channel Page(Teacher view) by Clarence"""
 
-"""Course Page by Jason"""
+"""Course Page and its review page by Jason"""
 
 @app.route('/course/<courseID>')
-def insertName(courseID):
+def coursePage(courseID):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
         if "Courses" in db and "Users" in db:
@@ -5085,7 +5085,70 @@ def insertName(courseID):
     else:
         return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
 
-"""End of Course Page by Jason"""
+@app.route('/course/<courseID>/reviews')
+def courseReviews(courseID):
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
+            db.close()
+        else:
+            db.close()
+            return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect(url_for("home"))
+
+    courseObject = courseDict.get(courseID)
+    
+    if courseObject == None: # if courseID does not exist in courseDict
+        return redirect("/404")
+
+    courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
+
+    reviews = courseObject.get_review() # get a list of review objects
+
+    reviewsCount = len(reviews)
+    if reviewsCount > 5:
+        reviews = reviews[-5:] # get latest five reviews
+
+    reviewsDict = {}
+    for review in reviews:
+        userID = review.get_userID()
+        userObject = userDict.get(userID)
+        userProfile = retrieve_user_profile_pic(userObject)
+        reviewsDict[review] = [userObject.get_username(), userProfile]
+
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+
+        if userFound and accGoodStatus:
+            if courseID in userKey.get_purchases():
+                userPurchased = True
+            else:
+                userPurchased = False
+
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+    else:
+        return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+
+
+"""End of Course Page and its review page by Jason"""
 
 """General Pages"""
 
