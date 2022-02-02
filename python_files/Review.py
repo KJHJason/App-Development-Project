@@ -30,6 +30,6 @@ class Review():
         return self.__rating
 
     def update_review_time(self):
-        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S (UTC +8)"))
     def get_review_time(self):
         return self.__review_time

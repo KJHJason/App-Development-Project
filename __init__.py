@@ -2616,7 +2616,7 @@ def dashboard():
             try:
                 lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
             except:
-                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S (UTC +8)"))
 
             selectedGraphDataList = graphList[-30:] # get last 30 elements from the list to show the total number of user per day for the last 30 days
             print("Selected graph data:", selectedGraphDataList)
@@ -4691,7 +4691,7 @@ def adminStatistics(statistic, year, month, day):
             try:
                 lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
             except:
-                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S (UTC +8)"))
 
             selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
             print("Selected graph data:", selectedGraphDataList)
