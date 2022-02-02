@@ -1,11 +1,13 @@
 # Done by Wei Ren
+from datetime import datetime
 
 class Rating():
     def __init__(self, userID, title, comment, rating):
         self.__userID= userID
         self.__title = title
         self.__comment = comment
-        self.__rating = rating
+        self.__rating = int(rating)
+        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
 
     def set_userID(self, userID):
         self.__userID = userID
@@ -26,3 +28,8 @@ class Rating():
         self.__rating = rating
     def get_rating(self):
         return self.__rating
+
+    def update_review_time(self):
+        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+    def get_review_time(self):
+        return self.__review_time

@@ -130,6 +130,13 @@ def home():
             if userDict.get(values.get_userID()).get_status() == "Good":
                 trendingCourseList.append(values)
 
+    # for retrieving the teacher's username
+    trendingDict = {}
+    for courses in trendingDict:
+        teacherObject = userDict.get(courses.get_userID())
+        teacherUsername = teacherObject.get_username()
+        trendingDict[courses] = teacherUsername
+
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -286,16 +293,31 @@ def home():
                         if userDict.get(value.get_courseID()).get_status() == "Good":
                             recommendCourseList.append(value)
 
+                # retrieving course teacher's username
+                recommedationDict = {}
+                for courses in recommendCourseList:
+                    teacherObject = userDict.get(courses.get_userID())
+                    teacherUsername = teacherObject.get_username()
+                    recommedationDict[courses] = teacherUsername
+
                 # logged in users
                 if accType == "Teacher":
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+
+                # retrieving course teacher's username
+                recommedationDict = {}
+                for courses in recommendCourseList:
+                    teacherObject = userDict.get(courses.get_userID())
+                    teacherUsername = teacherObject.get_username()
+                    recommedationDict[courses] = teacherUsername
+
+                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
         else:
             # users with invalid session, aka guest
             print("Admin/User account is not found or is not active/banned.")
@@ -436,8 +458,15 @@ def home():
                 for value in courseDict.values():
                     if userDict.get(value.get_courseID()).get_status() == "Good":
                         recommendCourseList.append(value)
+        
+        # retrieving course teacher's username
+        recommedationDict = {}
+        for courses in recommendCourseList:
+            teacherObject = userDict.get(courses.get_userID())
+            teacherUsername = teacherObject.get_username()
+            recommedationDict[courses] = teacherUsername
 
-        return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+        return render_template("users/general/home.html", accType="Guest", trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
 # for setting a cookie for the guest for content personalisation
 @app.route('/set_cookies')
@@ -4989,66 +5018,74 @@ def teacherOwnPage(teacherUID):
 
 """End of Teacher's Channel Page(Teacher view) by Clarence"""
 
-"""Template app.route(") (use this when adding a new app route) by Clarence"""
+"""Course Page by Jason"""
 
-@app.route('/course_page/<teacherCoursePageUID>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
-def insertName(teacherCoursePageUID):
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if 'Users' in db and "Courses" in db:
-                userDict = db['Users']
-                courseDict = db['Courses']
-            else:
-                db.close()
-                return redirect(url_for("home"))
-        except:
+@app.route('/course/<courseID>')
+def insertName(courseID):
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
             db.close()
-            print("Error in retrieving Users from user.db")
+        else:
+            db.close()
             return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect(url_for("home"))
 
+    courseObject = courseDict.get(courseID)
+    
+    if courseObject == None: # if courseID does not exist in courseDict
+        return redirect("/404")
+
+    courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
+
+    lessons = courseObject.get_lesson_list() # get a list of lesson objects
+    lessonsCount = len(lessons)
+
+    reviews = courseObject.get_review() # get a list of review objects
+
+    reviewsCount = len(reviews)
+    if reviewsCount > 5:
+        reviews = reviews[-5:] # get latest five reviews
+
+    reviewsDict = {}
+    for review in reviews:
+        userID = review.get_userID()
+        userObject = userDict.get(userID)
+        userProfile = retrieve_user_profile_pic(userObject)
+        reviewsDict[review] = [userObject.get_username(), userProfile]
+
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
         if userFound and accGoodStatus:
-            # add in your code below
-            #Getting course object from courseDict
-            courseObject = courseDict.get(teacherCoursePageUID)
-            
-            if courseObject == None: # if courseID does not exist in courseDict
-                return redirect("/404")
-
-            lessons = courseObject.get_lesson_list() # get a list of lesson objects
-
-            if teacherCoursePageUID in userKey.get_purchases():
+            if courseID in userKey.get_purchases():
                 userPurchased = True
             else:
                 userPurchased = False
-
-            imagesrcPath = retrieve_user_profile_pic(userKey)
 
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, courseObject=courseObject, userPurchased=userPurchased, lessons=lessons)
+            return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
         else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return redirect(url_for("home"))
+            return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
     else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
-        else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+        return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
 
-"""End of Template app.route by Clarence"""
+"""End of Course Page by Jason"""
 
 """General Pages"""
 

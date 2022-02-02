@@ -30,10 +30,9 @@ from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
 
 class Course():
-    def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, userID, username):
+    def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, userID):
         self.__courseID = courseID
         self.__userID = userID  # Owner of course
-        self.__username = username # username of the course owner
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
@@ -55,11 +54,6 @@ class Course():
     def increase_view(self):
         self.__views += 1
 
-    def set_username(self, username):
-        self.__username = username
-    def get_username(self):
-        return self.__username
-
     def add_video_lesson(self, title, description, thumbnail, videoAbsolutePath): 
         self.__lessons.append(VideoLesson(title, description, thumbnail, videoAbsolutePath))
     def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword):
@@ -76,20 +70,77 @@ class Course():
     def get_lesson_list(self):
         return self.__lessons
 
+    def get_readable_tag(self):
+        courseTag = self.__tag
+        if courseTag == "Programming":
+            return "Development - Programming"
+        elif courseTag == "Web_Development":
+            return "Development - Web Development"
+        elif courseTag == "Game_Development":
+            return "Development - Game Development"
+        elif courseTag == "Mobile_App_Development":
+            return "Development - Mobile App Development"
+        elif courseTag == "Software_Development":
+            return "Development - Software Development"
+        elif courseTag == "Other_Development":
+            return "Development - Other Development"
+        elif courseTag == "Entrepreneurship":
+            return "Business - Entrepreneurship"
+        elif courseTag == "Project_Management":
+            return "Business - Project Management"
+        elif courseTag == "BI_Analytics":
+            return "Business - BI Analytics"
+        elif courseTag == "Business_Strategy":
+            return "Business - Business Strategy"
+        elif courseTag == "Other_Business":
+            return "Business - Other Business"
+        elif courseTag == "3D_Modelling":
+            return "Design - 3D Modelling"
+        elif courseTag == "Animation":
+            return "Design - Animation"
+        elif courseTag == "UX_Design":
+            return "Design - UX Design"
+        elif courseTag == "Design_Tools": 
+            return "Design - Design Tools"
+        elif courseTag == "Other_Design":
+            return "Design - Other Design"
+        elif courseTag == "Digital_Photography":
+            return "Photography/Videography - Digital Photography"
+        elif courseTag == "Photography_Tools":
+            return "Photography/Videography - Photography Tools"
+        elif courseTag == "Video_Production":
+            return "Photography/Videography - Video Production"
+        elif courseTag == "Video_Design_Tools":
+            return "Photography/Videography - Video Design Tools"
+        elif courseTag == "Other_Photography_Videography":
+            return "Photography/Videography - Other Photography/Videography"
+        elif courseTag == "Science":
+            return "Academics - Science"
+        elif courseTag == "Math":
+            return "Academics - Math"
+        elif courseTag == "Language":
+            return "Academics - Language"
+        elif courseTag == "Test_Prep":
+            return "Academics - Test Prep"
+        elif courseTag == "Other_Academics":
+            return "Academics - Other Academics"
+        else:
+            return "Unknown Tag"
+
     """End of Done by Jason"""
 
     """Done by Royston"""
 
-    def add_review(self, review):
-        self.__review.append(review)
+    def add_review(self, userID, title, comment, rating):
+        self.__review.append(Rating(userID, title, comment, rating))
     def get_review(self):
         return self.__review
-    def remove_review(self, review):
+    def remove_review(self, review): # review is a Rating object
         if review in self.__review:
             self.__review.remove(review)
         else:
             return False
-
+    
     """End of Done by Royston"""
 
     """Done by Wei Ren"""
@@ -143,21 +194,11 @@ class Course():
     def get_tag(self):
         return self.__tag
 
-    def add_rating(self, userID, title, comment, rating):
-        rating = Rating(userID, title, comment, rating)
-        self.__ratings.append(rating)
-    def get_ratings(self):
-        return self.__ratings
     def get_averageRating(self):
         total = 0
-        for rating in self.__ratings:
-            total += int(rating.get_rating())
-            return (total/len(self.__ratings))
-    def remove_rating(self, userID, comment):
-        for rating in self.__ratings:
-            if rating.get_userID() == userID and rating.get_comment() == comment:
-                self.__ratings.remove(rating)
-                break
+        for review in self.__review:
+            total += int(review.get_rating())
+            return (total/len(self.__review))
 
     # def add_VideoLesson(self, title, description, thumbnail, videoData):
     #     videoLesson = VideoLesson(title, description, thumbnail, videoData)

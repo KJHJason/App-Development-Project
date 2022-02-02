@@ -39,13 +39,13 @@
 		<h2>Trending</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
 		{% if trendingCourseLen >= 1 %}
-			{% for course in trendingCourseList %}
+			{% for course, username in trendingCourseDict.items() %}
 			<div class="col">
 				<div class="card h-100">
-					<a href="#"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
+					<a href="/course/{{ course.get_courseID() }}"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
 					<div class="card-body">
-						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
-						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
+						<h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ course.get_shortTitle() }}</a></h5>
+						<a href="/teacher_page/{{ course.get_userID() }}"><small class="text-muted">By {{ username }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
 						{% if course.get_course_type() == "Video" %}
 						<p class="card-text fw-bold">Video: ${{ course.get_price() }}</p>
@@ -113,13 +113,13 @@
 		<h2 id="recommendations">Recommendations</h2>
 		<div class="row row-cols-1 row-cols-md-3 g-4">
 		{% if recommendCourseLen >= 1 %}
-			{% for course in recommendCourseList %}
+			{% for course, username in recommendCourseDict.items() %}
 			<div class="col">
 				<div class="card h-100">
-					<a href=""><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a> 
+					<a href="/course/{{ course.get_courseID() }}"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a> 
 					<div class="card-body">
-						<h5 class="card-title"><a href="#">{{ course.get_shortTitle() }}</a></h5>
-						<a href="#"><small class="text-muted">By {{ course.get_username() }}</small></a>
+						<h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ course.get_shortTitle() }}</a></h5>
+						<a href="/teacher_page/{{ course.get_userID() }}"><small class="text-muted">By {{ username }}</small></a>
 						<p class="card-text">{{ course.get_shortDescription() }}</p>
 						{% if course.get_course_type() == "Video" %}
 						<p class="card-text fw-bold">Video: ${{ course.get_price() }}</p>

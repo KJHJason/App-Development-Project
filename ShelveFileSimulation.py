@@ -51,29 +51,29 @@ graphList = []
 """Student 1"""
 
 #General
-userID = generate_ID(userDict)
+userIDStudent1 = generate_ID(userDict)
 username = "James"
 email = sanitise("CourseFinity123@gmail.com".lower())
 password = "123!@#"
-user = Student(userID, username, email, password)
+user = Student(userIDStudent1, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
+userDict[userIDStudent1] = user
 
 
 """Student 2"""
 
 #General
-userID = generate_ID(userDict)
+userIDStudent2 = generate_ID(userDict)
 username = "Daniel"
 email = sanitise("abc.net@gmail.com".lower())
 password = "456$%^"
-user = Student(userID, username, email, password)
+user = Student(userIDStudent2, username, email, password)
 
 #Courses (Royston)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
+userDict[userIDStudent2] = user
 
 """Teacher 1"""
 
@@ -98,9 +98,9 @@ zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, userID)
 
-course.add_rating("2", "Very Good", "Please make more.", "4")
+course.add_review(userIDStudent2, "Good course to be honest", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "4")
 
 course.set_views(13)
 
@@ -141,10 +141,10 @@ price = "{:,.2f}".format(69)
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, price, "Math", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, price, "Math", title, description, thumbnail, userID)
 
 
-course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+course.add_review(userIDStudent2, "Good course to be honest", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(1)
 
@@ -161,10 +161,10 @@ price = "{:,.2f}".format(69)
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, price, "Other_Academics", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, price, "Other_Academics", title, description, thumbnail, userID)
 
 # def __init__(self, userID, title, comment, rating)
-course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+course.add_review(userIDStudent1, "Very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(123)
 
@@ -185,10 +185,10 @@ videoPrice = "{:,.2f}".format(69)
 courseType = "Video"
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, userID, username)
+course = Course(courseID, courseType, videoPrice, "Other_Academics", title, description, thumbnail, userID)
 
 # def __init__(self, userID, title, comment, rating)
-course.add_rating("1", "A work of art.", "Cambridge be real quiet since this dropped.", "5")
+course.add_review(userIDStudent1, "A sequel to the very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(1000)
 
