@@ -11,7 +11,7 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course, CourseLesson
+from python_files import Student, Teacher, Forms, Course, CourseLesson, Review
 from python_files import Payment
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
@@ -132,7 +132,7 @@ def home():
 
     # for retrieving the teacher's username
     trendingDict = {}
-    for courses in trendingDict:
+    for courses in trendingCourseList:
         teacherObject = userDict.get(courses.get_userID())
         teacherUsername = teacherObject.get_username()
         trendingDict[courses] = teacherUsername
@@ -5030,11 +5030,11 @@ def coursePage(courseID):
             db.close()
         else:
             db.close()
-            return redirect(url_for("home"))
+            return redirect("/404")
     except:
         db.close()
         print("Error in retrieving Users from user.db")
-        return redirect(url_for("home"))
+        return redirect("/404")
 
     courseObject = courseDict.get(courseID)
     
@@ -5052,6 +5052,7 @@ def coursePage(courseID):
     if reviewsCount > 5:
         reviews = reviews[-5:] # get latest five reviews
 
+    # Retrieving the user's uername and profile image url for the reviews
     reviewsDict = {}
     for review in reviews:
         userID = review.get_userID()
@@ -5085,8 +5086,8 @@ def coursePage(courseID):
     else:
         return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
 
-@app.route('/course/<courseID>/reviews')
-def courseReviews(courseID):
+@app.route('/course/<courseID>/reviews/page_<int:reviewPageNum>')
+def courseReviews(courseID, reviewPageNum):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
         if "Courses" in db and "Users" in db:
@@ -5112,41 +5113,76 @@ def courseReviews(courseID):
 
     reviewsCount = len(reviews)
     if reviewsCount > 5:
-        reviews = reviews[-5:] # get latest five reviews
+        reviewsDict = {}
+        for review in reviews:
+            userID = review.get_userID()
+            userObject = userDict.get(userID)
+            userProfile = retrieve_user_profile_pic(userObject)
+            reviewsDict[review] = [userObject.get_username(), userProfile]
+        
+        maxItemsPerPage = 10 # declare the number of items that can be seen per pages
+        maxPages = math.ceil(reviewsCount/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
-    reviewsDict = {}
-    for review in reviews:
-        userID = review.get_userID()
-        userObject = userDict.get(userID)
-        userProfile = retrieve_user_profile_pic(userObject)
-        reviewsDict[review] = [userObject.get_username(), userProfile]
-
-    if "adminSession" in session or "userSession" in session:
-        if "adminSession" in session:
-            userSession = session["adminSession"]
+        # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/page/0" or negative numbers, "user_management/page/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/page/999999"
+        if reviewPageNum < 0:
+            return redirect("/courseReviews/" + courseID + "/reviews/page_0")
+        elif reviewsCount > 0 and reviewPageNum == 0:
+            return redirect("/courseReviews/" + courseID + "/reviews/page_1")
+        elif reviewPageNum > maxPages:
+            return redirect("/courseReviews/" + courseID + "/reviews/page_" + str(maxPages))
         else:
-            userSession = session["userSession"]
+            # reversing the dictionary keys to show the latest review in CourseFinity using list slicing
+            reviewKeyList = []
+            for reviews in reversed(reviewsDict):
+                reviewKeyList.append(reviews)
 
-        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+            pageNumForPagination = reviewPageNum - 1 # minus for the paginate function
+            paginatedReviewKeyList = paginate(reviewKeyList, pageNumForPagination, maxItemsPerPage)
+            paginationList = get_pagination_button_list(reviewPageNum, maxPages)
 
-        if userFound and accGoodStatus:
-            if courseID in userKey.get_purchases():
-                userPurchased = True
+            paginatedReviewDict = {}
+            for key in paginatedReviewKeyList:
+                paginatedReviewDict[key] = reviewsDict.get(key)
+
+            previousPage = reviewPageNum - 1
+            nextPage = reviewPageNum + 1
+
+        if "adminSession" in session or "userSession" in session:
+            if "adminSession" in session:
+                userSession = session["adminSession"]
             else:
-                userPurchased = False
+                userSession = session["userSession"]
 
-            if accType == "Teacher":
-                teacherUID = userSession
+            userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+
+            if userFound and accGoodStatus:
+                if courseID in userKey.get_purchases():
+                    userPurchased = True
+                else:
+                    userPurchased = False
+
+                userReviewed = False
+                userReview = {}
+                for review in reviewsDict.keys():
+                    if review.get_userID() == userSession:
+                        userReviewed = True
+                        userReview[review] = reviewsDict.get(review)
+                        reviewsDict.pop(review)
+                        break
+                        
+                if accType == "Teacher":
+                    teacherUID = userSession
+                else:
+                    teacherUID = ""
+                return render_template('users/general/course_page_reviews.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, userReviewed=userReviewed, userReview=userReview, userPurchased=userPurchased, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
             else:
-                teacherUID = ""
-            return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+                print("Admin/User account is not found or is not active/banned.")
+                session.clear()
+                return redirect("/courseReviews/" + courseID + "/reviews/page_" + str(reviewPageNum))
         else:
-            print("Admin/User account is not found or is not active/banned.")
-            session.clear()
-            return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+            return render_template("users/general/course_page_reviews.html", accType="Guest", course=courseObject, userReviewed=False, userPurchased=False, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
     else:
-        return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
-
+        return redirect("/course/" + courseID)
 
 """End of Course Page and its review page by Jason"""
 

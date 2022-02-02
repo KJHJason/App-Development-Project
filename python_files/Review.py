@@ -1,7 +1,7 @@
 # Done by Wei Ren
 from datetime import datetime
 
-class Rating():
+class Review():
     def __init__(self, userID, title, comment, rating):
         self.__userID= userID
         self.__title = title
