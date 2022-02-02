@@ -16,7 +16,7 @@ from python_files.Student import Student
 from python_files.Course import Course
 from python_files.CourseLesson import VideoLesson , ZoomLesson, Lesson
 from python_files.Security import sanitise, generate_admin_id
-from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_lesson_ID
+from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_ID_to_length
 from python_files.Graph import userbaseGraph
 from datetime import date, timedelta
 import shelve, pathlib
@@ -111,7 +111,7 @@ title = "How to make a web app part 1"
 description = "You will learn the ups & downs here."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
 
-lessonID = generate_lesson_ID(courseDict)
+lessonID = generate_ID_to_length(courseDict, 20)
 
 lesson = Lesson(title, description, thumbnail, lessonID)
 
