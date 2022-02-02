@@ -14,8 +14,9 @@ from python_files.Admin import Admin
 from python_files.Teacher import Teacher
 from python_files.Student import Student
 from python_files.Course import Course
+from python_files.CourseLesson import VideoLesson , ZoomLesson, Lesson
 from python_files.Security import sanitise, generate_admin_id
-from python_files.IntegratedFunctions import generate_ID, generate_course_ID
+from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_lesson_ID
 from python_files.Graph import userbaseGraph
 from datetime import date, timedelta
 import shelve, pathlib
@@ -106,7 +107,13 @@ course.set_views(13)
 
 user.set_courseTeaching(courseID)
 
+title = "How to make a web app part 1"
+description = "You will learn the ups & downs here."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
 
+lessonID = generate_lesson_ID(courseDict)
+
+lesson = Lesson(title, description, thumbnail, lessonID)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userID] = user
