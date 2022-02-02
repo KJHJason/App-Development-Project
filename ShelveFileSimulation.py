@@ -49,7 +49,6 @@ graphList = []
            {courseID:Course()}
            {courseID:Course()}}
 """
-"""Student 1"""
 
 #General
 userIDStudent1 = generate_ID(userDict)
@@ -61,9 +60,6 @@ user = Student(userIDStudent1, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent1] = user
 
-
-"""Student 2"""
-
 #General
 userIDStudent2 = generate_ID(userDict)
 username = "Daniel"
@@ -71,10 +67,48 @@ email = sanitise("abc.net@gmail.com".lower())
 password = "456$%^"
 user = Student(userIDStudent2, username, email, password)
 
-#Courses (Royston)
-
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent2] = user
+
+#General
+userIDStudent3 = generate_ID(userDict)
+username = "Waffles"
+email = sanitise("waffles.net@gmail.com".lower())
+password = "456$%^"
+user = Student(userIDStudent3, username, email, password)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userIDStudent3] = user
+
+#General
+userIDStudent4 = generate_ID(userDict)
+username = "MikuChan"
+email = sanitise("miku.net@gmail.com".lower())
+password = "456$%^"
+user = Student(userIDStudent4, username, email, password)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userIDStudent4] = user
+
+#General
+userIDStudent5 = generate_ID(userDict)
+username = "Edan Pang"
+email = sanitise("Edan.net@gmail.com".lower())
+password = "456$%^"
+user = Student(userIDStudent5, username, email, password)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userIDStudent5] = user
+
+#General
+userIDStudent6 = generate_ID(userDict)
+username = "Daniel Fan"
+email = sanitise("daniel.net@gmail.com".lower())
+password = "456$%^"
+user = Student(userIDStudent6, username, email, password)
+
+# Get corresponding userID for updating/adding to dictionary
+userDict[userIDStudent6] = user
 
 """Teacher 1"""
 
@@ -111,9 +145,7 @@ title = "How to make a web app part 1"
 description = "You will learn the ups & downs here."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
 
-lessonID = generate_ID_to_length(courseDict, 20)
-
-lesson = Lesson(title, description, thumbnail, lessonID)
+lesson = Lesson(title, description, thumbnail)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userID] = user
@@ -173,7 +205,7 @@ course = Course(courseID, courseType, price, "Other_Academics", title, descripti
 # def __init__(self, userID, title, comment, rating)
 course.add_review(userIDStudent1, "Very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
-course.set_views(123)
+course.set_views(570)
 
 user.set_courseTeaching(courseID)
 
@@ -196,6 +228,16 @@ course = Course(courseID, courseType, videoPrice, "Other_Academics", title, desc
 
 # def __init__(self, userID, title, comment, rating)
 course.add_review(userIDStudent1, "A sequel to the very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
+
+course.add_review(userIDStudent2, "The best course for becoming a better self!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
+
+course.add_review(userIDStudent3, "Welp, that was disappointing!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "1")
+
+course.add_review(userIDStudent4, "Not worth your money and time", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "3")
+
+course.add_review(userIDStudent5, "Actually enjoyed learning from this course", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "4")
+
+course.add_review(userIDStudent6, "I agree, god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(1000)
 
@@ -259,7 +301,7 @@ print(user.get_shoppingCart())
 # set some data for user base graph for admin dashboard
 todayDate = date.today()
 
-graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(500), userbaseGraph(700), userbaseGraph(800), userbaseGraph(900), userbaseGraph(1001), userbaseGraph(1200), userbaseGraph(1500), userbaseGraph(1800), userbaseGraph(2600), userbaseGraph(3900), userbaseGraph(5000), userbaseGraph(8000), userbaseGraph(9000), userbaseGraph(9500), userbaseGraph(9900), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000)]
+graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(350), userbaseGraph(400), userbaseGraph(422), userbaseGraph(425), userbaseGraph(600), userbaseGraph(623), userbaseGraph(712), userbaseGraph(723), userbaseGraph(600), userbaseGraph(650), userbaseGraph(690), userbaseGraph(790), userbaseGraph(900), userbaseGraph(1500), userbaseGraph(1600), userbaseGraph(1700), userbaseGraph(2000), userbaseGraph(2300), userbaseGraph(2600), userbaseGraph(3219)]
 
 for i in range(len(graphList)-1, -1, -1):
     graphList[i].set_date(todayDate - timedelta(days=30-i))

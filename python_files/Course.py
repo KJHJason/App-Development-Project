@@ -25,9 +25,10 @@ User --> Teacher (Object) 1
       - Date, Time Selected 1
 '''
 
-from .Rating import Rating
+from .Review import Review
 from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
+import math
 
 class Course():
     def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, userID):
@@ -132,7 +133,7 @@ class Course():
     """Done by Royston"""
 
     def add_review(self, userID, title, comment, rating):
-        self.__review.append(Rating(userID, title, comment, rating))
+        self.__review.append(Review(userID, title, comment, rating))
     def get_review(self):
         return self.__review
     def remove_review(self, review): # review is a Rating object
@@ -198,7 +199,7 @@ class Course():
         total = 0
         for review in self.__review:
             total += int(review.get_rating())
-            return (total/len(self.__review))
+        return math.floor(total/len(self.__review))
 
     # def add_VideoLesson(self, title, description, thumbnail, videoData):
     #     videoLesson = VideoLesson(title, description, thumbnail, videoData)
