@@ -301,7 +301,7 @@ print(user.get_shoppingCart())
 # set some data for user base graph for admin dashboard
 todayDate = date.today()
 
-graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(500), userbaseGraph(700), userbaseGraph(800), userbaseGraph(900), userbaseGraph(1001), userbaseGraph(1200), userbaseGraph(1500), userbaseGraph(1800), userbaseGraph(2600), userbaseGraph(3900), userbaseGraph(5000), userbaseGraph(8000), userbaseGraph(9000), userbaseGraph(9500), userbaseGraph(9900), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000), userbaseGraph(12000)]
+graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph(4), userbaseGraph(10), userbaseGraph(25), userbaseGraph(150), userbaseGraph(200), userbaseGraph(180), userbaseGraph(300), userbaseGraph(350), userbaseGraph(400), userbaseGraph(422), userbaseGraph(425), userbaseGraph(600), userbaseGraph(623), userbaseGraph(712), userbaseGraph(723), userbaseGraph(600), userbaseGraph(650), userbaseGraph(690), userbaseGraph(790), userbaseGraph(900), userbaseGraph(1500), userbaseGraph(1600), userbaseGraph(1700), userbaseGraph(2000), userbaseGraph(2300), userbaseGraph(2600), userbaseGraph(3219)]
 
 for i in range(len(graphList)-1, -1, -1):
     graphList[i].set_date(todayDate - timedelta(days=30-i))
