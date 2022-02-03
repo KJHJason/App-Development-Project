@@ -28,9 +28,6 @@
                         <p class="info">Zoom Session</p>
                         <a href="{{ link }}" class="view">View Zoom Link</a>
                         {% endif %}
-                        <form action="/purchasereview/{{courseID}}" method="GET">
-                            <button type="submit" a class="btn btn-link">Submit Review</button>
-                        </form>
                     </div>
                     <div class="information col">
                         <!--Placeholders-->
@@ -40,4 +37,27 @@
         </div>
     </div>
     {% endfor %}
+
+    {% for Lesson["Lessons"] in courseInformation %}
+    <div class="row no-gutters layer-2">
+        <div class="col-4">
+            <!--Placeholders-->
+        </div>
+        <div class="col-8">
+            <div class="card-body text">
+                <h5 class="card-title">{{ courseInformation.get_lesson_list(). }}</h5>
+                <p class="card-text">{{ courseInformation["Description"] }}</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="selection col">
+                        <!--PlaceHolders-->>
+                    </div>
+                    <div class="information col">
+                        <!--Placeholders-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

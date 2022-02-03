@@ -140,13 +140,14 @@ course.add_review(userIDStudent2, "Good course to be honest", "Lorem ipsum dolor
 
 course.set_views(13)
 
-user.set_courseTeaching(courseID)
-
 title = "How to make a web app part 1"
 description = "You will learn the ups & downs here."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
+videoAbsolutePath = ""
 
-lesson = Lesson(title, description, thumbnail)
+course.add_video_lesson(title, description, thumbnail, videoAbsolutePath)
+
+user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
 courseDict[courseID] = course
