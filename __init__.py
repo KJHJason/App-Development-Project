@@ -62,6 +62,7 @@ client = vimeo.VimeoClient(
     secret = os.environ.get("VIMEO_SECRET")
 )
 
+""" 
 # Create a variable with a hard coded path to your file system
 file_name = '{path_to_a_video_on_the_file_system}'
 
@@ -97,7 +98,8 @@ except vimeo.exceptions.VideoUploadFailure as e:
     # We may have had an error. We can't resolve it here necessarily, so
     # report it to the user.
     print('Error uploading %s' % file_name)
-    print('Server reported: %s' % e.message)
+    print('Server reported: %s' % e.message) 
+"""
 
 """ # Uploading of videos
 file_name = '{path_to_a_video_on_the_file_system}'
