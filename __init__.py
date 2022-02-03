@@ -390,7 +390,7 @@ def home():
                                 courseDict.pop(randomisedCourse.get_courseID())
                 else:
                     for value in courseDict.values():
-                        if userDict.get(value.get_courseID()).get_status() == "Good":
+                        if userDict.get(value.get_userID()).get_status() == "Good":
                             recommendCourseList.append(value)
 
                 # retrieving course teacher's username
@@ -615,10 +615,9 @@ def home():
                         else:
                             # if the teacher of the course has been banned
                             courseDict.pop(randomisedCourse.get_courseID())
-                print("Recommendations: ", recommendCourseList)
             else:
                 for value in courseDict.values():
-                    if userDict.get(value.get_courseID()).get_status() == "Good":
+                    if userDict.get(value.get_userID()).get_status() == "Good":
                         recommendCourseList.append(value)
         
         # retrieving course teacher's username

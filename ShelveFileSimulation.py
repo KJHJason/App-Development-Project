@@ -123,6 +123,7 @@ user = Teacher(userID, username, email, password)
 user.set_earnings("100")
 user.set_teacher_join_date(date(2022, 1, 1)) ## wtforms default datefield format = YYYY-MM-DD
 
+userDict[userID] = user
 #Courses (Royston)
 
 #Courses Teaching (Wei Ren)
@@ -148,7 +149,6 @@ thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
 lesson = Lesson(title, description, thumbnail)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
 courseDict[courseID] = course
 
 """Teacher 2"""
@@ -170,7 +170,7 @@ user.set_cashoutContact("+6512345678")
 """
 #Courses (Royston)
 
-
+userDict[userID] = user
 
 #Courses Teaching (Wei Ren)
 title = "Using Math to Find When Your Dad is Coming Home"
@@ -190,7 +190,7 @@ course.set_views(1)
 user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
+
 courseDict[courseID] = course
 
 title = "How to be a Daniel"
@@ -210,12 +210,8 @@ course.set_views(570)
 user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
 courseDict[courseID] = course
 
-# Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
-courseDict[courseID] = course
 
 title = "How to be a Daniel 2"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
@@ -244,7 +240,6 @@ course.set_views(1000)
 user.set_courseTeaching(courseID)
 
 # Get corresponding userID for updating/adding to dictionary
-userDict[userID] = user
 courseDict[courseID] = course
 
 
