@@ -1430,7 +1430,6 @@ def teacherSignUp():
 
                     session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
 
-                    print(userDict)
                     print("Teacher added.")
 
                     db.close()
