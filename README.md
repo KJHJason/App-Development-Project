@@ -1,10 +1,10 @@
-# App-Development-Project
-
+<div align="center">
 <img src="/static/images/common/logo.png" width="500px" height="150px" alt="CourseFinity Logo">
 <br>
-<h1>CourseFinity Web Application using Flask</h1>
-<hr>
-<h2>Nanyang Polytechnic Y1 App Development Group Project [4 members]</h2>
+**CourseFinity Web Application using Flask**
+</div>
+
+## Nanyang Polytechnic Y1 App Development Group Project [4 members]
 <h3>This project consists of us making a web application using Flask as its framework.</h3>
 <h3>Group Members:</h3>
 <ol>
