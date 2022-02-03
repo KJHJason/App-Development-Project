@@ -151,4 +151,3 @@ class Common(User):
             print("PayPal dislikes you. Alternatively, you didn't validate correctly.")
 
     """End of Done by Wei Ren"""
-#

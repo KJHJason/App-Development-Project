@@ -738,7 +738,15 @@ def get_random_courses(courseDict):
         for value in courseDict.values():
             if userDict.get(value.get_userID()).get_status() == "Good":
                 recommendCourseList.append(value)
-    return recommendCourseList
+
+    # retrieving course teacher's username
+    recommedationDict = {}
+    for courses in recommendCourseList:
+        teacherObject = userDict.get(courses.get_userID())
+        teacherUsername = teacherObject.get_username()
+        recommedationDict[courses] = teacherUsername
+
+    return recommedationDict
 
 def saveNoOfUserPerDay():
     graphList = []

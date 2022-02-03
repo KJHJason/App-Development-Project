@@ -137,6 +137,7 @@
                                     {% endif %}
                                 </p>
                                 <p class="card-text"><span class="fw-bold">Category:</span> {{ course.get_readable_tag() }}</p>
+                                <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
                                 {% if accType=="Guest" %}
                                 <form action="/login" method="GET">
                                     <button type="submit" class="btn btn-success course_buy_button">Add to Cart</button>
