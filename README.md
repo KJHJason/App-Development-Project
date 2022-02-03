@@ -1,8 +1,8 @@
-<div align="center">
+<h1 align="center">
 <img src="/static/images/common/logo.png" width="500px" height="150px" alt="CourseFinity Logo">
 <br>
-**CourseFinity Web Application using Flask**
-</div>
+CourseFinity Web Application using Flask
+</h1>
 
 ## Nanyang Polytechnic Y1 App Development Group Project [4 members]
 <h3>This project consists of us making a web application using Flask as its framework.</h3>
