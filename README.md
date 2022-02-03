@@ -1,15 +1,19 @@
 # App-Development-Project
-Nanyang Polytechnic Y1 App Development Group Project [4 members]<br>
-This project consists of us making a web application using Flask as its framework.<br>
+
+<img src="/static/images/common/logo.png" width="500px" height="150px" alt="CourseFinity Logo">
 <br>
-Group Members: 
+<h1>CourseFinity Web Application using Flask</h1>
+<hr>
+<h2>Nanyang Polytechnic Y1 App Development Group Project [4 members]</h2>
+<h3>This project consists of us making a web application using Flask as its framework.</h3>
+<h3>Group Members:</h3>
 <ol>
   <li>Jason (Group Leader)</li>
   <li>Wei Ren (Assistant Group Leader)</li>
   <li>Clarence</li>
   <li>Royston</li>
 </ol>
-Libraries needed:
+<h3>Libraries needed:</h3>
 <ol>
   <li>shelve [Inbuilt with Python]</li>
   <li>Flask Version 2.0.2 [pip install Flask==2.0.2]</li>
