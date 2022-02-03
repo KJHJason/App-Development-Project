@@ -270,31 +270,74 @@ def home():
                         count = 0
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
                         print("Courses available: ", HighestTagCoursesAvailable)
-                        try:
-                            if HighestTagCoursesAvailable >= 2:
-                                courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
-                                if courseOne not in recommendCourseList:
-                                    recommendCourseList.append(courseOne)
-                                if courseTwo not in recommendCourseList:
-                                    recommendCourseList.append(courseTwo)
-                            else:
-                                while count != 2:
-                                    randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                    if randomisedCourse not in recommendCourseList:
-                                        recommendCourseList.append(randomisedCourse)
-                                        count += 1
-                                    else:
-                                        courseDict.pop(randomisedCourse.get_courseID())
-                            count = 0
-                            while count != 1:
+
+                        if HighestTagCoursesAvailable >= 2:
+                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                            if courseOne not in recommendCourseList:
+                                recommendCourseList.append(courseOne)
+                            if courseTwo not in recommendCourseList:
+                                recommendCourseList.append(courseTwo)
+                            print("Two courses picked accordingly to user's highly watched tag.")
+
+                            # picks one course for recommendations according to the user's second highly watched tag
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 1:
+                            
                                 randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
+
                                 if randomisedCourse not in recommendCourseList:
                                     recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    courseDict.pop(randomisedCourse.get_courseID())
-                        except:
-                            print("Not enough courses with the user's corresponding tags.")
+
+                                print("One course picked accordingly to user's second highly watched tag.")
+
+                        elif HighestTagCoursesAvailable == 1:
+                            # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 1 courses according to the user's highly watched tag
+                            course = recommendedCourseListByHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's highly watched tag.")
+
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 2:
+                            
+                                randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                                if randomisedCourseOne not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseOne)
+
+                                if randomisedCourseTwo not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseTwo)
+
+                                print("Two courses picked accordingly to user's second highly watched tag.")
+                            elif SecondHighestTagCoursesAvailable == 1:
+                                course = recommendedCourseListBySecondHighestTag[0]
+                                if course not in recommendCourseList:
+                                    recommendCourseList.append(course)
+                                print("One course picked accordingly to user's second highly watched tag.")
+                        else:
+                            # if there is only no courses according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 2 courses according to the user's second highly watched tag
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 2:
+                            
+                                randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                                if randomisedCourseOne not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseOne)
+
+                                if randomisedCourseTwo not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseTwo)
+
+                                print("Two courses picked accordingly to user's second highly watched tag.")
+                            elif SecondHighestTagCoursesAvailable == 1:
+                                course = recommendedCourseListBySecondHighestTag[0]
+                                if course not in recommendCourseList:
+                                    recommendCourseList.append(course)
+                                print("One course picked accordingly to user's second highly watched tag.")
 
                     elif courseListLen == 1: # condition will be true when the user has only one unique highest tag
                         for key in courseDict:
@@ -314,27 +357,23 @@ def home():
                         # appending course object for recommendations
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
                         print("Courses available: ", HighestTagCoursesAvailable)
-                        try:
-                            if HighestTagCoursesAvailable >= 2:
-                                courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
-                                if courseOne not in recommendCourseList:
-                                    recommendCourseList.append(courseOne)
-                                if courseTwo not in recommendCourseList:
-                                    recommendCourseList.append(courseTwo)
-                            else:
-                                count = 0
-                                while count != 2:
-                                    randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                    if randomisedCourse not in recommendCourseList:
-                                        recommendCourseList.append(randomisedCourse)
-                                        count += 1
-                                    else:
-                                        # already has been recommended or bought
-                                        courseDict.pop(randomisedCourse.get_courseID())
-                        except:
-                            print("Not enough courses with the user's corresponding tags.")
+        
+                        if HighestTagCoursesAvailable >= 2:
+                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                            if courseOne not in recommendCourseList:
+                                recommendCourseList.append(courseOne)
+                            if courseTwo not in recommendCourseList:
+                                recommendCourseList.append(courseTwo)
+                            print("Two courses picked accordingly to user's highly watched tag.")
+                        elif HighestTagCoursesAvailable == 1:
+                            # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 1 courses according to the user's highly watched tag
+                            course = recommendedCourseListByHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's highly watched tag.")
 
-                    # in the event where there is insufficient tags to recommend, it will randomly choose another course object
+                    # in the event where there is insufficient courses to recommend, it will randomly choose another course object
                     recommendLen = len(recommendCourseList)
                     if recommendLen != 3:
                         print("Retrieving random courses as recommendations...")
@@ -460,35 +499,74 @@ def home():
                     # appending course object for recommendations
                     count = 0
                     print("Courses available: ", len(recommendedCourseListByHighestTag))
-                    courseAvailable = len(recommendedCourseListByHighestTag)
-                    try:
-                        if courseAvailable >= 2:
-                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
-                            if courseOne not in recommendCourseList:
-                                recommendCourseList.append(courseOne)
-                            if courseTwo not in recommendCourseList:
-                                recommendCourseList.append(courseTwo)
-                        else:
-                            while count != 2:
-                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if randomisedCourse not in recommendCourseList:
-                                    recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    # course has been already recommended
-                                    courseDict.pop(randomisedCourse.get_courseID())
-                                    print("Course has already been recommended.")
-                        count = 0
-                        while count != 1:
+                    HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                    if HighestTagCoursesAvailable >= 2:
+                        courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                        if courseOne not in recommendCourseList:
+                            recommendCourseList.append(courseOne)
+                        if courseTwo not in recommendCourseList:
+                            recommendCourseList.append(courseTwo)
+                        print("Two courses picked accordingly to user's highly watched tag.")
+
+                        # picks one course for recommendations according to the user's second highly watched tag
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 1:
+                        
                             randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
+
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
-                                count += 1
-                            else:
-                                # course has been already recommended
-                                courseDict.pop(randomisedCourse.get_courseID())
-                    except:
-                        print("Not enough courses with the user's corresponding tags.")
+
+                            print("One course picked accordingly to user's second highly watched tag.")
+
+                    elif HighestTagCoursesAvailable == 1:
+                        # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 1 course according to the user's highly watched tag
+                        course = recommendedCourseListByHighestTag[0]
+                        if course not in recommendCourseList:
+                            recommendCourseList.append(course)
+                        print("One course picked accordingly to user's highly watched tag.")
+
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 2:
+                        
+                            randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                            if randomisedCourseOne not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseOne)
+
+                            if randomisedCourseTwo not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseTwo)
+
+                            print("Two courses picked accordingly to user's second highly watched tag.")
+                        elif SecondHighestTagCoursesAvailable == 1:
+                            course = recommendedCourseListBySecondHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's second highly watched tag.")
+                    else:
+                        # if there is only no courses according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 2 courses according to the user's second highly watched tag
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 2:
+                        
+                            randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                            if randomisedCourseOne not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseOne)
+
+                            if randomisedCourseTwo not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseTwo)
+
+                            print("Two courses picked accordingly to user's second highly watched tag.")
+                        elif SecondHighestTagCoursesAvailable == 1:
+                            course = recommendedCourseListBySecondHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's second highly watched tag.")
 
                 elif courseListLen == 1: # condition will be true when the user has one unique highest tag
                     for key in courseDict:
@@ -500,28 +578,23 @@ def home():
                             else:
                                 # if the teacher of the course has been banned
                                 courseDict.pop(randomisedCourse.get_courseID())
-                    count = 0
-                    try:
-                        print("Courses available: ", len(recommendedCourseListByHighestTag))
-                        courseAvailable = len(recommendedCourseListByHighestTag)
-                        if courseAvailable >= 2:
-                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
-                            if courseOne not in recommendCourseList:
-                                recommendCourseList.append(courseOne)
-                            if courseTwo not in recommendCourseList:
-                                recommendCourseList.append(courseTwo)
-                        else:
-                            while count != 2:
-                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if randomisedCourse not in recommendCourseList:
-                                    recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    # course has been already recommended
-                                    recommendedCourseListByHighestTag.pop(randomisedCourse)
-                                    print("Course has already been recommended.")
-                    except:
-                        print("Not enough courses with the user's corresponding tags.")
+
+                    print("Courses available: ", len(recommendedCourseListByHighestTag))
+                    HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                    if HighestTagCoursesAvailable >= 2:
+                        courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                        if courseOne not in recommendCourseList:
+                            recommendCourseList.append(courseOne)
+                        if courseTwo not in recommendCourseList:
+                            recommendCourseList.append(courseTwo)
+                        print("Two courses picked accordingly to user's highly watched tag.")
+                    elif HighestTagCoursesAvailable == 1:
+                        # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 1 course according to the user's highly watched tag
+                        course = recommendedCourseListByHighestTag[0]
+                        if course not in recommendCourseList:
+                            recommendCourseList.append(course)
+                        print("One course picked accordingly to user's highly watched tag.")
 
                 # in the event where there is insufficient tags to recommend, it will randomly choose another course object
                 recommendLen = len(recommendCourseList)
