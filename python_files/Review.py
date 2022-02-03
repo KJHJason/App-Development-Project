@@ -7,7 +7,7 @@ class Review():
         self.__title = title
         self.__comment = comment
         self.__rating = int(rating)
-        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))
+        self.__review_time = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S (UTC +8)"))
 
     def set_userID(self, userID):
         self.__userID = userID

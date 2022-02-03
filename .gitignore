@@ -22,7 +22,6 @@ python_files/__pycache__/Forms.cpython-39.pyc
 python_files/__pycache__/Graph.cpython-39.pyc
 python_files/__pycache__/IntegratedFunctions.cpython-39.pyc
 python_files/__pycache__/Payment.cpython-39.pyc
-python_files/__pycache__/Rating.cpython-39.pyc
 python_files/__pycache__/Security.cpython-39.pyc
 python_files/__pycache__/Student.cpython-39.pyc
 python_files/__pycache__/Teacher.cpython-39.pyc
@@ -37,9 +36,9 @@ python_files/__pycache__/Forms.cpython-310.pyc
 python_files/__pycache__/Graph.cpython-310.pyc
 python_files/__pycache__/IntegratedFunctions.cpython-310.pyc
 python_files/__pycache__/Payment.cpython-310.pyc
-python_files/__pycache__/Rating.cpython-310.pyc
 python_files/__pycache__/Security.cpython-310.pyc
 python_files/__pycache__/Student.cpython-310.pyc
 python_files/__pycache__/Teacher.cpython-310.pyc
 python_files/__pycache__/User.cpython-310.pyc
 python_files/__pycache__/Review.cpython-39.pyc
+python_files/__pycache__/Review.cpython-310.pyc

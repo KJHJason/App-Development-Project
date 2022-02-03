@@ -11,7 +11,7 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course, CourseLesson, Review
+from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files import Payment
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
@@ -199,7 +199,7 @@ def home():
                         if numberOfUnqiueViews > 1:
                             secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                         else:
-                            # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                            print("User has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)")
                             try:
                                 # hence choosing one other random course objects
                                 while True:
@@ -218,8 +218,8 @@ def home():
                             except:
                                 print("No course found.")
                     else:
-                        # meaning that the user has either not seen any tags or has watched an equal balance of various tags
-                        # hence choosing three random course objects
+                        # choosing three random course objects
+                        print("User has not watched any tags or has watched an equal balance of various tags.")
                         try:
                             while len(recommendCourseList) != 3:
                                 randomisedCourse = random.choice(list(courseDict.values()))
@@ -244,7 +244,7 @@ def home():
                         recommendedCourseListBySecondHighestTag = []
                         for key in courseDict:
                             courseObject = courseDict[key]
-                            courseTag = courseObject.get_tags()
+                            courseTag = courseObject.get_tag()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
                                     if userDict.get(courseObject.get_userID()).get_status() == "Good":
@@ -268,28 +268,81 @@ def home():
 
                         # appending course object for recommendations
                         count = 0
-                        try:
-                            while count != 2:
-                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
-                                    recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    courseDict.pop(randomisedCourse.get_courseID())
-                            while count != 3:
+                        HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                        print("Courses available: ", HighestTagCoursesAvailable)
+
+                        if HighestTagCoursesAvailable >= 2:
+                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                            if courseOne not in recommendCourseList:
+                                recommendCourseList.append(courseOne)
+                            if courseTwo not in recommendCourseList:
+                                recommendCourseList.append(courseTwo)
+                            print("Two courses picked accordingly to user's highly watched tag.")
+
+                            # picks one course for recommendations according to the user's second highly watched tag
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 1:
+                            
                                 randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
+
+                                if randomisedCourse not in recommendCourseList:
                                     recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    courseDict.pop(randomisedCourse.get_courseID())
-                        except:
-                            print("Not enough courses with the user's corresponding tags.")
+
+                                print("One course picked accordingly to user's second highly watched tag.")
+
+                        elif HighestTagCoursesAvailable == 1:
+                            # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 1 courses according to the user's highly watched tag
+                            course = recommendedCourseListByHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's highly watched tag.")
+
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 2:
+                            
+                                randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                                if randomisedCourseOne not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseOne)
+
+                                if randomisedCourseTwo not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseTwo)
+
+                                print("Two courses picked accordingly to user's second highly watched tag.")
+                            elif SecondHighestTagCoursesAvailable == 1:
+                                course = recommendedCourseListBySecondHighestTag[0]
+                                if course not in recommendCourseList:
+                                    recommendCourseList.append(course)
+                                print("One course picked accordingly to user's second highly watched tag.")
+                        else:
+                            # if there is only no courses according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 2 courses according to the user's second highly watched tag
+                            SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                            print("Courses available: ", SecondHighestTagCoursesAvailable)
+                            if SecondHighestTagCoursesAvailable >= 2:
+                            
+                                randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                                if randomisedCourseOne not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseOne)
+
+                                if randomisedCourseTwo not in recommendCourseList:
+                                    recommendCourseList.append(randomisedCourseTwo)
+
+                                print("Two courses picked accordingly to user's second highly watched tag.")
+                            elif SecondHighestTagCoursesAvailable == 1:
+                                course = recommendedCourseListBySecondHighestTag[0]
+                                if course not in recommendCourseList:
+                                    recommendCourseList.append(course)
+                                print("One course picked accordingly to user's second highly watched tag.")
 
                     elif courseListLen == 1: # condition will be true when the user has only one unique highest tag
                         for key in courseDict:
                             courseObject = courseDict[key]
-                            courseTag = courseObject.get_tags()
+                            courseTag = courseObject.get_tag()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
                                     if userDict.get(courseObject.get_userID()).get_status() == "Good":
@@ -302,22 +355,29 @@ def home():
                                     courseDict.pop(randomisedCourse.get_courseID())
 
                         # appending course object for recommendations
-                        count = 0
-                        try:
-                            while count != 2:
-                                randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                                if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
-                                    recommendCourseList.append(randomisedCourse)
-                                    count += 1
-                                else:
-                                    # already has been recommended or bought
-                                    courseDict.pop(randomisedCourse.get_courseID())
-                        except:
-                            print("Not enough courses with the user's corresponding tags.")
+                        HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                        print("Courses available: ", HighestTagCoursesAvailable)
+        
+                        if HighestTagCoursesAvailable >= 2:
+                            courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                            if courseOne not in recommendCourseList:
+                                recommendCourseList.append(courseOne)
+                            if courseTwo not in recommendCourseList:
+                                recommendCourseList.append(courseTwo)
+                            print("Two courses picked accordingly to user's highly watched tag.")
+                        elif HighestTagCoursesAvailable == 1:
+                            # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                            # recommends 1 courses according to the user's highly watched tag
+                            course = recommendedCourseListByHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's highly watched tag.")
 
-                    # in the event where there is insufficient tags to recommend, it will randomly choose another course object
-                    if len(recommendCourseList) != 3:
-                        while len(recommendCourseList) != 3:
+                    # in the event where there is insufficient courses to recommend, it will randomly choose another course object
+                    recommendLen = len(recommendCourseList)
+                    if recommendLen != 3:
+                        print("Retrieving random courses as recommendations...")
+                        while recommendLen != 3:
                             try:
                                 randomisedCourse = random.choice(list(courseDict.values()))
                             except:
@@ -325,6 +385,7 @@ def home():
                             if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
                                     recommendCourseList.append(randomisedCourse)
+                                    recommendLen = len(recommendCourseList)
                             else:
                                 courseDict.pop(randomisedCourse.get_courseID())
                 else:
@@ -383,7 +444,7 @@ def home():
                     if numberOfUnqiueViews > 1:
                         secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                     else:
-                        # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                        print("User has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)")
                         try:
                             # hence choosing one other random course objects
                             while True:
@@ -396,8 +457,8 @@ def home():
                         except:
                             print("No course found.")
                 else:
-                    # meaning that the user has either not seen any tags or has watched an equal balance of various tags
-                    # hence choosing three random course objects
+                    # choosing three random course objects
+                    print("User has not watched any tags or has watched an equal balance of various tags.")
                     try:
                         while len(recommendCourseList) != 3:
                             randomisedCourse = random.choice(list(courseDict.values()))
@@ -421,7 +482,7 @@ def home():
                     recommendedCourseListBySecondHighestTag = []
                     for key in courseDict:
                         courseObject = courseDict[key]
-                        courseTag = courseObject.get_tags()
+                        courseTag = courseObject.get_tag()
                         if courseTag == highestWatchedByTag:
                             if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                 recommendedCourseListByHighestTag.append(courseObject)
@@ -437,52 +498,109 @@ def home():
 
                     # appending course object for recommendations
                     count = 0
-                    try:
-                        while count != 2:
-                            randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                            if randomisedCourse not in recommendCourseList:
-                                recommendCourseList.append(randomisedCourse)
-                                count += 1
-                            else:
-                                # course has been already recommended
-                                courseDict.pop(randomisedCourse.get_courseID())
-                        while count != 3:
+                    print("Courses available: ", len(recommendedCourseListByHighestTag))
+                    HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                    if HighestTagCoursesAvailable >= 2:
+                        courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                        if courseOne not in recommendCourseList:
+                            recommendCourseList.append(courseOne)
+                        if courseTwo not in recommendCourseList:
+                            recommendCourseList.append(courseTwo)
+                        print("Two courses picked accordingly to user's highly watched tag.")
+
+                        # picks one course for recommendations according to the user's second highly watched tag
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 1:
+                        
                             randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
+
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
-                                count += 1
-                            else:
-                                # course has been already recommended
-                                courseDict.pop(randomisedCourse.get_courseID())
-                    except:
-                        print("Not enough courses with the user's corresponding tags.")
+
+                            print("One course picked accordingly to user's second highly watched tag.")
+
+                    elif HighestTagCoursesAvailable == 1:
+                        # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 1 course according to the user's highly watched tag
+                        course = recommendedCourseListByHighestTag[0]
+                        if course not in recommendCourseList:
+                            recommendCourseList.append(course)
+                        print("One course picked accordingly to user's highly watched tag.")
+
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 2:
+                        
+                            randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                            if randomisedCourseOne not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseOne)
+
+                            if randomisedCourseTwo not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseTwo)
+
+                            print("Two courses picked accordingly to user's second highly watched tag.")
+                        elif SecondHighestTagCoursesAvailable == 1:
+                            course = recommendedCourseListBySecondHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's second highly watched tag.")
+                    else:
+                        # if there is only no courses according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 2 courses according to the user's second highly watched tag
+                        SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
+                        print("Courses available: ", SecondHighestTagCoursesAvailable)
+                        if SecondHighestTagCoursesAvailable >= 2:
+                        
+                            randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
+
+                            if randomisedCourseOne not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseOne)
+
+                            if randomisedCourseTwo not in recommendCourseList:
+                                recommendCourseList.append(randomisedCourseTwo)
+
+                            print("Two courses picked accordingly to user's second highly watched tag.")
+                        elif SecondHighestTagCoursesAvailable == 1:
+                            course = recommendedCourseListBySecondHighestTag[0]
+                            if course not in recommendCourseList:
+                                recommendCourseList.append(course)
+                            print("One course picked accordingly to user's second highly watched tag.")
 
                 elif courseListLen == 1: # condition will be true when the user has one unique highest tag
                     for key in courseDict:
                         courseObject = courseDict[key]
-                        courseTag = courseObject.get_tags()
+                        courseTag = courseObject.get_tag()
                         if courseTag == highestWatchedByTag:
                             if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                 recommendedCourseListByHighestTag.append(courseObject)
                             else:
                                 # if the teacher of the course has been banned
                                 courseDict.pop(randomisedCourse.get_courseID())
-                    count = 0
-                    try:
-                        while count != 2:
-                            randomisedCourse = random.choice(recommendedCourseListByHighestTag)
-                            if randomisedCourse not in recommendCourseList:
-                                recommendCourseList.append(randomisedCourse)
-                                count += 1
-                            else:
-                                # course has been already recommended
-                                recommendedCourseListByHighestTag.pop(randomisedCourse)
-                    except:
-                        print("Not enough courses with the user's corresponding tags.")
+
+                    print("Courses available: ", len(recommendedCourseListByHighestTag))
+                    HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                    if HighestTagCoursesAvailable >= 2:
+                        courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
+                        if courseOne not in recommendCourseList:
+                            recommendCourseList.append(courseOne)
+                        if courseTwo not in recommendCourseList:
+                            recommendCourseList.append(courseTwo)
+                        print("Two courses picked accordingly to user's highly watched tag.")
+                    elif HighestTagCoursesAvailable == 1:
+                        # if there is only one course according to the user's highly watched tag (possibly due to a lack of courses, the teacher deleting the course, or the teacher being banned)
+                        # recommends 1 course according to the user's highly watched tag
+                        course = recommendedCourseListByHighestTag[0]
+                        if course not in recommendCourseList:
+                            recommendCourseList.append(course)
+                        print("One course picked accordingly to user's highly watched tag.")
 
                 # in the event where there is insufficient tags to recommend, it will randomly choose another course object
-                if len(recommendCourseList) != 3:
-                    while len(recommendCourseList) != 3:
+                recommendLen = len(recommendCourseList)
+                if recommendLen != 3:
+                    print("Retrieving random courses as recommendations...")
+                    while recommendLen != 3:
                         try:
                             randomisedCourse = random.choice(list(courseDict.values()))
                         except:
@@ -490,9 +608,14 @@ def home():
                         if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
                             if randomisedCourse not in recommendCourseList:
                                 recommendCourseList.append(randomisedCourse)
+                                recommendLen = len(recommendCourseList)
+                            else:
+                                # if course has been recommended already
+                                courseDict.pop(randomisedCourse.get_courseID())
                         else:
                             # if the teacher of the course has been banned
                             courseDict.pop(randomisedCourse.get_courseID())
+                print("Recommendations: ", recommendCourseList)
             else:
                 for value in courseDict.values():
                     if userDict.get(value.get_courseID()).get_status() == "Good":
@@ -504,7 +627,7 @@ def home():
             teacherObject = userDict.get(courses.get_userID())
             teacherUsername = teacherObject.get_username()
             recommedationDict[courses] = teacherUsername
-
+        
         return render_template("users/general/home.html", accType="Guest", trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
 # for setting a cookie for the guest for content personalisation
@@ -599,117 +722,21 @@ def homeNoCookies():
             for values in courseDict.values():
                 if userDict.get(values.get_userID()).get_status() == "Good":
                     trendingCourseList.append(values)
+        
+        # for retrieving the teacher's username
+        trendingDict = {}
+        for courses in trendingCourseList:
+            teacherObject = userDict.get(courses.get_userID())
+            teacherUsername = teacherObject.get_username()
+            trendingDict[courses] = teacherUsername
 
-        recommendCourseList = get_random_courses(courseDict)
+        recommendCourseDict = get_random_courses(courseDict)
 
-        return render_template("users/general/home.html", accType="Guest", trendingCourseList=trendingCourseList, recommendCourseList=recommendCourseList, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
+        return render_template("users/general/home.html", accType="Guest", trendingCourseDict=trendingDict, recommendCourseDict=recommendCourseDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseDict))
     else:
         return redirect(url_for("home"))
 
 """End of Home pages by Jason"""
-
-"""Editing Cookie"""
-
-@app.route('/edit_cookie/<teacherUID>/<courseID>/<courseTag>')
-@limiter.limit("10/second")
-def guestEditCookie(teacherUID, courseID, courseTag):
-    redirectURL = "/" + teacherUID + "/" + courseID
-    res = make_response(redirect(redirectURL))
-    cookieCreated = False
-    if "sessionCookieCreated" in session:
-        cookieCreated = session["sessionCookieCreated"]
-        print("Retrieved session cookie.")
-    else:
-        print("Guest user had disabled cookie.")
-    if request.cookies.get("guestSeenTags") and cookieCreated:
-        # if user have an existing cookie with the name guestSeenTags
-        try:
-            userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
-            if courseTag in userTagDict:
-                userTagDict[courseTag] += 1
-                res.set_cookie(
-                    "guestSeenTags",
-                    value=b64encode(json.dumps(userTagDict).encode("utf-8")),
-                    expires=datetime.now() + datetime.timedelta(days=90)
-                )
-        except:
-            print("Error with editing guest's cookie.")
-            # if the guest user had tampered with the cookie value
-            res.set_cookie(
-                "guestSeenTags",
-                value=b64encode(json.dumps({"Programming": 0,
-                "Web_Development": 0,
-                "Game_Development": 0,
-                "Mobile_App_Development": 0,
-                "Software_Development": 0,
-                "Other_Development": 0,
-                "Entrepreneurship": 0,
-                "Project_Management": 0,
-                "BI_Analytics": 0,
-                "Business_Strategy": 0,
-                "Other_Business": 0,
-                "3D_Modelling": 0,
-                "Animation": 0,
-                "UX_Design": 0,
-                "Design_Tools": 0,
-                "Other_Design": 0,
-                "Digital_Photography": 0,
-                "Photography_Tools": 0,
-                "Video_Production": 0,
-                "Video_Design_Tools": 0,
-                "Other_Photography_Videography": 0,
-                "Science": 0,
-                "Math": 0,
-                "Language": 0,
-                "Test_Prep": 0,
-                "Other_Academics": 0}).encode("utf-8")),
-                expires=datetime.now() + timedelta(days=90)
-            )
-    elif not request.cookies.get("guestSeenTags") and cookieCreated:
-        # if user do not have an existing cookie with the name guestSeenTags
-        originalCourseTagDict = {"Programming": 0,
-                                "Web_Development": 0,
-                                "Game_Development": 0,
-                                "Mobile_App_Development": 0,
-                                "Software_Development": 0,
-                                "Other_Development": 0,
-                                "Entrepreneurship": 0,
-                                "Project_Management": 0,
-                                "BI_Analytics": 0,
-                                "Business_Strategy": 0,
-                                "Other_Business": 0,
-                                "3D_Modelling": 0,
-                                "Animation": 0,
-                                "UX_Design": 0,
-                                "Design_Tools": 0,
-                                "Other_Design": 0,
-                                "Digital_Photography": 0,
-                                "Photography_Tools": 0,
-                                "Video_Production": 0,
-                                "Video_Design_Tools": 0,
-                                "Other_Photography_Videography": 0,
-                                "Science": 0,
-                                "Math": 0,
-                                "Language": 0,
-                                "Test_Prep": 0,
-                                "Other_Academics": 0}
-        try:
-            originalCourseTagDict[courseTag] += 1
-        except:
-            print("Tag does not exist.")
-
-        res.set_cookie(
-            "guestSeenTags",
-            value=b64encode(json.dumps(originalCourseTagDict).encode("utf-8")),
-            expires=datetime.now() + datetime.timedelta(days=90)
-        )
-
-    if not request.cookies.get("guestSeenTags") and cookieCreated == False:
-        redirectURL = redirectURL + "/no_cookies"
-        return redirect(redirectURL) # if the user had disabled cookies
-    return res
-
-"""End of Editing Cookie"""
 
 """User login and logout by Jason"""
 
@@ -3282,7 +3309,7 @@ def changeAccountType():
 
 """End of User Profile Settings by Jason"""
 
-"""User payment method settings by Jason"""
+"""Cashout Preference View by Wei Ren"""
 
 @app.route('/cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
@@ -3317,96 +3344,52 @@ def cashoutPreference():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
 
+            # Initialise values
             cashoutForm = Forms.CashoutForm(request.form)
-            actionChosen = True
-            cashoutEdited = False
             phoneError = False
-            if request.method == "POST" and cashoutForm.validate():
-                print(cashoutForm.data)
-                print("POST request sent and form entries validated")
 
-                phoneNumber = cashoutForm.phoneNumber.data
-                countryCode = cashoutForm.countryCode.data
-                print('Yes')
 
-                if json.loads(cashoutForm.deleteInfo.data):
-                    return None
-                    print('Yes1')
-                elif cashoutForm.cashoutPreference.data == "Phone":
-                    print('Yes2')
-                    if cashoutForm.deleteInfo.data == True:
-                        print('Yes3')
-                        userKey.set_cashoutPreference("Email")
-                        userKey.set_cashoutPhone(None)
-                        userKey.set_cashoutVerification(False)
-                    else:
-                        print('Yes4')
-                        phoneNumber = countryCode + phoneNumber
-                        try:
-                            phoneObject = phonenumbers.parse(phoneNumber, None)
-                            if phonenumbers.is_possible_number(phoneObject):
-                                userKey.set_cashoutPhone(phoneNumber)
-                                if phonenumbers.is_valid_number(phoneObject):
-                                    userKey.set_phoneValidation(True)
-                                else:
-                                    userKey.set_phoneValidation(False)
-                            else:
-                                phoneError = True
-                        except phonenumbers.NumberParseException:
-                            print("Parsing Error.")
-                            phoneError = True
-                        except:
-                            print("Something went wrong.")
-                            phoneError = True
-                else:
-                    print("Yes Else")
-                    userKey.set_cashoutPreference(cashoutForm.cashoutPreference.data)
+            renderedInfo = {}
 
-                if phoneError:
-                    print("Yes Phone Error")
-                    renderedInfo = {"Preference": "",
-                                    "Country Code": countryCode,
-                                    "Phone Number": phoneNumber}
+            # Get preference value for rendering
+            if userKey.get_cashoutPreference() == "Email":
+                renderedInfo["Preference"] = "Email"
+            elif userKey.get_cashoutPreference() == "Phone":
+                renderedInfo["Preference"] = "Phone"
 
-                    for choice in cashoutForm.countryCode.choices:
-                        if list(choice)[0] == countryCode:
-                            cashoutForm.countryCode.data = choice
-                            print(cashoutForm.countryCode.data)
-                else:
-                    print("Yes Here")
-                    userDict[userKey.get_user_id()] = userKey
-                    db['Users'] = userDict
-                    print("Payment added")
+            # Get email for rendering
+            renderedInfo["Email"] = userKey.get_email()
 
-                    cashoutEdited = True
+            # Check if phone data is saved
+            if userKey.get_cashoutPhone() != None:
+                print("Yes Phone Exist")
 
-            if not phoneError:
-                print("Yes Alright")
-                renderedInfo = {}
+                # Get phone number object
+                phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
 
-                print(cashoutEdited, actionChosen, phoneError)
+                # Get phone number for rendering
+                renderedInfo["Phone Number"] = phoneObject.national_number
 
-                if userKey.get_cashoutPreference() == "Email":
-                    renderedInfo["Preference"] = "Email"
+                # Pre-set country code to saved value before rendering: Done
+                countryCode = "+" + str(phoneObject.country_code)
+                for choice in cashoutForm.countryCode.choices[1:]:
+                    countryCodeChoice = list(choice)[0]
+                    if countryCodeChoice == countryCode:
+                        renderedInfo['Country Code'] = countryCodeChoice
+            else:
+                renderedInfo['Phone Number'] = ""
+                renderedInfo['Country Code'] = ""
 
-                elif userKey.get_cashoutPreference() == "Phone":
-                    renderedInfo["Preference"] = "Phone"
-
-                renderedInfo["Email"] = userKey.get_email()
-
-                if userKey.get_cashoutPhone() != None:
-                    phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
-                    renderedInfo["Phone Number"] = phoneObject.national_number
-
-                    countryCode = phoneObject.country_code
-                    for choice in cashoutForm.countryCode.choices:
-                        if list(choice)[0] == countryCode:
-                            cashoutForm.countryCode.data = choice
-                            print(phoneObject.country_code_source)
+            print("Phone Error:", phoneError)
+            print("Preference:", userKey.get_cashoutPreference())
+            print("Phone Number:", userKey.get_cashoutPhone())
+            print("International:",renderedInfo['Phone Number'])
+            print("Country Code:",renderedInfo['Country Code'])
+            print("Phone Validation:",userKey.get_phoneValidation())
 
             db.close()
             print("Yes Return?")
-            return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, cashoutEdited=cashoutEdited, actionChosen=actionChosen, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
+            return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
         else:
             db.close()
             print("User not found or is banned.")
@@ -3419,6 +3402,178 @@ def cashoutPreference():
         else:
             return redirect(url_for("userLogin"))
 
+"""End of Cashout Preference View by Wei Ren"""
+
+"""Cashout Preference Edit by Wei Ren"""
+
+@app.route('/edit_cashout_preference', methods=["GET","POST"])
+@limiter.limit("30/second") # to prevent ddos attacks
+def editCashoutPreference():
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
+                session.clear()
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+
+            # Initialise values
+            cashoutForm = Forms.CashoutForm(request.form)
+            phoneError = False
+
+            # Save changes, or delete email info
+            if request.method == "POST" and cashoutForm.validate():
+                print(cashoutForm.data)
+                print("POST request sent and form entries validated")
+
+                # Initialise variables
+                cashoutPreference = cashoutForm.cashoutPreference.data
+                phoneNumber = cashoutForm.phoneNumber.data
+                countryCode = cashoutForm.countryCode.data
+                print(countryCode) # Afghanistan (+93)
+                print('Yes Post')
+                print(json.loads(cashoutForm.deleteInfo.data))
+
+                # Check if deleting info
+                if json.loads(cashoutForm.deleteInfo.data) == True:
+                    print('Yes Delete')
+                    userKey.set_cashoutPreference("Email")
+                    userKey.set_cashoutPhone(None)
+                    userKey.set_phoneValidation(False)
+
+                elif cashoutPreference == "Phone":
+                    print('Yes Phone')
+
+                    # Validate phone number
+                    try:
+                        fullPhoneNumber = countryCode + phoneNumber
+                        phoneObject = phonenumbers.parse(fullPhoneNumber, None)
+                        if phonenumbers.is_possible_number(phoneObject):
+                            userKey.set_cashoutPhone(fullPhoneNumber)
+                            if phonenumbers.is_valid_number(phoneObject):
+                                userKey.set_phoneValidation(True)
+                            else:
+                                userKey.set_phoneValidation(False)
+                        else:
+                            phoneError = True
+                    except:
+                        print("Something went wrong. Parsing error?")
+                        phoneError = True
+
+                    # Set email as preference
+                    userKey.set_cashoutPreference(cashoutPreference)
+
+                elif cashoutPreference == "Email":
+                    print("Yes Email")
+                    # Set email as preference
+                    userKey.set_cashoutPreference(cashoutPreference)
+
+                # Check whether phone validation successful
+                if phoneError:
+                    print("Yes Phone Error")
+
+                    # Get entered info for rendering again
+                    renderedInfo = {"Preference": cashoutPreference,
+                                    "Phone Number": phoneNumber,
+                                    "Email": userKey.get_email()}
+
+                    # Pre-set country code to previously input value before rendering
+                    renderedInfo['Country Code'] = ""
+                    for choice in cashoutForm.countryCode.choices:
+                        print(countryCode)
+                        if list(choice)[0] == countryCode:
+                            renderedInfo['Country Code'] = choice
+                            print(cashoutForm.countryCode.data)
+
+                else:
+                    print("Yes Success")
+                    # Save values if no errors
+                    userDict[userKey.get_user_id()] = userKey
+                    db['Users'] = userDict
+                    print("Payment added")
+                    return redirect(url_for('cashoutPreference'))
+
+            else:
+                print("Yes Alright")
+                renderedInfo = {}
+
+                # Get preference value for rendering
+                if userKey.get_cashoutPreference() == "Email":
+                    renderedInfo["Preference"] = "Email"
+                elif userKey.get_cashoutPreference() == "Phone":
+                    renderedInfo["Preference"] = "Phone"
+
+                # Get email for rendering
+                renderedInfo["Email"] = userKey.get_email()
+
+                # Check if phone data is saved
+                if userKey.get_cashoutPhone() != None:
+                    print("Yes Phone Exist")
+
+                    # Get phone number object
+                    phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
+
+                    # Get phone number for rendering
+                    renderedInfo["Phone Number"] = phoneObject.national_number
+
+                    # Pre-set country code to saved value before rendering: Done
+                    countryCode = "+" + str(phoneObject.country_code)
+                    print(cashoutForm.countryCode.choices)
+                    for choice in cashoutForm.countryCode.choices[1:]:
+                        countryCodeChoice = list(choice)[0]
+                        if countryCodeChoice == countryCode:
+                            renderedInfo['Country Code'] = countryCodeChoice
+                else:
+                    renderedInfo['Phone Number'] = ""
+                    renderedInfo['Country Code'] = ""
+
+
+            print("Phone Error:", phoneError)
+            print("Preference:", userKey.get_cashoutPreference())
+            print("Phone Number:", userKey.get_cashoutPhone())
+            print("International:",renderedInfo['Phone Number'])
+            print("Country Code Entered:",cashoutForm.countryCode.data)
+            print("Country Code:", renderedInfo['Country Code'])
+            print("Phone Validation:",userKey.get_phoneValidation())
+
+            db.close()
+            print("Yes Return?")
+            return render_template('users/teacher/edit_cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
+        else:
+            db.close()
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            return redirect(url_for("userLogin"))
+
+"""End of Cashout Preference Edit by Wei Ren"""
 
 """Teacher Cashout System by Jason"""
 """PayPal Integration by Wei Ren"""
@@ -5069,7 +5224,6 @@ def coursePage(courseID):
         if "Courses" in db and "Users" in db:
             courseDict = db['Courses']
             userDict = db['Users']
-            db.close()
         else:
             db.close()
             return redirect("/404")
@@ -5108,25 +5262,135 @@ def coursePage(courseID):
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey_userDict(userSession, userDict)
 
         if userFound and accGoodStatus:
-            if courseID in userKey.get_purchases():
-                userPurchased = True
-            else:
-                userPurchased = False
-
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
+
+            if accType != "Admin":
+                print("User is not an admin.")
+                if courseID in userKey.get_purchases():
+                    userPurchased = True
+                else:
+                    userPurchased = False
+                # if user is not admin, increase the number of tag views for the course's tag and increase the course's number of views
+                userKey.change_no_of_view(courseObject.get_tag())
+                courseObject.increase_view()
+                db["Users"] = userDict
+                db["Courses"] = courseDict
+            else:
+                userPurchased = False
+
+            db.close()
+
             return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
         else:
+            db.close()
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+            return redirect("/course/" + courseID)
     else:
-        return render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+        res = make_response(render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername))
+
+        courseTag = courseObject.get_tag()
+        if not request.cookies.get("guestSeenTags"):
+            # if user do not have an existing cookie with the name guestSeenTags
+            originalCourseTagDict = {"Programming": 0,
+                                    "Web_Development": 0,
+                                    "Game_Development": 0,
+                                    "Mobile_App_Development": 0,
+                                    "Software_Development": 0,
+                                    "Other_Development": 0,
+                                    "Entrepreneurship": 0,
+                                    "Project_Management": 0,
+                                    "BI_Analytics": 0,
+                                    "Business_Strategy": 0,
+                                    "Other_Business": 0,
+                                    "3D_Modelling": 0,
+                                    "Animation": 0,
+                                    "UX_Design": 0,
+                                    "Design_Tools": 0,
+                                    "Other_Design": 0,
+                                    "Digital_Photography": 0,
+                                    "Photography_Tools": 0,
+                                    "Video_Production": 0,
+                                    "Video_Design_Tools": 0,
+                                    "Other_Photography_Videography": 0,
+                                    "Science": 0,
+                                    "Math": 0,
+                                    "Language": 0,
+                                    "Test_Prep": 0,
+                                    "Other_Academics": 0}
+            if courseTag in originalCourseTagDict:
+                originalCourseTagDict[courseTag] += 1
+            else:
+                print("Tag does not exist.")
+
+            res.set_cookie(
+                "guestSeenTags",
+                value=b64encode(json.dumps(originalCourseTagDict).encode("utf-8")),
+                expires=datetime.now() + timedelta(days=90)
+            )
+        else:
+            # if user have an existing cookie with the name guestSeenTags
+            try:
+                userTagDict = json.loads(b64decode(request.cookies.get("guestSeenTags")))
+                if courseTag in userTagDict:
+                    userTagDict[courseTag] += 1
+                    res.set_cookie(
+                        "guestSeenTags",
+                        value=b64encode(json.dumps(userTagDict).encode("utf-8")),
+                        expires=datetime.now() + timedelta(days=90)
+                    )
+                else:
+                    print("Tag does not exist.")
+            except:
+                print("Error with editing guest's cookie.")
+                # if the guest user had tampered with the cookie value
+                tagDict = {"Programming": 0,
+                    "Web_Development": 0,
+                    "Game_Development": 0,
+                    "Mobile_App_Development": 0,
+                    "Software_Development": 0,
+                    "Other_Development": 0,
+                    "Entrepreneurship": 0,
+                    "Project_Management": 0,
+                    "BI_Analytics": 0,
+                    "Business_Strategy": 0,
+                    "Other_Business": 0,
+                    "3D_Modelling": 0,
+                    "Animation": 0,
+                    "UX_Design": 0,
+                    "Design_Tools": 0,
+                    "Other_Design": 0,
+                    "Digital_Photography": 0,
+                    "Photography_Tools": 0,
+                    "Video_Production": 0,
+                    "Video_Design_Tools": 0,
+                    "Other_Photography_Videography": 0,
+                    "Science": 0,
+                    "Math": 0,
+                    "Language": 0,
+                    "Test_Prep": 0,
+                    "Other_Academics": 0}
+                if courseTag in tagDict:
+                    tagDict[courseTag] += 1
+                else:
+                    print("Tag does not exist.")
+                res.set_cookie(
+                    "guestSeenTags",
+                    value=b64encode(json.dumps(tagDict).encode("utf-8")),
+                    expires=datetime.now() + timedelta(days=90)
+            )
+
+        courseObject.increase_view()
+        db["Courses"] = courseDict
+        db.close()
+
+        return res
 
 @app.route('/course/<courseID>/reviews/page_<int:reviewPageNum>')
 def courseReviews(courseID, reviewPageNum):
