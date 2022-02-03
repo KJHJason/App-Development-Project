@@ -80,11 +80,24 @@
                                 <div class="row">
                                     <div class="col-md-6 margin-top margin-top2">
                                         {{ cashoutForm.countryCode.label }}
-                                        {{ cashoutForm.countryCode(class="form-control", disabled=true) }}
+
+                                        <select disabled class="form-control" id="countryCode" name="countryCode">
+                                            {{ cashoutForm.countryCode.label }}
+                                            {% for choice in cashoutForm.countryCode %}
+                                                {% set label = choice.label.text %}
+                                                {% set value = choice.data %}
+                                                {% if choice.data == renderedInfo['Country Code'] %}
+                                                    <option value="{{ value }}" selected>{{ label }}</option>
+                                                {% else %}
+                                                    <option value="{{ value }}">{{ label }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+
                                     </div>
                                     <div class="col-md-6 margin-top margin-top2">
                                         {{ cashoutForm.phoneNumber.label }}
-                                        {% set phoneNumber = renderedInfo['phoneNumber'] %}
+                                        {% set phoneNumber = renderedInfo['Phone Number'] %}
                                         {{ cashoutForm.phoneNumber(class="form-control", value=phoneNumber, disabled=true) }}
                                     </div>
                                 </div>
@@ -96,62 +109,7 @@
                                     </div>
                                 </div>
 
-                                <button onclick="editRead('edit')" class="btn btn-primary margin-top margin-top2 float-end">Edit</button>
-                            </div>
-                        </div>
-
-                        <div id="edit" class="card">
-                            <h4 class="card-title margin-top">Edit Cashout Preferences</h4>
-                            <div class="card-body">
-                                <form action="" method="POST" id="edit-form">
-
-                                    <div class="col form-check form-check-inline">
-                                        <label class="form-check-label" for="cashoutPreference-0">Phone</label>
-                                        {% if renderedInfo['Preference'] == "Phone" %}
-                                        <input class="form-check-input" id="cashoutPreference-0" name="cashoutPreference" type="radio" value="Phone" checked onclick="toggle('phone')">
-                                        {% else %}
-                                        <input class="form-check-input" id="cashoutPreference-0" name="cashoutPreference" type="radio" value="Phone" onclick="toggle('phone')">
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="col form-check form-check-inline">
-                                        <label class="form-check-label" for="cashoutPreference-1">Email</label>
-                                        {% if renderedInfo['Preference'] == "Email" %}
-                                        <input class="form-check-input" id="cashoutPreference-1" name="cashoutPreference" type="radio" value="Phone" checked onclick="toggle('email')">
-                                        {% else %}
-                                        <input class="form-check-input" id="cashoutPreference-1" name="cashoutPreference" type="radio" value="Phone" onclick="toggle('email')">
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="row" id="phone">
-                                        <div class="col-md-6 margin-top margin-top2">
-                                            {{ cashoutForm.countryCode.label }}
-                                            {% if phoneError == True %}
-                                            <div class="text-danger small strong"><h6>Invalid Phone Number</h6></div>
-                                            {% endif %}
-                                            {{ cashoutForm.countryCode(class="form-control") }}
-                                        </div>
-                                        <div class="col-md-6 margin-top margin-top2">
-                                            {{ cashoutForm.phoneNumber.label }}
-                                            {% set phoneNumber = renderedInfo['phoneNumber'] %}
-                                            {{ cashoutForm.phoneNumber(class="form-control", value=phoneNumber) }}
-                                        </div>
-                                    </div>
-
-                                    <div class="row" id="email">
-                                        <div class="col-md-6 margin-top margin-top2">
-                                            <label for="emailAddress">Email:</label>
-                                            <div class="text-danger small strong"><h6>Email can be changed in Profile Settings</h6></div>
-                                            <input id="emailAddress" class="form-control" type="text" value="{{ renderedInfo['Email'] }}" disabled>
-                                        </div>
-                                    </div>
-
-                                    {{ cashoutForm.deleteInfo() }}
-
-                                </form>
-                                <button onclick="submit()" class="btn btn-success margin-top margin-top2 float-end">Save</button>
-                                <button onclick="delete()" class="btn btn-danger margin-top margin-top2 float-end">Delete</button>
-                                <button onclick="editRead('read')" class="btn btn-warning margin-top margin-top2 float-end">Cancel</button>
+                                <a href="/edit_cashout_preference"><button class="btn btn-primary margin-top margin-top2 float-end">Edit</button></a>
                             </div>
                         </div>
                     </div>
@@ -160,58 +118,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    function submit() {
-        document.getElementById("edit-form").submit();
-    }
-
-    function delete() {
-        document.getElementById("deleteInfo").value = true;
-        submit();
-    }
-
-    function toggle(preference) {
-        var phoneElement = document.getElementById('phone');
-        var emailElement = document.getElementById('email');
-        if (preference == "phone" && document.getElementById('cashoutPreference-0').checked) {
-            phoneElement.style.display = "flex";
-            emailElement.style.display = "none";
-        }
-
-        else if (preference == "email" && document.getElementById('cashoutPreference-1').checked) {
-            phoneElement.style.display = "none";
-            emailElement.style.display = "flex";
-        }
-    }
-
-    function editRead(action) {
-        var readElement = document.getElementById('read');
-        var editElement = document.getElementById('edit');
-        if (action == "read") {
-            readElement.style.display = "flex";
-            editElement.style.display = "none";
-        }
-        else if (action == "edit") {
-            readElement.style.display = "none";
-            editElement.style.display = "flex";
-        }
-    }
-
-    {% if phoneError %}
-        document.onload = editRead('edit');
-    {% else %}
-        document.onload = editRead('read');
-    {% endif %}
-
-    {% if renderedInfo['Preference'] == "Phone" %}
-        document.onload = toggle('phone');
-    {% elif renderedInfo['Preference'] == "Email" %}
-        document.onload = toggle('email');
-    {% endif %}
-
-
-</script>
 {% endblock %}
