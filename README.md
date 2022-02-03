@@ -6,14 +6,14 @@ CourseFinity Web Application using Flask
 
 ## Nanyang Polytechnic Y1 App Development Group Project [4 members]
 <p>This project consists of us making a web application using Flask as its framework.</p>
-<p>Group Members:</p>
+<p><strong>Group Members:</strong></p>
 <ol>
   <li>Jason (Group Leader)</li>
   <li>Wei Ren (Assistant Group Leader)</li>
   <li>Clarence</li>
   <li>Royston</li>
 </ol>
-<p>Libraries needed:</p>
+<p><strong>Libraries needed:</strong></p>
 <ol>
   <li>shelve [Inbuilt with Python]</li>
   <li>Flask Version 2.0.2 [pip install Flask==2.0.2]</li>
