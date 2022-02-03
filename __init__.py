@@ -199,7 +199,7 @@ def home():
                         if numberOfUnqiueViews > 1:
                             secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                         else:
-                            # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                            print("User has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)")
                             try:
                                 # hence choosing one other random course objects
                                 while True:
@@ -218,8 +218,8 @@ def home():
                             except:
                                 print("No course found.")
                     else:
-                        # meaning that the user has either not seen any tags or has watched an equal balance of various tags
-                        # hence choosing three random course objects
+                        # choosing three random course objects
+                        print("User has not watched any tags or has watched an equal balance of various tags.")
                         try:
                             while len(recommendCourseList) != 3:
                                 randomisedCourse = random.choice(list(courseDict.values()))
@@ -269,6 +269,7 @@ def home():
                         # appending course object for recommendations
                         count = 0
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                        print("Courses available: ", HighestTagCoursesAvailable)
                         try:
                             if HighestTagCoursesAvailable >= 2:
                                 courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
@@ -312,6 +313,7 @@ def home():
 
                         # appending course object for recommendations
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
+                        print("Courses available: ", HighestTagCoursesAvailable)
                         try:
                             if HighestTagCoursesAvailable >= 2:
                                 courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
@@ -333,8 +335,10 @@ def home():
                             print("Not enough courses with the user's corresponding tags.")
 
                     # in the event where there is insufficient tags to recommend, it will randomly choose another course object
-                    if len(recommendCourseList) != 3:
-                        while len(recommendCourseList) != 3:
+                    recommendLen = len(recommendCourseList)
+                    if recommendLen != 3:
+                        print("Retrieving random courses as recommendations...")
+                        while recommendLen != 3:
                             try:
                                 randomisedCourse = random.choice(list(courseDict.values()))
                             except:
@@ -342,6 +346,7 @@ def home():
                             if userDict.get(randomisedCourse.get_userID()).get_status() == "Good":
                                 if (randomisedCourse not in userPurchasedCourses) and (randomisedCourse not in recommendCourseList):
                                     recommendCourseList.append(randomisedCourse)
+                                    recommendLen = len(recommendCourseList)
                             else:
                                 courseDict.pop(randomisedCourse.get_courseID())
                 else:
@@ -351,7 +356,7 @@ def home():
 
                 # retrieving course teacher's username
                 recommedationDict = {}
-                for courses in reversed(recommendCourseList):
+                for courses in recommendCourseList:
                     teacherObject = userDict.get(courses.get_userID())
                     teacherUsername = teacherObject.get_username()
                     recommedationDict[courses] = teacherUsername
@@ -400,7 +405,7 @@ def home():
                     if numberOfUnqiueViews > 1:
                         secondHighestWatchedByTag = max(userTagDict, key=userTagDict.get)
                     else:
-                        # meaning that the user has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)
+                        print("User has watched some tags but only one tag is the highest while the rest of tags are the same (assuming the dictionary has not popped its highest tag yet)")
                         try:
                             # hence choosing one other random course objects
                             while True:
@@ -413,8 +418,8 @@ def home():
                         except:
                             print("No course found.")
                 else:
-                    # meaning that the user has either not seen any tags or has watched an equal balance of various tags
-                    # hence choosing three random course objects
+                    # choosing three random course objects
+                    print("User has not watched any tags or has watched an equal balance of various tags.")
                     try:
                         while len(recommendCourseList) != 3:
                             randomisedCourse = random.choice(list(courseDict.values()))
@@ -5053,30 +5058,33 @@ def coursePage(courseID):
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey_userDict(userSession, userDict)
 
         if userFound and accGoodStatus:
-            if courseID in userKey.get_purchases():
-                userPurchased = True
-            else:
-                userPurchased = False
-
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
 
             if accType != "Admin":
+                print("User is not an admin.")
+                if courseID in userKey.get_purchases():
+                    userPurchased = True
+                else:
+                    userPurchased = False
                 # if user is not admin, increase the number of tag views for the course's tag and increase the course's number of views
                 userKey.change_no_of_view(courseObject.get_tag())
                 courseObject.increase_view()
+                db["Users"] = userDict
+                db["Courses"] = courseDict
+            else:
+                userPurchased = False
 
-            db["Users"] = userDict
-            db["Courses"] = courseDict
             db.close()
 
             return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
         else:
+            db.close()
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
             return redirect("/course/" + courseID)

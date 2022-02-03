@@ -71,8 +71,9 @@ class Common(User):
     def get_tags_viewed(self):
         return self.__tags_viewed
     def change_no_of_view(self, seenTag):
-        if seenTag in self.__tags_viewed:
-            self.__tags_viewed[seenTag] += 1
+        userTagDict = self.__tags_viewed
+        if seenTag in userTagDict:
+            userTagDict[seenTag] += 1
         else:
             print("No such tag found.")
     def get_highest_tag(self):

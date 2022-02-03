@@ -160,7 +160,6 @@ def general_page_open_file(userID):
 
 def general_page_open_file_with_userKey(userID):
     imagesrcPath = ""
-    adminImagesrcPath = "/static/images/user/default.png"
     try:
         adminDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "r")
@@ -173,10 +172,10 @@ def general_page_open_file_with_userKey(userID):
         fileFound = False
 
     if fileFound:
-        print("Admin ID in session:", userID)
         adminKey = adminDict.get(userID)
         if adminKey != None:
             print("Verdict: Admin ID Matched.")
+            adminImagesrcPath = "/static/images/user/default.png"
             userFound = True
             accStatus = adminKey.get_status()
             if accStatus == "Active":
@@ -195,7 +194,47 @@ def general_page_open_file_with_userKey(userID):
         return False, False, False, "", ""
 
     userFound = False
-    print("User ID in session:", userID)
+    userKey = userDict.get(userID)
+    if userKey != None:
+        print("Verdict: User ID Matched.")
+        userFound = True
+        accStatus = userKey.get_status()
+        if accStatus == "Good":
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            accType = userKey.get_acc_type()
+            return userKey, userFound, True, accType, imagesrcPath
+        else:
+            return userKey, userFound, False, "", imagesrcPath
+    return None, False, False, "", ""
+
+# use on course page where the user db is already opened
+def general_page_open_file_with_userKey_userDict(userID, userDict):
+    imagesrcPath = ""
+    try:
+        adminDict = {}
+        adminDB = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "r")
+        adminDict = adminDB['Admins']
+        print("File found.")
+        adminDB.close()
+        fileFound = True
+    except:
+        print("File could not be found.")
+        fileFound = False
+
+    if fileFound:
+        adminKey = adminDict.get(userID)
+        if adminKey != None:
+            print("Verdict: Admin ID Matched.")
+            adminImagesrcPath = "/static/images/user/default.png"
+            userFound = True
+            accStatus = adminKey.get_status()
+            if accStatus == "Active":
+                accType = adminKey.get_acc_type()
+                return adminKey, userFound, True, accType, adminImagesrcPath
+            else:
+                return adminKey, userFound, False, "", adminImagesrcPath
+
+    userFound = False
     userKey = userDict.get(userID)
     if userKey != None:
         print("Verdict: User ID Matched.")
@@ -705,6 +744,7 @@ def generate_password():
     return generatedPassword
 
 def get_random_courses(courseDict):
+    print("Retreiving random courses...")
     userDict = {}
     try:
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
