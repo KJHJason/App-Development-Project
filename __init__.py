@@ -3291,7 +3291,7 @@ def changeAccountType():
                 db.close()
                 print("User is not a student.")
                 # if the user is not a student but visits this webpage, it will redirect the user to the user profile page
-                flash("You are already a teacher.", "Alert!")
+                flash("You are already a teacher. If you require futher assistance, feel free to contact us!", "Sorry!")
                 return redirect(url_for("userProfile"))
         else:
             db.close()
