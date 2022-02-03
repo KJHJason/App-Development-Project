@@ -4071,14 +4071,14 @@ def createPurchaseReview(courseID):
                 redirectURL = "/purchasehistory/" + str(pageNum)
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
+                    title = createReview.title.data
+                    rating = ""
                     course = courseDict[courseID]
-                    reviewID = {"Review": review, "UserID": userSession}
-                    course.add_review(reviewID)
+                    reviewID = course.add_review(userSession, title, review, rating)
                     print("What is the review info?: ",reviewID)
 
                     courseDict["Courses"] = db
 
-                    session["reviewAdded"] = True
                     session.pop("courseIDGrab", None)
                     print("Review addition was successful", course.get_review())
                     flash("Your review submission was successful. To check your review, visit the course page.", "Review submission successful!")
@@ -4150,9 +4150,8 @@ def purchaseView(courseID):
             else:
                 pageNum = 0
 
-            videoList = []
-            courseID = ""
-            courseType = ""
+            courseList = []
+            courseID = session.get("courseIDGrab")
             historyCheck = True
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
@@ -4160,40 +4159,47 @@ def purchaseView(courseID):
             redirectURL = "/purchasehistory/" + str(pageNum)
 
             if purchasedCourses != {}:
-                try:
-                    courseDict = {}
-                    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
-                    courseDict = db["Courses"]
-                except:
-                    print("Unable to open up course shelve")
+                if courseID in list(purchasedCourses.keys()):
+                    try:
+                        courseDict = {}
+                        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                        courseDict = db["Courses"]
+
+                    except:
+                        print("Unable to open up course shelve")
+                        db.close()
+
+                    # Get specific course with course ID
+                    for courseID in list(purchasedCourses.keys()):
+                        print(courseID)
+
+                        # Find the correct course
+                        course = courseDict[courseID]
+
+                        courseInformation = {"Title":course.get_title(),
+                                            "Description":course.get_description(),
+                                            "Thumbnail":course.get_thumbnail(),
+                                            "CourseTypeCheck":course.get_course_type(),
+                                            "Price":course.get_price(),
+                                            "Owner":course.get_userID(),
+                                            "Lessons":course.get_lesson_list()}
+                        courseList.append(courseInformation)
+                        print(courseList)
+
+                        a
+
+                        session.pop("courseIDGrab", None)
+
+                        db.close()
+                        return render_template('users/loggedin/purchaseview.html', courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
+                else:
+                    print("User has not purchased the course.")
                     db.close()
-
-                # Get specific course with course ID
-                for courseID in list(purchasedCourses.keys()):
-                    print(courseID)
-
-                    # Find the correct course
-                    course = courseDict[courseID]
-                    courseType = purchasedCourses.get(courseID).get("Course Type")
-
-                    courseInformation = {"Title":course.get_title(),
-                        "Description":course.get_description(),
-                        "Thumbnail":course.get_thumbnail(),
-                        "CourseTypeCheck":course.get_course_type(),
-                        "Price":course.get_price(),
-                        "Owner":course.get_userID()}
-                    videoList.append(courseInformation)
-                print(videoList)
-
-                db.close()
+                    return redirect(url_for("home"))
             else:
                 print("Invalid Purchase View")
                 db.close()
                 return redirect(redirectURL)
-
-
-            db.close() # remember to close your shelve files!
-            return render_template('users/loggedin/purchaseview.html', courseID=courseID, courseType=courseType, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
         else:
             print("Invalid Session")
             db.close()
@@ -4323,9 +4329,6 @@ def shoppingCart(pageNum):
 
                     # Getting course owner profile pic
                     courseOwnerProfile = None
-
-                    # Getting subtotal
-                    subtotal += float(course.get_price())
 
                     # Add additional info to list
                     courseList.append({"courseID" : courseID,
