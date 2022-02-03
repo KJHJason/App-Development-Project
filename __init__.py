@@ -5067,10 +5067,9 @@ def coursePage(courseID):
                 teacherUID = ""
 
             if accType != "Admin":
-                # if user is not admin, increase the number of tag views for the course's tag
+                # if user is not admin, increase the number of tag views for the course's tag and increase the course's number of views
                 userKey.change_no_of_view(courseObject.get_tag())
-
-            courseObject.increase_view()
+                courseObject.increase_view()
 
             db["Users"] = userDict
             db["Courses"] = courseDict
@@ -5083,8 +5082,6 @@ def coursePage(courseID):
             return redirect("/course/" + courseID)
     else:
         res = make_response(render_template("users/general/course_page.html", accType="Guest", course=courseObject, userPurchased=False, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername))
-
-        courseObject.increase_view()
 
         courseTag = courseObject.get_tag()
         if not request.cookies.get("guestSeenTags"):
@@ -5177,6 +5174,7 @@ def coursePage(courseID):
                     expires=datetime.now() + timedelta(days=90)
             )
 
+        courseObject.increase_view()
         db["Courses"] = courseDict
         db.close()
 
