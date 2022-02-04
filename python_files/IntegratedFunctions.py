@@ -527,6 +527,7 @@ def check_first_day_of_month(inputDate):
         return False
 
 def get_two_decimal_pt(numberInput):
+    numberInput = round(numberInput, 2)
     return f"{numberInput:.2f}"
 
 # functions for reset password process via email

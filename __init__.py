@@ -3609,7 +3609,7 @@ def teacherCashOut():
 
             # if it's the first day of the month
             resetMonth = check_first_day_of_month(currentDate)
-            initialEarnings = round(userKey.get_earnings(), 2)
+            initialEarnings = userKey.get_earnings()
             accumulatedEarnings = userKey.get_accumulated_earnings()
             if resetMonth:
                 accumulatedEarnings += initialEarnings
@@ -3637,10 +3637,12 @@ def teacherCashOut():
                         # calculating how much the teacher has earned
                         if currentDate <= zeroCommissionEndDate:
                             commission = "0%"
-                            totalEarned = round((initialEarnings + accumulatedEarnings), 2)
+                            totalEarned = initialEarnings + accumulatedEarnings
                         else:
                             commission = "25%"
-                            totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
+                            totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)
+
+                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
 
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
@@ -3738,7 +3740,7 @@ def teacherCashOut():
 
                 if currentDate <= zeroCommissionEndDate:
                     commission = "0%"
-                    totalEarned = round((initialEarnings + accumulatedEarnings), 2)
+                    totalEarned = initialEarnings + accumulatedEarnings
 
                     # converting the number of remaining days till the free 0% commission is over in a readable format as compared to "you have until 60 days till it is over" for an example.
                     if remainingDays > 60 and remainingDays <= 90:
@@ -3758,7 +3760,7 @@ def teacherCashOut():
                         remainingDays = "Unexpected error, please contact CourseFinity support."
                 else:
                     commission = "25%"
-                    totalEarned = round(((initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)), 2)
+                    totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)
 
                 totalEarnedInt = totalEarned
                 # converting the numbers into strings of 2 decimal place for the earnings
