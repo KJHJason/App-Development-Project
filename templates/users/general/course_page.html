@@ -134,16 +134,22 @@
                                 </p>
                                 <p class="card-text"><span class="fw-bold">Category:</span> {{ course.get_readable_tag() }}</p>
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
-                                {% if accType=="Guest" %}
-                                <form action="/login" method="GET">
-                                    <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
-                                </form>
-                                {% elif accType=="Admin" %}
-                                <button type="button" class="btn btn-success course_buy_button">Admin cannot add to cart!</button>
+                                {% if userPurchased != True %}
+                                    {% if accType=="Guest" %}
+                                    <form action="/login" method="GET">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                    </form>
+                                    {% elif accType=="Admin" %}
+                                    <button type="button" class="btn btn-success course_buy_button">Admin cannot add to cart!</button>
+                                    {% else %}
+                                    <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                    </form>
+                                    {% endif %}
                                 {% else %}
-                                <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
-                                    <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
-                                </form>
+                                    <form action="/purchaseview/{{ course.get_courseID() }}" method="POST">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-bag"></i> View Purchase</button>
+                                    </form>
                                 {% endif %}
                             </div>
                         </div>
