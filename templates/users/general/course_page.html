@@ -136,13 +136,13 @@
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
                                 {% if accType=="Guest" %}
                                 <form action="/login" method="GET">
-                                    <button type="submit" class="btn btn-success course_buy_button">Add to Cart</button>
+                                    <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
                                 </form>
                                 {% elif accType=="Admin" %}
                                 <button type="button" class="btn btn-success course_buy_button">Admin cannot add to cart!</button>
-                                {% elif accType=="Student" or accType=="Teacher" %}
+                                {% else %}
                                 <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
-                                    <button type="submit" class="btn btn-success course_buy_button">Add to Cart</button>
+                                    <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
                                 </form>
                                 {% endif %}
                             </div>
