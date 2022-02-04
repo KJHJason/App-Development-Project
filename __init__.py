@@ -4335,16 +4335,12 @@ def purchaseView(courseID):
                                             "CourseTypeCheck":course.get_course_type(),
                                             "Price":course.get_price(),
                                             "Owner":course.get_userID(),
-                                            "Lessons":course.get_lesson_list()}
+                                            "Lesson":course.get_lesson_list()}
                         courseList.append(courseInformation)
                         print(courseList)
 
-                        a
-
-                        session.pop("courseIDGrab", None)
-
                         db.close()
-                        return render_template('users/loggedin/purchaseview.html', courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
+                        return render_template('users/loggedin/purchaseview.html', courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
                 else:
                     print("User has not purchased the course.")
                     db.close()
@@ -4367,6 +4363,34 @@ def purchaseView(courseID):
             # return redirect(url_for("userLogin"))
 
 """End of Purchase View by Royston"""
+
+"""About Us Page by Royston"""
+
+@app.route('/about_us', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def aboutUs():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/about_us.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/about_us.html", accType="Guest")
+            # return redirect(url_for("insertName"))
+    else:
+        return render_template("users/general/about_us.html", accType="Guest")
+
+"""End of About Us Page by Royston"""
 
 """Shopping Cart by Wei Ren"""
 
