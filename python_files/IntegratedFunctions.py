@@ -1,11 +1,9 @@
-import json
-
 from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from requests import get as pyGet, post as pyPost
 from flask_mail import Message
-import shelve, os, uuid, string, random, shortuuid, re, glob
+import shelve, os, uuid, string, random, shortuuid, re, json
 from pathlib import Path
 from flask import url_for
 from dicebear import DAvatar, DStyle
