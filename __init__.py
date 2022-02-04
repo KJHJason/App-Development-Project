@@ -17,6 +17,9 @@ from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
+import logging
+from werkzeug.utils import secure_filename
+from pydrop.config import config
 
 """Web app configurations"""
 
@@ -5514,6 +5517,128 @@ def courseReviews(courseID, reviewPageNum):
 
 """End of Course Page and its review page by Jason"""
 
+"""Template app.route(") (use this when adding a new app route) by Clarence"""
+
+
+@app.route("/course/<courseID>/upload_lesson")
+def uploadLesson(courseID):
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
+            db.close()
+        else:
+            db.close()
+            return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect(url_for("home"))
+
+    courseObject = courseDict.get(courseID)
+    
+    if courseObject == None: # if courseID does not exist in courseDict
+        return redirect("/404")
+
+    
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            db.close() # remember to close your shelve files!
+            return render_template('users/teacher/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, courseID=courseID)
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by Clarence"""
+
+log = logging.getLogger('pydrop')
+@app.route('/')
+@app.route('/index')
+def index():
+    # Route to serve the upload form
+    return render_template('upload_lesson.html',
+                           page_name='Main',
+                           project_name="pydrop")
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+
+    save_path = os.path.join(config.data_dir, secure_filename(file.filename))
+    current_chunk = int(request.form['dzchunkindex'])
+
+    # If the file already exists it's ok if we are appending to it,
+    # but not if it's new file that would overwrite the existing one
+    if os.path.exists(save_path) and current_chunk == 0:
+        # 400 and 500s will tell dropzone that an error occurred and show an error
+        return make_response(('File already exists', 400))
+
+    try:
+        with open(save_path, 'ab') as f:
+            f.seek(int(request.form['dzchunkbyteoffset']))
+            f.write(file.stream.read())
+    except OSError:
+        # log.exception will include the traceback so we can see what's wrong
+        log.exception('Could not write to file')
+        return make_response(("Not sure why,"
+                              " but we couldn't write the file to disk", 500))
+
+    total_chunks = int(request.form['dztotalchunkcount'])
+
+    if current_chunk + 1 == total_chunks:
+        # This was the last chunk, the file should be complete and the size we expect
+        if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
+            log.error(f"File {file.filename} was completed, "
+                      f"but has a size mismatch."
+                      f"Was {os.path.getsize(save_path)} but we"
+                      f" expected {request.form['dztotalfilesize']} ")
+            return make_response(('Size mismatch', 500))
+        else:
+            log.info(f'File {file.filename} has been uploaded successfully')
+    else:
+        log.debug(f'Chunk {current_chunk + 1} of {total_chunks} '
+                  f'for file {file.filename} complete')
+
+    return make_response(("Chunk upload successful", 200))
 """General Pages"""
 
 @app.route('/cookie_policy')
