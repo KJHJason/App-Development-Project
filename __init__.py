@@ -242,8 +242,7 @@ def home():
                     courseListLen = len(recommendCourseList)
                     if courseListLen == 0: # condition will be true when the user has two unique highest tags
                         recommendedCourseListBySecondHighestTag = []
-                        for key in courseDict:
-                            courseObject = courseDict[key]
+                        for courseObject in list(courseDict.values()):
                             courseTag = courseObject.get_tag()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
@@ -251,20 +250,20 @@ def home():
                                         recommendedCourseListByHighestTag.append(courseObject)
                                     else:
                                         # if the teacher of the course has been banned
-                                        courseDict.pop(randomisedCourse.get_courseID())
+                                        courseDict.pop(courseObject.get_courseID())
                                 else:
                                     # user has bought the course
-                                    courseDict.pop(randomisedCourse.get_courseID())
+                                    courseDict.pop(courseObject.get_courseID())
                             elif courseTag == secondHighestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
                                     if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                         recommendedCourseListBySecondHighestTag.append(courseObject)
                                     else:
                                         # if the teacher of the course has been banned
-                                        courseDict.pop(randomisedCourse.get_courseID())
+                                        courseDict.pop(courseObject.get_courseID())
                                 else:
                                     # user has bought the course
-                                    courseDict.pop(randomisedCourse.get_courseID())
+                                    courseDict.pop(courseObject.get_courseID())
 
                         # appending course object for recommendations
                         count = 0
@@ -340,8 +339,7 @@ def home():
                                 print("One course picked accordingly to user's second highly watched tag.")
 
                     elif courseListLen == 1: # condition will be true when the user has only one unique highest tag
-                        for key in courseDict:
-                            courseObject = courseDict[key]
+                        for courseObject in list(courseDict.values()):
                             courseTag = courseObject.get_tag()
                             if courseTag == highestWatchedByTag:
                                 if courseObject.get_courseID() not in userPurchasedCourses:
@@ -349,10 +347,10 @@ def home():
                                         recommendedCourseListByHighestTag.append(courseObject)
                                     else:
                                         # if the teacher of the course has been banned
-                                        courseDict.pop(randomisedCourse.get_courseID())
+                                        courseDict.pop(courseObject.get_courseID())
                                 else:
                                     # user has bought the course
-                                    courseDict.pop(randomisedCourse.get_courseID())
+                                    courseDict.pop(courseObject.get_courseID())
 
                         # appending course object for recommendations
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
@@ -480,21 +478,20 @@ def home():
                 courseListLen = len(recommendCourseList)
                 if courseListLen == 0: # condition will be true when the user has two unique highest tags
                     recommendedCourseListBySecondHighestTag = []
-                    for key in courseDict:
-                        courseObject = courseDict[key]
+                    for courseObject in list(courseDict.values()):
                         courseTag = courseObject.get_tag()
                         if courseTag == highestWatchedByTag:
                             if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                 recommendedCourseListByHighestTag.append(courseObject)
                             else:
                                 # if the teacher of the course has been banned
-                                courseDict.pop(randomisedCourse.get_courseID())
+                                courseDict.pop(courseObject.get_courseID())
                         elif courseTag == secondHighestWatchedByTag:
                             if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                 recommendedCourseListBySecondHighestTag.append(courseObject)
                             else:
                                 # if the teacher of the course has been banned
-                                courseDict.pop(randomisedCourse.get_courseID())
+                                courseDict.pop(courseObject.get_courseID())
 
                     # appending course object for recommendations
                     count = 0
@@ -569,15 +566,14 @@ def home():
                             print("One course picked accordingly to user's second highly watched tag.")
 
                 elif courseListLen == 1: # condition will be true when the user has one unique highest tag
-                    for key in courseDict:
-                        courseObject = courseDict[key]
+                    for courseObject in list(courseDict.values()):
                         courseTag = courseObject.get_tag()
                         if courseTag == highestWatchedByTag:
                             if userDict.get(courseObject.get_userID()).get_status() == "Good":
                                 recommendedCourseListByHighestTag.append(courseObject)
                             else:
                                 # if the teacher of the course has been banned
-                                courseDict.pop(randomisedCourse.get_courseID())
+                                courseDict.pop(courseObject.get_courseID())
 
                     print("Courses available: ", len(recommendedCourseListByHighestTag))
                     HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
