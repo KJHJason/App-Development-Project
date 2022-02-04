@@ -5584,6 +5584,29 @@ def faq():
     else:
         return render_template("users/general/faq.html", accType="Guest")
 
+@app.route("/teacher_handbook")
+def teacherHandbook():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/general/teacher_handbook.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/teacher_handbook.html", accType="Guest")
+    else:
+        return render_template("users/general/teacher_handbook.html", accType="Guest")
+
 """End of Genral Pages"""
 
 # 8 template app.route("") for you guys :prayge:
