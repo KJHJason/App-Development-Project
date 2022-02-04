@@ -309,7 +309,7 @@ footer ul {
 	transition: background-color .3s, opacity .5s, visibility .5s;
 	opacity: 0;
 	visibility: hidden;
-	z-index: 1;
+	z-index: 999;
 	font-weight: normal;
 	font-style: normal;
 	color: #EEFBFF;

@@ -33,8 +33,6 @@
                             </div>
                             <div>
                                 <h5 class="course_structure_title">Course Structure:</h5>
-                                <!-- Check if Couse is Video or Zoom -->
-                                <!-- If video, generate videos -->
                                 {% if lessonsCount >= 1 %}
                                     {% if course.get_course_type() == "video" %}
                                         {% for lesson in lessons %}
@@ -90,12 +88,10 @@
                             </div>
                         </div>
                         <div class="col-4 course_info_wrapper no_padding columns">
-                            <!-- Get Video Thumbnail-->
                             <img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="{{ course.get_shortTitle() }} Thumbnail">
                             <div class="card-body">
                                 <p class="card-text"><span class="fw-bold">Price:</span> ${{ course.get_price() }}</p>
                                 <p class="card-text"><span class="fw-bold">Learning Style:</span> {{ course.get_course_type() }}</p>
-                                <!-- Check if Course type is Zoom or Video-->
                                 <p class="card-text"><span class="fw-bold">No of lessons:</span> {{ lessonsCount }}</p> 
                                 <p class="card-text"><span class="fw-bold">Overall Rating:</span>
                                     {% if course.get_averageRating() == 5 %}
@@ -138,16 +134,22 @@
                                 </p>
                                 <p class="card-text"><span class="fw-bold">Category:</span> {{ course.get_readable_tag() }}</p>
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
-                                {% if accType=="Guest" %}
-                                <form action="/login" method="GET">
-                                    <button type="submit" class="btn btn-success course_buy_button">Add to Cart</button>
-                                </form>
-                                {% elif accType=="Admin" %}
-                                <button type="button" class="btn btn-success course_buy_button">Admin cannot add to cart!</button>
-                                {% elif accType=="Student" or accType=="Teacher" %}
-                                <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
-                                    <button type="submit" class="btn btn-success course_buy_button">Add to Cart</button>
-                                </form>
+                                {% if userPurchased != True %}
+                                    {% if accType=="Guest" %}
+                                    <form action="/login" method="GET">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                    </form>
+                                    {% elif accType=="Admin" %}
+                                    <button type="button" class="btn btn-success course_buy_button">Admin cannot add to cart!</button>
+                                    {% else %}
+                                    <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                    </form>
+                                    {% endif %}
+                                {% else %}
+                                    <form action="/purchaseview/{{ course.get_courseID() }}" method="POST">
+                                        <button type="submit" class="btn btn-success course_buy_button"><i class="fas fa-shopping-bag"></i> View Purchase</button>
+                                    </form>
                                 {% endif %}
                             </div>
                         </div>
@@ -167,7 +169,6 @@
                             <div class="card mb-3 course_card">
                                 <div class="row g-0">
                                     <div class="col-2">
-                                        <!-- Get User Profile Pic-->
                                         <img src="{{ userInfo[1] }}" class="img-fluid user_profile" alt="User's profile image">
                                     </div>
                                     <div class="col-10">

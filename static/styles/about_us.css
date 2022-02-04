@@ -25,4 +25,7 @@ p {
 }
 .quote{
   font-size:32px;
+  background-color: #75CFFD ;
+   padding: 50px;
+  border: 1px solid #A375FD;
 }
