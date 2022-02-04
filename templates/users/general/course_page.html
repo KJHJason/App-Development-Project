@@ -33,8 +33,6 @@
                             </div>
                             <div>
                                 <h5 class="course_structure_title">Course Structure:</h5>
-                                <!-- Check if Couse is Video or Zoom -->
-                                <!-- If video, generate videos -->
                                 {% if lessonsCount >= 1 %}
                                     {% if course.get_course_type() == "video" %}
                                         {% for lesson in lessons %}
@@ -90,12 +88,10 @@
                             </div>
                         </div>
                         <div class="col-4 course_info_wrapper no_padding columns">
-                            <!-- Get Video Thumbnail-->
                             <img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="{{ course.get_shortTitle() }} Thumbnail">
                             <div class="card-body">
                                 <p class="card-text"><span class="fw-bold">Price:</span> ${{ course.get_price() }}</p>
                                 <p class="card-text"><span class="fw-bold">Learning Style:</span> {{ course.get_course_type() }}</p>
-                                <!-- Check if Course type is Zoom or Video-->
                                 <p class="card-text"><span class="fw-bold">No of lessons:</span> {{ lessonsCount }}</p> 
                                 <p class="card-text"><span class="fw-bold">Overall Rating:</span>
                                     {% if course.get_averageRating() == 5 %}
@@ -167,7 +163,6 @@
                             <div class="card mb-3 course_card">
                                 <div class="row g-0">
                                     <div class="col-2">
-                                        <!-- Get User Profile Pic-->
                                         <img src="{{ userInfo[1] }}" class="img-fluid user_profile" alt="User's profile image">
                                     </div>
                                     <div class="col-10">
