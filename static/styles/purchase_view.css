@@ -14,3 +14,8 @@ h3{
 h2{
   text-align:center;
 }
+.casing{
+  max-width: 1000px; 
+  margin-bottom:50px;
+  border:3px black solid;
+}

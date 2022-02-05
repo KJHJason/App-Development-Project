@@ -23,3 +23,8 @@ textarea{
 .btn{
   background-color:#A375FD;
 }
+
+.resize{
+  width:auto;
+  height:fixed;
+}

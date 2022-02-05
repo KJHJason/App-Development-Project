@@ -29,7 +29,6 @@
 {% endwith %}
 
 <div class="container">
-    <a class="fa fa-arrow-left" href="/"></a>
     <h2>Purchase History</h2>
     {% if historyCheck == False %}
     <div>
@@ -37,9 +36,9 @@
     </div>
     {% else %}
     {% for courseInformation in historyList %}
-    <div class="row no-gutters layer-2">
-        <div class="col-4">
-            <!--Placeholders-->
+    <div class="row g-0 casing mx-auto">
+        <div class="col-md-4">
+            <img class="resize img-fluid rounded float-start" src="{{ courseInformation['Thumbnail']}}" alt="">
         </div>
         <div class="col-8">
             <div class="card-body text">
@@ -47,7 +46,7 @@
                 <p class="card-text">{{ courseInformation["Description"] }}</p>
             </div>
             <div class="card-body">
-                <div class="row">
+                <div class="row g-0">
                     <div class="selection col">
                         {% if "CourseTypeCheck" == "Video" %}
                         <p class="info">Online Videos</p>

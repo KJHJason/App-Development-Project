@@ -6,7 +6,6 @@
 
 {% block content %}
 <div class="container">
-	<a class="fa fa-arrow-left" href="/purchasehistory/{{pageNum}}"></a>
 	<nav aria-label="breadcrumb">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/purchasehistory/{{pageNum}}">Purchase History</a></li>
@@ -14,28 +13,36 @@
 		</ol>
 	</nav>
 	<div class="box">
-		<h2>Create a review (Less than 200 words):</h2>
 		<div>
 			<form action="" method="POST">
-				{{ render_field(form.title, class="form-control") }}
-				<br>
-				{{ render_field(form.review, class="form-control") }}
-				<br>
-				<h4>Leave a rating:</h4>
-				<div class="rate">
-					<input type="radio" id="star5" name="rate" value="5" />
-					<label for="star5" title="text">5 stars</label>
-					<input type="radio" id="star4" name="rate" value="4" />
-					<label for="star4" title="text">4 stars</label>
-					<input type="radio" id="star3" name="rate" value="3" />
-					<label for="star3" title="text">3 stars</label>
-					<input type="radio" id="star2" name="rate" value="2" />
-					<label for="star2" title="text">2 stars</label>
-					<input type="radio" id="star1" name="rate" value="1" />
-					<label for="star1" title="text">1 star</label>
+				<div class="row">
+					<div class="col-sm-6">
+						<h2>Create a review (Less than 200 words):</h2>
+					</div>
+					<div class="col-sm-6 float-end text-end">
+						<h2>Leave a rating:</h2>
+						<div class="rate float-end">
+							<input type="radio" id="star5" name="rate" value="5">
+							<label for="star5" title="text">5 stars</label>
+							<input type="radio" id="star4" name="rate" value="4">
+							<label for="star4" title="text">4 stars</label>
+							<input type="radio" id="star3" name="rate" value="3" checked>
+							<label for="star3" title="text">3 stars</label>
+							<input type="radio" id="star2" name="rate" value="2">
+							<label for="star2" title="text">2 stars</label>
+							<input type="radio" id="star1" name="rate" value="1">
+							<label for="star1" title="text">1 star</label>
+							<br>
+						</div>
+					</div>
+				</div>
+				<div>
+					{{ render_field(form.title, class="form-control") }}
+					<br>
+					{{ render_field(form.review, class="form-control", rows="10") }}
 					<br>
 				</div>
-				<div style="margin-bottom:30px;">
+				<div>
 					<button type="submit" class="btn btn-primary mb-2" style="float:right;">Submit</button>
 				</div>
 			</form>

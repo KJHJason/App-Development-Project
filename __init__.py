@@ -4181,12 +4181,12 @@ def createPurchaseReview(courseID):
                 if request.method == 'POST' and createReview.validate():
                     review = createReview.review.data
                     title = createReview.title.data
-                    rating = ""
+                    rating = request.form.get("rate")
                     course = courseDict[courseID]
                     reviewID = course.add_review(userSession, title, review, rating)
                     print("What is the review info?: ",reviewID)
 
-                    courseDict["Courses"] = db
+                    db["Courses"] = courseDict
 
                     session.pop("courseIDGrab", None)
                     print("Review addition was successful", course.get_review())
@@ -4293,6 +4293,7 @@ def purchaseView(courseID):
                                             "Owner":course.get_userID(),
                                             "Lesson":course.get_lesson_list()}
                         courseList.append(courseInformation)
+                        print(course.get_lesson_list())
                         print(courseList)
 
                         db.close()

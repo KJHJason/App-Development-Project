@@ -19,9 +19,10 @@
     </div>
     {% else %}
     {% for searchInformation in searchfound %}
-    <div class="row no-gutters layer-2">
+    
+    <div class="row g-0 casing mx-auto">
         <div class="col-4">
-            <!--Placeholders-->
+            <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
         </div>
         <div class="col-8">
             <div class="card-body text">
