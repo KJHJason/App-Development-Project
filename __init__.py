@@ -18,7 +18,6 @@ from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
-from werkzeug.utils import secure_filename
 
 """Web app configurations"""
 
