@@ -3785,7 +3785,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.1) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3873,7 +3873,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.1) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3955,7 +3955,7 @@ def search(pageNum):
             courseTitleList.append(courseTitle)
 
         try:
-            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.1) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
         except:
             matchedCourseTitleList = []
 
@@ -4283,27 +4283,23 @@ def purchaseView(courseID):
                     except:
                         print("Unable to open up course shelve")
                         db.close()
+                        return redirect(redirectURL)
 
-                    # Get specific course with course ID
-                    for courseID in list(purchasedCourses.keys()):
-                        print(courseID)
+                    # Find the correct course
+                    course = courseDict[courseID]
 
-                        # Find the correct course
-                        course = courseDict[courseID]
+                    courseInformation = {"Title":course.get_title(),
+                                        "Description":course.get_description(),
+                                        "Thumbnail":course.get_thumbnail(),
+                                        "CourseTypeCheck":course.get_course_type(),
+                                        "Price":course.get_price(),
+                                        "Owner":course.get_userID(),
+                                        "Lesson":course.get_lesson_list()}
+                    courseList.append(courseInformation)
+                    print(courseList)
 
-                        courseInformation = {"Title":course.get_title(),
-                                            "Description":course.get_description(),
-                                            "Thumbnail":course.get_thumbnail(),
-                                            "CourseTypeCheck":course.get_course_type(),
-                                            "Price":course.get_price(),
-                                            "Owner":course.get_userID(),
-                                            "Lesson":course.get_lesson_list()}
-                        courseList.append(courseInformation)
-                        print(course.get_lesson_list())
-                        print(courseList)
-
-                        db.close()
-                        return render_template('users/loggedin/purchaseview.html', courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID, pageNum = pageNum)
+                    db.close()
+                    return render_template('users/loggedin/purchaseview.html', courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
                 else:
                     print("User has not purchased the course.")
                     db.close()

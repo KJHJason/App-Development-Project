@@ -4,9 +4,14 @@
 
 {% block content %}
 <div class="container">
-    
-    <a class="fa fa-arrow-left" href="/purchasehistory/{{pageNum}}"></a>
+    <nav aria-label="breadcrumb">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="/purchasehistory/{{pageNum}}">Purchase History</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Review</li>
+		</ol>
+	</nav>
     <h2>Purchase View</h2>
+    <br>
 
     {% for courseInformation in courseList %}
     <div class="row g-0 casing mx-auto">
@@ -38,15 +43,15 @@
     </div>
     {% endfor %}
 
-    {% for courseInformation in courseList %}
-    <div class="row no-gutters layer-2">
-        <div class="col-4">
-            <!--Placeholders-->
+    {% for Lesson in courseInformation["Lesson"] %}
+    <div class="row g-0 casing mx-auto">
+        <div class="col-md-4">
+            <img class="resize img-fluid rounded float-start" src="{{ Lesson.get_thumbnail() }}" alt="">
         </div>
         <div class="col-8">
             <div class="card-body text">
-                <h5 class="card-title">{{ courseInformation["Lessons"] }}</h5>
-                <p class="card-text">{{ courseInformation["Lessons"] }}</p>
+                <h5 class="card-title">{{ Lesson.get_title() }}</h5>
+                <p class="card-text">{{ Lesson.get_description() }}</p>
             </div>
             <div class="card-body">
                 <div class="row">
