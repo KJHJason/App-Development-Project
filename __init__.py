@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, os, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers, pyotp, qrcode
+import shelve, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers, pyotp, qrcode
+from os import environ
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
@@ -17,9 +18,7 @@ from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
-import logging
 from werkzeug.utils import secure_filename
-from pydrop.config import config
 
 """Web app configurations"""
 
@@ -37,7 +36,15 @@ app.config["DICEBEAR_OPTIONS"] = DOptions(
 )
 
 # creating an absolute path for storing the shelve files
-app.config["DATABASE_FOLDER"] = str(pathlib.Path.cwd()) + "\\databases"
+app.config["DATABASE_FOLDER"] = str(app.root_path) + "\\databases"
+
+# for image uploads file path
+app.config["PROFILE_UPLOAD_PATH"] = "static/images/user"
+app.config["THUMBNAIL_UPLOAD_PATH"] = "static/images/courses/thumbnails"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = {"png", "jpg", "jpeg"}
+
+# for course video uploads file path
+app.config["COURSE_VIDEO_FOLDER"] = "static/course_videos"
 
 # configuration for email
 # Make sure to enable access for less secure apps
@@ -45,14 +52,14 @@ app.config["MAIL_SERVER"] = "smtp.googlemail.com" # using gmail
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = "CourseFinity123@gmail.com" # using gmail
-app.config["MAIL_PASSWORD"] = os.environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
+app.config["MAIL_PASSWORD"] = environ.get("EMAIL_PASS") # setting password but hiding the password for the CourseFinity123@gmail.com password using system environment variables
 mail = Mail(app)
 
 # paypal sdk configuration
 paypalrestsdk.configure({
   "mode": "sandbox",
   "client_id": "AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s",
-  "client_secret": os.environ.get("PAYPAL_SECRET") })
+  "client_secret": environ.get("PAYPAL_SECRET") })
 
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address, default_limits=["30 per second"])
@@ -60,9 +67,9 @@ limiter = Limiter(app, key_func=get_remote_address, default_limits=["30 per seco
 # vimeo api configurations
 client = vimeo.VimeoClient(
     # client token, key, and secret all generated from vimeo
-    token = os.environ.get("VIMEO_TOKEN"),
+    token = environ.get("VIMEO_TOKEN"),
     key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
-    secret = os.environ.get("VIMEO_SECRET")
+    secret = environ.get("VIMEO_SECRET")
 )
 
 """ 
@@ -807,7 +814,7 @@ def twoFactorAuthenticationSetup():
 
         if userFound and accGoodStatus:
             create_2fa_form = Forms.twoFAForm(request.form)
-            qrCodePath = "static/images/qrcode/" + userSession + ".png"
+            qrCodePath = Path(app.root_path).joinpath("static/images/qrcode/", userSession + ".png")
             if request.method == "POST" and create_2fa_form.validate():
                 secret = request.form.get("secret")
                 otpInput = sanitise(create_2fa_form.twoFAOTP.data)
@@ -818,8 +825,7 @@ def twoFactorAuthenticationSetup():
                     flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
                     db["Users"] = userDict
                     db.close()
-                    if Path(qrCodePath).is_file():
-                        os.remove(qrCodePath)
+                    qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                     return redirect(url_for("userProfile"))
                 else:
                     db.close()
@@ -838,8 +844,7 @@ def twoFactorAuthenticationSetup():
                 
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
-                if Path(qrCodePath).is_file():
-                    os.remove(qrCodePath)
+                qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                 img.save(qrCodePath)
                 return render_template('users/loggedin/2fa.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
         else:
@@ -1845,7 +1850,7 @@ def adminSetup2FA():
 
         if userFound and accActive:
             create_2fa_form = Forms.twoFAForm(request.form)
-            qrCodePath = "static/images/qrcode/" + adminSession + ".png"
+            qrCodePath = Path(app.root_path).joinpath("static/images/qrcode/", adminSession + ".png")
             if request.method == "POST" and create_2fa_form.validate():
                 secret = request.form.get("secret")
                 otpInput = sanitise(create_2fa_form.twoFAOTP.data)
@@ -1856,8 +1861,7 @@ def adminSetup2FA():
                     flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
                     db["Admins"] = adminDict
                     db.close()
-                    if Path(qrCodePath).is_file():
-                        os.remove(qrCodePath)
+                    qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                     return redirect(url_for("adminProfile"))
                 else:
                     db.close()
@@ -1869,8 +1873,7 @@ def adminSetup2FA():
 
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
-                if Path(qrCodePath).is_file():
-                    os.remove(qrCodePath)
+                qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                 img.save(qrCodePath)
                 return render_template('users/admin/2fa.html', form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
         else:
@@ -2042,7 +2045,7 @@ def userManagement(pageNum):
                     # auto fixing user profile image if the user has uploaded but the image is no longer on the web server directory
                     for value in paginatedUserList:
                         userProfileFileName = value.get_profile_image()
-                        if (bool(userProfileFileName) == True) and (Path(construct_path(PROFILE_UPLOAD_PATH, userProfileFileName)).is_file() == False):
+                        if (bool(userProfileFileName) == True) and (construct_path(app.config["PROFILE_UPLOAD_PATH"], userProfileFileName).is_file() == False):
                             value.set_profile_image("")
 
                     db["Users"] = userDict
@@ -2206,7 +2209,7 @@ def userSearchManagement(pageNum):
                     # auto fixing user profile image if the user has uploaded but the image is no longer on the web server directory
                     for value in paginatedUserList:
                         userProfileFileName = value.get_profile_image()
-                        if (bool(userProfileFileName) == True) and (Path(construct_path(PROFILE_UPLOAD_PATH, userProfileFileName)).is_file() == False):
+                        if (bool(userProfileFileName) == True) and (construct_path(app.config["PROFILE_UPLOAD_PATH"], userProfileFileName).is_file() == False):
                             value.set_profile_image("")
 
                     db["Users"] = userDict
@@ -2782,10 +2785,10 @@ def userProfile():
                         print("File extension accepted and is within size limit.")
 
                         userImageFileName = file.filename
-                        newFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                        newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
 
-                        if Path(newFilePath).is_file() and currentChunk == 0:
-                            os.remove(newFilePath)
+                        if currentChunk == 0:
+                            newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
 
                         print("Total file size:", int(request.form['dztotalfilesize']))
 
@@ -2804,20 +2807,24 @@ def userProfile():
 
                         if currentChunk + 1 == totalChunks:
                             # This was the last chunk, the file should be complete and the size we expect
-                            if os.path.getsize(newFilePath) != int(request.form['dztotalfilesize']):
-                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {os.path.getsize(newFilePath)} but had expected {request.form['dztotalfilesize']}")
-                                return make_response("Image was not successfully uploaded! Please try again!", 500)
+                            if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
+                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
+                                # remove corrupted image
+                                newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                return make_response("Uploaded image is corrupted! Please try again!", 500)
                             else:
                                 print(f'File {file.filename} has been uploaded successfully')
                                 # constructing a file path to see if the user has already uploaded an image and if the file exists
-                                userOldImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userKey.get_profile_image())
+                                userOldImageFilename = userKey.get_profile_image()
+                                if bool(userOldImageFilename):
+                                    userOldImageFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userOldImageFilename)
 
-                                # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                                # since dropzone will actually send multiple requests,
-                                if Path(userOldImageFilePath).is_file() and userOldImageFilePath != newFilePath:
-                                    print("User has already uploaded a profile image before.")
-                                    os.remove(userOldImageFilePath)
-                                    print("Old Image file has been deleted.")
+                                    # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                                    # since dropzone will actually send multiple requests,
+                                    if userOldImageFilePath != newFilePath:
+                                        print("User has already uploaded a profile image before.")
+                                        userOldImageFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                        print("Old Image file has been deleted.")
 
                                 # resizing the image to a 1:1 ratio and compresses it
                                 imageResized = resize_image(newFilePath, (250, 250))
@@ -2834,8 +2841,8 @@ def userProfile():
                                     userKey.set_profile_image("")
                                     db['Users'] = userDict
                                     db.close()
-                                    os.remove(newFilePath) # removes corrupted image file
-                                    return make_response(("Error in uploading image file!", 500))
+                                    newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                    return make_response("Uploaded image is corrupted! Please try again!", 500)
                         else:
                             db.close()
                             print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
@@ -2846,10 +2853,10 @@ def userProfile():
                 elif typeOfFormSubmitted == "resetUserIcon":
                     print("Deleting user's profile image...")
                     userImageFileName = userKey.get_profile_image()
-                    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
+                    profileFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
                     # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
-                    if bool(userImageFileName) != False and Path(profileFilePath).is_file():
-                        os.remove(profileFilePath)
+                    if bool(userImageFileName) != False:
+                        Path(profileFilePath).unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                     userKey.set_profile_image("")
                     db['Users'] = userDict
                     db.close()
@@ -3208,8 +3215,8 @@ def changeAccountType():
                     print("Does user have profile image:", profileImageExists)
                     if profileImageExists:
                         profileImageFilename = userKey.get_profile_image()
-                        imagePath = construct_path(PROFILE_UPLOAD_PATH, profileImageFilename)
-                        if Path(imagePath).is_file():
+                        imagePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], profileImageFilename)
+                        if imagePath.is_file():
                             profileImagePathExists = True
                             print("Profile image exists:", profileImagePathExists)
                         else:
@@ -5543,25 +5550,20 @@ def uploadLesson(courseID):
 
 """End of Template app.route by Clarence"""
 
-log = logging.getLogger('pydrop')
-@app.route('/')
-@app.route('/index')
-def index():
-    # Route to serve the upload form
-    return render_template('upload_lesson.html',
-                           page_name='Main',
-                           project_name="pydrop")
-
-
 @app.route('/upload', methods=['POST'])
 def upload():
     file = request.files['file']
 
-    save_path = os.path.join(config.data_dir, secure_filename(file.filename))
+    # secure_filename if you are not renaming the uploaded video filename to the courseID
+    # else if you're renaming it to the courseID before uploading to the web server, you can omit secure_filename
+    # to change filename, file.filename = courseID
+    save_path = construct_path(app.config["COURSE_VIDEO_FOLDER"], secure_filename(file.filename))
     current_chunk = int(request.form['dzchunkindex'])
 
     # If the file already exists it's ok if we are appending to it,
     # but not if it's new file that would overwrite the existing one
+    # don't use this old way of checking if path exists,
+    # just use Path(save_path).is_file()
     if os.path.exists(save_path) and current_chunk == 0:
         # 400 and 500s will tell dropzone that an error occurred and show an error
         return make_response(('File already exists', 400))
@@ -5580,6 +5582,7 @@ def upload():
 
     if current_chunk + 1 == total_chunks:
         # This was the last chunk, the file should be complete and the size we expect
+        # instead of os.path.getsize(filePath), you can use Path(filePath).stat().st_size
         if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
             log.error(f"File {file.filename} was completed, "
                       f"but has a size mismatch."

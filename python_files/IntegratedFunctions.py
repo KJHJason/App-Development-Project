@@ -3,20 +3,16 @@ from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from requests import get as pyGet, post as pyPost
 from flask_mail import Message
-import shelve, os, uuid, string, random, shortuuid, re, json
+import shelve, uuid, string, random, shortuuid, re, json
 from pathlib import Path
 from flask import url_for
 from dicebear import DAvatar, DStyle
 from calendar import monthrange
 from datetime import date
+from os import environ
 from .Graph import userbaseGraph
 
 """Done by Jason"""
-
-# for uploading images of the user's profile picture to the web app's server configurations
-PROFILE_UPLOAD_PATH = 'static/images/user'
-THUMBNAIL_UPLOAD_PATH = 'static/images/courses/thumbnails'
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 # useful resources:
 # https://stackabuse.com/python-validate-email-address-with-regular-expressions-regex/
@@ -27,7 +23,6 @@ def validate_email(email):
         return True
     else:
         return False
-
 
 # use this function if you want to validate, check if the user is banned, and get the userKey to manipulate the data in the user shelve files (provided you have already opened the user shelve files previously)
 def get_key_and_validate(userSession, userDict):
@@ -310,7 +305,7 @@ def check_duplicates(userInput, userDict, infoToCheck):
 def allowed_image_file(filename):
     # try and except as if the user submits a file that does not have any extensions, e.g. "this_is_my_file" which is missing the extension such as .png at the back, it will cause a runtime error
     try:
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config["ALLOWED_IMAGE_EXTENSIONS"]
     except:
         return False
 
@@ -327,7 +322,7 @@ def get_extension(filename):
 
 # for overwriting existing files but must validate if the file already exists else it will cause a runtime error
 def overwrite_file(file, oldFilePath, newFilePath):
-    os.remove(oldFilePath)
+    oldFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
     file.save(newFilePath)
 
 # use this function to resize your image to the desired dimensions and also compresses it
@@ -337,7 +332,7 @@ def resize_image(imagePath, dimensions):
     try:
         image = Image.open(imagePath)
         resizedImage = image.resize(dimensions)
-        os.remove(imagePath)
+        imagePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
         resizedImage.save(imagePath, optimize=True, quality=75)
         return True
     except:
@@ -347,7 +342,7 @@ def resize_image(imagePath, dimensions):
 # use this function to construct a path for storing files such as images in the web app directory
 # pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
 def construct_path(relativeUploadPath, filename):
-    return os.path.join(app.root_path, relativeUploadPath, filename)
+    return Path(app.root_path).joinpath(relativeUploadPath, filename)
 
 # function for retrieving user's profile picture using dicebear library based on the user ID
 # Condition: Only use this function when there is no shelve files opened previously
@@ -370,9 +365,9 @@ def get_user_profile_pic(userID):
     userKey = userDict.get(userID)
     profileFileName = userKey.get_profile_image()
     profileFileNameBool = bool(profileFileName)
-    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, profileFileName)
+    profileFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], profileFileName)
     profileReset = False
-    if profileFileNameBool != False and Path(profileFilePath).is_file():
+    if profileFileNameBool != False and profileFilePath.is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
         imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
@@ -391,18 +386,17 @@ def get_user_profile_pic(userID):
 def retrieve_user_profile_pic(userKey):
     profileFileName = userKey.get_profile_image()
     profileFileNameBool = bool(profileFileName)
-    profileFilePath = construct_path(PROFILE_UPLOAD_PATH, profileFileName)
-    if profileFileNameBool != False and Path(profileFilePath).is_file():
+    profileFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], profileFileName)
+    if profileFileNameBool != False and profileFilePath.is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
         imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
     return imagesrcPath
 
 def delete_user_profile(userImageFileName):
-    userImageFilePath = construct_path(PROFILE_UPLOAD_PATH, userImageFileName)
-    # delete the user's profile image and adding validation to check if the image file path exists just in case as if the file does not exists, it will cause a runtime error/internal server error
-    if Path(userImageFilePath).is_file():
-        os.remove(userImageFilePath)
+    userImageFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
+    # delete the user's profile image file
+    userImageFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
 
 # use the function below if you just want to validate the session and check if the admin is active but there is no need to manipulate the data in the admin shelve data files and also assuming that the admin must be logged in, meaning the admin shelve data must be present in the directory
 def admin_validate_session_open_file(adminSession):
@@ -1047,7 +1041,7 @@ def get_paypal_access_token():
                          headers={'Accept': 'application/json',
                                   'Accept-Language': 'en_US',},
                          data={'grant_type': 'client_credentials'},
-                         auth=('AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s', os.environ.get("PAYPAL_SECRET")))
+                         auth=('AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s', environ.get("PAYPAL_SECRET")))
 
     responseInfo = json.loads(response.text)
 
