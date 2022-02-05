@@ -2,6 +2,8 @@
 <img src="/static/images/common/logo.png" width="500px" height="150px" alt="CourseFinity Logo">
 <br>
 CourseFinity Web Application using Flask
+<br>
+(Requires Python 3.8 and above)
 </h1>
 
 ## Nanyang Polytechnic Y1 App Development Group Project [4 members]
