@@ -109,6 +109,7 @@ class Payment():
     def set_phoneNumber(self,phoneNumber):
         self.__phoneNumber = phoneNumber
 
-    def get_fullNumber(self,fullNumber):
-        return(self.__countryCode + self.__phoneNumber)
-
+    def update_fullNumber(self):
+        self.__fullNumber = self.__countryCode + self.__phoneNumber
+    def get_fullNumber(self):
+        return self.__fullNumber
