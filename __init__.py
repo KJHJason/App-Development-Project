@@ -813,7 +813,8 @@ def twoFactorAuthenticationSetup():
 
         if userFound and accGoodStatus:
             create_2fa_form = Forms.twoFAForm(request.form)
-            qrCodePath = Path(app.root_path).joinpath("static/images/qrcode/", userSession + ".png")
+            qrCodePath = "".join(["static/images/qrcode/", userSession, ".png"])
+            qrCodeFullPath = Path(app.root_path).joinpath(qrCodePath)
             if request.method == "POST" and create_2fa_form.validate():
                 secret = request.form.get("secret")
                 otpInput = sanitise(create_2fa_form.twoFAOTP.data)
@@ -824,7 +825,7 @@ def twoFactorAuthenticationSetup():
                     flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
                     db["Users"] = userDict
                     db.close()
-                    qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                     return redirect(url_for("userProfile"))
                 else:
                     db.close()
@@ -843,8 +844,8 @@ def twoFactorAuthenticationSetup():
                 
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
-                qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                img.save(qrCodePath)
+                qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                img.save(qrCodeFullPath)
                 return render_template('users/loggedin/2fa.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
         else:
             db.close()
@@ -1849,7 +1850,8 @@ def adminSetup2FA():
 
         if userFound and accActive:
             create_2fa_form = Forms.twoFAForm(request.form)
-            qrCodePath = Path(app.root_path).joinpath("static/images/qrcode/", adminSession + ".png")
+            qrCodePath = "".join(["static/images/qrcode/", adminSession, ".png"])
+            qrCodeFullPath = Path(app.root_path).joinpath(qrCodePath)
             if request.method == "POST" and create_2fa_form.validate():
                 secret = request.form.get("secret")
                 otpInput = sanitise(create_2fa_form.twoFAOTP.data)
@@ -1860,7 +1862,7 @@ def adminSetup2FA():
                     flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
                     db["Admins"] = adminDict
                     db.close()
-                    qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                     return redirect(url_for("adminProfile"))
                 else:
                     db.close()
@@ -1872,8 +1874,8 @@ def adminSetup2FA():
 
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
-                qrCodePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                img.save(qrCodePath)
+                qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                img.save(qrCodeFullPath)
                 return render_template('users/admin/2fa.html', form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
         else:
             db.close()

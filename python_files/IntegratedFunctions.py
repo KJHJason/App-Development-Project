@@ -816,6 +816,7 @@ def saveNoOfUserPerDay():
 # useful resources: https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder
 # Function for deleting any QR code due to security reasons
 def delete_QR_code_images():
+    print("Deleting any 2FA QR code images...")
     folderPath = str(app.root_path) + "/static/images/qrcode"
     for path in Path(folderPath).glob("**/*"):
         if path.is_file():
