@@ -817,10 +817,10 @@ def saveNoOfUserPerDay():
 # Function for deleting any QR code due to security reasons
 def delete_QR_code_images():
     print("Deleting any 2FA QR code images...")
-    folderPath = str(app.root_path) + "/static/images/qrcode"
-    for path in Path(folderPath).glob("**/*"):
-        if path.is_file():
-            path.unlink()
+    folderPath = Path(app.root_path).joinpath("static/images/qrcode")
+    for qrCodeImage in folderPath.glob("*"): # .glob("*") yield all the files in folderPath
+        if qrCodeImage.is_file():
+            qrCodeImage.unlink()
 
 """End of Done by Jason"""
 
