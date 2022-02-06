@@ -10,13 +10,13 @@ def validate_email(email):
     else:
         return False
 
-# Command line 1-2 and 6 feature/operations done by Jason
+# Command line 1-2 and 6-7 feature/operations done by Jason
 # CRUD operations by admin ID instead of via email only by Jason
 # Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
 
 # Command line 3-5 feature/operations done by Clarence
 
-# Command line 7 feature/operation done by Royston
+# Command line 8 feature/operation done by Royston
 
 def main():
     
@@ -30,7 +30,8 @@ Please select the following command number to continue:
 4. Reactivate an admin account
 5. Delete an admin account
 6. Remove an admin account's 2FA
-7. View all admin accounts
+7. Deactivate all admin account without 2FA
+8. View all admin accounts
 0. Exit
 
 Important Notes:
@@ -435,25 +436,24 @@ Hence, please only force shut down the program if necessary.
                     if fileFound:
                         emailValidation = validate_email(email)
                         if emailValidation:
-                            if fileFound:
-                                emailValid = False
-                                print("\nretrieving emails")
-                                for key in adminDict:
-                                    emailShelveData = adminDict[key].get_email()
-                                    if email == emailShelveData:
-                                        print("Verdict: Admin email Found.")
-                                        emailValid = True
-                                        adminKey = adminDict[key]
-                                        break
-                                if emailValid:
-                                    removedAdmin = adminDict.pop(adminKey.get_user_id())
-                                    db["Admins"] = adminDict
-                                    db.close()
-                                    print(f"\nAdmin account with the ID, {removedAdmin.get_user_id()}, deleted successfully.")
+                            emailValid = False
+                            print("\nretrieving emails")
+                            for key in adminDict:
+                                emailShelveData = adminDict[key].get_email()
+                                if email == emailShelveData:
+                                    print("Verdict: Admin email Found.")
+                                    emailValid = True
+                                    adminKey = adminDict[key]
                                     break
-                                else:
-                                    db.close()
-                                    print("\nError: No admin account with that email exists.")
+                            if emailValid:
+                                removedAdmin = adminDict.pop(adminKey.get_user_id())
+                                db["Admins"] = adminDict
+                                db.close()
+                                print(f"\nAdmin account with the ID, {removedAdmin.get_user_id()}, deleted successfully.")
+                                break
+                            else:
+                                db.close()
+                                print("\nError: No admin account with that email exists.")
                         else:
                             # if the admin searches for the admin accounts using the admin id
                             if email in adminDict:
@@ -497,29 +497,28 @@ Hence, please only force shut down the program if necessary.
                     if fileFound:
                         emailValidation = validate_email(email)
                         if emailValidation:
-                            if fileFound:
-                                emailValid = False
-                                print("\nretrieving emails")
-                                for key in adminDict:
-                                    emailShelveData = adminDict[key].get_email()
-                                    if email == emailShelveData:
-                                        print("Verdict: Admin email Found.")
-                                        emailValid = True
-                                        adminKey = adminDict[key]
-                                        break
-                                if emailValid:
-                                    if bool(admin.get_otp_setup_key()):
-                                        adminKey.set_otp_setup_key("")
-                                        db["Admins"] = adminDict
-                                        db.close()
-                                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, has its 2FA removed successfully.")
-                                        break
-                                    else:
-                                        db.close()
-                                        print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, does not have 2FA setup.")
+                            emailValid = False
+                            print("\nretrieving emails")
+                            for key in adminDict:
+                                emailShelveData = adminDict[key].get_email()
+                                if email == emailShelveData:
+                                    print("Verdict: Admin email Found.")
+                                    emailValid = True
+                                    adminKey = adminDict[key]
+                                    break
+                            if emailValid:
+                                if bool(admin.get_otp_setup_key()):
+                                    adminKey.set_otp_setup_key("")
+                                    db["Admins"] = adminDict
+                                    db.close()
+                                    print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, has its 2FA removed successfully.")
+                                    break
                                 else:
                                     db.close()
-                                    print("\nError: No admin account with that email exists.")
+                                    print(f"\nAdmin account with the ID, {adminKey.get_user_id()}, does not have 2FA setup.")
+                            else:
+                                db.close()
+                                print("\nError: No admin account with that email exists.")
                         else:
                             # if the admin searches for the admin accounts using the admin id
                             if email in adminDict:
@@ -544,6 +543,54 @@ Hence, please only force shut down the program if necessary.
                     print("\nError: You cannot leave the input empty! Please try again.")
 
         elif cmd_input == "7":
+            print("You are about to deactivate all admin accounts that does not have 2FA setup...")
+            while True:
+                confirmationInput = sanitise(input("Are you sure? (Y/N): ").upper())
+                if confirmationInput == "N":
+                    print("\nDeactivation of admin accounts that do not have 2FA setup aborted.")
+                    break
+                elif confirmationInput == "Y":
+                    adminDict = {}
+                    db = shelve.open(adminDatabaseFilePath, "c")
+                    try:
+                        if 'Admins' in db:
+                            adminDict = db['Admins']
+                            print("\nRetrieved data from admin account database")
+                            fileFound = True
+                        else:
+                            db.close()
+                            print("\nError: No admin account data in admin account database")
+                            fileFound = False
+                    except:
+                        db.close()
+                        print("\nError in retrieving Admins from admin.db")
+                        fileFound = False
+
+                    if fileFound:
+                        print("\nretrieving all admin account details...")
+                        count = 0
+                        for key in adminDict:
+                            adminObject = adminDict[key]
+                            if (bool(adminObject.get_otp_setup_key()) != True) and (adminObject.get_status() == "Active"):
+                                adminObject.set_status("Inactive")
+                                count += 1
+
+                        if count >= 1:
+                            db["Admins"] = adminDict
+                            print(f"\n{count} admin accounts deactivated successfully.")
+                        else:
+                            print("\nNo admin account deactivated as all the accounts with no 2FA is deactivated or all admin accounts has 2FA setup.")
+                            print("Please read all admin account details to check by entering the number 8 in the console menu...")
+                        db.close()
+                        break
+                    else:
+                        db.close()
+                        print("\nThere is no admin accounts to deactivate as the admin database is empty!")
+                        break
+                else:
+                    print("\nInvalid input, please type \"Y\" or \"N\".")
+
+        elif cmd_input == "8":
             adminDict = {}
             db = shelve.open(adminDatabaseFilePath, "c")
             try:
@@ -564,6 +611,22 @@ Hence, please only force shut down the program if necessary.
             if fileFound:
                 count = len(adminDict)
                 print(f"There are {count} admin accounts.\n")
+
+                # for aliging the admin account details for readability
+                usernameOffset = 0
+                emailOffset = 0
+                statusOffset = 0
+                for adminAccounts in adminDict.values():
+                    usernameLengthToCheck = len(adminAccounts.get_username())
+                    if usernameLengthToCheck > usernameOffset:
+                        usernameOffset = usernameLengthToCheck 
+                    emailLengthToCheck = len(adminAccounts.get_email())
+                    if emailLengthToCheck > emailOffset:
+                        emailOffset = emailLengthToCheck
+                    statusLengthToCheck = len(adminAccounts.get_status())
+                    if statusLengthToCheck > statusOffset:
+                        statusOffset = statusLengthToCheck
+
                 for key in adminDict:
                     adminKey = adminDict[key]
                     adminID = adminKey.get_user_id()
@@ -574,9 +637,9 @@ Hence, please only force shut down the program if necessary.
                         twoFAEnabled = "Yes"
                     else:
                         twoFAEnabled = "No"
-                    print(f"Admin ID: {adminID} | Username: {username} | Email: {email} | Status: {status} | 2FA Enabled: {twoFAEnabled}")
+                    print(f"Admin ID: {adminID} | Username: {username.ljust(usernameOffset)} | Email: {email.ljust(emailOffset)} | Status: {status.ljust(statusOffset)} | 2FA Enabled: {twoFAEnabled}")
             else:
-                print("Error could not be resolved...\nSolution: Please create an admin account before reading all admin accounts.")
+                print("Error could not be resolved...\nSuggested Solution: Please create an admin account before reading all admin accounts.")
                 
         elif cmd_input == "0":
             print("\nThank you and have a nice day.")
