@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
-import shelve, math, paypalrestsdk, difflib, copy, json, csv, vimeo, pathlib, phonenumbers, pyotp, qrcode
+import shelve, math, paypalrestsdk, difflib, copy, json, csv, vimeo, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
