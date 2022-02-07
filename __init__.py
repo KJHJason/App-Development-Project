@@ -2692,17 +2692,27 @@ def dashboard():
             # for generating the csv data to collate all user data for other purposes such as marketing, etc.
             with open(userDataCSVFilePath, "w", newline="") as file:
                 writer = csv.writer(file)
-                writer.writerow(["UserID","Username", "Email", "Email Verification", "2FA Enabled", "Account Type", "Account Status", "Number of Courses Teaching","Highly Watched Tag", "No. of Purchases"])
+                writer.writerow(["UserID","Username", "Email", "Email Verification", "2FA Enabled", "Account Type", "Teacher Joined Date", "Account Status", "Number of Courses Teaching","Highly Watched Tag", "No. of Purchases"])
                 for key, value in userDict.items():
+                    # get number of courses teaching
                     try:
                         numOfCourseTeaching = len(value.get_coursesTeaching())
                     except:
+                        # if the user is a student
                         numOfCourseTeaching = "N/A"
+
+                    # getting the date when the user joined as a teacher in CourseFinity
+                    teacherJoinedDate = value.get_teacher_join_date()
+                    if bool(teacherJoinedDate) != True:
+                        # by default, it will be an empty string hence, show "N/A" in the csv file
+                        teacherJoinedDate = "N/A"
+
+                    # check if the user has enabled 2FA
                     if bool(value.get_otp_setup_key()):
                         twoFAEnabled = "Yes"
                     else:
                         twoFAEnabled = "No"
-                    writer.writerow([key, value.get_username(), value.get_email(), value.get_email_verification(), twoFAEnabled, value.get_acc_type(), value.get_status(), numOfCourseTeaching, value.get_highest_tag(), len(value.get_purchases())])
+                    writer.writerow([key, value.get_username(), value.get_email(), value.get_email_verification(), twoFAEnabled, value.get_acc_type(), teacherJoinedDate, value.get_status(), numOfCourseTeaching, value.get_highest_tag(), len(value.get_purchases())])
                 file.close()
 
             return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFilePath=csvFilePath, userDataCSVFilePath=userDataCSVFilePath)
