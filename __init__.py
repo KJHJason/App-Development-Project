@@ -5551,6 +5551,7 @@ def uploadLesson(courseID):
 
 """End of Template app.route by Clarence"""
 
+"""Video Upload by Clarence"""
 @app.route('/upload', methods=['POST'])
 def upload():
     file = request.files['file']
@@ -5558,45 +5559,40 @@ def upload():
     # secure_filename if you are not renaming the uploaded video filename to the courseID
     # else if you're renaming it to the courseID before uploading to the web server, you can omit secure_filename
     # to change filename, file.filename = courseID
-    save_path = construct_path(app.config["COURSE_VIDEO_FOLDER"], secure_filename(file.filename))
-    current_chunk = int(request.form['dzchunkindex'])
+
+    file.filename = get_lessonID()
+    savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
+    currentChunk = int(request.form['dzchunkindex'])
 
     # If the file already exists it's ok if we are appending to it,
     # but not if it's new file that would overwrite the existing one
-    # don't use this old way of checking if path exists,
-    # just use Path(save_path).is_file()
-    if os.path.exists(save_path) and current_chunk == 0:
+    if Path(savePath).is_file():
         # 400 and 500s will tell dropzone that an error occurred and show an error
         return make_response(('File already exists', 400))
 
     try:
-        with open(save_path, 'ab') as f:
+        with open(savePath, 'ab') as f:
             f.seek(int(request.form['dzchunkbyteoffset']))
             f.write(file.stream.read())
     except OSError:
-        # log.exception will include the traceback so we can see what's wrong
-        log.exception('Could not write to file')
         return make_response(("Not sure why,"
                               " but we couldn't write the file to disk", 500))
 
-    total_chunks = int(request.form['dztotalchunkcount'])
+    totalChunks = int(request.form['dztotalchunkcount'])
 
-    if current_chunk + 1 == total_chunks:
+    if currentChunk + 1 == totalChunks:
         # This was the last chunk, the file should be complete and the size we expect
-        # instead of os.path.getsize(filePath), you can use Path(filePath).stat().st_size
-        if os.path.getsize(save_path) != int(request.form['dztotalfilesize']):
-            log.error(f"File {file.filename} was completed, "
-                      f"but has a size mismatch."
-                      f"Was {os.path.getsize(save_path)} but we"
-                      f" expected {request.form['dztotalfilesize']} ")
+        if Path(savePath).stat().st_size != int(request.form['dztotalfilesize']):
             return make_response(('Size mismatch', 500))
         else:
-            log.info(f'File {file.filename} has been uploaded successfully')
+            return make_response("File " + file.filename + " has been uploaded successfully")
     else:
-        log.debug(f'Chunk {current_chunk + 1} of {total_chunks} '
-                  f'for file {file.filename} complete')
+        return make_response("Chunk " + str(currentChunk + 1) + " of " + str(totalChunks) + " for file " + file.filename + " complete")
 
-    return make_response(("Chunk upload successful", 200))
+    #return make_response(("Chunk upload successful", 200))
+
+"""End of Video Upload by Clarence"""
+
 """General Pages"""
 
 @app.route('/cookie_policy')
