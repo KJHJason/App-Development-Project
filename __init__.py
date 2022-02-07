@@ -5535,80 +5535,183 @@ def courseReviews(courseID, reviewPageNum):
 
 """End of Course Page and its review page by Jason"""
 
-"""Template app.route(") (use this when adding a new app route) by Clarence"""
+"""Lesson Upload by Clarence"""
 
 
-@app.route("/course/<courseID>/upload_lesson")
+@app.route("/course/<courseID>/upload_lesson", methods=["GET", "POST"])
 def uploadLesson(courseID):
+    userDict = {}
+    userSession = session["userSession"]
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
-        if "Courses" in db and "Users" in db:
-            courseDict = db['Courses']
-            userDict = db['Users']
+        if "Lesson" in db:
+            LessonDict = db['Lessons']
             db.close()
         else:
             db.close()
             return redirect(url_for("home"))
     except:
         db.close()
-        print("Error in retrieving Users from user.db")
+        print("Error in retrieving Lessons from user.db")
         return redirect(url_for("home"))
 
-    courseObject = courseDict.get(courseID)
+    lessonObject = LessonDict.get(courseID)
 
-    if courseObject == None: # if courseID does not exist in courseDict
+    lessons = lessonObject.get_lessonID()[num]  # get a list of lessonIDs
+    for lesson in lessons:
+        lessonID = lesson.get_lessonID()
+
+    if lessonID == None: # if courseID does not exist in courseDict
         return redirect("/404")
 
+    userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
+    # thumbnail upload edited from Jason's Code
+    if userFound and accGoodStatus:
+        if request.method == "POST":
+            typeOfFormSubmitted = request.form.get("submittedForm")
+            if typeOfFormSubmitted == "image":
+                # if "profileImage" not in request.files:
+                if "lessonThumbnail" not in request.files:
+                    print("No file sent.")
+                    return redirect(url_for("uploadLesson"))
 
-        # Retrieving data from shelve and to write the data into it later
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if 'Users' in db:
-                userDict = db['Users']
+            # file = request.files["profileImage"]
+            file = request.files["lessonThumbnail"]
+
+            totalChunks = int(request.form["dztotalchunkcount"])
+            currentChunk = int(request.form['dzchunkindex'])
+
+            extensionType = get_extension(file.filename)
+            if extensionType != False:
+                # renaming the file name of the submitted image data payload
+                file.filename = userSession + extensionType
+                filename = file.filename
+            else:
+                filename = "invalid"
+
+            if file and allowed_image_file(filename):
+                # will only accept .png, .jpg, .jpeg
+                print("File extension accepted and is within size limit.")
+
+                # userImageFileName = file.filename
+                lessonThumbnailFileName = file.filename
+                # newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
+                newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], lessonThumbnailFileName)
+
+                if currentChunk == 0:
+                    # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    newFilePath.unlink(missing_ok=True)
+
+                    print("Total file size:", int(
+                    request.form['dztotalfilesize']))
+
+                try:
+                    # ab flag for opening a file for appending data in binary format
+                    with open(newFilePath, "ab") as imageData:
+                        imageData.seek(int(request.form['dzchunkbyteoffset']))
+                        print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
+                        imageData.write(file.stream.read())
+                        imageData.close()
+                except OSError:
+                    print('Could not write to file')
+                    return make_response("Error writing to file", 500)
+
+                except:
+                    print("Unexpected error.")
+                    return make_response("Unexpected error", 500)
+
+                if currentChunk + 1 == totalChunks:
+                    # This was the last chunk, the file should be complete and the size we expect
+                    if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
+                        print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
+                        # remove corrupted image
+                        # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                        newFilePath.unlink(missing_ok=True)
+                        return make_response("Uploaded image is corrupted! Please try again!", 500)
+                    else:
+                        print(f'File {file.filename} has been uploaded successfully')
+                        # constructing a file path to see if the user has already uploaded an image and if the file exists
+                        # userOldImageFilename = userKey.get_profile_image()
+
+                        # if bool(userOldImageFilename):
+                        #     userOldImageFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userOldImageFilename)
+
+                        #     # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
+                        #     #since dropzone will actually send multiple requests,
+                        #     if userOldImageFilePath != newFilePath:
+                        #         print("User has already uploaded a profile image before.")
+                        #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                        #         userOldImageFilePath.unlink(missing_ok=True)
+                        #         print("Old Image file has been deleted.")
+
+                        # resizing the image to a 1:1 ratio and compresses it
+                        imageResized = resize_image(newFilePath, (250, 250))
+
+                        if imageResized:
+                            # if file was successfully resized, it means the image is a valid image
+                            userKey.set_profile_image(lessonThumbnailFileName)
+                            db['Users'] = userDict
+                            db.close()
+                            # flash("Your profile image has been successfully saved.", "Profile Image Updated")
+                            flash("Thumbnail has been uploaded successfully.", "Thumbnail Uploaded")
+                            # return make_response(("Profile Image Uploaded!", 200))
+                            return make_response(("Thumbnail Uploaded!", 200))
+                        else:
+                                # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
+                                userKey.set_profile_image("")
+
+                                db['Users'] = userDict
+                                db.close()
+                                # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                newFilePath.unlink(missing_ok=True)
+                                return make_response("Uploaded image is corrupted! Please try again!", 500)
+                else:
+                    db.close()
+                    print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
+                    return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
             else:
                 db.close()
-                print("User data in shelve is empty.")
-                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                return redirect(url_for("home"))
-        except:
+                return make_response("Image extension not supported!", 500)
+        elif typeOfFormSubmitted == "resetUserIcon":
+            print("Deleting user's profile image...")
+            userImageFileName = userKey.get_profile_image()
+            profileFilePath = construct_path(
+            app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
+            # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
+            if bool(userImageFileName) != False:
+                # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                Path(profileFilePath).unlink(missing_ok=True)
+            userKey.set_profile_image("")
+            db['Users'] = userDict
             db.close()
-            print("Error in retrieving Users from user.db")
-            return redirect(url_for("home"))
-
-        # retrieving the object based on the shelve files using the user's user ID
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        if userFound and accGoodStatus:
-            # insert your C,R,U,D operation here to deal with the user shelve data files
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
-            db.close() # remember to close your shelve files!
-            return render_template('users/teacher/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, courseID=courseID)
+            print("User profile image deleted.")
+            flash("Your profile image has been successfully deleted.","Profile Image Deleted")
+            return redirect(url_for("userProfile"))
         else:
             db.close()
-            print("User not found or is banned")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
+            print("Form value tampered or POST request sent without form value...")
+            return redirect(url_for("userProfile"))
     else:
-        if "adminSession" in session:
-            return redirect(url_for("home"))
+        db.close()
+
+        # checking if the user have uploaded a profile image before and if the image file exists
+        userProfileFilenameSaved = bool(userKey.get_profile_image())
+        imagesrcPath, profileReset = get_user_profile_pic(userSession)
+        if profileReset:
+            userProfileFilenameSaved = False
+
+        if accType == "Teacher":
+            teacherUID = userSession
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            teacherUID = ""
+
+        return render_template('users/loggedin/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, emailVerification=emailVerification, emailVerified=emailVerified, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
 
 """End of Template app.route by Clarence"""
 
 """Video Upload by Clarence"""
-@app.route('/upload', methods=['POST'])
+@app.route('/upload/lesson<num>', methods=['POST'])
 def upload(courseID):
     file = request.files['file']
 
@@ -5630,7 +5733,7 @@ def upload(courseID):
 
     lessonObject = LessonDict.get(courseID)
 
-    lessons = lessonObject.get_lessonID()  # get a list of lessonIDs
+    lessons = lessonObject.get_lessonID()[num]  # get a list of lessonIDs
     for lesson in lessons:
         lessonID = lesson.get_lessonID()
 
