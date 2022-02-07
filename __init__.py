@@ -2704,7 +2704,7 @@ def dashboard():
                     # getting the date when the user joined as a teacher in CourseFinity
                     teacherJoinedDate = value.get_teacher_join_date()
                     if bool(teacherJoinedDate) != True:
-                        # by default, it will be an empty string hence, show "N/A" in the csv file
+                        # by default, it will be an empty string hence, show "N/A" in the csv file if the user is a student
                         teacherJoinedDate = "N/A"
 
                     # check if the user has enabled 2FA
