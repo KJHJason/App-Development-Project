@@ -5624,14 +5624,35 @@ def uploadLesson(courseID):
 
 """Video Upload by Clarence"""
 @app.route('/upload', methods=['POST'])
-def upload():
+def upload(courseID):
     file = request.files['file']
 
     # secure_filename if you are not renaming the uploaded video filename to the courseID
     # else if you're renaming it to the courseID before uploading to the web server, you can omit secure_filename
     # to change filename, file.filename = courseID
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Lesson" in db:
+            LessonDict = db['Lessons']
+            db.close()
+        else:
+            db.close()
+            return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Lessons from user.db")
+        return redirect(url_for("home"))
 
-    file.filename = get_lessonID()
+    lessonObject = LessonDict.get(courseID)
+
+    lessons = lessonObject.get_lessonID()  # get a list of lessonIDs
+    for lesson in lessons:
+        lessonID = lesson.get_lessonID()
+
+    if lessonID == None: # if courseID does not exist in courseDict
+        return redirect("/404")
+    
+    file.filename = lessonID
     savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
     currentChunk = int(request.form['dzchunkindex'])
 
