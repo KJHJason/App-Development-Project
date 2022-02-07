@@ -12,8 +12,11 @@ class Teacher(Common):
 
         # Added by Wei Ren for Cashout
         self.__cashoutPreference = "Email" # Uses normal email
-        self.__phoneValidation = False
+        self.__phoneVerification = "Not Verified"
         self.__cashoutPhone = None
+
+        self.__cashoutEmailVerification = self.get_email_verification()
+        self.__cashoutEmail = email
 
     """Done by Jason"""
     
@@ -56,9 +59,9 @@ class Teacher(Common):
     def set_cashoutPreference(self, cashoutPreference):
         self.__cashoutPreference = cashoutPreference
 
-    def get_phoneValidation(self):
-        return self.__phoneValidation
-    def set_phoneValidation(self,phoneValidation):
-        self.__phoneValidation = phoneValidation
+    def get_phoneVerification(self):
+        return self.__phoneVerification
+    def set_phoneVerification(self,phoneVerification):
+        self.__phoneVerifircation = phoneVerification
 
     """"End of Done by Wei Ren"""

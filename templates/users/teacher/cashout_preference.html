@@ -36,12 +36,12 @@
                             Profile
                         </a>
                     </li>
+                    {% if accType == "Teacher" %}
                     <li class="nav-item">
                         <a href="/cashout_preference" class="nav-link text-white active-custom">
                             Cashout Preferences
                         </a>
                     </li>
-                    {% if accType == "Teacher" %}
                     <li class="nav-item">
                         <a href="/teacher_cashout" class="nav-link text-white">
                           Cashing Out
@@ -105,7 +105,7 @@
                                 <div class="row">
                                     <div class="col-md-6 margin-top margin-top2">
                                         <label for="emailAddress">Email:</label>
-                                        <input class="form-control" type="text" value="{{ renderedInfo['Email'] }}" disabled>
+                                        <input id="emailAddress" class="form-control" type="text" value="{{ renderedInfo['Email'] }}" disabled>
                                     </div>
                                 </div>
 

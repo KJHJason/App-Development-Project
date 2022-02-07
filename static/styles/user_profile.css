@@ -373,3 +373,13 @@ td p .fa-envelope-open-text {
 #edit button {
     margin-left: 10px;
 }
+
+.alert-div {
+    display: flex;
+    align-items: center;
+}
+
+.alert-div i {
+    padding-right: 1rem;
+    font-size: 1.5em;
+}
