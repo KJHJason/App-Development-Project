@@ -5643,7 +5643,7 @@ def upload(courseID):
 
     # If the file already exists it's ok if we are appending to it,
     # but not if it's new file that would overwrite the existing one
-    if Path(savePath).is_file():
+    if savePath.is_file():
         # 400 and 500s will tell dropzone that an error occurred and show an error
         return make_response(('File already exists', 400))
 
@@ -5660,7 +5660,7 @@ def upload(courseID):
 
     if currentChunk + 1 == totalChunks:
         # This was the last chunk, the file should be complete and the size we expect
-        if Path(savePath).stat().st_size != int(request.form['dztotalfilesize']):
+        if savePath.stat().st_size != int(request.form['dztotalfilesize']):
             return make_response(('Size mismatch', 500))
         else:
             return make_response("File " + file.filename + " has been uploaded successfully")
