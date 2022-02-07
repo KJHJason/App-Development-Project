@@ -5651,6 +5651,7 @@ def upload(courseID):
         with open(savePath, 'ab') as f:
             f.seek(int(request.form['dzchunkbyteoffset']))
             f.write(file.stream.read())
+            f.close()
     except OSError:
         return make_response(("Not sure why,"
                               " but we couldn't write the file to disk", 500))
