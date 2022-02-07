@@ -100,7 +100,7 @@ class ContactUs(Form):
                                                                                             ("Account", "Account Enquiry"),
                                                                                             ("Business","Business Enquiry"),
                                                                                             ("Bugs", "Bug Report"),
-                                                                                            ("Jobs","JobSeeking"),
+                                                                                            ("Jobs","Job Seeking"),
                                                                                             ("News","News Media"),
                                                                                             ("Others","Others")])
                                                                                            #("Value", "Label")

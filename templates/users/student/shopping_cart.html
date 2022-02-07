@@ -13,10 +13,12 @@
     <h4>Shopping Cart</h4>
     <hr>
 </div>
-{% if count != 0 %}
+{% if courseList != [] %}
 <div class="row g-0">
     <div class="col"> <!--col-8 if PayPal exists-->
-        {% for course in courseList %}<!--Pagination has issues, fix later pls-->
+        {% for course in courseList %}
+
+        <!--Remove Course from Cart Form-->
         <form id="{{ course['courseID'] }}" method="post">
 
             <!-- Hidden Form Fields, because Jinja2 hates curly braces in curly braces -->
@@ -24,6 +26,7 @@
             {{ render_field(form.courseID, value = courseID) }}
         </form>
 
+        <!--Course Info-->
         <div class="card">
             <div class="row g-0">
                 <div class="col">
@@ -75,99 +78,8 @@
                 </div>
             </div>
         </div>
+
         {% endfor %}
-        <!--Pagination-->
-        {% if maxPages > 5 %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination flex-wrap">
-                <li class="page-item ms-auto">
-                    <a class="page-link" href="/shopping_cart/1" aria-label="First Page">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">First Page</span>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="/shopping_cart/{{ previousPage }}" aria-label="Previous">
-                        <span aria-hidden="true">&lt;</span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                </li>
-                {% for key in paginationList %}
-                    {% if key == pageNum %}
-                    <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
-                    {% else %}
-                    <li class="page-item"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
-                    {% endif %}
-                {% endfor %}
-                <li class="page-item">
-                    <a class="page-link" href="/shopping_cart/{{ nextPage }}" aria-label="Next">
-                        <span aria-hidden="true">&gt;</span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </li>
-                <li class="page-item me-auto">
-                    <a class="page-link" href="/shopping_cart/{{ maxPages }}" aria-label="Last Page">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Last Page</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        {% elif maxPages == 0 %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination flex-wrap">
-                <li class="page-item ms-auto">
-                    <a class="page-link" href="/shopping_cart/0" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">Previous</span>
-                    </a>
-                </li>
-                <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/0">0</a></li>
-                <li class="page-item me-auto">
-                    <a class="page-link" href="/shopping_cart/0" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Next</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        {% elif maxPages <= 5 %}
-        <nav aria-label="Page navigation">
-            <ul class="pagination flex-wrap">
-                <li class="page-item ms-auto">
-                    <a class="page-link" href="/shopping_cart/1" aria-label="First Page">
-                    <span aria-hidden="true">&laquo;</span>
-                    <span class="sr-only">First Page</span>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link" href="/shopping_cart/{{ previousPage }}" aria-label="Previous">
-                        <span aria-hidden="true">&lt;</span>
-                        <span class="sr-only">Previous</span>
-                    </a>
-                </li>
-                {% for key in paginationList %}
-                    {% if key == pageNum %}
-                    <li class="page-item active" aria-current="page"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
-                    {% else %}
-                    <li class="page-item"><a class="page-link" href="/shopping_cart/{{ key }}">{{ key }}</a></li>
-                    {% endif %}
-                {% endfor %}
-                <li class="page-item">
-                    <a class="page-link" href="/shopping_cart/{{ nextPage }}" aria-label="Next">
-                        <span aria-hidden="true">&gt;</span>
-                        <span class="sr-only">Next</span>
-                    </a>
-                </li>
-                <li class="page-item me-auto">
-                    <a class="page-link" href="/shopping_cart/{{ maxPages }}" aria-label="Last Page">
-                    <span aria-hidden="true">&raquo;</span>
-                    <span class="sr-only">Last Page</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        {% endif %}
     </div>
 
     <!-- Modal -->
@@ -190,6 +102,7 @@
       </div>
     </div>
 
+    <!--Checkout Complete Form-->
     <div class="col-4">
         <form id="paypal-complete" method="post">
             {{ render_field(checkoutForm.checkoutComplete) }}

@@ -42,18 +42,16 @@
 							Profile
 						</a>
 					</li>
-                    {% if accType == "Teacher" %}
                     <li class="nav-item">
-                        <a href="/cashout_preference" class="nav-link text-white active-custom">
+                        <a href="/cashout_preference" class="nav-link text-white">
                             Cashout Preferences
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/teacher_cashout" class="nav-link text-white">
+                        <a href="/teacher_cashout" class="nav-link text-white active-custom">
                           Cashing Out
                         </a>
                     </li>
-                    {% endif %}
 				</ul>
 			</div>
 		</div>
@@ -63,15 +61,20 @@
 					<div class="row">
 						<h3>Earning Details for {{ monthYear }}</h3>
 
-						{% if phoneVerification == "Not Verified" and cashoutPreference == "Phone" %}
+						{% if cashoutVerification == "Not Verified" %}
 						<div>
 							<div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
 								<div>
 									<i class="bi bi-info-circle"></i>
 								</div>
 								<div>
-									While your phone number is formatted correctly, <strong>we are not sure whether it is legitimate</strong>.
-									There is a possibility cashout may not be successful; you may want to consider changing it.
+									{% if cashoutPreference == "Email" %}
+										As you have not validated your email address, <strong>we are not sure whether it is legitimate</strong>.
+										There is a possibility cashout may not be successful; you may want to consider validating/changing it.
+									{% elif cashoutPreference == "Phone" %}
+										While your phone number is formatted correctly, <strong>we are not sure whether it is legitimate</strong>.
+										There is a possibility cashout may not be successful; you may want to consider changing it.
+									{% endif %}
 								</div>
 								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 							</div>
