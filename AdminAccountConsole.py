@@ -10,13 +10,13 @@ def validate_email(email):
     else:
         return False
 
-# Command line 1-2 and 6-7 feature/operations done by Jason
+# Command line 1-2 and 6-8 feature/operations done by Jason
 # CRUD operations by admin ID instead of via email only by Jason
 # Note that UUID v4 is not used for id generation for the admins as there will not be millions of admins if deployed. Hence, using shortuuid to generate a 5 characters id for admins which is feasible for a few thousands of admin accounts.
 
 # Command line 3-5 feature/operations done by Clarence
 
-# Command line 8 feature/operation done by Royston
+# Command line 9 feature/operation done by Royston
 
 def main():
     
@@ -31,7 +31,8 @@ Please select the following command number to continue:
 5. Delete an admin account
 6. Remove an admin account's 2FA
 7. Deactivate all admin account without 2FA
-8. View all admin accounts
+8. Delete all deactivated admin accounts
+9. View all admin accounts
 0. Exit
 
 Important Notes:
@@ -569,10 +570,9 @@ Hence, please only force shut down the program if necessary.
                     if fileFound:
                         print("\nretrieving all admin account details...")
                         count = 0
-                        for key in adminDict:
-                            adminObject = adminDict[key]
-                            if (bool(adminObject.get_otp_setup_key()) != True) and (adminObject.get_status() == "Active"):
-                                adminObject.set_status("Inactive")
+                        for adminAccount in adminDict.values():
+                            if (bool(adminAccount.get_otp_setup_key()) != True) and (adminAccount.get_status() == "Active"):
+                                adminAccount.set_status("Inactive")
                                 count += 1
 
                         if count >= 1:
@@ -591,6 +591,54 @@ Hence, please only force shut down the program if necessary.
                     print("\nInvalid input, please type \"Y\" or \"N\".")
 
         elif cmd_input == "8":
+            print("You are about to delete all deactivated admin accounts...")
+            while True:
+                confirmationInput = sanitise(input("Are you sure? (Y/N): ").upper())
+                if confirmationInput == "N":
+                    print("\Deletion of all deactivated admin accounts aborted.")
+                    break
+                elif confirmationInput == "Y":
+                    adminDict = {}
+                    db = shelve.open(adminDatabaseFilePath, "c")
+                    try:
+                        if 'Admins' in db:
+                            adminDict = db['Admins']
+                            print("\nRetrieved data from admin account database")
+                            fileFound = True
+                        else:
+                            db.close()
+                            print("\nError: No admin account data in admin account database")
+                            fileFound = False
+                    except:
+                        db.close()
+                        print("\nError in retrieving Admins from admin.db")
+                        fileFound = False
+
+                    if fileFound:
+                        print("\nretrieving all admin account details...")
+                        count = 0
+                        adminDictCopy = adminDict.copy()
+                        for key, account in adminDictCopy.items():
+                            if account.get_status() == "Inactive":
+                                adminDict.pop(key)
+                                count += 1
+
+                        if count >= 1:
+                            db["Admins"] = adminDict
+                            print(f"\n{count} admin accounts deleted successfully.")
+                        else:
+                            print("\nNo admin account deleted as there is no deactivated admin account in the database.")
+                            print("Please read all admin account details to check by entering the number 8 in the console menu...")
+                        db.close()
+                        break
+                    else:
+                        db.close()
+                        print("\nThere is no admin accounts to delete as the admin database is empty!")
+                        break
+                else:
+                    print("\nInvalid input, please type \"Y\" or \"N\".")
+
+        elif cmd_input == "9":
             adminDict = {}
             db = shelve.open(adminDatabaseFilePath, "c")
             try:

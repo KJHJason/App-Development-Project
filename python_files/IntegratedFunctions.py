@@ -480,8 +480,7 @@ def paginate(contentList, pageNumber, itemPerPage):
 def get_pagination_button_list(pageNum, maxPages):
     paginationList = []
     if maxPages <= 5:
-        pageCount = 0
-        for i in range(maxPages):
+        for pageCount in range(maxPages):
             pageCount += 1
             paginationList.append(pageCount)
     else:
