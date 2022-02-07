@@ -1,0 +1,32 @@
+{% if accType == "Guest" %}
+{% extends "guest_base.html" %}
+{% elif accType == "Student" or accType == "Teacher"%}
+{% extends "user_base.html" %}
+{% elif accType == "Admin" %}
+{% extends "admin_base.html" %}
+{% endif %}
+
+{% block title %}Explore Category | CourseFinity{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row g-0 casing mx-auto">
+        <div class="col-4">
+            <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
+        </div>
+        <div class="col-8">
+            <div class="card-body text">
+                <h5 class="card-title">{{ searchInformation["Title"] }}</h5>
+                <p class="card-text">{{ searchInformation["Description"] }}</p>
+            </div>
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="selection col">
+                        <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

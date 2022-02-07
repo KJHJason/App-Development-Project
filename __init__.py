@@ -4413,6 +4413,303 @@ def aboutUs():
 
 """End of About Us Page by Royston"""
 
+"""Explore Category by Royston"""
+
+@app.route('/explore/<tag>/<int:pageNum>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def explore(pageNum, tag):
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+
+        if userFound and accGoodStanding:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
+            searchfound = []
+
+            try:
+                courseDict = {}
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+
+            except:
+                print("Unable to open up course shelve")
+                return redirect(url_for("home"))
+
+
+            courseTagDict = {"Programming": 0,
+                            "Web_Development": 0,
+                            "Game_Development": 0,
+                            "Mobile_App_Development": 0,
+                            "Software_Development": 0,
+                            "Other_Development": 0,
+                            "Entrepreneurship": 0,
+                            "Project_Management": 0,
+                            "BI_Analytics": 0,
+                            "Business_Strategy": 0,
+                            "Other_Business": 0,
+                            "3D_Modelling": 0,
+                            "Animation": 0,
+                            "UX_Design": 0,
+                            "Design_Tools": 0,
+                            "Other_Design": 0,
+                            "Digital_Photography": 0,
+                            "Photography_Tools": 0,
+                            "Video_Production": 0,
+                            "Video_Design_Tools": 0,
+                            "Other_Photography_Videography": 0,
+                            "Science": 0,
+                            "Math": 0,
+                            "Language": 0,
+                            "Test_Prep": 0,
+                            "Other_Academics": 0}
+            
+            if tag in courseTagDict:
+                for courseID in courseDict:
+                    courseObject = courseDict.get(courseID)
+                    tagCourse = courseObject.get_readable_tag
+                    if tagCourse == tag:
+                        course = courseDict[courseID]
+                        searchInformation = {"Title":course.get_title(),
+                                            "Description":course.get_description(),
+                                            "Thumbnail":course.get_thumbnail(),
+                                            "Owner":course.get_userID()}
+                        searchfound.append(searchInformation)
+                    else:
+                        print("The tags somehow does not match.")
+                        print(tagCourse)
+                        print(tag)
+                        db.close()
+                        return redirect(url_for("home"))
+            else:
+                print("Tag is not inside the course Tag Dictionary.")
+                return redirect(url_for("home"))
+
+            print(searchfound)
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(searchfound) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                session["pageNumber"] = 0
+                return redirect("/explore/0")
+            elif courseListLen > 0 and pageNum == 0:
+                session["pageNumber"] = 1
+                return redirect("/explore/1")
+            elif pageNum > maxPages:
+                session["pageNumber"] = maxPages
+                redirectRoute = "/explore/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            searchfound = []
+
+            try:
+                courseDict = {}
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+
+            except:
+                print("Unable to open up course shelve")
+                return redirect(url_for("home"))
+
+
+            courseTagDict = {"Programming": 0,
+                            "Web_Development": 0,
+                            "Game_Development": 0,
+                            "Mobile_App_Development": 0,
+                            "Software_Development": 0,
+                            "Other_Development": 0,
+                            "Entrepreneurship": 0,
+                            "Project_Management": 0,
+                            "BI_Analytics": 0,
+                            "Business_Strategy": 0,
+                            "Other_Business": 0,
+                            "3D_Modelling": 0,
+                            "Animation": 0,
+                            "UX_Design": 0,
+                            "Design_Tools": 0,
+                            "Other_Design": 0,
+                            "Digital_Photography": 0,
+                            "Photography_Tools": 0,
+                            "Video_Production": 0,
+                            "Video_Design_Tools": 0,
+                            "Other_Photography_Videography": 0,
+                            "Science": 0,
+                            "Math": 0,
+                            "Language": 0,
+                            "Test_Prep": 0,
+                            "Other_Academics": 0}
+            
+            if tag in courseTagDict:
+                for courseID in courseDict:
+                    courseObject = courseDict.get(courseID)
+                    tagCourse = courseObject.get_readable_tag()
+                    if tagCourse == tag:
+                        course = courseDict[courseID]
+                        searchInformation = {"Title":course.get_title(),
+                                            "Description":course.get_description(),
+                                            "Thumbnail":course.get_thumbnail(),
+                                            "Owner":course.get_userID()}
+                        searchfound.append(searchInformation)
+                    else:
+                        print("The tags somehow does not match.")
+                        print(tagCourse)
+                        print(tag)
+                        db.close()
+                        return redirect(url_for("home"))
+            else:
+                print("Tag is not inside the course Tag Dictionary.")
+                return redirect(url_for("home"))
+
+            print(searchfound)
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(searchfound) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                session["pageNumber"] = 0
+                return redirect("/explore/0")
+            elif courseListLen > 0 and pageNum == 0:
+                session["pageNumber"] = 1
+                return redirect("/explore/1")
+            elif pageNum > maxPages:
+                session["pageNumber"] = maxPages
+                redirectRoute = "/explore/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+    else:
+        searchfound = []
+
+        try:
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+            courseDict = db["Courses"]
+
+        except:
+            print("Unable to open up course shelve")
+            return redirect(url_for("home"))
+
+
+        courseTagDict = {"Programming": 0,
+                        "Web_Development": 0,
+                        "Game_Development": 0,
+                        "Mobile_App_Development": 0,
+                        "Software_Development": 0,
+                        "Other_Development": 0,
+                        "Entrepreneurship": 0,
+                        "Project_Management": 0,
+                        "BI_Analytics": 0,
+                        "Business_Strategy": 0,
+                        "Other_Business": 0,
+                        "3D_Modelling": 0,
+                        "Animation": 0,
+                        "UX_Design": 0,
+                        "Design_Tools": 0,
+                        "Other_Design": 0,
+                        "Digital_Photography": 0,
+                        "Photography_Tools": 0,
+                        "Video_Production": 0,
+                        "Video_Design_Tools": 0,
+                        "Other_Photography_Videography": 0,
+                        "Science": 0,
+                        "Math": 0,
+                        "Language": 0,
+                        "Test_Prep": 0,
+                        "Other_Academics": 0}
+        
+        if tag in courseTagDict:
+            for courseID in courseDict:
+                courseObject = courseDict.get(courseID)
+                tagCourse = courseObject.get_readable_tag
+                if tagCourse == tag:
+                    course = courseDict[courseID]
+                    searchInformation = {"Title":course.get_title(),
+                                        "Description":course.get_description(),
+                                        "Thumbnail":course.get_thumbnail(),
+                                        "Owner":course.get_userID()}
+                    searchfound.append(searchInformation)
+                else:
+                    print("The tags somehow does not match.")
+                    print(tagCourse)
+                    print(tag)
+                    db.close()
+                    return redirect(url_for("home"))
+        else:
+            print("Tag is not inside the course Tag Dictionary.")
+            return redirect(url_for("home"))
+
+        print(searchfound)
+
+        maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+        courseListLen = len(searchfound) # get the length of the userList
+        maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+        pageNum = int(pageNum)
+        # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+        if pageNum < 0:
+            session["pageNumber"] = 0
+            return redirect("/explore/0")
+        elif courseListLen > 0 and pageNum == 0:
+            session["pageNumber"] = 1
+            return redirect("/explore/1")
+        elif pageNum > maxPages:
+            session["pageNumber"] = maxPages
+            redirectRoute = "/explore/" + str(maxPages)
+            return redirect(redirectRoute)
+        else:
+            # pagination algorithm starts here
+            courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+            pageNumForPagination = pageNum - 1 # minus for the paginate function
+            paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+            searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+            paginationList = get_pagination_button_list(pageNum, maxPages)
+
+            previousPage = pageNum - 1
+            nextPage = pageNum + 1
+
+            db.close() # remember to close your shelve files!
+            return render_template('users/loggedin/purchasehistory.html', courseID=courseID, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+
+"""End of Explore Category by Royston"""
+
 """Shopping Cart by Wei Ren"""
 
 @app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
