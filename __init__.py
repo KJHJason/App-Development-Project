@@ -3567,7 +3567,6 @@ def teacherCashOut():
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             joinedDate = userKey.get_teacher_join_date()
-            print(type(joinedDate))
             zeroCommissionEndDate = joinedDate + timedelta(days=90)
             currentDate = date.today()
 
