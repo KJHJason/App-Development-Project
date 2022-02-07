@@ -65,13 +65,10 @@ def validate_session_get_userKey_open_file(userSession):
         userAccStatus = userKey.get_status()
         if userAccStatus == "Good":
             accType = userKey.get_acc_type()
-            db.close()
             return userKey, userFound, True, accType
         else:
-            db.close()
             return userKey, userFound, False, ""
     else:
-        db.close()
         print("Verdict: User ID not found.")
         return userKey, userFound, False, ""
 
