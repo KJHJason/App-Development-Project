@@ -39,9 +39,7 @@ class Course():
         self.__thumbnail = thumbnail
         self.__price = price
         self.__course_type = courseType # "Zoom" or "Video"
-        self.__overallRating = 0
         self.__tag = tag #  PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE Common.py
-        self.__ratings = []
         self.__views = 0
         self.__review = []
         self.__lessons = [] # list of lessons objects
@@ -72,59 +70,35 @@ class Course():
         return self.__lessons
 
     def get_readable_tag(self):
-        courseTag = self.__tag
-        if courseTag == "Programming":
-            return "Development - Programming"
-        elif courseTag == "Web_Development":
-            return "Development - Web Development"
-        elif courseTag == "Game_Development":
-            return "Development - Game Development"
-        elif courseTag == "Mobile_App_Development":
-            return "Development - Mobile App Development"
-        elif courseTag == "Software_Development":
-            return "Development - Software Development"
-        elif courseTag == "Other_Development":
-            return "Development - Other Development"
-        elif courseTag == "Entrepreneurship":
-            return "Business - Entrepreneurship"
-        elif courseTag == "Project_Management":
-            return "Business - Project Management"
-        elif courseTag == "BI_Analytics":
-            return "Business - BI Analytics"
-        elif courseTag == "Business_Strategy":
-            return "Business - Business Strategy"
-        elif courseTag == "Other_Business":
-            return "Business - Other Business"
-        elif courseTag == "3D_Modelling":
-            return "Design - 3D Modelling"
-        elif courseTag == "Animation":
-            return "Design - Animation"
-        elif courseTag == "UX_Design":
-            return "Design - UX Design"
-        elif courseTag == "Design_Tools": 
-            return "Design - Design Tools"
-        elif courseTag == "Other_Design":
-            return "Design - Other Design"
-        elif courseTag == "Digital_Photography":
-            return "Photography/Videography - Digital Photography"
-        elif courseTag == "Photography_Tools":
-            return "Photography/Videography - Photography Tools"
-        elif courseTag == "Video_Production":
-            return "Photography/Videography - Video Production"
-        elif courseTag == "Video_Design_Tools":
-            return "Photography/Videography - Video Design Tools"
-        elif courseTag == "Other_Photography_Videography":
-            return "Photography/Videography - Other Photography/Videography"
-        elif courseTag == "Science":
-            return "Academics - Science"
-        elif courseTag == "Math":
-            return "Academics - Math"
-        elif courseTag == "Language":
-            return "Academics - Language"
-        elif courseTag == "Test_Prep":
-            return "Academics - Test Prep"
-        elif courseTag == "Other_Academics":
-            return "Academics - Other Academics"
+        readableTagDict = {"Programming": "Development - Programming",
+                           "Web_Development": "Development - Web Development",
+                           "Game_Development": "Development - Game Development",
+                           "Mobile_App_Development": "Development - Mobile App Development",
+                           "Software_Development": "Development - Software Development",
+                           "Other_Development": "Development - Other Development",
+                           "Entrepreneurship": "Business - Entrepreneurship",
+                           "Project_Management": "Business - Project Management",
+                           "BI_Analytics": "Business - Business Intelligence & Analytics",
+                           "Business_Strategy": "Business - Business Strategy",
+                           "Other_Business": "Business - Other Business",
+                           "3D_Modelling": "Design - 3D Modelling",
+                           "Animation": "Design - Animation",
+                           "UX_Design": "Design - UX Design",
+                           "Design_Tools": "Design - Design Tools",
+                           "Other_Design": "Design - Other Design",
+                           "Digital_Photography": "Photography/Videography - Digital Photography",
+                           "Photography_Tools": "Photography/Videography - Photography Tools",
+                           "Video_Production": "Photography/Videography - Video Production",
+                           "Video_Design_Tools": "Photography/Videography - Video Design Tools",
+                           "Other_Photography_Videography": "Photography/Videography - Other Photography/Videography",
+                           "Science": "Academics - Science",
+                           "Math": "Academics - Math",
+                           "Language": "Academics - Language",
+                           "Test_Prep": "Academics - Test Prep",
+                           "Other_Academics": "Academics - Other Academics"}
+
+        if self.__tag in readableTagDict:
+            return readableTagDict[self.__tag]
         else:
             return "Unknown Tag"
 
