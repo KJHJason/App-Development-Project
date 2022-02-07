@@ -3657,7 +3657,7 @@ def teacherCashOut():
                                 commission = 0
                             else:
                                 commission = 0.25
-                            totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * commission)
+                            totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
                             totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_earnings(0)
@@ -3670,7 +3670,7 @@ def teacherCashOut():
                                 commission = 0
                             else:
                                 commission = 0.25
-                            totalEarned = accumulatedEarnings - (accumulatedEarnings * commission)
+                            totalEarned = accumulatedEarnings * (1 - commission)
                             totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_accumulated_earnings(0)
