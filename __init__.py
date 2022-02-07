@@ -4546,7 +4546,7 @@ def explore(pageNum, tag):
                 return redirect(url_for("home"))
 
 
-            courseTagList = ["Programming",
+            courseTagTuple = ("Programming",
                             "Web_Development",
                             "Game_Development",
                             "Mobile_App_Development",
@@ -4571,9 +4571,9 @@ def explore(pageNum, tag):
                             "Math",
                             "Language",
                             "Test_Prep",
-                            "Other_Academics"]
+                            "Other_Academics")
             
-            if tag in courseTagList:
+            if tag in courseTagTuple:
                 for courseID in courseDict:
                     courseObject = courseDict.get(courseID)
                     tagCourse = courseObject.get_readable_tag()
