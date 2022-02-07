@@ -3596,16 +3596,7 @@ def teacherCashOut():
                     # simple resetting of teacher's income
                     doesCardExist = bool(userKey.get_card_name())
                     if doesCardExist != False:
-                        # calculating how much the teacher has earned
-                        if currentDate <= zeroCommissionEndDate:
-                            commission = "0%"
-                            totalEarned = initialEarnings + accumulatedEarnings
-                        else:
-                            commission = "25%"
-                            totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)
-
-                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-
+                        
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
                         payoutID = generate_ID_to_length(payoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
@@ -3661,6 +3652,13 @@ def teacherCashOut():
 
                         # deducting from the teacher object
                         if typeOfCollection == "collectingAll" and lastDayOfMonth:
+                            # calculating how much the teacher has earned
+                            if currentDate <= zeroCommissionEndDate:
+                                commission = 0
+                            else:
+                                commission = 0.25
+                            totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * commission)
+                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_earnings(0)
                             userKey.set_accumulated_earnings(0)
@@ -3668,6 +3666,12 @@ def teacherCashOut():
                             db.close()
                             return redirect(url_for("teacherCashOut"))
                         elif typeOfCollection == "collectingAccumulated":
+                            if currentDate <= zeroCommissionEndDate:
+                                commission = 0
+                            else:
+                                commission = 0.25
+                            totalEarned = accumulatedEarnings - (accumulatedEarnings * commission)
+                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
                             userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
