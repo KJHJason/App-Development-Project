@@ -3566,6 +3566,7 @@ def teacherCashOut():
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             joinedDate = userKey.get_teacher_join_date()
+            print(type(joinedDate))
             zeroCommissionEndDate = joinedDate + timedelta(days=90)
             currentDate = date.today()
 
@@ -3726,7 +3727,7 @@ def teacherCashOut():
                         remainingDays = "Unexpected error, please contact CourseFinity support."
                 else:
                     commission = "25%"
-                    totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)
+                    totalEarned = (initialEarnings + accumulatedEarnings) * (1 - 0.25)
 
                 totalEarnedInt = totalEarned
                 # converting the numbers into strings of 2 decimal place for the earnings
