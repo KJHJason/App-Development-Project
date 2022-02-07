@@ -3300,57 +3300,58 @@ def cashoutPreference():
 
         if userFound and accGoodStatus:
             if accType == "Teacher":
-                teacherUID = userSession
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+
+                # Initialise values
+                cashoutForm = Forms.CashoutForm(request.form)
+                phoneError = False
+
+
+                renderedInfo = {}
+
+                # Get preference value for rendering
+                if userKey.get_cashoutPreference() == "Email":
+                    renderedInfo["Preference"] = "Email"
+                elif userKey.get_cashoutPreference() == "Phone":
+                    renderedInfo["Preference"] = "Phone"
+
+                # Get email for rendering
+                renderedInfo["Email"] = userKey.get_email()
+
+                # Check if phone data is saved
+                if userKey.get_cashoutPhone() != None:
+                    print("Yes Phone Exist")
+
+                    # Get phone number object
+                    phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
+
+                    # Get phone number for rendering
+                    renderedInfo["Phone Number"] = phoneObject.national_number
+
+                    # Pre-set country code to saved value before rendering: Done
+                    countryCode = "+" + str(phoneObject.country_code)
+                    for choice in cashoutForm.countryCode.choices[1:]:
+                        countryCodeChoice = list(choice)[0]
+                        if countryCodeChoice == countryCode:
+                            renderedInfo['Country Code'] = countryCodeChoice
+                else:
+                    renderedInfo['Phone Number'] = ""
+                    renderedInfo['Country Code'] = ""
+
+                print("Phone Error:", phoneError)
+                print("Preference:", userKey.get_cashoutPreference())
+                print("Phone Number:", userKey.get_cashoutPhone())
+                print("International:",renderedInfo['Phone Number'])
+                print("Country Code:",renderedInfo['Country Code'])
+                print("Phone Validation:",userKey.get_phoneVerification())
+
+                db.close()
+                print("Yes Return?")
+                return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
             else:
-                teacherUID = ""
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-
-            # Initialise values
-            cashoutForm = Forms.CashoutForm(request.form)
-            phoneError = False
-
-
-            renderedInfo = {}
-
-            # Get preference value for rendering
-            if userKey.get_cashoutPreference() == "Email":
-                renderedInfo["Preference"] = "Email"
-            elif userKey.get_cashoutPreference() == "Phone":
-                renderedInfo["Preference"] = "Phone"
-
-            # Get email for rendering
-            renderedInfo["Email"] = userKey.get_email()
-
-            # Check if phone data is saved
-            if userKey.get_cashoutPhone() != None:
-                print("Yes Phone Exist")
-
-                # Get phone number object
-                phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
-
-                # Get phone number for rendering
-                renderedInfo["Phone Number"] = phoneObject.national_number
-
-                # Pre-set country code to saved value before rendering: Done
-                countryCode = "+" + str(phoneObject.country_code)
-                for choice in cashoutForm.countryCode.choices[1:]:
-                    countryCodeChoice = list(choice)[0]
-                    if countryCodeChoice == countryCode:
-                        renderedInfo['Country Code'] = countryCodeChoice
-            else:
-                renderedInfo['Phone Number'] = ""
-                renderedInfo['Country Code'] = ""
-
-            print("Phone Error:", phoneError)
-            print("Preference:", userKey.get_cashoutPreference())
-            print("Phone Number:", userKey.get_cashoutPhone())
-            print("International:",renderedInfo['Phone Number'])
-            print("Country Code:",renderedInfo['Country Code'])
-            print("Phone Validation:",userKey.get_phoneVerification())
-
-            db.close()
-            print("Yes Return?")
-            return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
+                db.close()
+                print("User is a student.")
+                return redirect(url_for("userProfile"))
         else:
             db.close()
             print("User not found or is banned.")
@@ -3395,133 +3396,134 @@ def editCashoutPreference():
 
         if userFound and accGoodStatus:
             if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
-            imagesrcPath = retrieve_user_profile_pic(userKey)
+                imagesrcPath = retrieve_user_profile_pic(userKey)
 
-            # Initialise values
-            cashoutForm = Forms.CashoutForm(request.form)
-            phoneError = False
+                # Initialise values
+                cashoutForm = Forms.CashoutForm(request.form)
+                phoneError = False
 
-            # Save changes, or delete email info
-            if request.method == "POST" and cashoutForm.validate():
-                print(cashoutForm.data)
-                print("POST request sent and form entries validated")
+                # Save changes, or delete email info
+                if request.method == "POST" and cashoutForm.validate():
+                    print(cashoutForm.data)
+                    print("POST request sent and form entries validated")
 
-                # Initialise variables
-                cashoutPreference = cashoutForm.cashoutPreference.data
-                phoneNumber = cashoutForm.phoneNumber.data
-                countryCode = cashoutForm.countryCode.data
-                print(countryCode) # Afghanistan (+93)
-                print('Yes Post')
-                print(json.loads(cashoutForm.deleteInfo.data))
+                    # Initialise variables
+                    cashoutPreference = cashoutForm.cashoutPreference.data
+                    phoneNumber = cashoutForm.phoneNumber.data
+                    countryCode = cashoutForm.countryCode.data
+                    print(countryCode) # Afghanistan (+93)
+                    print('Yes Post')
+                    print(json.loads(cashoutForm.deleteInfo.data))
 
-                # Check if deleting info
-                if json.loads(cashoutForm.deleteInfo.data) == True:
-                    print('Yes Delete')
-                    userKey.set_cashoutPreference("Email")
-                    userKey.set_cashoutPhone(None)
-                    userKey.set_phoneVerification("Not Verified")
+                    # Check if deleting info
+                    if json.loads(cashoutForm.deleteInfo.data) == True:
+                        print('Yes Delete')
+                        userKey.set_cashoutPreference("Email")
+                        userKey.set_cashoutPhone(None)
+                        userKey.set_phoneVerification("Not Verified")
 
-                elif cashoutPreference == "Phone":
-                    print('Yes Phone')
+                    elif cashoutPreference == "Phone":
+                        print('Yes Phone')
 
-                    # Validate phone number
-                    try:
-                        fullPhoneNumber = countryCode + phoneNumber
-                        phoneObject = phonenumbers.parse(fullPhoneNumber, None)
-                        if phonenumbers.is_possible_number(phoneObject):
-                            userKey.set_cashoutPhone(fullPhoneNumber)
-                            if phonenumbers.is_valid_number(phoneObject):
-                                userKey.set_phoneVerification("Verified")
+                        # Validate phone number
+                        try:
+                            fullPhoneNumber = countryCode + phoneNumber
+                            phoneObject = phonenumbers.parse(fullPhoneNumber, None)
+                            if phonenumbers.is_possible_number(phoneObject):
+                                userKey.set_cashoutPhone(fullPhoneNumber)
+                                if phonenumbers.is_valid_number(phoneObject):
+                                    userKey.set_phoneVerification("Verified")
+                                else:
+                                    userKey.set_phoneVerification("Not Verified")
                             else:
-                                userKey.set_phoneVerification("Not Verified")
-                        else:
+                                phoneError = True
+                        except:
+                            print("Something went wrong. Parsing error?")
                             phoneError = True
-                    except:
-                        print("Something went wrong. Parsing error?")
-                        phoneError = True
 
-                    # Set email as preference
-                    userKey.set_cashoutPreference(cashoutPreference)
+                        # Set email as preference
+                        userKey.set_cashoutPreference(cashoutPreference)
 
-                elif cashoutPreference == "Email":
-                    print("Yes Email")
-                    # Set email as preference
-                    userKey.set_cashoutPreference(cashoutPreference)
+                    elif cashoutPreference == "Email":
+                        print("Yes Email")
+                        # Set email as preference
+                        userKey.set_cashoutPreference(cashoutPreference)
 
-                # Check whether phone validation successful
-                if phoneError:
-                    print("Yes Phone Error")
+                    # Check whether phone validation successful
+                    if phoneError:
+                        print("Yes Phone Error")
 
-                    # Get entered info for rendering again
-                    renderedInfo = {"Preference": cashoutPreference,
-                                    "Phone Number": phoneNumber,
-                                    "Email": userKey.get_email()}
+                        # Get entered info for rendering again
+                        renderedInfo = {"Preference": cashoutPreference,
+                                        "Phone Number": phoneNumber,
+                                        "Email": userKey.get_email()}
 
-                    # Pre-set country code to previously input value before rendering
-                    renderedInfo['Country Code'] = ""
-                    for choice in cashoutForm.countryCode.choices:
-                        print(countryCode)
-                        if list(choice)[0] == countryCode:
-                            renderedInfo['Country Code'] = choice
-                            print(cashoutForm.countryCode.data)
+                        # Pre-set country code to previously input value before rendering
+                        renderedInfo['Country Code'] = ""
+                        for choice in cashoutForm.countryCode.choices:
+                            print(countryCode)
+                            if list(choice)[0] == countryCode:
+                                renderedInfo['Country Code'] = choice
+                                print(cashoutForm.countryCode.data)
+
+                    else:
+                        print("Yes Success")
+                        # Save values if no errors
+                        userDict[userKey.get_user_id()] = userKey
+                        db['Users'] = userDict
+                        print("Payment added")
+                        return redirect(url_for('cashoutPreference'))
 
                 else:
-                    print("Yes Success")
-                    # Save values if no errors
-                    userDict[userKey.get_user_id()] = userKey
-                    db['Users'] = userDict
-                    print("Payment added")
-                    return redirect(url_for('cashoutPreference'))
+                    print("Yes Alright")
+                    renderedInfo = {}
 
+                    # Get preference value for rendering
+                    if userKey.get_cashoutPreference() == "Email":
+                        renderedInfo["Preference"] = "Email"
+                    elif userKey.get_cashoutPreference() == "Phone":
+                        renderedInfo["Preference"] = "Phone"
+
+                    # Get email for rendering
+                    renderedInfo["Email"] = userKey.get_email()
+
+                    # Check if phone data is saved
+                    if userKey.get_cashoutPhone() != None:
+                        print("Yes Phone Exist")
+
+                        # Get phone number object
+                        phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
+
+                        # Get phone number for rendering
+                        renderedInfo["Phone Number"] = phoneObject.national_number
+
+                        # Pre-set country code to saved value before rendering: Done
+                        countryCode = "+" + str(phoneObject.country_code)
+                        print(cashoutForm.countryCode.choices)
+                        for choice in cashoutForm.countryCode.choices[1:]:
+                            countryCodeChoice = list(choice)[0]
+                            if countryCodeChoice == countryCode:
+                                renderedInfo['Country Code'] = countryCodeChoice
+                    else:
+                        renderedInfo['Phone Number'] = ""
+                        renderedInfo['Country Code'] = ""
+
+
+                print("Phone Error:", phoneError)
+                print("Preference:", userKey.get_cashoutPreference())
+                print("Phone Number:", userKey.get_cashoutPhone())
+                print("International:",renderedInfo['Phone Number'])
+                print("Country Code Entered:",cashoutForm.countryCode.data)
+                print("Country Code:", renderedInfo['Country Code'])
+                print("Phone Validation:",userKey.get_phoneVerification())
+
+                db.close()
+                print("Yes Return?")
+                return render_template('users/teacher/edit_cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
             else:
-                print("Yes Alright")
-                renderedInfo = {}
-
-                # Get preference value for rendering
-                if userKey.get_cashoutPreference() == "Email":
-                    renderedInfo["Preference"] = "Email"
-                elif userKey.get_cashoutPreference() == "Phone":
-                    renderedInfo["Preference"] = "Phone"
-
-                # Get email for rendering
-                renderedInfo["Email"] = userKey.get_email()
-
-                # Check if phone data is saved
-                if userKey.get_cashoutPhone() != None:
-                    print("Yes Phone Exist")
-
-                    # Get phone number object
-                    phoneObject = phonenumbers.parse(userKey.get_cashoutPhone())
-
-                    # Get phone number for rendering
-                    renderedInfo["Phone Number"] = phoneObject.national_number
-
-                    # Pre-set country code to saved value before rendering: Done
-                    countryCode = "+" + str(phoneObject.country_code)
-                    print(cashoutForm.countryCode.choices)
-                    for choice in cashoutForm.countryCode.choices[1:]:
-                        countryCodeChoice = list(choice)[0]
-                        if countryCodeChoice == countryCode:
-                            renderedInfo['Country Code'] = countryCodeChoice
-                else:
-                    renderedInfo['Phone Number'] = ""
-                    renderedInfo['Country Code'] = ""
-
-
-            print("Phone Error:", phoneError)
-            print("Preference:", userKey.get_cashoutPreference())
-            print("Phone Number:", userKey.get_cashoutPhone())
-            print("International:",renderedInfo['Phone Number'])
-            print("Country Code Entered:",cashoutForm.countryCode.data)
-            print("Country Code:", renderedInfo['Country Code'])
-            print("Phone Validation:",userKey.get_phoneVerification())
-
-            db.close()
-            print("Yes Return?")
-            return render_template('users/teacher/edit_cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo)
+                db.close()
+                print("User is a student.")
+                return redirect(url_for("userProfile"))
         else:
             db.close()
             print("User not found or is banned.")
@@ -3564,236 +3566,235 @@ def teacherCashOut():
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus:
+            if accType == "Teacher":
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                joinedDate = userKey.get_teacher_join_date()
+                zeroCommissionEndDate = joinedDate + timedelta(days=90)
+                currentDate = date.today()
 
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            joinedDate = userKey.get_teacher_join_date()
-            zeroCommissionEndDate = joinedDate + timedelta(days=90)
-            currentDate = date.today()
+                # if it's the first day of the month
+                resetMonth = check_first_day_of_month(currentDate)
+                initialEarnings = userKey.get_earnings()
+                accumulatedEarnings = userKey.get_accumulated_earnings()
+                if resetMonth:
+                    accumulatedEarnings += initialEarnings
+                    userKey.set_accumulated_earnings(accumulatedEarnings)
+                    userKey.set_earnings(0)
 
-            # if it's the first day of the month
-            resetMonth = check_first_day_of_month(currentDate)
-            initialEarnings = userKey.get_earnings()
-            accumulatedEarnings = userKey.get_accumulated_earnings()
-            if resetMonth:
-                accumulatedEarnings += initialEarnings
-                userKey.set_accumulated_earnings(accumulatedEarnings)
-                userKey.set_earnings(0)
+                lastDayOfMonth = check_last_day_of_month(currentDate)
 
-            lastDayOfMonth = check_last_day_of_month(currentDate)
+                dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
+                try:
+                    if 'Cashouts' in dbAdmin:
+                        cashoutDict = dbAdmin['Cashouts']
+                    else:
+                        print("Cashout data in shelve is empty.")
+                        cashoutDict = []
+                except:
+                    print("Error in retrieving Cashouts from admin.db")
 
-            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
-            try:
-                if 'Cashouts' in dbAdmin:
-                    cashoutDict = dbAdmin['Cashouts']
-                else:
-                    print("Cashout data in shelve is empty.")
-                    cashoutDict = []
-            except:
-                print("Error in retrieving Cashouts from admin.db")
+                if request.method == "POST":
+                    typeOfCollection = request.form.get("typeOfCollection")
+                    if ((accumulatedEarnings + initialEarnings) > 0):
 
-            if request.method == "POST":
-                typeOfCollection = request.form.get("typeOfCollection")
-                if ((accumulatedEarnings + initialEarnings) > 0):
+                        # deducting from the teacher object
+                        if typeOfCollection == "collectingAll" and lastDayOfMonth:
+                            # calculating how much the teacher has earned
+                            if currentDate <= zeroCommissionEndDate:
+                                commission = 0
+                            else:
+                                commission = 0.25
+                            totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
+                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
 
-                    # deducting from the teacher object
-                    if typeOfCollection == "collectingAll" and lastDayOfMonth:
-                        # calculating how much the teacher has earned
-                        if currentDate <= zeroCommissionEndDate:
-                            commission = 0
+                            # Connecting to PayPal
+                            accessToken = get_paypal_access_token()
+                            cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
+
+                            if userKey.get_cashoutPreference() == "Phone":
+                                recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
+                                receiver = userKey.get_cashoutPhone()
+                            elif userKey.get_cashoutPreference() == "Email":
+                                recipientType = "EMAIL"
+                                receiver = userKey.get_email()
+
+                            payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
+                                                headers = {
+                                                            "Content-Type": "application/json",
+                                                            "Authorization": "Bearer " + accessToken
+                                                            },
+                                                data = json.dumps({"sender_batch_header": {
+                                                                                            "sender_batch_id": cashoutID,
+                                                                                            "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
+                                                                                            "email_message": "You received a payment. Thanks for using CourseFinity!"
+                                                                                            },"items": [{
+                                                                                                        "amount": {
+                                                                                                                    "value": float(totalEarned),
+                                                                                                                    "currency": "USD"
+                                                                                                                },
+                                                                                                        "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
+                                                                                                        "sender_item_id": userKey.get_user_id(),
+                                                                                                        "recipient_type": recipientType,
+                                                                                                        "receiver": receiver
+                                                                                                        }]}))
+
+                            response = json.loads(payoutSubmit.text)
+                            print(response)
+
+                            paypalError = False
+                            try:
+                                cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                                cashoutDict[cashoutID] = cashout
+                            except:
+                                print("Error in PayPal Payout.")
+                                paypalError = True
+
+
+                            """
+                            Examples of response.text:
+
+                            Successful
+                            {"batch_header":{"payout_batch_id":"KJCS252HBQV9C","batch_status":"PENDING","sender_batch_header":{"sender_batch_id":"2014021802","email_subject":"You have money!","email_message":"You received a payment. Thanks for using our service!"}},"links":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}
+
+                            Batch Previously Sent
+                            {"name":"USER_BUSINESS_ERROR","message":"User business error.","debug_id":"a1e223fd00566","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","details":[{"field":"SENDER_BATCH_ID","location":"body","issue":"Batch with given sender_batch_id already exists","link":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}],"links":[]}
+
+                            Insufficient Funds [Please don't run out during presentation day.]
+                            {"name":"INSUFFICIENT_FUNDS","message":"Sender does not have sufficient funds. Please add funds and retry.","debug_id":"f96c6622de821","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","links":[]}
+
+                            Token Not Found
+                            {"error":"invalid_token","error_description":"The token passed in was not found in the system"}
+
+                            Invalid Token
+                            {"error":"invalid_token","error_description":"Token signature verification failed"}
+                            """
+
+                            if paypalError:
+                                flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
+                            else:
+                                flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+
+                            userKey.set_earnings(0)
+                            userKey.set_accumulated_earnings(0)
+                            db["Users"] = userDict
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
+                        elif typeOfCollection == "collectingAccumulated":
+                            if currentDate <= zeroCommissionEndDate:
+                                commission = 0
+                            else:
+                                commission = 0.25
+                            totalEarned = accumulatedEarnings * (1 - commission)
+                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
+
+                            # Connecting to PayPal
+                            accessToken = get_paypal_access_token()
+                            cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
+
+                            if userKey.get_cashoutPreference() == "Phone":
+                                recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
+                                receiver = userKey.get_cashoutPhone()
+                            elif userKey.get_cashoutPreference() == "Email":
+                                recipientType = "EMAIL"
+                                receiver = userKey.get_email()
+
+                            payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
+                                                headers = {
+                                                            "Content-Type": "application/json",
+                                                            "Authorization": "Bearer " + accessToken
+                                                            },
+                                                data = json.dumps({"sender_batch_header": {
+                                                                                            "sender_batch_id": cashoutID,
+                                                                                            "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
+                                                                                            "email_message": "You received a payment. Thanks for using CourseFinity!"
+                                                                                            },"items": [{
+                                                                                                        "amount": {
+                                                                                                                    "value": float(totalEarned),
+                                                                                                                    "currency": "USD"
+                                                                                                                },
+                                                                                                        "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
+                                                                                                        "sender_item_id": userKey.get_user_id(),
+                                                                                                        "recipient_type": recipientType,
+                                                                                                        "receiver": receiver
+                                                                                                        }]}))
+
+                            response = json.loads(payoutSubmit.text)
+                            print(response)
+
+                            paypalError = False
+                            try:
+                                cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                                cashoutDict[cashoutID] = cashout
+                            except:
+                                print("Error in PayPal Payout.")
+                                paypalError = True
+
+                            if paypalError:
+                                flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
+                            else:
+                                flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+
+                            userKey.set_accumulated_earnings(0)
+                            db["Users"] = userDict
+                            db.close()
+                            return redirect(url_for("teacherCashOut"))
                         else:
-                            commission = 0.25
-                        totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
-                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-
-                        # Connecting to PayPal
-                        accessToken = get_paypal_access_token()
-                        cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
-
-                        if userKey.get_cashoutPreference() == "Phone":
-                            recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
-                            receiver = userKey.get_cashoutPhone()
-                        elif userKey.get_cashoutPreference() == "Email":
-                            recipientType = "EMAIL"
-                            receiver = userKey.get_email()
-
-                        payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
-                                              headers = {
-                                                         "Content-Type": "application/json",
-                                                         "Authorization": "Bearer " + accessToken
-                                                        },
-                                              data = json.dumps({"sender_batch_header": {
-                                                                                         "sender_batch_id": cashoutID,
-                                                                                         "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
-                                                                                         "email_message": "You received a payment. Thanks for using CourseFinity!"
-                                                                                        },"items": [{
-                                                                                                     "amount": {
-                                                                                                                "value": float(totalEarned),
-                                                                                                                "currency": "USD"
-                                                                                                               },
-                                                                                                     "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
-                                                                                                     "sender_item_id": userKey.get_user_id(),
-                                                                                                     "recipient_type": recipientType,
-                                                                                                     "receiver": receiver
-                                                                                                    }]}))
-
-                        response = json.loads(payoutSubmit.text)
-                        print(response)
-
-                        paypalError = False
-                        try:
-                            cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
-                            cashoutDict[cashoutID] = cashout
-                        except:
-                            print("Error in PayPal Payout.")
-                            paypalError = True
-
-
-                        """
-                        Examples of response.text:
-
-                        Successful
-                        {"batch_header":{"payout_batch_id":"KJCS252HBQV9C","batch_status":"PENDING","sender_batch_header":{"sender_batch_id":"2014021802","email_subject":"You have money!","email_message":"You received a payment. Thanks for using our service!"}},"links":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}
-
-                        Batch Previously Sent
-                        {"name":"USER_BUSINESS_ERROR","message":"User business error.","debug_id":"a1e223fd00566","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","details":[{"field":"SENDER_BATCH_ID","location":"body","issue":"Batch with given sender_batch_id already exists","link":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}],"links":[]}
-
-                        Insufficient Funds [Please don't run out during presentation day.]
-                        {"name":"INSUFFICIENT_FUNDS","message":"Sender does not have sufficient funds. Please add funds and retry.","debug_id":"f96c6622de821","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","links":[]}
-
-                        Token Not Found
-                        {"error":"invalid_token","error_description":"The token passed in was not found in the system"}
-
-                        Invalid Token
-                        {"error":"invalid_token","error_description":"Token signature verification failed"}
-                        """
-
-                        if paypalError:
-                            flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
-                        else:
-                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
-
-                        userKey.set_earnings(0)
-                        userKey.set_accumulated_earnings(0)
-                        db["Users"] = userDict
-                        db.close()
-                        return redirect(url_for("teacherCashOut"))
-                    elif typeOfCollection == "collectingAccumulated":
-                        if currentDate <= zeroCommissionEndDate:
-                            commission = 0
-                        else:
-                            commission = 0.25
-                        totalEarned = accumulatedEarnings * (1 - commission)
-                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-
-                        # Connecting to PayPal
-                        accessToken = get_paypal_access_token()
-                        cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
-
-                        if userKey.get_cashoutPreference() == "Phone":
-                            recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
-                            receiver = userKey.get_cashoutPhone()
-                        elif userKey.get_cashoutPreference() == "Email":
-                            recipientType = "EMAIL"
-                            receiver = userKey.get_email()
-
-                        payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
-                                              headers = {
-                                                         "Content-Type": "application/json",
-                                                         "Authorization": "Bearer " + accessToken
-                                                        },
-                                              data = json.dumps({"sender_batch_header": {
-                                                                                         "sender_batch_id": cashoutID,
-                                                                                         "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
-                                                                                         "email_message": "You received a payment. Thanks for using CourseFinity!"
-                                                                                        },"items": [{
-                                                                                                     "amount": {
-                                                                                                                "value": float(totalEarned),
-                                                                                                                "currency": "USD"
-                                                                                                               },
-                                                                                                     "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
-                                                                                                     "sender_item_id": userKey.get_user_id(),
-                                                                                                     "recipient_type": recipientType,
-                                                                                                     "receiver": receiver
-                                                                                                    }]}))
-
-                        response = json.loads(payoutSubmit.text)
-                        print(response)
-
-                        paypalError = False
-                        try:
-                            cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
-                            cashoutDict[cashoutID] = cashout
-                        except:
-                            print("Error in PayPal Payout.")
-                            paypalError = True
-
-                        if paypalError:
-                            flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
-                        else:
-                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
-
-                        userKey.set_accumulated_earnings(0)
-                        db["Users"] = userDict
-                        db.close()
-                        return redirect(url_for("teacherCashOut"))
+                            db.close()
+                            print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
+                            flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
+                            return redirect(url_for("teacherCashOut"))
                     else:
                         db.close()
-                        print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
+                        print("POST request sent but user have already collected their revenue or user did not earn any this month.")
                         flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
                         return redirect(url_for("teacherCashOut"))
                 else:
                     db.close()
-                    print("POST request sent but user have already collected their revenue or user did not earn any this month.")
-                    flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
-                    return redirect(url_for("teacherCashOut"))
+                    monthTuple = ("January ", "February ", "March ", "April ", "May ", "June ", "July ", "August ", "September ", "October ", "November ", "December ")
+                    month = monthTuple[(int(date.today().month) - 1)] # retrieves the month in a word format from the tuple instead of 1 for January.
+                    monthYear = month + str(date.today().year)
+                    remainingDays = int(str(zeroCommissionEndDate - currentDate)[0:2]) # to get the remaining days left to alert the user to make full use of it, since without string slicing, it will return a value such as "86 days, 0:00:00".
+
+                    if accumulatedEarnings > 0:
+                        accumulatedCollect = True
+                    else:
+                        accumulatedCollect = False
+
+                    if currentDate <= zeroCommissionEndDate:
+                        commission = "0%"
+                        totalEarned = initialEarnings + accumulatedEarnings
+
+                        # converting the number of remaining days till the free 0% commission is over in a readable format as compared to "you have until 60 days till it is over" for an example.
+                        if remainingDays > 60 and remainingDays <= 90:
+                            remainingDays = "3 months"
+                        elif remainingDays > 30 and remainingDays <= 60:
+                            remainingDays = "2 months"
+                        elif remainingDays == 30:
+                            remainingDays = "1 month"
+                        elif remainingDays > 7 and remainingDays < 30:
+                            remainingDays = "less than a month"
+                        elif remainingDays <= 7:
+                            remainingDays = "less than a week"
+                        elif remainingDays < 0:
+                            remainingDays = 0
+                            print("User's free 0% three months commission is over.")
+                        else:
+                            remainingDays = "Unexpected error, please contact CourseFinity support."
+                    else:
+                        commission = "25%"
+                        totalEarned = (initialEarnings + accumulatedEarnings) * (1 - 0.25)
+
+                    totalEarnedInt = totalEarned
+                    # converting the numbers into strings of 2 decimal place for the earnings
+                    initialEarnings = get_two_decimal_pt(initialEarnings)
+                    totalEarned = get_two_decimal_pt(totalEarned)
+                    accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
+
+                    return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=userSession)
             else:
                 db.close()
-                monthTuple = ("January ", "February ", "March ", "April ", "May ", "June ", "July ", "August ", "September ", "October ", "November ", "December ")
-                month = monthTuple[(int(date.today().month) - 1)] # retrieves the month in a word format from the tuple instead of 1 for January.
-                monthYear = month + str(date.today().year)
-                remainingDays = int(str(zeroCommissionEndDate - currentDate)[0:2]) # to get the remaining days left to alert the user to make full use of it, since without string slicing, it will return a value such as "86 days, 0:00:00".
-
-                if accumulatedEarnings > 0:
-                    accumulatedCollect = True
-                else:
-                    accumulatedCollect = False
-
-                if currentDate <= zeroCommissionEndDate:
-                    commission = "0%"
-                    totalEarned = initialEarnings + accumulatedEarnings
-
-                    # converting the number of remaining days till the free 0% commission is over in a readable format as compared to "you have until 60 days till it is over" for an example.
-                    if remainingDays > 60 and remainingDays <= 90:
-                        remainingDays = "3 months"
-                    elif remainingDays > 30 and remainingDays <= 60:
-                        remainingDays = "2 months"
-                    elif remainingDays == 30:
-                        remainingDays = "1 month"
-                    elif remainingDays > 7 and remainingDays < 30:
-                        remainingDays = "less than a month"
-                    elif remainingDays <= 7:
-                        remainingDays = "less than a week"
-                    elif remainingDays < 0:
-                        remainingDays = 0
-                        print("User's free 0% three months commission is over.")
-                    else:
-                        remainingDays = "Unexpected error, please contact CourseFinity support."
-                else:
-                    commission = "25%"
-                    totalEarned = (initialEarnings + accumulatedEarnings) * (1 - 0.25)
-
-                totalEarnedInt = totalEarned
-                # converting the numbers into strings of 2 decimal place for the earnings
-                initialEarnings = get_two_decimal_pt(initialEarnings)
-                totalEarned = get_two_decimal_pt(totalEarned)
-                accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
-
-                if accType == "Teacher":
-                    teacherUID = userSession
-                else:
-                    teacherUID = ""
-
-                return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=teacherUID)
+                print("User is a student.")
+                return redirect(url_for("userProfile"))
         else:
             db.close()
             print("User not found or is banned")
