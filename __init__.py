@@ -3567,6 +3567,7 @@ def teacherCashOut():
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             joinedDate = userKey.get_teacher_join_date()
+            print(type(joinedDate))
             zeroCommissionEndDate = joinedDate + timedelta(days=90)
             currentDate = date.today()
 
@@ -3604,10 +3605,6 @@ def teacherCashOut():
                             commission = 0.25
                         totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
                         totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-
-
-
-
 
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
@@ -3676,10 +3673,6 @@ def teacherCashOut():
                         else:
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
 
-
-
-
-
                         userKey.set_earnings(0)
                         userKey.set_accumulated_earnings(0)
                         db["Users"] = userDict
@@ -3692,10 +3685,6 @@ def teacherCashOut():
                             commission = 0.25
                         totalEarned = accumulatedEarnings * (1 - commission)
                         totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-
-
-
-
 
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
@@ -3743,10 +3732,6 @@ def teacherCashOut():
                             flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                         else:
                             flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
-
-
-
-
 
                         userKey.set_accumulated_earnings(0)
                         db["Users"] = userDict
@@ -3796,7 +3781,7 @@ def teacherCashOut():
                         remainingDays = "Unexpected error, please contact CourseFinity support."
                 else:
                     commission = "25%"
-                    totalEarned = (initialEarnings + accumulatedEarnings) - ((initialEarnings + accumulatedEarnings) * 0.25)
+                    totalEarned = (initialEarnings + accumulatedEarnings) * (1 - 0.25)
 
                 totalEarnedInt = totalEarned
                 # converting the numbers into strings of 2 decimal place for the earnings
