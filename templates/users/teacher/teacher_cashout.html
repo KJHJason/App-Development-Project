@@ -1,8 +1,12 @@
 {% extends "user_base.html" %}
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+{% endblock %}
 {% block title %}Teacher Cash Out | CourseFinity{% endblock %}
 
 {% block content %}
+
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
@@ -38,16 +42,18 @@
 							Profile
 						</a>
 					</li>
-					<li class="nav-item">
-						<a href="/payment_method" class="nav-link text-white">
-							Payment Method
-						</a>
-					</li>
-					<li class="nav-item">
-						<a href="/teacher_cashout" class="nav-link text-white active-custom">
-						  Cash Out
-						</a>
-					</li>
+                    {% if accType == "Teacher" %}
+                    <li class="nav-item">
+                        <a href="/cashout_preference" class="nav-link text-white active-custom">
+                            Cashout Preferences
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/teacher_cashout" class="nav-link text-white">
+                          Cashing Out
+                        </a>
+                    </li>
+                    {% endif %}
 				</ul>
 			</div>
 		</div>
@@ -56,8 +62,24 @@
 				<div class="container">
 					<div class="row">
 						<h3>Earning Details for {{ monthYear }}</h3>
+
+						{% if phoneVerification == "Not Verified" and cashoutPreference == "Phone" %}
+						<div>
+							<div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+								<div>
+									<i class="bi bi-info-circle"></i>
+								</div>
+								<div>
+									While your phone number is formatted correctly, <strong>we are not sure whether it is legitimate</strong>.
+									There is a possibility cashout may not be successful; you may want to consider changing it.
+								</div>
+								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+							</div>
+						</div>
+						{% endif %}
+
 						<div class="table-responsive">
-							<table class="table margin-top">
+							<table class="table">
 								<tr>
 									<td><h6>Earnings from your courses for this month:</h6></td>
 									<td><h6>USD$ {{ initialEarnings }}</h6></td>
@@ -82,8 +104,14 @@
 									<td><h6>USD$ {{ totalEarned }}</h6></td>
 								</tr>
 								<tr>
-									<td colspan="2"><h6 class="text-danger">Do remember to cash out at the end of each month!</h6>
-									<h6 class="text-danger">If you had forgotten, the commission will be calculated based on the total revenue at that point including the accumulated earnings!.</h6></td>
+									<td><h6>Cashout Contact Method:</h6></td>
+									<td><h6>{{ cashoutContact }}</h6></td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										<h6 class="text-danger">Do remember to cash out at the end of each month!</h6>
+										<h6 class="text-danger">If you had forgotten, the commission will be calculated based on the total revenue at that point including the accumulated earnings!.</h6>
+									</td>
 								</tr>
 							</table>
 						</div>
