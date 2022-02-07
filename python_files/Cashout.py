@@ -1,10 +1,16 @@
 class Cashout():
-    def __init__(self, time, amount, cashoutType, cashoutContact, paypalPayoutBatchID):
+    def __init__(self, cashoutID, time, amount, cashoutType, cashoutContact, paypalPayoutBatchID):
+        self.__cashoutID = cashoutID
         self.__time = time
         self.__amount = amount
         self.__cashoutType = cashoutType
         self.__cashoutContact = cashoutContact
         self.__paypalPayoutBatchID = paypalPayoutBatchID
+
+    def get_cashoutID(self):
+        return self.__cashoutID
+    def set_cashoutID(self, cashoutID):
+        self.__cashoutID = cashoutID
 
     def get_time(self):
         return self.__time

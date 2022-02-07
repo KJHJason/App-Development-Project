@@ -13,7 +13,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
 from python_files import Student, Teacher, Forms, Course, CourseLesson
-from python_files import Payment
 from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
@@ -3482,6 +3481,12 @@ def editCashoutPreference():
                         userDict[userKey.get_user_id()] = userKey
                         db['Users'] = userDict
                         print("Payment added")
+
+                        if not json.loads(cashoutForm.deleteInfo.data):
+                            flash("Your cashout preferences has been successfully edited.", "Cashout Preferences Edited")
+                        else:
+                            flash("Your cashout phone info has been successfully deleted.", "Cashout Phone Info Deleted")
+
                         return redirect(url_for('cashoutPreference'))
 
                 else:
@@ -3579,6 +3584,8 @@ def teacherCashOut():
             if accType == "Teacher":
                 imagesrcPath = retrieve_user_profile_pic(userKey)
                 joinedDate = userKey.get_teacher_join_date()
+                print(joinedDate)
+                print(type(joinedDate))
                 zeroCommissionEndDate = joinedDate + timedelta(days=90)
                 currentDate = date.today()
 
@@ -3653,7 +3660,7 @@ def teacherCashOut():
 
                             paypalError = False
                             try:
-                                cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                                cashout = Cashout(cashoutID, datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
                                 cashoutDict[cashoutID] = cashout
                             except:
                                 print("Error in PayPal Payout.")
@@ -3689,6 +3696,7 @@ def teacherCashOut():
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
+
                         elif typeOfCollection == "collectingAccumulated":
                             if currentDate <= zeroCommissionEndDate:
                                 commission = 0
@@ -3800,7 +3808,16 @@ def teacherCashOut():
                     totalEarned = get_two_decimal_pt(totalEarned)
                     accumulatedEarnings = get_two_decimal_pt(accumulatedEarnings)
 
-                    return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=userSession)
+                    # Get cashout preference info
+                    cashoutPreference = userKey.get_cashoutPreference()
+                    if cashoutPreference == "Phone":
+                        cashoutContact = userKey.get_cashoutPhone()
+                        cashoutVerification = userKey.get_phoneVerification()
+                    elif cashoutPreference == "Email":
+                        cashoutContact = userKey.get_email()
+                        cashoutVerification = userKey.get_email_verification()
+
+                    return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=userSession, cashoutContact=cashoutContact, cashoutVerification=cashoutVerification, cashoutPreference=cashoutPreference)
             else:
                 db.close()
                 print("User is a student.")
@@ -4722,8 +4739,8 @@ def explore(pageNum, tag):
 
 """Shopping Cart by Wei Ren"""
 
-@app.route("/shopping_cart/<int:pageNum>", methods = ["GET","POST"])
-def shoppingCart(pageNum):
+@app.route("/shopping_cart", methods = ["GET","POST"])
+def shoppingCart():
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
@@ -4778,12 +4795,19 @@ def shoppingCart(pageNum):
 
                     for courseID in shoppingCart:
 
-                        cost = courseDict[courseID].get_price()
+                        course = courseDict[courseID]
+
+                        cost = course.get_price()
 
                         orderID = checkoutCompleteForm.checkoutOrderID.data
                         payerID = checkoutCompleteForm.checkoutPayerID.data
 
                         userKey.addCartToPurchases(courseID, date, time, cost, orderID, payerID)
+
+                        # Add some earnings to teacher
+                        teacher = userDict[course.get_userID()]
+                        teacher.set_earnings(teacher.get_earnings() + float(cost))
+
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -4807,7 +4831,7 @@ def shoppingCart(pageNum):
                         db["Users"] = userDict
                         db.close()
 
-                    return redirect("/shopping_cart/"+str(pageNum))
+                    return redirect(url_for('shoppingCart'))
 
                 else:
                     print("Error with form.")
@@ -4848,36 +4872,13 @@ def shoppingCart(pageNum):
                                        "courseOwnerLink" : None,
                                        "courseThumbnail" : None})
 
-
-                maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-                courseListLen = len(courseList) # get the length of the userList
-                maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-                # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-                if pageNum < 0:
-                    return redirect("/shopping_cart/0")
-                elif courseListLen > 0 and pageNum == 0:
-                    return redirect("/shopping_cart/1")
-                elif pageNum > maxPages:
-                    redirectRoute = "/shopping_cart/" + str(maxPages)
-                    return redirect(redirectRoute)
+                if accType == "Teacher":
+                    teacherUID = userSession
                 else:
-                    # pagination algorithm starts here
-                    courseList = courseList[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-                    pageNumForPagination = pageNum - 1 # minus for the paginate function
-                    paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                    teacherUID = ""
 
-                    previousPage = pageNum - 1
-                    nextPage = pageNum + 1
-
-                    paginationList = get_pagination_button_list(pageNum, maxPages)
-
-                    if accType == "Teacher":
-                        teacherUID = userSession
-                    else:
-                        teacherUID = ""
-
-                    db.close() # remember to close your shelve files!
-                    return render_template('users/student/shopping_cart.html', nextPage = nextPage, previousPage = previousPage, courseList=paginatedCourseList, count=courseListLen, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                db.close() # remember to close your shelve files!
+                return render_template('users/student/shopping_cart.html', courseList=courseList,form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -5943,7 +5944,7 @@ def upload(courseID):
 
     if lessonID == None: # if courseID does not exist in courseDict
         return redirect("/404")
-    
+
     file.filename = lessonID
     savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
     currentChunk = int(request.form['dzchunkindex'])
