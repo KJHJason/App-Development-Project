@@ -120,8 +120,8 @@ password = "789&*("
 user = Teacher(userID, username, email, password)
 
 #Teacher
-user.set_earnings("100")
-user.set_accumulated_earnings("12300")
+user.set_earnings("5")
+user.set_accumulated_earnings("100")
 user.set_teacher_join_date(date(2022, 1, 1)) ## wtforms default datefield format = YYYY-MM-DD
 
 userDict[userID] = user

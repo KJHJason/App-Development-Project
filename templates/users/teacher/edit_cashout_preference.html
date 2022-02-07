@@ -17,12 +17,12 @@
                             Profile
                         </a>
                     </li>
+                    {% if accType == "Teacher" %}
                     <li class="nav-item">
                         <a href="/cashout_preference" class="nav-link text-white active-custom">
                             Cashout Preferences
                         </a>
                     </li>
-                    {% if accType == "Teacher" %}
                     <li class="nav-item">
                         <a href="/teacher_cashout" class="nav-link text-white">
                           Cashing Out

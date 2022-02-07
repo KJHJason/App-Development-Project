@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup
 from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, math, paypalrestsdk, difflib, json, csv, vimeo, phonenumbers, pyotp, qrcode
 from os import environ
@@ -14,6 +14,7 @@ from matplotlib import pyplot as plt
 from dicebear import DOptions
 from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files import Payment
+from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
 from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
@@ -71,7 +72,7 @@ client = vimeo.VimeoClient(
     secret = environ.get("VIMEO_SECRET")
 )
 
-""" 
+"""
 # Create a variable with a hard coded path to your file system
 file_name = '{path_to_a_video_on_the_file_system}'
 
@@ -107,7 +108,7 @@ except vimeo.exceptions.VideoUploadFailure as e:
     # We may have had an error. We can't resolve it here necessarily, so
     # report it to the user.
     print('Error uploading %s' % file_name)
-    print('Server reported: %s' % e.message) 
+    print('Server reported: %s' % e.message)
 """
 
 """ # Uploading of videos
@@ -203,7 +204,7 @@ def home():
                 for courseID in list(courseDict.keys()):
                     if courseID in userPurchasedCourses:
                         print("User has purchases the course,", courseDict[courseID].get_title())
-                        courseDict.pop(courseID)   
+                        courseDict.pop(courseID)
 
                 if len(courseDict) > 3:
                     userTagDict = userKey.get_tags_viewed()
@@ -296,7 +297,7 @@ def home():
                             SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
                             print("Courses available: ", SecondHighestTagCoursesAvailable)
                             if SecondHighestTagCoursesAvailable >= 2:
-                            
+
                                 randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
 
                                 recommendCourseList.append(randomisedCourseOne)
@@ -313,7 +314,7 @@ def home():
                             SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
                             print("Courses available: ", SecondHighestTagCoursesAvailable)
                             if SecondHighestTagCoursesAvailable >= 2:
-                            
+
                                 randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
 
                                 recommendCourseList.append(randomisedCourseOne)
@@ -337,7 +338,7 @@ def home():
                         # appending course object for recommendations
                         HighestTagCoursesAvailable = len(recommendedCourseListByHighestTag)
                         print("Courses available: ", HighestTagCoursesAvailable)
-        
+
                         if HighestTagCoursesAvailable >= 2:
                             courseOne, courseTwo = random.sample(recommendedCourseListByHighestTag, 2)
                             recommendCourseList.append(courseOne)
@@ -378,7 +379,7 @@ def home():
                     teacherObject = userDict.get(courses.get_userID())
                     teacherUsername = teacherObject.get_username()
                     recommedationDict[courses] = teacherUsername
-        
+
                 # logged in users
                 if accType == "Teacher":
                     teacherUID = userSession
@@ -488,7 +489,7 @@ def home():
                         SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
                         print("Courses available: ", SecondHighestTagCoursesAvailable)
                         if SecondHighestTagCoursesAvailable >= 1:
-                        
+
                             randomisedCourse = random.choice(recommendedCourseListBySecondHighestTag)
                             recommendCourseList.append(randomisedCourse)
                             print("One course picked accordingly to user's second highly watched tag.")
@@ -503,7 +504,7 @@ def home():
                         SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
                         print("Courses available: ", SecondHighestTagCoursesAvailable)
                         if SecondHighestTagCoursesAvailable >= 2:
-                        
+
                             randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
 
                             recommendCourseList.append(randomisedCourseOne)
@@ -520,7 +521,7 @@ def home():
                         SecondHighestTagCoursesAvailable = len(recommendedCourseListBySecondHighestTag)
                         print("Courses available: ", SecondHighestTagCoursesAvailable)
                         if SecondHighestTagCoursesAvailable >= 2:
-                        
+
                             randomisedCourseOne, randomisedCourseTwo = random.sample(recommendedCourseListBySecondHighestTag, 2)
 
                             recommendCourseList.append(randomisedCourseOne)
@@ -579,14 +580,14 @@ def home():
                 for value in courseDict.values():
                     if userDict.get(value.get_userID()).get_status() == "Good":
                         recommendCourseList.append(value)
-        
+
         # retrieving course teacher's username
         recommedationDict = {}
         for courses in recommendCourseList:
             teacherObject = userDict.get(courses.get_userID())
             teacherUsername = teacherObject.get_username()
             recommedationDict[courses] = teacherUsername
-        
+
         return render_template("users/general/home.html", accType="Guest", trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList))
 
 # for setting a cookie for the guest for content personalisation
@@ -681,7 +682,7 @@ def homeNoCookies():
             for values in courseDict.values():
                 if userDict.get(values.get_userID()).get_status() == "Good":
                     trendingCourseList.append(values)
-        
+
         # for retrieving the teacher's username
         trendingDict = {}
         for courses in trendingCourseList:
@@ -841,7 +842,7 @@ def twoFactorAuthenticationSetup():
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                
+
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
                 qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
@@ -954,7 +955,7 @@ def twoFactorAuthentication():
                 print("User not found or is inactive")
                 session.clear()
                 return redirect(url_for("adminLogin"))
-            
+
         elif "2FAUserSession" in session:
             userID, originFeature = session["2FAUserSession"]
             userDict = {}
@@ -1006,7 +1007,7 @@ def twoFactorAuthentication():
         else:
             return redirect(url_for("home"))
     else:
-        return redirect(url_for("home")) 
+        return redirect(url_for("home"))
 
 """End of 2FA by Jason"""
 
@@ -1109,7 +1110,7 @@ def resetPassword(token):
             userKey = userDict.get(validateToken)
             twoFAEnabled = bool(userKey.get_otp_setup_key())
 
-            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)  
+            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)
             if request.method == "POST" and create_reset_password_form.validate():
                 password = create_reset_password_form.resetPassword.data
                 confirmPassword = create_reset_password_form.confirmPassword.data
@@ -2700,7 +2701,7 @@ def dashboard():
                     if bool(value.get_otp_setup_key()):
                         twoFAEnabled = "Yes"
                     else:
-                        twoFAEnabled = "No" 
+                        twoFAEnabled = "No"
                     writer.writerow([key, value.get_username(), value.get_email(), value.get_email_verification(), twoFAEnabled, value.get_acc_type(), value.get_status(), numOfCourseTeaching, value.get_highest_tag(), len(value.get_purchases())])
                 file.close()
 
@@ -3345,7 +3346,7 @@ def cashoutPreference():
             print("Phone Number:", userKey.get_cashoutPhone())
             print("International:",renderedInfo['Phone Number'])
             print("Country Code:",renderedInfo['Country Code'])
-            print("Phone Validation:",userKey.get_phoneValidation())
+            print("Phone Validation:",userKey.get_phoneVerification())
 
             db.close()
             print("Yes Return?")
@@ -3421,7 +3422,7 @@ def editCashoutPreference():
                     print('Yes Delete')
                     userKey.set_cashoutPreference("Email")
                     userKey.set_cashoutPhone(None)
-                    userKey.set_phoneValidation(False)
+                    userKey.set_phoneVerification("Not Verified")
 
                 elif cashoutPreference == "Phone":
                     print('Yes Phone')
@@ -3433,9 +3434,9 @@ def editCashoutPreference():
                         if phonenumbers.is_possible_number(phoneObject):
                             userKey.set_cashoutPhone(fullPhoneNumber)
                             if phonenumbers.is_valid_number(phoneObject):
-                                userKey.set_phoneValidation(True)
+                                userKey.set_phoneVerification("Verified")
                             else:
-                                userKey.set_phoneValidation(False)
+                                userKey.set_phoneVerification("Not Verified")
                         else:
                             phoneError = True
                     except:
@@ -3516,7 +3517,7 @@ def editCashoutPreference():
             print("International:",renderedInfo['Phone Number'])
             print("Country Code Entered:",cashoutForm.countryCode.data)
             print("Country Code:", renderedInfo['Country Code'])
-            print("Phone Validation:",userKey.get_phoneValidation())
+            print("Phone Validation:",userKey.get_phoneVerification())
 
             db.close()
             print("Yes Return?")
@@ -3582,54 +3583,74 @@ def teacherCashOut():
 
             dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "/admin", "c")
             try:
-                if 'Payouts' in dbAdmin:
-                    payoutDict = dbAdmin['Payouts']
+                if 'Cashouts' in dbAdmin:
+                    cashoutDict = dbAdmin['Cashouts']
                 else:
-                    print("Payout data in shelve is empty.")
-                    payoutDict = []
+                    print("Cashout data in shelve is empty.")
+                    cashoutDict = []
             except:
-                print("Error in retrieving Payouts from admin.db")
+                print("Error in retrieving Cashouts from admin.db")
 
             if request.method == "POST":
                 typeOfCollection = request.form.get("typeOfCollection")
                 if ((accumulatedEarnings + initialEarnings) > 0):
-                    # simple resetting of teacher's income
-                    doesCardExist = bool(userKey.get_card_name())
-                    if doesCardExist != False:
-                        
+
+                    # deducting from the teacher object
+                    if typeOfCollection == "collectingAll" and lastDayOfMonth:
+                        # calculating how much the teacher has earned
+                        if currentDate <= zeroCommissionEndDate:
+                            commission = 0
+                        else:
+                            commission = 0.25
+                        totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
+                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
+
+
+
+
+
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
-                        payoutID = generate_ID_to_length(payoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
+                        cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
+
+                        if userKey.get_cashoutPreference() == "Phone":
+                            recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
+                            receiver = userKey.get_cashoutPhone()
+                        elif userKey.get_cashoutPreference() == "Email":
+                            recipientType = "EMAIL"
+                            receiver = userKey.get_email()
 
                         payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
                                               headers = {
                                                          "Content-Type": "application/json",
                                                          "Authorization": "Bearer " + accessToken
                                                         },
-                                              data = json.dumps(
-                                                                {
-                                                                 "sender_batch_header": {
-                                                                                         "sender_batch_id": payoutID,
+                                              data = json.dumps({"sender_batch_header": {
+                                                                                         "sender_batch_id": cashoutID,
                                                                                          "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
                                                                                          "email_message": "You received a payment. Thanks for using CourseFinity!"
-                                                                                        },
-                                                                 "items": [
-                                                                           {
-                                                                            "amount": {
-                                                                                       "value": totalEarned,
-                                                                                       "currency": "USD"
-                                                                                      },
-                                                                            "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
-                                                                            "sender_item_id": userKey.get_user_id(),
-                                                                            "recipient_type": "EMAIL",           # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
-                                                                            "receiver": userKey.get_email()
-                                                                           }
-                                                                          ]
-                                                                }
-                                                               )
-                                             )
-                        response = payoutSubmit.text
+                                                                                        },"items": [{
+                                                                                                     "amount": {
+                                                                                                                "value": float(totalEarned),
+                                                                                                                "currency": "USD"
+                                                                                                               },
+                                                                                                     "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
+                                                                                                     "sender_item_id": userKey.get_user_id(),
+                                                                                                     "recipient_type": recipientType,
+                                                                                                     "receiver": receiver
+                                                                                                    }]}))
+
+                        response = json.loads(payoutSubmit.text)
                         print(response)
+
+                        paypalError = False
+                        try:
+                            cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                            cashoutDict[cashoutID] = cashout
+                        except:
+                            print("Error in PayPal Payout.")
+                            paypalError = True
+
 
                         """
                         Examples of response.text:
@@ -3640,6 +3661,9 @@ def teacherCashOut():
                         Batch Previously Sent
                         {"name":"USER_BUSINESS_ERROR","message":"User business error.","debug_id":"a1e223fd00566","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","details":[{"field":"SENDER_BATCH_ID","location":"body","issue":"Batch with given sender_batch_id already exists","link":[{"href":"https://api.sandbox.paypal.com/v1/payments/payouts/KJCS252HBQV9C","rel":"self","method":"GET","encType":"application/json"}]}],"links":[]}
 
+                        Insufficient Funds [Please don't run out during presentation day.]
+                        {"name":"INSUFFICIENT_FUNDS","message":"Sender does not have sufficient funds. Please add funds and retry.","debug_id":"f96c6622de821","information_link":"https://developer.paypal.com/docs/api/payments.payouts-batch/#errors","links":[]}
+
                         Token Not Found
                         {"error":"invalid_token","error_description":"The token passed in was not found in the system"}
 
@@ -3647,45 +3671,91 @@ def teacherCashOut():
                         {"error":"invalid_token","error_description":"Token signature verification failed"}
                         """
 
-                        #if response.status_code == 400:
-                        #    accessToken = get_paypal_access_token()
-
-                        # deducting from the teacher object
-                        if typeOfCollection == "collectingAll" and lastDayOfMonth:
-                            # calculating how much the teacher has earned
-                            if currentDate <= zeroCommissionEndDate:
-                                commission = 0
-                            else:
-                                commission = 0.25
-                            totalEarned = (initialEarnings + accumulatedEarnings) * (1 - commission)
-                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
-                            userKey.set_earnings(0)
-                            userKey.set_accumulated_earnings(0)
-                            db["Users"] = userDict
-                            db.close()
-                            return redirect(url_for("teacherCashOut"))
-                        elif typeOfCollection == "collectingAccumulated":
-                            if currentDate <= zeroCommissionEndDate:
-                                commission = 0
-                            else:
-                                commission = 0.25
-                            totalEarned = accumulatedEarnings * (1 - commission)
-                            totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
-                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
-                            userKey.set_accumulated_earnings(0)
-                            db["Users"] = userDict
-                            db.close()
-                            return redirect(url_for("teacherCashOut"))
+                        if paypalError:
+                            flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                         else:
-                            db.close()
-                            print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
-                            flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
-                            return redirect(url_for("teacherCashOut"))
+                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+
+
+
+
+
+                        userKey.set_earnings(0)
+                        userKey.set_accumulated_earnings(0)
+                        db["Users"] = userDict
+                        db.close()
+                        return redirect(url_for("teacherCashOut"))
+                    elif typeOfCollection == "collectingAccumulated":
+                        if currentDate <= zeroCommissionEndDate:
+                            commission = 0
+                        else:
+                            commission = 0.25
+                        totalEarned = accumulatedEarnings * (1 - commission)
+                        totalEarned = get_two_decimal_pt(totalEarned) # round off and get price in two decimal points
+
+
+
+
+
+                        # Connecting to PayPal
+                        accessToken = get_paypal_access_token()
+                        cashoutID = generate_ID_to_length(cashoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
+
+                        if userKey.get_cashoutPreference() == "Phone":
+                            recipientType = "PHONE"     # recipient_type can be 'EMAIL', 'PHONE', 'PAYPAL_ID'
+                            receiver = userKey.get_cashoutPhone()
+                        elif userKey.get_cashoutPreference() == "Email":
+                            recipientType = "EMAIL"
+                            receiver = userKey.get_email()
+
+                        payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
+                                              headers = {
+                                                         "Content-Type": "application/json",
+                                                         "Authorization": "Bearer " + accessToken
+                                                        },
+                                              data = json.dumps({"sender_batch_header": {
+                                                                                         "sender_batch_id": cashoutID,
+                                                                                         "email_subject": "CourseFinity payout of "+totalEarned+" dollars.",
+                                                                                         "email_message": "You received a payment. Thanks for using CourseFinity!"
+                                                                                        },"items": [{
+                                                                                                     "amount": {
+                                                                                                                "value": float(totalEarned),
+                                                                                                                "currency": "USD"
+                                                                                                               },
+                                                                                                     "note": "If there is any error, please contact us as soon as possible via our Contact Us Page.",
+                                                                                                     "sender_item_id": userKey.get_user_id(),
+                                                                                                     "recipient_type": recipientType,
+                                                                                                     "receiver": receiver
+                                                                                                    }]}))
+
+                        response = json.loads(payoutSubmit.text)
+                        print(response)
+
+                        paypalError = False
+                        try:
+                            cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                            cashoutDict[cashoutID] = cashout
+                        except:
+                            print("Error in PayPal Payout.")
+                            paypalError = True
+
+                        if paypalError:
+                            flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
+                        else:
+                            flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+
+
+
+
+
+                        userKey.set_accumulated_earnings(0)
+                        db["Users"] = userDict
+                        db.close()
+                        return redirect(url_for("teacherCashOut"))
                     else:
                         db.close()
-                        flash("You have not added a payment method yet. Please add a payment method to cash out.", "No Payment Method")
-                        print("POST request sent but user does not have a valid payment method to cash out to.")
+                        print("POST request sent but it is not the last day of the month or post request sent but had tampered values in hidden input.")
+                        flash("This could be because it is either not the last day of the month, you have already collected your revenue, or you did not earn any for this month.", "Failed to cash out")
                         return redirect(url_for("teacherCashOut"))
                 else:
                     db.close()
@@ -3751,6 +3821,7 @@ def teacherCashOut():
             return redirect(url_for("home"))
         else:
             return redirect(url_for("userLogin"))
+
 
 """End of Teacher Cashout System by Jason"""
 
@@ -5220,7 +5291,7 @@ def coursePage(courseID):
         return redirect("/404")
 
     courseObject = courseDict.get(courseID)
-    
+
     if courseObject == None: # if courseID does not exist in courseDict
         return redirect("/404")
 
@@ -5396,7 +5467,7 @@ def courseReviews(courseID, reviewPageNum):
         return redirect(url_for("home"))
 
     courseObject = courseDict.get(courseID)
-    
+
     if courseObject == None: # if courseID does not exist in courseDict
         return redirect("/404")
 
@@ -5412,7 +5483,7 @@ def courseReviews(courseID, reviewPageNum):
             userObject = userDict.get(userID)
             userProfile = retrieve_user_profile_pic(userObject)
             reviewsDict[review] = [userObject.get_username(), userProfile]
-        
+
         maxItemsPerPage = 10 # declare the number of items that can be seen per pages
         maxPages = math.ceil(reviewsCount/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
 
@@ -5462,7 +5533,7 @@ def courseReviews(courseID, reviewPageNum):
                         userReview[review] = reviewsDict.get(review)
                         reviewsDict.pop(review)
                         break
-                        
+
                 if accType == "Teacher":
                     teacherUID = userSession
                 else:
@@ -5499,11 +5570,11 @@ def uploadLesson(courseID):
         return redirect(url_for("home"))
 
     courseObject = courseDict.get(courseID)
-    
+
     if courseObject == None: # if courseID does not exist in courseDict
         return redirect("/404")
 
-    
+
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
