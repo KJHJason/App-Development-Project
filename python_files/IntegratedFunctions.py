@@ -86,14 +86,14 @@ def generate_ID(inputDict):
 def generate_course_ID(inputDict):
     generatedID = str(shortuuid.ShortUUID().random(length=16)) # using shortuuid to generate a 16 character ID for the course ID which will be used in the url
     if generatedID in inputDict:
-        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
+        generate_course_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
 # for generating an ID based on a specified length
 def generate_ID_to_length(inputDict, length):
     generatedID = str(shortuuid.ShortUUID().random(length=length)) # using shortuuid to generate a 16 character ID for the course ID which will be used in the url
     if generatedID in inputDict:
-        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
+        generate_ID_to_length(inputDict, length) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
 # function to retrieve the acc type and validate the session which will mainly be used on general pages
@@ -1043,15 +1043,6 @@ def get_paypal_access_token():
     responseInfo = json.loads(response.text)
 
     return responseInfo["access_token"]
-
-# Generate a payout ID.
-# A length of 13 is used as PayPal payout IDs expire after a month.
-# At the same time, PayPal also utilises a 13 digit code for their IDs.
-def generate_payout_ID(inputDict):
-    generatedID = str(shortuuid.ShortUUID().random(length=13)) # using shortuuid to generate a 13 character ID for the course ID which will be used in the url
-    if generatedID in inputDict:
-        generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
-    return generatedID
 
 """PayPal Payout Info"""
 """

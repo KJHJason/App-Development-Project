@@ -3608,7 +3608,7 @@ def teacherCashOut():
 
                         # Connecting to PayPal
                         accessToken = get_paypal_access_token()
-                        payoutID = generate_payout_ID(payoutDict)
+                        payoutID = generate_ID_to_length(payoutDict, 13) # generate a ID with a length of 13 as PayPal payout IDs expire after a month. At the same time, PayPal also utilises a 13 digit code for their IDs.
 
                         payoutSubmit = pyPost('https://api-m.sandbox.paypal.com/v1/payments/payouts',
                                               headers = {
