@@ -34,7 +34,7 @@
                             <div>
                                 <h5 class="course_structure_title">Course Structure:</h5>
                                 {% if lessonsCount >= 1 %}
-                                    {% if course.get_course_type() == "video" %}
+                                    {% if course.get_course_type() == "Video" %}
                                         {% for lesson in lessons %}
                                         <div class="card mb-3 course_card">
                                             <div class="row g-0">
@@ -50,7 +50,7 @@
                                             </div>
                                         </div>
                                         {% endfor %}
-                                    {% elif course.get_course_type() == "zoom" %}
+                                    {% elif course.get_course_type() == "Zoom" %}
                                         {% for lesson in lessons %}
                                         <div class="card mb-3 course_card">
                                             <div class="row g-0">
