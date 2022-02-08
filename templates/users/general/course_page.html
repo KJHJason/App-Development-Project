@@ -132,7 +132,9 @@
                                 <p class="card-text"><span class="fw-bold">Category:</span> {{ course.get_readable_tag() }}</p>
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
                                 {% if (lessonsCount >= 1) and (userPurchased) and (course.get_course_type() == "Zoom") %}
-                                <p class="card-text"><span class="fw-bold">Zoom Link:</span> {{ lessons[0].get_zoom_link() }}</p>
+                                    {% with zoomCourseLink = lessons[0].get_zoom_link() %}
+                                <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
+                                    {% endwith %}
                                 {% endif %}
                                 {% if userPurchased != True %}
                                     {% if accType=="Guest" %}
