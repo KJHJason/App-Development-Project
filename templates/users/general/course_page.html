@@ -62,7 +62,7 @@
                                                         <h5 class="card-title">{{ lesson.get_title() }}</h5>
                                                         <p class="card-text">{{ lesson.get_description() }}</p>
                                                         {% if userPurchased == True %}
-                                                        <p><span class="fw-bold">Zoom Link:</span> {{ zoomLesson.get_zoom_link() }}</p>
+                                                        <p><span class="fw-bold">Zoom Link:</span> {{ lesson.get_zoom_link() }}</p>
                                                         {% endif %}
                                                     </div>
                                                 </div>
