@@ -61,9 +61,6 @@
                                                     <div class="card-body">
                                                         <h5 class="card-title">{{ lesson.get_title() }}</h5>
                                                         <p class="card-text">{{ lesson.get_description() }}</p>
-                                                        {% if userPurchased == True %}
-                                                        <p><span class="fw-bold">Zoom Link:</span> {{ lesson.get_zoom_link() }}</p>
-                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>
@@ -134,6 +131,9 @@
                                 </p>
                                 <p class="card-text"><span class="fw-bold">Category:</span> {{ course.get_readable_tag() }}</p>
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
+                                {% if (userPurchased) and (course.get_course_type() == "Zoom") %}
+                                <p class="card-text"><span class="fw-bold">Zoom Link:</span> {{ lesson.get_zoom_link() }}</p>
+                                {% endif %}
                                 {% if userPurchased != True %}
                                     {% if accType=="Guest" %}
                                     <form action="/login" method="GET">
