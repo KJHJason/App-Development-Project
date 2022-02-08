@@ -8,25 +8,34 @@
 
 {% block title %}Explore Category | CourseFinity{% endblock %}
 
+
 {% block content %}
-<div class="container">
-    <div class="row g-0 casing mx-auto">
-        <div class="col-4">
-            <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
-        </div>
-        <div class="col-8">
-            <div class="card-body text">
-                <h5 class="card-title">{{ searchInformation["Title"] }}</h5>
-                <p class="card-text">{{ searchInformation["Description"] }}</p>
+    {% if checker == False %}
+    <div>
+        <h4 style="text-align:center;margin-bottom:50px;opacity:0.5;">No searched item found</h4>
+    </div>
+    {% else %}
+    {% for searchInformation in searchfound %}
+    <div class="container">
+        <div class="row g-0 casing mx-auto">
+            <div class="col-4">
+                <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
             </div>
-            <div class="card-body">
-                <div class="row g-0">
-                    <div class="selection col">
-                        <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+            <div class="col-8">
+                <div class="card-body text">
+                    <h5 class="card-title">{{ searchInformation["Title"] }}</h5>
+                    <p class="card-text">{{ searchInformation["Description"] }}</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-0">
+                        <div class="selection col">
+                            <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    {% endfor %}
+    {% endif %}
 {% endblock %}
