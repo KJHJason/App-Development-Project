@@ -822,7 +822,7 @@ def twoFactorAuthenticationSetup():
                 print(pyotp.TOTP(secret).now())
                 if isValid:
                     userKey.set_otp_setup_key(secret)
-                    flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
+                    flash(Markup("2FA setup was successful!<br>You will now be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA setup successful!")
                     db["Users"] = userDict
                     db.close()
                     qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
@@ -883,7 +883,7 @@ def removeTwoFactorAuthentication():
 
         if userFound and accGoodStatus:
             userKey.set_otp_setup_key("")
-            flash("2FA has been disabled. You will no longer be prompted to enter your Google Authenticator's time-based OTP upon loggin in.", "2FA disabled!")
+            flash(Markup("2FA has been disabled.<br>You will no longer be prompted to enter your Google Authenticator's time-based OTP upon loggin in."), "2FA disabled!")
             db["Users"] = userDict
             db.close()
             return redirect(url_for("userProfile"))
@@ -901,7 +901,9 @@ def removeTwoFactorAuthentication():
 @app.route('/2FA_required', methods=['GET', 'POST'])
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def twoFactorAuthentication():
+    # checks if the user is not logged in
     if "userSession" not in session and "adminSession" not in session:
+        # for admin login
         if "adminOTPSession" in session:
             userID, originFeature = session["adminOTPSession"]
             adminDict = {}
@@ -951,6 +953,7 @@ def twoFactorAuthentication():
                 session.clear()
                 return redirect(url_for("adminLogin"))
 
+        # for user login
         elif "2FAUserSession" in session:
             userID, originFeature = session["2FAUserSession"]
             userDict = {}
@@ -1054,28 +1057,28 @@ def requestPasswordReset():
                     if accGoodStatus == "Good":
                         try:
                             send_reset_email(emailInput, emailKey)
-                            flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                            flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                         except:
                             print("Email server is down or its port is blocked")
-                            flash(f"An email with instructions has not been sent to {emailInput} due to email server downtime. Please wait and try again or contact us!", "Danger")
+                            flash(Markup(f"An email with instructions has not been sent to {emailInput} due to email server downtime.<br>Please wait and try again or contact us!"), "Danger")
                         print("Email sent")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form)
                     else:
                         # email found in database but the user is banned.
                         # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
                         print("User account banned, email not sent.")
-                        flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                        flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form)
                 else:
                     print("User email not found.")
                     # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
-                    flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                    flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                     return render_template('users/guest/request_password_reset.html', form=create_request_form)
             else:
                 # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
                 print("No user account records found.")
                 print("Email Input:", emailInput)
-                flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                 return render_template('users/guest/request_password_reset.html', form=create_request_form)
         else:
             return render_template('users/guest/request_password_reset.html', form=create_request_form)
@@ -1244,7 +1247,7 @@ def verifyEmail():
             if emailVerified == "Not Verified":
                 try:
                     send_another_verify_email(email, userID)
-                    flash("We have sent you a verification link to verify your email. Please make sure to check your email spam folder as well. Do note that the link will expire in 1 day.", "Verification Email Sent")
+                    flash(Markup("We have sent you a verification link to verify your email.<br>Please make sure to check your email spam folder as well.<br>Do note that the link will expire in 1 day."), "Verification Email Sent")
                 except:
                     print("Email server is down or its port is blocked")
                     flash("We have tried to send you a verification link to verify your email but it seems like the email server is down. Please try again later!", "Verification Email Sent")
@@ -1855,7 +1858,7 @@ def adminSetup2FA():
                 print(pyotp.TOTP(secret).now())
                 if isValid:
                     userKey.set_otp_setup_key(secret)
-                    flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
+                    flash(Markup("2FA setup was successful!<br>You will now be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA setup successful!")
                     db["Admins"] = adminDict
                     db.close()
                     qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
@@ -1907,7 +1910,7 @@ def adminDisable2FA():
                 userKey.set_otp_setup_key("")
                 db["Admins"] = adminDict
                 db.close()
-                flash("2FA is enabled! You will now no longer be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA Disabled!")
+                flash(Markup("2FA is enabled!<br>You will now no longer be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA Disabled!")
                 return redirect(url_for("adminProfile"))
             else:
                 db.close()
@@ -1981,10 +1984,10 @@ def userManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} with the updated password!"), "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -2115,10 +2118,10 @@ def userSearchManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} with the updated password!"), "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -2406,10 +2409,10 @@ def unbanUser(userID):
                 print(f"User account with the ID, {userID}, has been unbanned.")
                 try:
                     send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
-                    flash(f"{userKey.get_username()} has been unbanned. Additionally, an email has been sent to {userKey.get_email()}", "User account has been unbanned!")
+                    flash(Markup(f"{userKey.get_username()} has been unbanned.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account has been unbanned!")
                 except:
                     print("Email server is down or its port is blocked")
-                    flash(f"{userKey.get_username()} has been unbanned. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} to alert the user of the unban!", "User account has been unbanned but email not sent!")
+                    flash(Markup(f"{userKey.get_username()} has been unbanned.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} to alert the user of the unban!"), "User account has been unbanned but email not sent!")
                 return redirect(redirectURL)
             else:
                 db.close()
@@ -3049,10 +3052,10 @@ def updateEmail():
                         print("Email updated")
                         try:
                             send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
-                            flash("Email has been successfully changed! An email has been sent with a link to verify your updated email.", "Email Updated!")
+                            flash(Markup("Email has been successfully changed!<br>An email has been sent with a link to verify your updated email."), "Email Updated!")
                         except:
                             print("Email server down or email server port is blocked.")
-                            flash("Your email has been successfully changed! However, we are unable to send an email to your updated email with a link for email verification. Please wait and try again later.", "Email Updated!")
+                            flash(Markup("Your email has been successfully changed!<br>However, we are unable to send an email to your updated email with a link for email verification.<br>Please wait and try again later."), "Email Updated!")
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
@@ -3249,7 +3252,7 @@ def changeAccountType():
                     db["Users"] = userDict
                     db.close()
                     print("Account type updated to teacher.")
-                    flash("Congratulations! You have successfully become a teacher! Please do not hesitate to contact us if you have any concerns, we will be happy to help!", "Account Type Updated to Teacher")
+                    flash(Markup("Congratulations!<br>You have successfully become a teacher!<br>Please do not hesitate to contact us if you have any concerns, we will be happy to help!"), "Account Type Updated to Teacher")
                     return redirect(url_for("userProfile"))
                 else:
                     print("Not POST request or did not have relevant hidden field.")
