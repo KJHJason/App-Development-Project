@@ -121,3 +121,17 @@
     </div>
 </div>
 {% endblock %}
+
+
+{% block extra_js %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <script>
+        var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+        alertModal.show();
+    </script>
+    {% endif %}
+{% endwith %}
+
+{% endblock %}
