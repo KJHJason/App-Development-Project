@@ -5923,7 +5923,7 @@ def uploadLesson(courseID):
         else:
             teacherUID = ""
 
-        return render_template('users/loggedin/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, emailVerification=emailVerification, emailVerified=emailVerified, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
+        return render_template('users/loggedin/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
 
 """End of Template app.route by Clarence"""
 
