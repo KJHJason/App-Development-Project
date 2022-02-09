@@ -208,6 +208,38 @@ a:hover {
 	}
 }
 
+#shopping-count {
+    position: absolute;
+    background-color: #FF6B6B;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    font-size: 0.5em;
+    width: 2em;
+    height: 2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:0.3s;
+}
+
+.nav-link:hover #shopping-count {
+    background-color:red;
+}
+
+#shopping-count-span {
+    bottom: 0.5em;
+    position: relative;
+    right: 0.8em;
+}
+
+#shopping-cart-link, #shopping-cart-link:hover {
+    text-decoration:none;
+}
+
+#shopping-cart-link-text:hover {
+    text-decoration:underline;
+}
+
 /* ============ End of Navigation Bar ============ */
 
 

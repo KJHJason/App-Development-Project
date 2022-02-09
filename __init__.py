@@ -384,7 +384,11 @@ def home():
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                return render_template('users/general/home.html', accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
+
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/general/home.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
@@ -822,7 +826,7 @@ def twoFactorAuthenticationSetup():
                 print(pyotp.TOTP(secret).now())
                 if isValid:
                     userKey.set_otp_setup_key(secret)
-                    flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
+                    flash(Markup("2FA setup was successful!<br>You will now be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA setup successful!")
                     db["Users"] = userDict
                     db.close()
                     qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
@@ -842,11 +846,14 @@ def twoFactorAuthenticationSetup():
                 else:
                     teacherUID = ""
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 qrCodeForOTP = pyotp.totp.TOTP(s=secret, digits=6).provisioning_uri(name=userKey.get_username(), issuer_name='CourseFinity')
                 img = qrcode.make(qrCodeForOTP)
                 qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                 img.save(qrCodeFullPath)
-                return render_template('users/loggedin/2fa.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
+                return render_template('users/loggedin/2fa.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=create_2fa_form, secret=secret, qrCodePath=qrCodePath)
         else:
             db.close()
             print("User not found or is banned")
@@ -856,9 +863,7 @@ def twoFactorAuthenticationSetup():
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("userLogin")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect(url_for("userLogin"))
 
 @app.route('/2FA_disable')
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
@@ -885,7 +890,7 @@ def removeTwoFactorAuthentication():
 
         if userFound and accGoodStatus:
             userKey.set_otp_setup_key("")
-            flash("2FA has been disabled. You will no longer be prompted to enter your Google Authenticator's time-based OTP upon loggin in.", "2FA disabled!")
+            flash(Markup("2FA has been disabled.<br>You will no longer be prompted to enter your Google Authenticator's time-based OTP upon loggin in."), "2FA disabled!")
             db["Users"] = userDict
             db.close()
             return redirect(url_for("userProfile"))
@@ -898,14 +903,14 @@ def removeTwoFactorAuthentication():
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("userLogin")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect(url_for("userLogin"))
 
 @app.route('/2FA_required', methods=['GET', 'POST'])
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def twoFactorAuthentication():
+    # checks if the user is not logged in
     if "userSession" not in session and "adminSession" not in session:
+        # for admin login
         if "adminOTPSession" in session:
             userID, originFeature = session["adminOTPSession"]
             adminDict = {}
@@ -955,6 +960,7 @@ def twoFactorAuthentication():
                 session.clear()
                 return redirect(url_for("adminLogin"))
 
+        # for user login
         elif "2FAUserSession" in session:
             userID, originFeature = session["2FAUserSession"]
             userDict = {}
@@ -1058,28 +1064,28 @@ def requestPasswordReset():
                     if accGoodStatus == "Good":
                         try:
                             send_reset_email(emailInput, emailKey)
-                            flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                            flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                         except:
                             print("Email server is down or its port is blocked")
-                            flash(f"An email with instructions has not been sent to {emailInput} due to email server downtime. Please wait and try again or contact us!", "Danger")
+                            flash(Markup(f"An email with instructions has not been sent to {emailInput} due to email server downtime.<br>Please wait and try again or contact us!"), "Danger")
                         print("Email sent")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form)
                     else:
                         # email found in database but the user is banned.
                         # However, it will still send an "email sent" alert to throw off enumeration attacks on banned accounts
                         print("User account banned, email not sent.")
-                        flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                        flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                         return render_template('users/guest/request_password_reset.html', form=create_request_form)
                 else:
                     print("User email not found.")
                     # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
-                    flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                    flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                     return render_template('users/guest/request_password_reset.html', form=create_request_form)
             else:
                 # email not found in database, but will send an "email sent" alert to throw off enumeration attacks
                 print("No user account records found.")
                 print("Email Input:", emailInput)
-                flash(f"An email has been sent to {emailInput} with instructions to reset your password. Please check your email and your spam folder.", "Info")
+                flash(Markup(f"An email has been sent to {emailInput} with instructions to reset your password.<br>Please check your email and your spam folder."), "Info")
                 return render_template('users/guest/request_password_reset.html', form=create_request_form)
         else:
             return render_template('users/guest/request_password_reset.html', form=create_request_form)
@@ -1248,7 +1254,7 @@ def verifyEmail():
             if emailVerified == "Not Verified":
                 try:
                     send_another_verify_email(email, userID)
-                    flash("We have sent you a verification link to verify your email. Please make sure to check your email spam folder as well. Do note that the link will expire in 1 day.", "Verification Email Sent")
+                    flash(Markup("We have sent you a verification link to verify your email.<br>Please make sure to check your email spam folder as well.<br>Do note that the link will expire in 1 day."), "Verification Email Sent")
                 except:
                     print("Email server is down or its port is blocked")
                     flash("We have tried to send you a verification link to verify your email but it seems like the email server is down. Please try again later!", "Verification Email Sent")
@@ -1859,7 +1865,7 @@ def adminSetup2FA():
                 print(pyotp.TOTP(secret).now())
                 if isValid:
                     userKey.set_otp_setup_key(secret)
-                    flash("2FA setup was successful! You will now be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA setup successful!")
+                    flash(Markup("2FA setup was successful!<br>You will now be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA setup successful!")
                     db["Admins"] = adminDict
                     db.close()
                     qrCodeFullPath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
@@ -1911,7 +1917,7 @@ def adminDisable2FA():
                 userKey.set_otp_setup_key("")
                 db["Admins"] = adminDict
                 db.close()
-                flash("2FA is enabled! You will now no longer be prompted to enter your Google Authenticator's time-based OTP every time you login.", "2FA Disabled!")
+                flash(Markup("2FA is enabled!<br>You will now no longer be prompted to enter your Google Authenticator's time-based OTP every time you login."), "2FA Disabled!")
                 return redirect(url_for("adminProfile"))
             else:
                 db.close()
@@ -1985,10 +1991,10 @@ def userManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} with the updated password!"), "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -2119,10 +2125,10 @@ def userSearchManagement(pageNum):
                                 db.close()
                                 try:
                                     send_admin_reset_email(email, password) # sending an email to the user to notify them of the change
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. Additionally, an email has been sent to {userKey.get_email()}", "User account recovered successfully!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account recovered successfully!")
                                 except:
                                     print("Email server is down or its port is blocked")
-                                    flash(f"User account has been recovered successfully for {userKey.get_username()}. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} with the updated password!", "User account recovered successfully but email not sent!")
+                                    flash(Markup(f"User account has been recovered successfully for {userKey.get_username()}.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} with the updated password!"), "User account recovered successfully but email not sent!")
                                 print("User account recovered successfully and email sent.")
                                 return redirect(redirectURL)
                             else:
@@ -2410,10 +2416,10 @@ def unbanUser(userID):
                 print(f"User account with the ID, {userID}, has been unbanned.")
                 try:
                     send_admin_unban_email(userKey.get_email()) # sending an email to the user to notify that his/her account has been unbanned
-                    flash(f"{userKey.get_username()} has been unbanned. Additionally, an email has been sent to {userKey.get_email()}", "User account has been unbanned!")
+                    flash(Markup(f"{userKey.get_username()} has been unbanned.<br>Additionally, an email has been sent to {userKey.get_email()}"), "User account has been unbanned!")
                 except:
                     print("Email server is down or its port is blocked")
-                    flash(f"{userKey.get_username()} has been unbanned. However, the follow up email has not been sent due to possible email sever downtime. Please manually send an update to {userKey.get_email()} to alert the user of the unban!", "User account has been unbanned but email not sent!")
+                    flash(Markup(f"{userKey.get_username()} has been unbanned.<br>However, the follow up email has not been sent due to possible email sever downtime.<br>Please manually send an update to {userKey.get_email()} to alert the user of the unban!"), "User account has been unbanned but email not sent!")
                 return redirect(redirectURL)
             else:
                 db.close()
@@ -2901,7 +2907,10 @@ def userProfile():
 
                 twoFAEnabled = bool(userKey.get_otp_setup_key())
 
-                return render_template('users/loggedin/user_profile.html', username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, imagesrcPath=imagesrcPath, emailVerification=emailVerification, emailVerified=emailVerified, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved, twoFAEnabled=twoFAEnabled)
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/loggedin/user_profile.html', shoppingCartLen=shoppingCartLen, username=userUsername, email=userEmail, accType = accType, teacherBio=teacherBio, imagesrcPath=imagesrcPath, emailVerification=emailVerification, emailVerified=emailVerified, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved, twoFAEnabled=twoFAEnabled)
         else:
             db.close()
             print("User not found or is banned.")
@@ -2945,6 +2954,10 @@ def updateUsername():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_username_form = Forms.CreateChangeUsername(request.form)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
             if request.method == "POST" and create_update_username_form.validate():
                 updatedUsername = sanitise(create_update_username_form.updateUsername.data)
                 currentUsername = userKey.get_username()
@@ -2982,7 +2995,7 @@ def updateUsername():
                     return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
+                return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -3025,6 +3038,10 @@ def updateEmail():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_email_form = Forms.CreateChangeEmail(request.form)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
             if request.method == "POST" and create_update_email_form.validate():
 
                 updatedEmail = sanitise(create_update_email_form.updateEmail.data.lower())
@@ -3053,10 +3070,10 @@ def updateEmail():
                         print("Email updated")
                         try:
                             send_email_change_notification(currentEmail, updatedEmail) # sending an email to alert the user of the change of email so that the user will know about it and if his/her account was compromised, he/she will be able to react promptly by contacting CourseFinity support team
-                            flash("Email has been successfully changed! An email has been sent with a link to verify your updated email.", "Email Updated!")
+                            flash(Markup("Email has been successfully changed!<br>An email has been sent with a link to verify your updated email."), "Email Updated!")
                         except:
                             print("Email server down or email server port is blocked.")
-                            flash("Your email has been successfully changed! However, we are unable to send an email to your updated email with a link for email verification. Please wait and try again later.", "Email Updated!")
+                            flash(Markup("Your email has been successfully changed!<br>However, we are unable to send an email to your updated email with a link for email verification.<br>Please wait and try again later."), "Email Updated!")
                         return redirect(url_for("userProfile"))
                     else:
                         db.close()
@@ -3069,7 +3086,7 @@ def updateEmail():
                     return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
-                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found or is banned.")
@@ -3112,6 +3129,10 @@ def updatePassword():
                 teacherUID = ""
             imagesrcPath = retrieve_user_profile_pic(userKey)
             create_update_password_form = Forms.CreateChangePasswordForm(request.form)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
             if request.method == "POST" and create_update_password_form.validate():
                 # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
                 passwordNotMatched = True
@@ -3172,7 +3193,7 @@ def updatePassword():
                             return redirect(url_for("userProfile"))
             else:
                 db.close()
-                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             db.close()
             print("User not found is banned.")
@@ -3253,7 +3274,7 @@ def changeAccountType():
                     db["Users"] = userDict
                     db.close()
                     print("Account type updated to teacher.")
-                    flash("Congratulations! You have successfully become a teacher! Please do not hesitate to contact us if you have any concerns, we will be happy to help!", "Account Type Updated to Teacher")
+                    flash(Markup("Congratulations!<br>You have successfully become a teacher!<br>Please do not hesitate to contact us if you have any concerns, we will be happy to help!"), "Account Type Updated to Teacher")
                     return redirect(url_for("userProfile"))
                 else:
                     print("Not POST request or did not have relevant hidden field.")
@@ -3354,9 +3375,12 @@ def cashoutPreference():
                 print("Country Code:",renderedInfo['Country Code'])
                 print("Phone Validation:",userKey.get_phoneVerification())
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close()
                 print("Yes Return?")
-                return render_template('users/teacher/cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
+                return render_template('users/teacher/cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
             else:
                 db.close()
                 print("User is a student.")
@@ -3532,9 +3556,12 @@ def editCashoutPreference():
                 print("Country Code:", renderedInfo['Country Code'])
                 print("Phone Validation:",userKey.get_phoneVerification())
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close()
                 print("Yes Return?")
-                return render_template('users/teacher/edit_cashout_preference.html', imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
+                return render_template('users/teacher/edit_cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
             else:
                 db.close()
                 print("User is a student.")
@@ -3817,7 +3844,10 @@ def teacherCashOut():
                         cashoutContact = userKey.get_email()
                         cashoutVerification = userKey.get_email_verification()
 
-                    return render_template('users/teacher/teacher_cashout.html', accType=accType, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=userSession, cashoutContact=cashoutContact, cashoutVerification=cashoutVerification, cashoutPreference=cashoutPreference)
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+
+                    return render_template('users/teacher/teacher_cashout.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, monthYear=monthYear, lastDayOfMonth=lastDayOfMonth, commission=commission, totalEarned=totalEarned, initialEarnings=initialEarnings, accumulatedEarnings=accumulatedEarnings, remainingDays=remainingDays, totalEarnedInt=totalEarnedInt, accumulatedCollect=accumulatedCollect, teacherUID=userSession, cashoutContact=cashoutContact, cashoutVerification=cashoutVerification, cashoutPreference=cashoutPreference)
             else:
                 db.close()
                 print("User is a student.")
@@ -3856,9 +3886,11 @@ def search(pageNum):
             checker = ""
             courseDict = {}
             courseTitleList = []
+            userDict = {}
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
+                userDict = db["Users"]
 
             except:
                 print("Error in obtaining course.db data")
@@ -3874,7 +3906,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3887,11 +3919,12 @@ def search(pageNum):
                     print("what is inside the key?", key)
                     if titleCourse == key:
                         course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
 
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()}
+                            "Owner": courseOwner}
 
                         searchfound.append(searchInformation)
 
@@ -3937,16 +3970,21 @@ def search(pageNum):
                 else:
                     teacherUID = ""
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close()
-                return render_template('users/general/search.html', accType=accType , courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
+                return render_template('users/general/search.html', accType=accType , shoppingCartLen=shoppingCartLen, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
         else:
             print("Admin/User account is not found or is not active/banned.")
             checker = ""
             courseDict = {}
             courseTitleList = []
+            userDict = {}
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
+                userDict = db["Users"]
 
             except:
                 print("Error in obtaining course.db data")
@@ -3962,7 +4000,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3975,11 +4013,12 @@ def search(pageNum):
                     print("what is inside the key?", key)
                     if titleCourse == key:
                         course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
 
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()}
+                            "Owner":courseOwner}
 
                         searchfound.append(searchInformation)
 
@@ -4026,9 +4065,11 @@ def search(pageNum):
         checker = ""
         courseDict = {}
         courseTitleList = []
+        userDict = {}
         try:
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
             courseDict = db["Courses"]
+            userDict = db["Users"]
 
         except:
             print("Error in obtaining course.db data")
@@ -4044,7 +4085,7 @@ def search(pageNum):
             courseTitleList.append(courseTitle)
 
         try:
-            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
         except:
             matchedCourseTitleList = []
 
@@ -4057,11 +4098,12 @@ def search(pageNum):
                 print("what is inside the key?", key)
                 if titleCourse == key:
                     course = courseDict[courseID]
+                    courseOwner = userDict[course.get_userID()].get_username()
 
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner":course.get_userID()}
+                        "Owner":courseOwner}
 
                     searchfound.append(searchInformation)
 
@@ -4147,6 +4189,7 @@ def purchaseHistory(pageNum):
             courseType = ""
             historyCheck = True
             historyList = []
+            reviewlist = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
@@ -4167,14 +4210,22 @@ def purchaseHistory(pageNum):
                     # Find the correct course
                     course = courseDict[courseID]
                     courseType = purchasedCourses.get(courseID).get("Course Type")
-
+                    courseOwner = userDict[course.get_userID()].get_username()
+                    reviewlist = course.get_review()
+                    reviewCourse = False
+                    for review in reviewlist:
+                        user = review.get_userID()
+                        if user == userSession:
+                            reviewCourse = True
+                            
                     courseInformation = {"CourseID":course,
                         "Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":course.get_course_type(),
                         "Price":course.get_price(),
-                        "Owner":course.get_userID()}
+                        "Owner":courseOwner,
+                        "ReviewChecker":reviewCourse}
                     historyList.append(courseInformation)
                     session["courseIDGrab"] = courseID
                 print(historyList)
@@ -4213,8 +4264,11 @@ def purchaseHistory(pageNum):
                 previousPage = pageNum - 1
                 nextPage = pageNum + 1
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchasehistory.html', shoppingCartLen=shoppingCartLen, courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
         else:
             print("Invalid Session")
             db.close()
@@ -4289,15 +4343,51 @@ def createPurchaseReview(courseID):
                     db.close() # remember to close your shelve files!
                     return redirect(redirectURL)
                 else:
+
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+
                     db.close()
                     print("Error in Process")
-                    return render_template('users/loggedin/purchasereview.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview, pageNum=pageNum)
+                    return render_template('users/loggedin/purchasereview.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createReview, pageNum=pageNum)
 
             else:
                 # else clause to be removed or indent the lines below and REMOVE the render template with NO variables that are being passed into jinja2
                 print("User has not purchased the course.")
                 db.close()
                 return redirect(url_for("home"))
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+@app.route("/purchaseview/")
+def deleteReview(courseID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            
+            courseID = session.get("courseIDGrab")
+
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4357,13 +4447,14 @@ def purchaseView(courseID):
             courseList = []
             courseID = session.get("courseIDGrab")
             historyCheck = True
+            reviewlist = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
             redirectURL = "/purchasehistory/" + str(pageNum)
 
             if purchasedCourses != {}:
-                if courseID in list(purchasedCourses.keys()):
+                if courseID in purchasedCourses:
                     try:
                         courseDict = {}
                         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
@@ -4373,9 +4464,24 @@ def purchaseView(courseID):
                         print("Unable to open up course shelve")
                         db.close()
                         return redirect(redirectURL)
+                    
+                    date = purchasedCourses[courseID]['Date']
+                    time = purchasedCourses[courseID]['Time']
+                    order = purchasedCourses[courseID]['PayPalOrderID']
+                    account = purchasedCourses[courseID]['PayPalAccountID']
+
 
                     # Find the correct course
                     course = courseDict[courseID]
+
+                    reviewlist = course.get_review()
+                    for review in reviewlist:
+                        checker = False
+                        user = review.get_userID()
+                        if user == userSession:
+                            reviewMatch = review
+                            checker = True
+                            break
 
                     courseInformation = {"Title":course.get_title(),
                                         "Description":course.get_description(),
@@ -4383,12 +4489,20 @@ def purchaseView(courseID):
                                         "CourseTypeCheck":course.get_course_type(),
                                         "Price":course.get_price(),
                                         "Owner":course.get_userID(),
-                                        "Lesson":course.get_lesson_list()}
+                                        "Lesson":course.get_lesson_list(),
+                                        "Date": date,
+                                        "Time": time,
+                                        "OrderID": order,
+                                        "PaypalID": account,
+                                        "Review": reviewMatch}
                     courseList.append(courseInformation)
                     print(courseList)
 
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+
                     db.close()
-                    return render_template('users/loggedin/purchaseview.html', courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
+                    return render_template('users/loggedin/purchaseview.html',checker=checker, courseList = courseList, courseID=courseID, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
                 else:
                     print("User has not purchased the course.")
                     db.close()
@@ -4422,14 +4536,18 @@ def aboutUs():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/about_us.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/about_us.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -4475,9 +4593,11 @@ def explore(pageNum, tag):
     searchfound = []
 
     try:
+        userDict = {}
         courseDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
         courseDict = db["Courses"]
+        userDict = db["Users"]
 
     except:
         print("Unable to open up course shelve")
@@ -4486,13 +4606,16 @@ def explore(pageNum, tag):
     if tag in courseTagTuple:
         for courseID in courseDict:
             courseObject = courseDict.get(courseID)
-            tagCourse = courseObject.get_readable_tag()
+            tagCourse = courseObject.get_tag()
             if tagCourse == tag:
                 course = courseDict[courseID]
+                courseOwner = userDict[course.get_userID()].get_username()
+                reviews = courseObject.get_review()
                 searchInformation = {"Title":course.get_title(),
                                     "Description":course.get_description(),
                                     "Thumbnail":course.get_thumbnail(),
-                                    "Owner":course.get_userID()}
+                                    "Owner": courseOwner,
+                                    "review": reviews}
                 searchfound.append(searchInformation)
             else:
                 print("The tags does not match.")
@@ -4509,6 +4632,12 @@ def explore(pageNum, tag):
     else:
         checker = False
 
+    noOfCourse = len(searchfound)
+
+    session["noOfCourseFound"] = noOfCourse
+
+    session["courseTag"] = tag
+
     maxItemsPerPage = 5 # declare the number of items that can be seen per pages
     courseListLen = len(searchfound) # get the length of the userList
     maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
@@ -4516,13 +4645,13 @@ def explore(pageNum, tag):
     # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
     if pageNum < 0:
         session["pageNumber"] = 0
-        return redirect("/explore/<tag>/0")
+        return redirect("/explore/" + tag + "/0")
     elif courseListLen > 0 and pageNum == 0:
         session["pageNumber"] = 1
-        return redirect("/explore/<tag>/1")
+        return redirect("/explore/" + tag + "/1")
     elif pageNum > maxPages:
         session["pageNumber"] = maxPages
-        redirectRoute = "/explore/<tag>/" + str(maxPages)
+        redirectRoute = "/explore/" + tag + "/" + str(maxPages)
         return redirect(redirectRoute)
     else:
         # pagination algorithm starts here
@@ -4544,20 +4673,23 @@ def explore(pageNum, tag):
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
 
-                return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
-            return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+            return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
     else:
-        return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+        return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
 
 """End of Explore Category by Royston"""
 
@@ -4701,8 +4833,11 @@ def shoppingCart():
                 else:
                     teacherUID = ""
 
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/shopping_cart.html', courseList=courseList,form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/student/shopping_cart.html', courseList=courseList,form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -4786,7 +4921,10 @@ def contactUs():
                 else:
                     teacherUID = ""
 
-                return render_template('users/general/contact_us.html', accType=accType, imagesrcPath=imagesrcPath, form = contactForm, success=success, teacherUID=teacherUID)
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/general/contact_us.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, form = contactForm, success=success, teacherUID=teacherUID)
             else:
                 # Admin user
                 return redirect("/support_ticket_management/0")
@@ -5211,7 +5349,11 @@ def teacherPage(teacherPageUID):
 
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
-            return render_template('users/general/teacher_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseListLen=popularCourseList)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseListLen=popularCourseList)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -5236,7 +5378,11 @@ def teacherCourses(teacherCoursesUID):
 
         if userFound and accGoodStanding:
             imagesrcPath = retrieve_user_profile_pic(userKey)
-            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherCoursesUID=teacherCoursesUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/teacher_courses.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherCoursesUID=teacherCoursesUID)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -5304,8 +5450,12 @@ def course_thumbnail_upload(teacherUID):
                         db.close()
                 else:
                     teacherUID = ""
+
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
                 db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, createCourseForm=createCourseForm)
+                return render_template('users/teacher/create_course.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createCourseForm)
             else:
                 db.close()
                 print("User not found or is banned")
@@ -5392,7 +5542,10 @@ def teacherOwnPage(teacherUID):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             bio = teacherObject.get_bio()
 
-            return render_template('users/teacher/my_channel.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseList=popularCourseList)
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/teacher/my_channel.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseList=popularCourseList)
 
         else:
             print("Admin/User account is not found or is not active/banned.")
@@ -5471,12 +5624,16 @@ def coursePage(courseID):
                 courseObject.increase_view()
                 db["Users"] = userDict
                 db["Courses"] = courseDict
+
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
             else:
                 userPurchased = False
 
             db.close()
 
-            return render_template('users/general/course_page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
+            return render_template('users/general/course_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
         else:
             db.close()
             print("Admin/User account is not found or is not active/banned.")
@@ -5671,7 +5828,11 @@ def courseReviews(courseID, reviewPageNum):
                     teacherUID = userSession
                 else:
                     teacherUID = ""
-                return render_template('users/general/course_page_reviews.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, userReviewed=userReviewed, userReview=userReview, userPurchased=userPurchased, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/general/course_page_reviews.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, userReviewed=userReviewed, userReview=userReview, userPurchased=userPurchased, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
             else:
                 print("Admin/User account is not found or is not active/banned.")
                 session.clear()
@@ -5854,7 +6015,10 @@ def uploadLesson(courseID):
         else:
             teacherUID = ""
 
-        return render_template('users/loggedin/upload_lesson.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
+        # Get shopping cart len
+        shoppingCartLen = len(userKey.get_shoppingCart())
+
+        return render_template('users/loggedin/upload_lesson.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
 
 """End of Template app.route by Clarence"""
 
@@ -5920,6 +6084,11 @@ def upload(courseID):
 
     #return make_response(("Chunk upload successful", 200))
 
+"""
+# Get shopping cart len
+shoppingCartLen = len(userKey.get_shoppingCart())
+"""
+
 """End of Video Upload by Clarence"""
 
 """General Pages"""
@@ -5932,14 +6101,18 @@ def cookiePolicy():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/cookie_policy.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/cookie_policy.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -5955,14 +6128,18 @@ def termsAndConditions():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/terms_and_conditions.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/terms_and_conditions.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -5978,14 +6155,18 @@ def privacyPolicy():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/privacy_policy.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/privacy_policy.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -6001,14 +6182,19 @@ def faq():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/faq.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/faq.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -6024,14 +6210,18 @@ def teacherHandbook():
         else:
             userSession = session["userSession"]
 
-        userFound, accGoodStanding, accType, imagesrcPath = general_page_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/teacher_handbook.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/general/teacher_handbook.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()

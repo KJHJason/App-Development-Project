@@ -1,6 +1,6 @@
 {% extends "user_base.html" %}
 {% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/user_profile.css') }}">{% endblock %}
-{% block title %}Add Payment Method | CourseFinity{% endblock %}
+{% block title %}Add Cashout Preference | CourseFinity{% endblock %}
 
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
@@ -120,4 +120,18 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+
+{% block extra_js %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <script>
+        var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+        alertModal.show();
+    </script>
+    {% endif %}
+{% endwith %}
+
 {% endblock %}

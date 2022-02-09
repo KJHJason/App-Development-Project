@@ -20,7 +20,6 @@ class Common(User):
         super().__init__(user_id, username, email, password, acc_type, status)
         self.__email_verification = "Not Verified"
         self.__purchaseID = []
-        self.__reviewID = []
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs here
@@ -100,20 +99,6 @@ class Common(User):
         return self.__teacher_joined_date
 
     """End of Done by Jason"""
-
-    """Done by Royston"""
-
-    def add_reviewID(self, reviewID):
-        self.__reviewID.append(reviewID)
-    def get_reviewID(self):
-        return self.__reviewID
-    def remove_reviewID(self, reviewID):
-        if reviewID in self.__reviewID:
-            self.__reviewID.remove(reviewID)
-        else:
-            return False
-
-    """End of Done by Royston"""
 
     """Done by Wei Ren"""
 

@@ -6,17 +6,19 @@
 {% extends "admin_base.html" %}
 {% endif %}
 
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/search.css') }}">{% endblock %}
 {% block title %}Explore Category | CourseFinity{% endblock %}
 
 
 {% block content %}
+<div class="container">
+    <h2>Found {{noOfCourse}} courses related to {{tag}}</h2>
     {% if checker == False %}
     <div>
-        <h4 style="text-align:center;margin-bottom:50px;opacity:0.5;">No searched item found</h4>
+        <h4 style="text-align:center;margin-bottom:50px;opacity:0.5;">No courses with that tag</h4>
     </div>
     {% else %}
-    {% for searchInformation in searchfound %}
-    <div class="container">
+        {% for searchInformation in searchfound %}
         <div class="row g-0 casing mx-auto">
             <div class="col-4">
                 <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
@@ -30,12 +32,53 @@
                     <div class="row g-0">
                         <div class="selection col">
                             <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+                            <p class="card-text"><span class="fw-bold">Overall Rating:</span>
+                                {% with averageCourseRating = course.get_averageRating() %}
+                                    {% if averageCourseRating == 5 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 4 and averageCourseRating < 5 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 3 and averageCourseRating < 4 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span> 
+                                    {% elif averageCourseRating >= 2 and averageCourseRating < 3 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 1 and averageCourseRating < 2 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 0 and averageCourseRating < 1 %}
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% endif %}
+                                {% endwith %}
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     {% endfor %}
     {% endif %}
+</div>
 {% endblock %}
