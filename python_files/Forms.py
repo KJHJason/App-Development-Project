@@ -372,17 +372,13 @@ class CashoutForm(Form):
 
 """WTForms by Clarence"""
 class CreateCourse(Form):
-    '''title
-    description = StringField("Description")
-    thumbnail
-    zoomprices = StringField("")
-    videoprice = StringField("")
+    '''
     zoomconditions
     videocondiction
     tags = StringField("")
     zoomschedule'''
     courseTitle = StringField("Course Title: ", [validators.DataRequired(), validators.Length(min=3, max=100)])
-    courseDescription = StringField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
+    courseDescription = TextAreaField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
     #thumbnail use HTML to validate size, type
     coursePrice = IntegerField("Price for Course (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
 """End of WTForms by Clarence"""

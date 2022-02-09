@@ -48,7 +48,7 @@ Dropzone.options.dropper = {
        lessonThumbnailDropzone.on('sending', function(file, xhr, formData) {
             /* Append inputs to FormData */
             $(".dz-progress").show();
-            formData.append("profileImage", document.getElementById('dropper').value);
+            formData.append("lessonThumbnail", document.getElementById('dropper').value);
         });
         
         // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
@@ -65,58 +65,49 @@ Dropzone.options.dropper = {
 Dropzone.options.dropper = {
     maxFiles: 1,
     paramName: 'lessonVideo',
-    acceptedFiles: ".jpeg,.jpg,.png",
+    acceptedFiles: ".mp4, .mov, .avi",
     chunking: true,
     forceChunking: true,
     url: '/upload_lesson',
-    maxFilesize: 10000, // megabytes (10GB)
-    chunkSize: 1000000, // bytes 
+    maxFilesize: 10000, // megabytes
+    chunkSize: 1000000, // bytes
     retryChunks: true,
     retryChunksLimit: 3,
-    autoProcessQueue: false,
-    parallelUploads: 20,
-    previewTemplate: previewTemplate,
+    autoProcessQueue: true,
     autoQueue: false, // Make sure the files aren't queued until manually added
     previewsContainer: "#previews", // Define the container to display the previews
-    clickable: ".fileinput-button" // Define the element that should be used as click trigger to select files.
+    clickable: ".fileinput-button", // Define the element that should be used as click trigger to select files.
 
     init: function() {
         let lessonVideoDropzone = this;
-        
-        // when the user uploads more than one video, this function will remove the old lesson video and replace it with the new lesson video that was added by the user
-       lessonVideoDropzone.on("addedfile", function() {
+        // when the user uploads more than one video, this function will remove the old video and replace it with the new lesson video that was added by the user
+        lesonVideoDropzone.on("addedfile", function() {
             $(".dz-progress").hide();
-            if (lessonVideoDropzone.files[1] == null) return;
-           lessonVideoDropzone.removeFile(lessonVideoDropzone.files[0]);
+            if (lesonVideoDropzone.files[1] == null) return;
+           lesonVideoDropzone.removeFile(userProfileImageDropzone.files[0]);
         });
 
-        // this tells dropzone to upload the video data to the web server when the user clicks on the upload button
+        // tells dropzone to upload the video data to the web server when the user clicks on the upload button
         document.getElementById('submit-button').addEventListener("click", function (e) {
             e.preventDefault();
-           lessonVideoDropzone.processQueue();
+           lesonVideoDropzone.processQueue();
         });
 
         // sending the chunks of data when user clicks on the upload button
-       lessonVideoDropzone.on('sending', function(file, xhr, formData) {
+        lesonVideoDropzone.on('sending', function(file, xhr, formData) {
             /* Append inputs to FormData */
             $(".dz-progress").show();
             formData.append("lessonVideo", document.getElementById('dropper').value);
         });
         
-        // when the lesson video has been successfully uploaded, refresh the page after 1.5 seconds
-       lessonVideoDropzone.on("success", function () {
+        // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
+        lesonVideoDropzone.on("success", function () {
             function redirectUser() {
                 location.reload();
             }
             setInterval(redirectUser, 1500);
         });
         
-        lessonVideoDropzone.on("addedfile", function(file) {
-          // Hookup the start button
-          file.previewElement.querySelector(".start").onclick = function() { lessonVideoDropzone.enqueueFile(file); };
-        });
-
-
         /* Start of Progress bar */
         // Update the total progress bar
         lessonVideoDropzone.on("totaluploadprogress", function(progress) {
@@ -145,8 +136,51 @@ Dropzone.options.dropper = {
         document.querySelector("#actions .cancel").onclick = function() {
           lessonVideoDropzone.removeAllFiles(true);
         };
+        lessonVideoDropzone.on("addedfile", function(file) {
+          // Hookup the start button
+          file.previewElement.querySelector(".start").onclick = function() { lessonVideoDropzone.enqueueFile(file); };
+        });
+
     }
 };
+
+
+//     init: function() {
+//         let lessonVideoDropzone = this;
+        
+//         // when the user uploads more than one video, this function will remove the old lesson video and replace it with the new lesson video that was added by the user
+//        lessonVideoDropzone.on("addedfile", function() {
+//             $(".dz-progress").hide();
+//             if (lessonVideoDropzone.files[1] == null) return;
+//            lessonVideoDropzone.removeFile(lessonVideoDropzone.files[0]);
+//         });
+
+//         // this tells dropzone to upload the video data to the web server when the user clicks on the upload button
+//         document.getElementById('submit-button').addEventListener("click", function (e) {
+//             e.preventDefault();
+//            lessonVideoDropzone.processQueue();
+//         });
+
+//         // sending the chunks of data when user clicks on the upload button
+//        lessonVideoDropzone.on('sending', function(file, xhr, formData) {
+//             /* Append inputs to FormData */
+//             $(".dz-progress").show();
+//             formData.append("lessonVideo", document.getElementById('dropper').value);
+//         });
+        
+//         // when the lesson video has been successfully uploaded, refresh the page after 1.5 seconds
+//        lessonVideoDropzone.on("success", function () {
+//             function redirectUser() {
+//                 location.reload();
+//             }
+//             setInterval(redirectUser, 1500);
+//         });
+        
+        
+
+//         
+//     }
+// };
 
 //  var lessonVideoDropzone = new Dropzone(document.getElementById("formDropZone", {
 //     // options here

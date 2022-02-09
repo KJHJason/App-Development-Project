@@ -5281,6 +5281,19 @@ def course_thumbnail_upload(teacherUID):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
+            createCourseForm = Forms.CreateCourse(request.form)
+            if request.method == "POST" and createCourseForm.validate():
+                courseName = createCourseForm.courseName.data
+                courseDescription = createCourseForm.courseDescription.data
+                coursePrice = createCourseForm.coursePrice.data
+                courseRating = createCourseForm.courseRating.data
+                courseThumbnail = createCourseForm.courseThumbnail.data
+                course = Course(courseName, courseDescription, coursePrice, courseRating, courseThumbnail, teacherUID)
+                courseDict[courseName] = course
+                db["Courses"] = courseDict
+                db.close()
+                return redirect(url_for("teacherCourses", teacherCoursesUID=teacherUID))
+            courseCategory = request.form.get("category")
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherUID = userSession
@@ -5292,7 +5305,7 @@ def course_thumbnail_upload(teacherUID):
                 else:
                     teacherUID = ""
                 db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createCourseForm)
+                return render_template('users/teacher/create_course.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, createCourseForm=createCourseForm)
             else:
                 db.close()
                 print("User not found or is banned")
@@ -5808,21 +5821,21 @@ def uploadLesson(courseID):
             else:
                 db.close()
                 return make_response("Image extension not supported!", 500)
-        elif typeOfFormSubmitted == "resetUserIcon":
-            print("Deleting user's profile image...")
-            userImageFileName = userKey.get_profile_image()
-            profileFilePath = construct_path(
-            app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
-            # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
-            if bool(userImageFileName) != False:
-                # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                Path(profileFilePath).unlink(missing_ok=True)
-            userKey.set_profile_image("")
-            db['Users'] = userDict
-            db.close()
-            print("User profile image deleted.")
-            flash("Your profile image has been successfully deleted.","Profile Image Deleted")
-            return redirect(url_for("userProfile"))
+        # elif typeOfFormSubmitted == "resetUserIcon":
+        #     print("Deleting user's profile image...")
+        #     userImageFileName = userKey.get_profile_image()
+        #     profileFilePath = construct_path(
+        #     app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
+        #     # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
+        #     if bool(userImageFileName) != False:
+        #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+        #         Path(profileFilePath).unlink(missing_ok=True)
+        #     userKey.set_profile_image("")
+        #     db['Users'] = userDict
+        #     db.close()
+        #     print("User profile image deleted.")
+        #     flash("Your profile image has been successfully deleted.","Profile Image Deleted")
+        #     return redirect(url_for("userProfile"))
         else:
             db.close()
             print("Form value tampered or POST request sent without form value...")

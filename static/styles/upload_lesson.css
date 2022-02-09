@@ -6,6 +6,16 @@ html, body {
     margin: 2em 0;
 }
 
+#details {
+    background: #f6f6f6;
+    padding: 1em;
+    width: 50%;
+    height: 100%;
+    align-items: center;
+    border-radius: 0.5em;
+    border: 1px solid;
+    border-color: rgb(7, 6, 6);
+}
 
 /* Mimic table appearance */
 div.table {
