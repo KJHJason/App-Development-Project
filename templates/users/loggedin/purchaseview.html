@@ -88,43 +88,45 @@
                             <h5 class="card-title">{{ courseInformation["Review"].get_title() }}</h5>
                             <p class="card-text">{{ courseInformation["Review"].get_comment() }}</p>
                             <div class="ratings float-end">
-                                {% if courseInformation["Review"].get_rating() == 5 %}
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                {% elif courseInformation["Review"].get_rating() >= 4 and courseInformation["Review"].get_rating() < 5 %}
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="far fa-star"></span>
-                                {% elif courseInformation["Review"].get_rating() >= 3 and courseInformation["Review"].get_rating() < 4 %}
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span> 
-                                {% elif courseInformation["Review"].get_rating() >= 2 and courseInformation["Review"].get_rating() < 3 %}
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                {% elif courseInformation["Review"].get_rating() >= 1 and courseInformation["Review"].get_rating() < 2 %}
-                                <span class="fas fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                {% elif courseInformation["Review"].get_rating() >= 0 and courseInformation["Review"].get_rating() < 1 %}
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                <span class="far fa-star"></span>
-                                {% endif %}
+                                {% with courseRating = courseInformation["Review"].get_rating() %}
+                                    {% if courseRating == 5 %}
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    {% elif courseRating >= 4 and courseRating < 5 %}
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% elif courseRating >= 3 and courseRating < 4 %}
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span> 
+                                    {% elif courseRating >= 2 and courseRating < 3 %}
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% elif courseRating >= 1 and courseRating < 2 %}
+                                    <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% elif courseRating >= 0 and courseRating < 1 %}
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% endif %}
+                                {% endwith %}
                             </div>
                             <small class="text-muted">{{ courseInformation["Review"].get_review_time() }}</small>
                         </div>
