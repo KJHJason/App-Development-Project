@@ -33,43 +33,45 @@
                         <div class="selection col">
                             <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
                             <p class="card-text"><span class="fw-bold">Overall Rating:</span>
-                                {% if course.get_averageRating() == 5 %}
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                {% elif course.get_averageRating() >= 4 and course.get_averageRating() < 5 %}
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                {% elif course.get_averageRating() >= 3 and course.get_averageRating() < 4 %}
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span> 
-                                {% elif course.get_averageRating() >= 2 and course.get_averageRating() < 3 %}
-                                <span class="fas fa-star ratings"></span>
-                                <span class="fas fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                {% elif course.get_averageRating() >= 1 and course.get_averageRating() < 2 %}
-                                <span class="fas fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                {% elif course.get_averageRating() >= 0 and course.get_averageRating() < 1 %}
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                <span class="far fa-star ratings"></span>
-                                {% endif %}
+                                {% with averageCourseRating = course.get_averageRating() %}
+                                    {% if averageCourseRating == 5 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 4 and averageCourseRating < 5 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 3 and averageCourseRating < 4 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span> 
+                                    {% elif averageCourseRating >= 2 and averageCourseRating < 3 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 1 and averageCourseRating < 2 %}
+                                    <span class="fas fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% elif averageCourseRating >= 0 and averageCourseRating < 1 %}
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    <span class="far fa-star ratings"></span>
+                                    {% endif %}
+                                {% endwith %}
                             </p>
                         </div>
                     </div>
