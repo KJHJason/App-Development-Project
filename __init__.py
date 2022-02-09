@@ -3856,9 +3856,11 @@ def search(pageNum):
             checker = ""
             courseDict = {}
             courseTitleList = []
+            userDict = {}
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
+                userDict = db["Users"]
 
             except:
                 print("Error in obtaining course.db data")
@@ -3874,7 +3876,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3887,11 +3889,12 @@ def search(pageNum):
                     print("what is inside the key?", key)
                     if titleCourse == key:
                         course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
 
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()}
+                            "Owner": courseOwner}
 
                         searchfound.append(searchInformation)
 
@@ -3944,9 +3947,11 @@ def search(pageNum):
             checker = ""
             courseDict = {}
             courseTitleList = []
+            userDict = {}
             try:
                 db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
                 courseDict = db["Courses"]
+                userDict = db["Users"]
 
             except:
                 print("Error in obtaining course.db data")
@@ -3962,7 +3967,7 @@ def search(pageNum):
                 courseTitleList.append(courseTitle)
 
             try:
-                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+                matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
             except:
                 matchedCourseTitleList = []
 
@@ -3975,11 +3980,12 @@ def search(pageNum):
                     print("what is inside the key?", key)
                     if titleCourse == key:
                         course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
 
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":course.get_userID()}
+                            "Owner":courseOwner}
 
                         searchfound.append(searchInformation)
 
@@ -4026,9 +4032,11 @@ def search(pageNum):
         checker = ""
         courseDict = {}
         courseTitleList = []
+        userDict = {}
         try:
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
             courseDict = db["Courses"]
+            userDict = db["Users"]
 
         except:
             print("Error in obtaining course.db data")
@@ -4044,7 +4052,7 @@ def search(pageNum):
             courseTitleList.append(courseTitle)
 
         try:
-            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.35) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
+            matchedCourseTitleList = difflib.get_close_matches(searchInput, courseTitleList, len(courseTitleList), 0.25) # return a list of closest matched search with a length of the whole list as difflib will only return the 3 closest matches by default. I then set the cutoff to 0.80, i.e. must match to a certain percentage else it will be ignored.
         except:
             matchedCourseTitleList = []
 
@@ -4057,11 +4065,12 @@ def search(pageNum):
                 print("what is inside the key?", key)
                 if titleCourse == key:
                     course = courseDict[courseID]
+                    courseOwner = userDict[course.get_userID()].get_username()
 
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner":course.get_userID()}
+                        "Owner":courseOwner}
 
                     searchfound.append(searchInformation)
 
@@ -4147,6 +4156,7 @@ def purchaseHistory(pageNum):
             courseType = ""
             historyCheck = True
             historyList = []
+            reviewlist = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
@@ -4167,14 +4177,22 @@ def purchaseHistory(pageNum):
                     # Find the correct course
                     course = courseDict[courseID]
                     courseType = purchasedCourses.get(courseID).get("Course Type")
-
+                    courseOwner = userDict[course.get_userID()].get_username()
+                    reviewlist = course.get_review()
+                    reviewCourse = False
+                    for review in reviewlist:
+                        user = review.get_userID()
+                        if user == userSession:
+                            reviewCourse = True
+                            
                     courseInformation = {"CourseID":course,
                         "Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
                         "CourseTypeCheck":course.get_course_type(),
                         "Price":course.get_price(),
-                        "Owner":course.get_userID()}
+                        "Owner":courseOwner,
+                        "ReviewChecker":reviewCourse}
                     historyList.append(courseInformation)
                     session["courseIDGrab"] = courseID
                 print(historyList)
@@ -4311,6 +4329,38 @@ def createPurchaseReview(courseID):
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
 
+@app.route("/purchaseview/")
+def deleteReview(courseID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            
+            courseID = session.get("courseIDGrab")
+
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
 """End of Purchase Review by Royston"""
 
 """Purchase View by Royston"""
@@ -4357,13 +4407,14 @@ def purchaseView(courseID):
             courseList = []
             courseID = session.get("courseIDGrab")
             historyCheck = True
+            reviewlist = []
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
             redirectURL = "/purchasehistory/" + str(pageNum)
 
             if purchasedCourses != {}:
-                if courseID in list(purchasedCourses.keys()):
+                if courseID in purchasedCourses:
                     try:
                         courseDict = {}
                         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
@@ -4373,9 +4424,24 @@ def purchaseView(courseID):
                         print("Unable to open up course shelve")
                         db.close()
                         return redirect(redirectURL)
+                    
+                    date = purchasedCourses[courseID]['Date']
+                    time = purchasedCourses[courseID]['Time']
+                    order = purchasedCourses[courseID]['PayPalOrderID']
+                    account = purchasedCourses[courseID]['PayPalAccountID']
+
 
                     # Find the correct course
                     course = courseDict[courseID]
+
+                    reviewlist = course.get_review()
+                    for review in reviewlist:
+                        checker = False
+                        user = review.get_userID()
+                        if user == userSession:
+                            reviewMatch = review
+                            checker = True
+                            break
 
                     courseInformation = {"Title":course.get_title(),
                                         "Description":course.get_description(),
@@ -4383,12 +4449,17 @@ def purchaseView(courseID):
                                         "CourseTypeCheck":course.get_course_type(),
                                         "Price":course.get_price(),
                                         "Owner":course.get_userID(),
-                                        "Lesson":course.get_lesson_list()}
+                                        "Lesson":course.get_lesson_list(),
+                                        "Date": date,
+                                        "Time": time,
+                                        "OrderID": order,
+                                        "PaypalID": account,
+                                        "Review": reviewMatch}
                     courseList.append(courseInformation)
                     print(courseList)
 
                     db.close()
-                    return render_template('users/loggedin/purchaseview.html', courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
+                    return render_template('users/loggedin/purchaseview.html',checker=checker, courseList = courseList, courseID=courseID, accType=accType, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
                 else:
                     print("User has not purchased the course.")
                     db.close()
@@ -4475,9 +4546,11 @@ def explore(pageNum, tag):
     searchfound = []
 
     try:
+        userDict = {}
         courseDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
         courseDict = db["Courses"]
+        userDict = db["Users"]
 
     except:
         print("Unable to open up course shelve")
@@ -4486,13 +4559,16 @@ def explore(pageNum, tag):
     if tag in courseTagTuple:
         for courseID in courseDict:
             courseObject = courseDict.get(courseID)
-            tagCourse = courseObject.get_readable_tag()
+            tagCourse = courseObject.get_tag()
             if tagCourse == tag:
                 course = courseDict[courseID]
+                courseOwner = userDict[course.get_userID()].get_username()
+                reviews = courseObject.get_review()
                 searchInformation = {"Title":course.get_title(),
                                     "Description":course.get_description(),
                                     "Thumbnail":course.get_thumbnail(),
-                                    "Owner":course.get_userID()}
+                                    "Owner": courseOwner,
+                                    "review": reviews}
                 searchfound.append(searchInformation)
             else:
                 print("The tags does not match.")
@@ -4509,6 +4585,12 @@ def explore(pageNum, tag):
     else:
         checker = False
 
+    noOfCourse = len(searchfound)
+
+    session["noOfCourseFound"] = noOfCourse
+
+    session["courseTag"] = tag
+
     maxItemsPerPage = 5 # declare the number of items that can be seen per pages
     courseListLen = len(searchfound) # get the length of the userList
     maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
@@ -4516,13 +4598,13 @@ def explore(pageNum, tag):
     # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
     if pageNum < 0:
         session["pageNumber"] = 0
-        return redirect("/explore/<tag>/0")
+        return redirect("/explore/" + tag + "/0")
     elif courseListLen > 0 and pageNum == 0:
         session["pageNumber"] = 1
-        return redirect("/explore/<tag>/1")
+        return redirect("/explore/" + tag + "/1")
     elif pageNum > maxPages:
         session["pageNumber"] = maxPages
-        redirectRoute = "/explore/<tag>/" + str(maxPages)
+        redirectRoute = "/explore/" + tag + "/" + str(maxPages)
         return redirect(redirectRoute)
     else:
         # pagination algorithm starts here
@@ -4552,12 +4634,12 @@ def explore(pageNum, tag):
             else:
                 teacherUID = ""
 
-                return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
-            return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+            return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
     else:
-        return render_template('users/general/explore.html',checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+        return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
 
 """End of Explore Category by Royston"""
 

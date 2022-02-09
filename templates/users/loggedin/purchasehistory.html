@@ -55,7 +55,11 @@
                         <p class="info">Zoom Session</p>
                         <a href="{{ link }}" class="view">View Zoom Link</a>
                         {% endif %}
-                        <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
+                        {% if courseChecker == False %}
+                            <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
+                        {% else %}
+                            <a class="btn btn-link" href="/purchaseview/{{courseID}}">View Review</a>
+                        {% endif %}
                     </div>
                     <div class="information col">
                         <!--Placeholders-->
