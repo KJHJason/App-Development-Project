@@ -7,8 +7,8 @@
 }
 
 h3{
-  margin-bottom:40px;
   margin-top:40px;
+  text-align:center;
 }
 
 h2{
@@ -18,4 +18,8 @@ h2{
   max-width: 1000px; 
   margin-bottom:50px;
   border:3px black solid;
+}
+
+.td_cells_min_width_reviews {
+  min-width: 600px;
 }
