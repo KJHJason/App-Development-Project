@@ -106,43 +106,45 @@
                         <p class="card-text fw-bold">Zoom: ${{ course.get_zoomPrice() }}</p>
                         {% endif %}
                         <div class="ratings">
-                            {% if course.get_averageRating() == 5 %}
-                            <span class="fas fa-star"></span>
-                            <span class="fas fa-star"></span>
-                            <span class="fas fa-star"></span>
-                            <span class="fas fa-star"></span>
-                            <span class="fas fa-star"></span>
-                            {% elif course.get_averageRating() >= 4 and course.get_averageRating() < 5 %} <span
-                                class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="far fa-star"></span>
-                                {% elif course.get_averageRating() >= 3 and course.get_averageRating() < 4 %} <span
-                                    class="fas fa-star"></span>
-                                    <span class="fas fa-star"></span>
-                                    <span class="fas fa-star"></span>
-                                    <span class="far fa-star"></span>
-                                    <span class="far fa-star"></span>
-                                    {% elif course.get_averageRating() >= 2 and course.get_averageRating() < 3 %} <span
-                                        class="fas fa-star"></span>
-                                        <span class="fas fa-star"></span>
-                                        <span class="far fa-star"></span>
-                                        <span class="far fa-star"></span>
-                                        <span class="far fa-star"></span>
-                                        {% elif course.get_averageRating() >= 1 and course.get_averageRating() < 2 %}
-                                            <span class="fas fa-star"></span>
-                                            <span class="far fa-star"></span>
-                                            <span class="far fa-star"></span>
-                                            <span class="far fa-star"></span>
-                                            <span class="far fa-star"></span>
-                                            {% elif course.get_averageRating() >= 0 and course.get_averageRating() < 1%}
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                {% endif %}
+                            {% with averageCourseRating = course.get_averageRating() %}
+								{% if averageCourseRating == 5 %}
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								{% elif averageCourseRating >= 4 and averageCourseRating < 5 %}
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="far fa-star"></span>
+								{% elif averageCourseRating >= 3 and averageCourseRating < 4 %}
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span> 
+								{% elif averageCourseRating >= 2 and averageCourseRating < 3 %}
+								<span class="fas fa-star"></span>
+								<span class="fas fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								{% elif averageCourseRating >= 1 and averageCourseRating < 2 %}
+								<span class="fas fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								{% elif averageCourseRating >= 0 and averageCourseRating < 1 %}
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								<span class="far fa-star"></span>
+								{% endif %}
+							{% endwith %}
                         </div>
                         <p class="card-text">Views: {{ course.get_views() }}</p>
                     </div>
