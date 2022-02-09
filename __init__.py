@@ -856,9 +856,7 @@ def twoFactorAuthenticationSetup():
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("userLogin")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect(url_for("userLogin"))
 
 @app.route('/2FA_disable')
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
@@ -898,9 +896,7 @@ def removeTwoFactorAuthentication():
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("userLogin")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect(url_for("userLogin"))
 
 @app.route('/2FA_required', methods=['GET', 'POST'])
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
