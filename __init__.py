@@ -5421,7 +5421,9 @@ def coursePage(courseID):
 
     reviewsCount = len(reviews)
     if reviewsCount > 5:
-        reviews = reviews[-5:] # get latest five reviews
+        reviews = reviews[-4::-1] # get latest five reviews
+    else:
+        reviews = reviews[::-1] # get latest reviews
 
     # Retrieving the user's uername and profile image url for the reviews
     reviewsDict = {}
@@ -5594,6 +5596,7 @@ def courseReviews(courseID, reviewPageNum):
 
     reviewsCount = len(reviews)
     if reviewsCount > 5:
+        reviews = reviews[::-1] # get latest reviews
         reviewsDict = {}
         for review in reviews:
             userID = review.get_userID()
