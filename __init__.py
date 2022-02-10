@@ -5470,13 +5470,9 @@ def course_thumbnail_upload(teacherUID):
             # insert your C,R,U,D operation here to deal with the user shelve data files
             createCourseForm = Forms.CreateCourse(request.form)
             if request.method == "POST" and createCourseForm.validate():
-                courseName = createCourseForm.courseName.data
-                courseDescription = createCourseForm.courseDescription.data
                 coursePrice = createCourseForm.coursePrice.data
-                courseRating = createCourseForm.courseRating.data
-                courseThumbnail = createCourseForm.courseThumbnail.data
-                course = Course(courseName, courseDescription, coursePrice, courseRating, courseThumbnail, teacherUID)
-                courseDict[courseName] = course
+                course = Course( coursePrice, teacherUID)
+                courseDict[courseTitle] = course
                 db["Courses"] = courseDict
                 db.close()
                 return redirect(url_for("teacherCourses", teacherCoursesUID=teacherUID))
