@@ -4,11 +4,8 @@
   border-radius:15%;
   text-align:center;
 }
-.container-fluid{
-  justify-content: center;
-}
 
-.row{
+.container-fluid .row{
   margin:auto;
   text-align:center;
 }

@@ -84,7 +84,9 @@
                 <div class="row g-0">
                     <div class="col">
                         <div class="card-body">
-                            <a href=""><i class="fas fa-trash float-end" style="color:red"></i></a>
+                            <form action="/deletereview/{{ courseID }}" method="POST">
+                                <button type="submit" class="btn mb-2 float-end"><i class="fas fa-trash float-end" style="color:red"></i></button>
+                            </form>
                             <h5 class="card-title">{{ courseInformation["Review"].get_title() }}</h5>
                             <p class="card-text">{{ courseInformation["Review"].get_comment() }}</p>
                             <div class="ratings float-end">
@@ -137,6 +139,18 @@
     </tr>
     {% else %}
     <h3 style="text-align:center;margin-bottom:50px;opacity:0.5;">You have not created one.</h3>
+    <h3 class="text-center"><a class="btn btn-link " href="/purchasereview/{{courseID}}">Click here to create one.</a></h3>
     {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		<script>
+			var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+			alertModal.show();
+		</script>
+		{% endif %}
+	{% endwith %}
 {% endblock %}

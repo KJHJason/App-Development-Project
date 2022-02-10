@@ -4369,7 +4369,7 @@ def createPurchaseReview(courseID):
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
 
-@app.route("/purchaseview/")
+@app.post("/deletereview/<courseID>")
 def deleteReview(courseID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
@@ -4379,15 +4379,33 @@ def deleteReview(courseID):
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            if accType == "Teacher":
-                teacherUID = userSession
-            else:
-                teacherUID = ""
             
             courseID = session.get("courseIDGrab")
+            redirectURL = "/purchaseview/" + courseID
+            reviewlist = []
 
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                courseDict = db["Courses"]
+            except:
+                print("Unable to open up course shelve")
+                db.close()
+                return redirect(redirectURL)
+            
+            course = courseDict[courseID]
+
+            reviewlist = course.get_review()
+            for review in reviewlist:
+                user = review.get_userID()
+                if user == userSession:
+                    course.remove_review(review)
+                    flash("Your deletion of review has been successful!","Success!")
+                    db["Courses"] = courseDict
+                    return redirect(redirectURL)
+
+            print("Either the user did not review the course or the course has no reviews.")
+            return redirect(redirectURL)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4448,6 +4466,7 @@ def purchaseView(courseID):
             courseID = session.get("courseIDGrab")
             historyCheck = True
             reviewlist = []
+            reviewMatch = ""
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
@@ -4601,6 +4620,7 @@ def explore(pageNum, tag):
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
         courseDict = db["Courses"]
         userDict = db["Users"]
+        course= ""
 
     except:
         print("Unable to open up course shelve")
