@@ -11,7 +11,7 @@
                 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" id="left-user">
                     <h4><span class="fs-4">Admin Dashboard</span></h4>
                     <hr>
-                    <ul class="nav nav-pills flex-column mb-auto">
+                    <ul class="nav nav-pills flex-column mb-5">
                         <li class="nav-item">
                             <a href="/admin_dashboard" class="nav-link text-white">
                                 Dashboard
@@ -182,19 +182,19 @@
                                     {% endif %}
                                 {% endif %}
                             </div>
-                            <div class="col-md-6">
 
-                            <form method="post" id="search-form">
-                                {% set renderedFilters = renderedFilters %}
-                                {{ ticketSearch.checkedFilters(value = renderedFilters) }}
-                                <div class="input-group margin-btm">
-                                    <input id="query-input" class="form-control mr-2" type="search" placeholder="Search for ticket (using ID, name, etc.)" name="user" aria-label="Search" value="{{ query }}">
-                                    <div class="submit-div">
-                                        <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
+                            <div class="col-md-6">
+                                <form method="post" id="search-form">
+                                    {% set renderedFilters = renderedFilters %}
+                                    {{ ticketSearch.checkedFilters(value = renderedFilters) }}
+                                    <div class="input-group margin-btm">
+                                        <input id="query-input" class="form-control mr-2" type="search" placeholder="Search for ticket (using ID, name, etc.)" name="user" aria-label="Search" value="{{ query }}">
+                                        <div class="submit-div">
+                                            <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
+                                        </div>
                                     </div>
-                                </div>
-                            </form>
-                        </div>
+                                </form>
+                            </div>
 
                             <form method="post" id="action-form">
                                 {{ ticketAction.ticketID() }}
@@ -264,19 +264,38 @@
                                         {% elif ticket["Status"] == "Closed" %}
                                         <td class="closed-ticket">{{ ticket['Subject'] }}</td>
                                         {% endif %}
-                                        
+
+                                        {% if ticket['Status'] == 'Open' %}
+                                        <div class="modal fade" id="ticketEnquiryModal-{{ loop.index }}" tabindex="-1" aria-labelledby="ticketEnquiryModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
+                                                <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Email Enquiry Content</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p id="tooltipEnquiryValue{{ loop.index }}" class="text-break m-3" >{{ ticket['Enquiry'] }}</p>
+
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-primary" onclick="copyEnquiryToClipBoard('{{ loop.index }}')" id="copyEnquiryToClipboardButton{{ loop.index }}">Copy To Clipboard</button>
+                                                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close" >Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         <td>
-                                            {% if ticket['Status'] == 'Open' %}
-                                            <p onclick="copyToClipBoard('{{ ticket['Enquiry'] }}')" id="tooltipValue{{ ticket['Enquiry'] }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Enquiry'] }}')">{{ ticket['Enquiry'] }}</p>
-                                            <span class="tooltip_value" id="tooltipElement{{ ticket['Enquiry'] }}">{{ ticket['Enquiry'] }}</span>
-                                            {% elif ticket["Status"] == "Closed" %}
-                                            <p class="closed-ticket">{{ ticket['Email'] }}</p>
-                                            {% endif %}
+                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#ticketEnquiryModal-{{ loop.index }}" onclick="openEnquiryModal('{{ loop.index }}')">Read&nbsp;Enquiry</button>
                                         </td>
+
+                                        {% elif ticket["Status"] == "Closed" %}
+                                        <td><button type="button" class="btn btn-secondary" disabled>Read&nbsp;Enquiry</button></td>
+                                        {% endif %}
 
                                         <!--Open/Close Ticket-->
                                         <td>
-                                            <div class="modal fade" id="toggleTicketStatusModal-{{ ticket['Ticket ID'] }}" tabindex="-1" aria-labelledby="deleteUserModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
+                                            <div class="modal fade" id="toggleTicketStatusModal-{{ ticket['Ticket ID'] }}" tabindex="-1" aria-labelledby="toggleTicketStatusModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">

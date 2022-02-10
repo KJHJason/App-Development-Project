@@ -2772,7 +2772,8 @@ def userProfile():
                 typeOfFormSubmitted = request.form.get("submittedForm")
                 if typeOfFormSubmitted == "bio":
                     teacherBioInput = sanitise(request.form.get("teacherBio"))
-                    if teacherBioInput == False:
+                    defaultMessage = "Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)"
+                    if teacherBioInput == False or teacherBioInput == defaultMessage:
                         teacherBioInput = ""
                     userKey.set_bio(teacherBioInput)
                     db['Users'] = userDict
@@ -4790,6 +4791,9 @@ def shoppingCart():
                         teacher = userDict[course.get_userID()]
                         teacher.set_earnings(teacher.get_earnings() + float(cost))
 
+                        # Increase purchased count
+                        course.set_numberPurchased(course.get_numberPurchased() + 1)
+
 
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
@@ -4920,7 +4924,8 @@ def contactUs():
 
                     ticketID = generate_6_char_id(list(ticketDict.keys()))
 
-                    ticket = {"User ID" : userKey.get_user_id(),
+                    ticket = {"Ticket ID" : ticketID,
+                              "User ID" : userKey.get_user_id(),
                               "Account Type" : accType,
                               "Name" : name,
                               "Email" : email,
@@ -5123,6 +5128,7 @@ def supportTicketManagement(pageNum):
 
                 if not filtered and (query in ticket['Name'].lower() or query in ticket['Email'].lower() or query in ticketID.lower()):
                     ticketList.append(ticket)
+                    print(ticket)
 
             renderedFilters = session['Checked Filters']
 

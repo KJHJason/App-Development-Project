@@ -43,6 +43,7 @@ class Course():
         self.__views = 0
         self.__review = []
         self.__lessons = [] # list of lessons objects
+        self.__numberPurchased = 0
 
     """Done by Jason"""
 
@@ -174,6 +175,11 @@ class Course():
         for review in self.__review:
             total += int(review.get_rating())
         return math.floor(total/len(self.__review))
+
+    def get_numberPurchased(self):
+        return self.__numberPurchased
+    def set_numberPurchased(self,numberPurchased):
+        self.__numberPurchased = numberPurchased
 
     # def add_VideoLesson(self, title, description, thumbnail, videoData):
     #     videoLesson = VideoLesson(title, description, thumbnail, videoData)

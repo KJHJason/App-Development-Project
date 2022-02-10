@@ -49,3 +49,16 @@ function tooltipMouseOut(typeOfData) {
     // using jquery to reset the tooltip title
     $(tooltipEl).attr('title', 'Copy to clipboard').tooltip('_fixTitle').tooltip('hide')
 }
+
+//For enquiry messages which are gigantic and contain very a lot of unescaped characters
+function copyEnquiryToClipBoard(enquiryNumber) {
+    var copiedText = document.getElementById('tooltipEnquiryValue' + enquiryNumber).innerText;
+    navigator.clipboard.writeText(copiedText);
+    var copyButton = document.getElementById('copyEnquiryToClipboardButton' + enquiryNumber);
+    copyButton.innerText = "Copied to Clipboard!";
+}
+
+function openEnquiryModal(enquiryNumber) {
+    var copyButton = document.getElementById('copyEnquiryToClipboardButton' + enquiryNumber);
+    copyButton.innerText = "Copy to Clipboard";
+}
