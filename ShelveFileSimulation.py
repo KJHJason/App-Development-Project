@@ -210,8 +210,6 @@ course.set_views(1)
 
 user.set_courseTeaching(courseID)
 
-# Get corresponding userID for updating/adding to dictionary
-
 courseDict[courseID] = course
 
 title = "How to be a Daniel"
@@ -230,7 +228,6 @@ course.set_views(570)
 
 user.set_courseTeaching(courseID)
 
-# Get corresponding userID for updating/adding to dictionary
 courseDict[courseID] = course
 
 
@@ -260,11 +257,7 @@ course.set_views(1000)
 
 user.set_courseTeaching(courseID)
 
-# Get corresponding userID for updating/adding to dictionary
 courseDict[courseID] = course
-
-
-
 
 """Admin 1"""
 #General
@@ -276,8 +269,6 @@ admin = Admin(adminID, username, email, password)
 
 #Admin
 
-
-# Get corresponding userID for updating/adding to dictionary
 adminDict[adminID] = admin
 
 """Admin 2"""
@@ -287,6 +278,8 @@ username = "Tamlin"
 email = sanitise("O513@SCP.com".lower())
 password = "o4jru5fjr49f8ieri4"
 admin = Admin(adminID, username, email, password)
+
+adminDict[adminID] = admin
 
 #Admin
 
@@ -300,7 +293,6 @@ admin = Admin(adminID, username, email, password)
 
 #Admin
 
-# Get corresponding userID for updating/adding to dictionary
 adminDict[adminID] = admin
 
 

@@ -5315,8 +5315,7 @@ Previous Next
 
 """End of Admin Statistics by Wei Ren"""
 
-
-"""Teacher's Channel Page(General view) by Clarence"""
+"""Teacher's Channel Page by Clarence"""
 
 @app.route('/teacher_page/<teacherPageUID>', methods=["GET", "POST"])
 def teacherPage(teacherPageUID):
@@ -5391,7 +5390,6 @@ def teacherPage(teacherPageUID):
                     shoppingCartLen = len(userKey.get_shoppingCart())
                 else:
                     shoppingCartLen = 0
-
                 return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
 
             else:
@@ -5520,89 +5518,6 @@ def course_thumbnail_upload(teacherUID):
             return redirect(url_for("userLogin"))
 
 """Course Creation by Clarence"""
-
-"""User's Own Channel Page(Teacher) by Clarence"""
-
-@app.route('/my_channel/<teacherUID>')
-def teacherOwnPage(teacherUID):
-    if "adminSession" in session or "userSession" in session:
-    #checks if session is admin or user
-        if "adminSession" in session:
-            userSession = session["adminSession"]
-        else:
-            userSession = session["userSession"]
-
-        userKey, userFound, accGoodStanding, accType = validate_session_get_userKey_open_file(userSession)
-
-        if userFound and accGoodStanding:
-        #checks if user account is available
-            userDict = {}
-            courseDict = {}
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-            print("hello 1")
-            try:
-                if 'Users' in db:
-                    userDict = db['Users']
-                    courseDict = db['Courses']
-                    db.close()
-                else:
-                    db.close()
-                    print("User data in shelve is empty.")
-                    session.clear()  # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
-                    return redirect(url_for("home"))
-            except:
-                print("Hello 2")
-                db.close()
-                print("Error in retrieving Users from user.db")
-                return redirect(url_for("home"))
-
-            print("Hello 3")
-            teacherObject = userDict.get(teacherUID)
-            teacherCourseList = []
-
-            for value in courseDict.values():
-                if value.get_userID() == teacherUID:
-                    teacherCourseList.append(value)
-            try:
-                # Get last 3 elements from the list
-                lastThreeCourseList = teacherCourseList[-3:]
-            except:
-                lastThreeCourseList = teacherCourseList[::-1]
-                print("Teacher has not enough courses")
-
-            # Popular courses are highest rated courses
-            popularCourseList = []
-            teacherCourseListCopy = []
-            popularCourseLen = len(popularCourseList)
-
-
-            if popularCourseLen >= 3:
-                for i in range(3):
-                    popularCourseList.append(max(teacherCourseListCopy, key=lambda x: x.get_rating()))
-                    teacherCourseListCopy.pop(popularCourseList)
-            else:
-                for i in range(popularCourseLen):
-                    popularCourseList.append(max(teacherCourseListCopy, key=lambda x: x.get_rating()))
-                    teacherCourseListCopy.pop(popularCourseList)
-            lastThreeCourseLen = len(teacherCourseList)
-            print("iwd", popularCourseList)
-
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            bio = teacherObject.get_bio()
-
-            # Get shopping cart len
-            shoppingCartLen = len(userKey.get_shoppingCart())
-
-            return render_template('users/teacher/my_channel.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseLen=popularCourseLen, popularCourseList=popularCourseList)
-
-        else:
-            print("Admin/User account is not found or is not active/banned.")
-            session.clear()
-            return render_template("users/teacher/my_channel.html", accType="Guest")
-    else:
-        return render_template("users/teacher/my_channel.html", accType="Guest")
-
-"""End of Teacher's Channel Page(Teacher view) by Clarence"""
 
 """Course Page and its review page by Jason"""
 
