@@ -5400,7 +5400,7 @@ def teacherPage(teacherPageUID):
             return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
     else:
         print("No such teacher exists...")
-        return redirect(url_for("home"))
+        return redirect("/404")
 
 """End of Teacher's Channel Page by Clarence"""
 
