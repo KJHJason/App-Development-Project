@@ -6062,6 +6062,133 @@ shoppingCartLen = len(userKey.get_shoppingCart())
 
 """End of Video Upload by Clarence"""
 
+"""Zoom Upload app.route(") by Clarence"""
+
+@app.route("course/<courseID>/upload_zoom", methods=["POST"])
+def function(courseID):
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
+            db.close()
+        else:
+            db.close()
+            return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect(url_for("home"))
+
+    courseObject = courseDict.get(courseID)
+    redirectURL = "course/" + courseID + "/upload_zoom"
+    if courseObject == None:  # if courseID does not exist in courseDict
+        return redirect("/404")
+
+    courseTitle = courseObject.get_title()
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            if request.method == "POST":
+                zoomTitleInput = sanitise(request.form.get("zoomTitle"))
+                if zoomTitleInput == False:
+                    zoomTitleInput = ""
+                    return redirect(redirectURL)
+                
+                zoomDescriptionInput = sanitise(request.form.get("zoomDescription"))
+                if zoomDescriptionInput == False:
+                    zoomDescriptionInput = ""
+                    return redirect(redirectURL)
+                
+                zoomScheduleInput = sanitise(request.form.get("zoomSchedule"))
+                if zoomScheduleInput == False:
+                    zoomScheduleInput = ""
+                    return redirect(redirectURL)
+                
+                zoomLinkInput = sanitise(request.form.get("zoomLink"))
+                if zoomLinkInput == False:
+                    zoomLinkInput = ""
+                    return redirect(redirectURL)
+                
+                zoomThumbnailInput = sanitise(request.files.get("zoomThumbnail"))
+                if zoomThumbnailInput == False:
+                    zoomThumbnailInput = ""
+                    return redirect(redirectURL)
+                
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Zoom Upload app.route by Clarence"""
+
+"""Course Content Management by Clarence"""
+
+@app.route('/<teacherUID>/channel_content', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+def channelContent(teacherUID):
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your code below
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+                try:
+                    if "Courses" in db:
+                        courseDict = db['Courses']
+                        db.close()
+                    else:
+                        db.close()
+                        return redirect(url_for("home"))
+                
+                except:
+                    db.close()
+                    print("Error in retrieving Users from user.db")
+                    return redirect(url_for("home"))
+
+                courseList = []
+                for course in courseDict.values():
+                    courseList.append(course)
+                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList)
+            else:
+                return redirect(url_for("userProfile"))
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Template app.route by INSERT_YOUR_NAME"""
 """General Pages"""
 
 @app.route('/cookie_policy')

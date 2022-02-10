@@ -1,0 +1,119 @@
+{% if accType == "Guest" %}
+{% extends "guest_base.html" %}
+{% elif accType == "Student" or accType == "Teacher"%}
+{% extends "user_base.html" %}
+{% elif accType == "Admin" %}
+{% extends "admin_base.html" %}
+{% endif %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/channel_content.css') }}">
+{% endblock %}
+{% block title %}Channel Content | CourseFinity{% endblock %}
+
+{% block content %}
+<!-- Teacher Profile Pic -->
+<!-- Teacher Name -->
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{}}">Your Profile</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Course Management</li>
+        </ol>
+    </nav>
+    <table class="table table-dark table-striped table-responsive">
+        <thead>
+            <tr>
+                <th scope="col">Course Details</th>
+                <th scope="col">Views</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Sales</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in courseList %}
+            <tr>
+                <td>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div>
+                                <a href="#" class="">
+                                    <h5 class="title">{{ course.get_title() }}</h5>
+                                </a>
+                            </div>
+                            <div>
+                                <a href="#" class=" mb-2 text-muted">
+                                    <p class="description">{{ course.get_description() }}</p>
+                                </a>
+                            </div>
+                            <div>
+                                <p class="views">{{ course.get_views() }}</p>
+                            </div>
+                            <div class="ratings">
+                                {% with averageCourseRating = course.get_averageRating() %}
+                                {% if averageCourseRating == 5 %}
+                                <span class="fas fa-star"></span>
+                                <span class="fas fa-star"></span>
+                                <span class="fas fa-star"></span>
+                                <span class="fas fa-star"></span>
+                                <span class="fas fa-star"></span>
+                                {% elif averageCourseRating >= 4 and averageCourseRating < 5 %} <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% elif averageCourseRating >= 3 and averageCourseRating < 4 %} <span class="fas fa-star"></span>
+                                        <span class="fas fa-star"></span>
+                                        <span class="fas fa-star"></span>
+                                        <span class="far fa-star"></span>
+                                        <span class="far fa-star"></span>
+                                        {% elif averageCourseRating >= 2 and averageCourseRating < 3 %} <span class="fas fa-star"></span>
+                                            <span class="fas fa-star"></span>
+                                            <span class="far fa-star"></span>
+                                            <span class="far fa-star"></span>
+                                            <span class="far fa-star"></span>
+                                            {% elif averageCourseRating >= 1 and averageCourseRating < 2 %} <span class="fas fa-star"></span>
+                                                <span class="far fa-star"></span>
+                                                <span class="far fa-star"></span>
+                                                <span class="far fa-star"></span>
+                                                <span class="far fa-star"></span>
+                                                {% elif averageCourseRating >= 0 and averageCourseRating < 1 %} <span class="far fa-star"></span>
+                                                    <span class="far fa-star"></span>
+                                                    <span class="far fa-star"></span>
+                                                    <span class="far fa-star"></span>
+                                                    <span class="far fa-star"></span>
+                                                    {% endif %}
+                                                    {% endwith %}
+                            </div>
+                            <div>
+                                <p class="sales">{{ course.get_sales() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="container-md">
+        <h2>Channel Content</h2>
+        <!-- Get Courses from database -->
+        <a href="../users/general/course_page.html">
+            <!-- Course Thumbnail -->
+        </a>
+        <a href="../users/general/course_page.html">
+            <!-- Course Title -->
+        </a>
+        <!-- Course Description -->
+        <!-- Views -->
+        <!-- Rating -->
+        <!-- Sales -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+
+{% endwith %}
+
+{% endblock %}

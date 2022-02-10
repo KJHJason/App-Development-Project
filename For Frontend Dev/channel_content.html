@@ -162,58 +162,25 @@
     </nav>
 
     <!-- Content -->
+    <!-- Teacher Profile Pic -->
+    <!-- Teacher Name -->
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="//{{pageNum}}">Course</a></li>
+                <li class="breadcrumb-item"><a href="">Course</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Create Zoom Lesson</li>
             </ol>
         </nav>
-        <div class="container-sm" id="form">
-            <form action="" method="POST" enctype="multipart/form-data">
-                <h2>Zoom Lesson Creation</h2>
-                <div class="row">
-                    <!-- Zoom Thumbnail -->
-                    <div class="mb-5 col-6 gx-5">
-                        <div class="card" style="width:180px;">
-                            <img id="thumbnail" src="https://st2.depositphotos.com/3765753/5349/v/600/depositphotos_53491489-stock-illustration-example-rubber-stamp-vector-over.jpg" alt="Your thumbnail will appear here" class="card-img-top"/>
-                        </div>
-                        <br>
-                        <label for="formFile" class="form-label">Upload Zoom Thumbnail Lesson Thumbnail Here!</label>
-                        <input name="zoomThumbnail" class="form-control" id="formFile" type='file' value="" onchange="readURL(this);" />
-                    </div>
-                    
-                    <div class="mb-3 col-5" >
-                        <!-- Zoom Title -->
-                        <div class="mb-4">
-                            <label for="zoomTitle" class="form-label">Zoom Lesson Title</label>
-                            <input name="zoomTitle" class="form-control" id="zoomTitle" type="text" value="zoomTitle" required placeholder="Lesson Title" />
-                        </div>
 
-                        <!-- Zoom Description -->
-                        <div class="mb-4">
-                            <label for="zoomDescription" class="form-label">Zoom Lesson Description</label>
-                            <textarea name="zoomDescription" class="form-control" id="zoomDescription" rows="4" value="zoomDescription" required  placeholder="Lesson Description"></textarea>
-                        </div>
-
-                        <!-- Zoom Schedule -->
-                        <div class="mb-4">
-                            <label for="zoomSchedule" class="form-label">Zoom Lesson Schedule (UTC +8)</label>
-                            <input name="zoomSchedule" class="form-control" id="zoomSchedule" type="datetime-local" value="zoomSchedule" required>
-                        </div>
-
-                        <!-- Zoom Link -->
-                        <div>
-                            <label for="zoomLink" class="form-label">Zoom Lesson Link</label>
-                            <input name="zoomLink" class="form-control" id="zoomLink" type="text" value="zoomLink" required placeholder="Paste your Zoom Link here" />
-                        </div>
-                    </div>
-                </div>
-
-                <button type="button" class="btn">
-                    <span>Submit</span>
-                </button>
-            </form>
+        <div class="container-md">
+            <h2>Channel Content</h2>
+            <!-- Get Courses from database -->
+            <a href="../users/general/course_page.html"><!-- Course Thumbnail --></a>
+            <a href="../users/general/course_page.html"><!-- Course Title --></a>
+            <!-- Course Description -->
+            <!-- Views -->
+            <!-- Rating -->
+            <!-- Sales -->
         </div>
 
 
@@ -272,17 +239,17 @@
                     </div>
                 </div>
             </div>
-            </div>
-        </footer>
+    </div>
+    </footer>
     </div>
     <!-- Bootstrap JS bundle -->
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="../static/scripts/common.js"></script>
     <script src="../static/scripts/upload_zoom.js"></script>
-    </body>
-    
-    </html>
+</body>
+
+</html>
