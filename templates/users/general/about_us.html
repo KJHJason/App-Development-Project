@@ -6,28 +6,28 @@
 {% extends "admin_base.html" %}
 {% endif %}
 
-{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/about_us.css') }}">{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='styles/about_us.css') }}"><link rel="stylesheet" href="{{ url_for('static', filename='styles/breadcrumb.css') }}">{% endblock %}
 {% block title %}About Us | CourseFinity{% endblock %}
 
 {% block content %}
-<ul class="breadcrumb">
-	<li>
-		<a href="/">Home</a>
-	</li>
-	<li>About Us</li>
-</ul>
 <div class="container-fluid">
+	<ul class="breadcrumb">
+		<li>
+			<a href="/">Home</a>
+		</li>
+		<li>About Us</li>
+	</ul>
 	<div class="row">
 		<div class="col-lg-6">
 			<img src="../static/images/about_us/About.jpg" alt="">
 		</div>
 		<div class="col-lg-6">
 			<h2>An Introduction To The Website</h2>
-			<p>Our website has a variety of courses that can range from Academics to Technological courses.</p>
+			<h3>Our website has a variety of courses that can range from Academics to Technological courses.</h3>
 		</div>
 		<div class="col-lg-6">
 			<h2>Our Vision</h2>
-			<p>Lorem Ipsum</p>
+			<h3>Lorem Ipsum</h3>
 		</div>
 		<div class="col-lg-6">
 			<img src="../static/images/about_us/Vision.jpg" alt="">
@@ -37,7 +37,7 @@
 		</div>
 		<div class="col-lg-6">
 			<h2>Our Mission</h2>
-			<p>Lorem Ipsum</p>
+			<h3>Lorem Ipsum</h3>
 		</div>
 	</div>
 </div>
