@@ -236,7 +236,7 @@ a:hover {
     text-decoration:none;
 }
 
-#shopping-cart-link-text:hover {
+#shopping-cart-link:hover #shopping-cart-link-text {
     text-decoration:underline;
 }
 

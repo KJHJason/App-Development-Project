@@ -283,6 +283,9 @@ adminDict[adminID] = admin
 
 #Admin
 
+# Get corresponding userID for updating/adding to dictionary
+adminDict[adminID] = admin
+
 """Admin 3"""
 #General
 adminID = generate_admin_id(adminDict)
