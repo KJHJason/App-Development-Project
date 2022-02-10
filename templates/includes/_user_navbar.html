@@ -138,7 +138,23 @@
 						<li><a class="dropdown-item text-danger" href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
 					</ul>
 				</li>
-				<li class="nav-item"><a href="/shopping_cart" class="nav-link text-white"><i class="fas fa-shopping-cart fa-lg"></i> Cart</a></li>
+
+				<li class="nav-item">
+					<a href="/shopping_cart" class="nav-link text-white" id="shopping-cart-link">
+						<i class="fas fa-shopping-cart fa-lg text-decoration-none"></i>
+						{% if shoppingCartLen > 0 %}
+						<span id="shopping-count-span">
+							<span id="shopping-count">{{ shoppingCartLen }}</span>
+						</span>
+						{% elif shoppingCartLen > 9 %}
+						<span id="shopping-count-span">
+							<span id="shopping-count">9+</span>
+						</span>
+						{% endif %}
+						&nbsp;<span id="shopping-cart-link-text">Cart</span>
+					</a>
+				</li>
+
             </ul>
 		</div>
 	</div>

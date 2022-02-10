@@ -232,6 +232,27 @@
     cursor:pointer;
 }
 
+/* /////////////////////////// Shopping Cart Icon! /////////////////////////// */
+#shopping-count {
+    position: absolute;
+    background-color: #FF6B6B;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    font-size: 0.5em;
+    width: 2em;
+    height: 2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#shopping-count-span {
+    bottom: 0.5em;
+    position: relative;
+    right: 0.8em;
+}
+
+
 /*For responsiveness*/
 @media only screen and (max-width: 1175px) {/*a.k.a the bit where Bootstrap gets deconstructed*/
     .layer-1 {

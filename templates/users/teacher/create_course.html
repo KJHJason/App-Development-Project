@@ -10,26 +10,6 @@
 {% block content %}
 {% from "includes/_formHelper.html" import render_field %}
 
-{% if imageChanged %}
-<div class="modal fade" id="imageChangedModal" tabindex="-1" aria-labelledby="imageChangedModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imageChangedModalLabel">Course Thumbnail Uploaded</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h6>Your profile image has been succesfully changed.</h6>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 {% if imageFailed %}
 <div class="modal fade" id="imageFailedModal" tabindex="-1" aria-labelledby="imageFailedModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -59,10 +39,21 @@
                 <form action="" method="POST" class="row g-3">
                     <h4 class="text-white">Create Course</h4>
                     
-                    <!-- Title -->
+                    
                     <div class="col-md-12 text-white">
-                        {{ render_field(form.title, class="form-control") }}
+                        <!-- Title -->
+                        <label for="course title"> Title: </label>
+                        <fieldset>
+                            <input type="text" placeholder="Course Title" required autofocus>
+                        </fieldset>
+                        <!-- Description -->
+                        <label for="course description"> Description: </label>
+                        <fieldset>
+                            <textarea placeholder="Give a brief summary of the course..." name="" id="" cols="30" rows="10" required></textarea>
+                        </fieldset>
                     </div>
+
+                    
 
                     <!-- Thumbnail -->
                     <div class="col-md-12 text-white">
@@ -83,73 +74,76 @@
                             <label for="remove-thumbnail" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
                         </div>
                     </div>
+
                     <label for="course-category">Choose Your Course Category!</label>
                     <input list="course-category" name="course-category" class="dropdown" required>
-                    <datalist id="browsers">
-                        <datalist id="Development">
-                            <option value="Programming">
-                            <option value="Web Development">
-                            <option value="Game Development">
-                            <option value="Mobile App Development">
-                            <option value="Software Development">
-                            <option value="Other Development">
-                        </datalist>
-                        <datalist id="Business">
-                            <option value="Entrepreneurship">
-                            <option value="Project Management">
-                            <option value="Business Intelligence & Analytics">
-                            <option value="Business Strategy">
-                            <option value="Other Business">
-                        </datalist>
-                        <datalist id="Design">
-                            <option value="3D Modelling">
-                            <option value="Animation">
-                            <option value="UX Design">
-                            <option value="Design Tools">
-                            <option value="Other Design">
-                        </datalist>
-                        <datalist id="Photography">
-                            <option value="Digital Photography">
-                            <option value="Photography Tools">
-                            <option value="Video Production">
-                            <option value="Video Design Tools">
-                            <option value="Other Photography/Videography">
-                        </datalist>
-                        <datalist id="Academics">
-                            <option value="Science">
-                            <option value="Math">
-                            <option value="Language">
-                            <option value="Language">
-                            <option value="Other Academics">
-                        </datalist>
-                    </datalist>
-                    <div class ="main-wrapper">
-                        <label for="radio-buttons">Does your course provide zoom or video lessons?</label>
-                        <div class="buttons-wrapper">
-                            <input type="radio" id="input1" name = inputs>
-                            <label for="input1">
-                                <div class="circle"></div>
-                                <div class="entry-level">Video Lessons</div>
-                            </label>
+                    <select id="browsers" class="form-select" aria-label="Course Category">
+                        <optgroup id="Development">
+                            <option value="Programming">Programming</option>
+                            <option value="Web Development">Web Development</option>
+                            <option value="Game Development">Game Development</option>
+                            <option value="Mobile App Development">Mobile App Development</option>
+                            <option value="Software Development">Software Development</option>
+                            <option value="Other Development">Other Development</option>
+                        </optgroup>
+                        <optgroup id="Business">
+                            <option value="Entrepreneurship" name="category">Entrepreneurship</option>
+                            <option value="Project Management" name="category">Project Management</option>
+                            <option value="Business Intelligence & Analytics">Business Intelligence & Analytics</option>
+                            <option value="Business Strategy">Business Strategy</option>
+                            <option value="Other Business">Other</option>
+                        </optgroup>
+                        <optgroup id="Design">
+                            <option value="3D Modelling">3D Modelling</option>
+                            <option value="Animation">Animation</option>
+                            <option value="UX Design">UX Design</option>
+                            <option value="Design Tools">Design Tools</option>
+                            <option value="Other Design">Other Design</option>
+                        </optgroup>
+                        <optgroup id="Photography">
+                            <option value="Digital Photography">Digital Photography</option>
+                            <option value="Photography Tools">Photography Tools</option>
+                            <option value="Video Production">Video Production</option>
+                            <option value="Video Design Tools">Video Design Tools</option>
+                            <option value="Other Photography/Videography">Other Photography/Videography</option>
+                        </optgroup>
+                        <optgroup id="Academics">
+                            <option value="Science">Science</option>
+                            <option value="Math">Math</option>
+                            <option value="Language">Language</option>
+                            <option value="Other Academics">Other Academics</option>
+                        </optgroup>
+                    </select>
 
-                            <input type="radio" id="input2" name=inputs>
-                            <label for="input2">
-                                <div class="circle"></div>
-                                <div class="entry-level">Zoom Lessons</div>
+                    <!-- Radio buttons for video or zoom lesson-->
+                    <div class="col-md-12 text-white">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="videoOrZoom" id="video" value="video"
+                                required>
+                            <label class="form-check-label" for="video">
+                                Video Lesson
                             </label>
-
-                            <div class="highlight"></div>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="videoOrZoom" id="zoom" value="zoom"
+                                required>
+                            <label class="form-check-label" for="zoom">
+                                Zoom Lesson
+                            </label>
                         </div>
                     </div>
 
+
                     <!-- coursePrice -->
                     <div class="col-md-12 text-white">
-                        {{ render_field(form.coursePrice, class="form-control") }}
+                        {{ render_field(createCourseForm.coursePrice) }}
                     </div>
                     <div class="col-md-12 form_checkbox">
                         <input class="form-check-input" type="checkbox" value="" id="teacher_condition2" required>
                         <label class="form-label text-white" for="teacher_condition2">I understand that videos uploaded must comply with CourseFinity's terms and conditions.</label>
                     </div>
+
+                    <!-- Submit Button -->
                     <div class="col-md-12">
                         <button type="submit" id="submit" class="btn btn-colour text-white float-end">Create</button>
                     </div>
