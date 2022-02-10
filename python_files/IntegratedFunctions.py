@@ -96,58 +96,6 @@ def generate_ID_to_length(inputDict, length):
         generate_ID_to_length(inputDict, length) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
-# function to retrieve the acc type and validate the session which will mainly be used on general pages
-def general_page_open_file(userID):
-    imagesrcPath = ""
-    adminImagesrcPath = "/static/images/user/default.png"
-    try:
-        adminDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "r")
-        adminDict = db['Admins']
-        print("File found.")
-        db.close()
-        fileFound = True
-    except:
-        print("File could not be found.")
-        fileFound = False
-
-    if fileFound:
-        print("Admin ID in session:", userID)
-        adminKey = adminDict.get(userID)
-        if adminKey != None:
-            print("Verdict: Admin ID Matched.")
-            userFound = True
-            accStatus = adminKey.get_status()
-            if accStatus == "Active":
-                accType = adminKey.get_acc_type()
-                return userFound, True, accType, adminImagesrcPath
-            else:
-                return userFound, False, "", adminImagesrcPath
-    try:
-        userDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
-        userDict = db['Users']
-        print("File found.")
-        db.close()
-    except:
-        print("File could not be found.")
-        return False, False, "", imagesrcPath
-
-    userFound = False
-    print("User ID in session:", userID)
-    userKey = userDict.get(userID)
-    if userKey != None:
-        print("Verdict: User ID Matched.")
-        userFound = True
-        accStatus = userKey.get_status()
-        if accStatus == "Good":
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            accType = userKey.get_acc_type()
-            return userFound, True, accType, imagesrcPath
-        else:
-            return userFound, False, "", imagesrcPath
-    return None, False, False, ""
-
 def general_page_open_file_with_userKey(userID):
     imagesrcPath = ""
     try:
@@ -294,7 +242,7 @@ def check_duplicates(userInput, userDict, infoToCheck):
         return False
 
     else:
-        raise Exception('Third argument for get_key() can only take in "username" or "email"!')
+        raise Exception('Third argument for check_duplicates() can only take in "username" or "email"!')
 
 # use this function to check for the allowed image extensions when uploading an image to the web app's server
 # it will return True or False
@@ -378,6 +326,40 @@ def get_user_profile_pic(userID):
             print("User's profile image reset successfully.")
     db.close()
     return imagesrcPath, profileReset
+
+def get_user_profile_pic_only(userID):
+    imagesrcPath = ""
+
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if 'Users' in db:
+            userDict = db['Users']
+        else:
+            db.close()
+            print("User data in shelve is empty.")
+            return imagesrcPath, False
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return imagesrcPath, False
+
+    userKey = userDict.get(userID)
+    profileFileName = userKey.get_profile_image()
+    profileFileNameBool = bool(profileFileName)
+    profileFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], profileFileName)
+    if profileFileNameBool != False and profileFilePath.is_file():
+        imagesrcPath = "/static/images/user/" + profileFileName
+    else:
+        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        if profileFileNameBool != False:
+            print("Image file does not exist anymore, resetting user's profile image...")
+            # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
+            userObject = userDict.get(userID)
+            userObject.set_profile_image("")
+            db["Users"] = userDict
+            print("User's profile image reset successfully.")
+    db.close()
+    return imagesrcPath
 
 # function for retrieving user's profile picture using dicebear library based on only the user's object given
 def retrieve_user_profile_pic(userKey):
