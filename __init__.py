@@ -2772,7 +2772,8 @@ def userProfile():
                 typeOfFormSubmitted = request.form.get("submittedForm")
                 if typeOfFormSubmitted == "bio":
                     teacherBioInput = sanitise(request.form.get("teacherBio"))
-                    if teacherBioInput == False:
+                    defaultMessage = "Enter a bio to tell students of CourseFinity about you and what you are teaching! (You can also resize the text box by dragging on the bottom right of this text box)"
+                    if teacherBioInput == False or teacherBioInput == defaultMessage:
                         teacherBioInput = ""
                     userKey.set_bio(teacherBioInput)
                     db['Users'] = userDict
