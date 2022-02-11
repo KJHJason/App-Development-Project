@@ -162,7 +162,7 @@
             <div class="col-lg-9 merge-boxes">
                 <div id="right-user">
                     <div class="container ticket-container">
-                        <div class="row">
+                        <div class="row align-items-baseline">
                             <div class="col-md-6">
                                 {% if search %}
                                     {% if count == 0 %}
@@ -188,13 +188,17 @@
                                     {% set renderedFilters = renderedFilters %}
                                     {{ ticketSearch.checkedFilters(value = renderedFilters) }}
                                     <div class="input-group margin-btm">
-                                        <input id="query-input" class="form-control mr-2" type="search" placeholder="Search for ticket (using ID, name, etc.)" name="user" aria-label="Search" value="{{ query }}">
+                                        {% set query = query %}
+                                        {{ ticketSearch.querySearch(class="form-control mr-2", type="search", placeholder="Search for ticket (using ID, name, etc.)", value=query) }}
                                         <div class="submit-div">
                                             <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
                                         </div>
                                     </div>
                                 </form>
                             </div>
+
+                        </div>
+                        <div class="row">
 
                             <form method="post" id="action-form">
                                 {{ ticketAction.ticketID() }}
@@ -214,13 +218,17 @@
                                     </tr>
                                     {% for ticket in ticketList %}
                                     <tr>
+
+                                        <!--Ticket ID-->
                                         <td>
                                             {% if ticket["Status"] == "Open" %}
                                             <p><div class="email-div">
-                                                <span onclick="copyToClipBoard('{{ ticket['Ticket ID'] }}')" id="tooltipValue{{ ticket['Ticket ID'] }}" class="table_full_data_text ticket_id_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Ticket ID'] }}')">{{ ticket['Ticket ID'] }}</span>
+                                                <span onclick="ticketIDCopyToClipBoard('{{ ticket['Ticket ID'] }}')" id="ticketIDTooltip{{ ticket['Ticket ID'] }}" class="table_full_data_text ticket_id_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="ticketIDTooltipMouseOut('{{ ticket['Ticket ID'] }}')">{{ ticket['Ticket ID'] }}</span>
                                                 <a href="mailto:{{ ticket['Email']}}?subject=Re: {{ ticket['Subject'] }}"><i class="fas fa-envelope-open-text"></i></a>
                                             </div></p>
-                                            <span class="tooltip_value" id="tooltipElement{{ ticket['Ticket ID'] }}">{{ ticket['Ticket ID'] }}</span>
+
+                                            <span class="tooltip_value" id="ticketIDTooltipValue{{ ticket['Ticket ID'] }}">{{ ticket['Ticket ID'] }}</span><!--New-->
+
                                             {% elif ticket["Status"] == "Closed" %}
                                             <p class="closed-ticket">{{ ticket['Ticket ID'] }}</p>
                                             {% endif %}
@@ -232,28 +240,31 @@
                                         <td class="closed-ticket">{{ ticket['Account Type'] }}</td>
                                         {% endif %}
 
+                                        <!--User ID-->
                                         <td>
                                             {% if ticket['Status'] == "Open" %}
-                                            <p onclick="copyToClipBoard('{{ ticket['User ID'] }}')" id="tooltipValue{{ ticket['User ID'] }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['User ID'] }}')">{{ ticket['User ID'] }}</p>
-                                            <span class="tooltip_value" id="tooltipElement{{ ticket['User ID'] }}">{{ ticket['User ID'] }}</span>
+                                            <span onclick="userIDCopyToClipBoard('{{ loop.index }}')" id="userIDTooltip{{ loop.index }}" class="table_full_data_text ticket_info_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ loop.index }}')">{{ ticket['User ID'] }}</span>
+                                            <span class="tooltip_value" id="userIDTooltipValue{{ loop.index }}">{{ ticket['User ID'] }}</span>
                                             {% elif ticket['Status'] == "Closed" %}
                                             <p class="closed-ticket">{{ ticket['User ID'] }}</p>
                                             {% endif %}
                                         </td>
 
+                                        <!--User Name-->
                                         <td>
                                             {% if ticket['Status'] == "Open" %}
-                                            <p onclick="copyToClipBoard('{{ ticket['Name'] }}')" id="tooltipValue{{ ticket['Name'] }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Name'] }}')">{{ ticket['Name'] }}</p>
-                                            <span class="tooltip_value" id="tooltipElement{{ ticket['Name'] }}">{{ ticket['Name'] }}</span>
+                                            <span onclick="usernameCopyToClipBoard('{{ loop.index }}')" id="usernameTooltip{{ loop.index }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ loop.index }}')">{{ ticket['Name'] }}</span>
+                                            <span class="tooltip_value" id="usernameTooltipValue{{ loop.index }}">{{ ticket['Name'] }}</span>
                                             {% elif ticket['Status'] == "Closed" %}
                                             <p class="closed-ticket">{{ ticket['Name'] }}</p>
                                             {% endif %}
                                         </td>
 
+                                        <!--User Email-->
                                         <td>
                                             {% if ticket['Status'] == 'Open' %}
-                                            <p onclick="copyToClipBoard('{{ ticket['Email'] }}')" id="tooltipValue{{ ticket['Email'] }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="tooltipMouseOut('{{ ticket['Email'] }}')">{{ ticket['Email'] }}</p>
-                                            <span class="tooltip_value" id="tooltipElement{{ ticket['Email'] }}">{{ ticket['Email'] }}</span>
+                                            <span onclick="emailCopyToClipBoard('{{ loop.index }}')" id="userEmailTooltip{{ loop.index }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="emailTooltipMouseOut('{{ loop.index }}')">{{ ticket['Email'] }}</span>
+                                            <span class="tooltip_value" id="emailTooltipValue{{ loop.index }}">{{ ticket['Email'] }}</span>
                                             {% elif ticket["Status"] == "Closed" %}
                                             <p class="closed-ticket">{{ ticket['Email'] }}</p>
                                             {% endif %}

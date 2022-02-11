@@ -107,7 +107,7 @@ class ContactUs(Form):
     enquiry = TextAreaField("Enquiry: Easter Sunday", [validators.DataRequired()])
 
 class TicketSearchForm(Form):# Very cursed. I love lack of Checkbox Field.
-    query = HiddenField([validators.Optional()])
+    querySearch = HiddenField([validators.Optional()])
     checkedFilters = HiddenField([validators.DataRequired(), validators.InputRequired()])
 
 #   filterStatus = RadioField("Ticket Status", [validators.DataRequired()], choices = ['Open','Closed'], default = 'Open'),
