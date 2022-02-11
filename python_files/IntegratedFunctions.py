@@ -2,7 +2,7 @@ from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
 from requests import get as pyGet, post as pyPost
-from flask_mail import Message
+from flask_mailman import EmailMessage
 import shelve, uuid, string, random, shortuuid, re, json
 from pathlib import Path
 from flask import url_for
@@ -520,8 +520,8 @@ def verify_reset_token(token):
 
 def send_reset_email(email, emailKey):
     token = get_reset_token(emailKey)
-    message = Message("[CourseFinity] Password Reset Request", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Password Reset Request", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>To reset your password, visit the following link:<br>
 <a href="{url_for("resetPassword", token=token, _external=True)}" target="_blank">{url_for("resetPassword", token=token, _external=True)}</a></p>
@@ -532,11 +532,13 @@ If you did not make this request, please disregard this email.</p>
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 def send_email_change_notification(oldEmail, newEmail):
-    message = Message("[CourseFinity] Email Changed", sender="CourseFinity123@gmail.com", recipients=[oldEmail])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Email Changed", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>You have recently changed your email from {oldEmail} to {newEmail}</p>
 
@@ -546,11 +548,13 @@ Please contact us if you require assistance with account recovery by making a su
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [oldEmail])
+    message.content_subtype = "html"
+    message.send()
 
 def send_password_change_notification(email):
-    message = Message("[CourseFinity] Password Changed", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Password Changed", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>You have recently changed your password.</p>
 
@@ -560,7 +564,9 @@ Please contact us if you require assistance with account recovery by making a su
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 # useful notes for verifying emails: https://www.chargebee.com/blog/avoid-friction-trial-sign-process/
 # URLSafeTimedSerializer uses SHA1 by default
@@ -578,8 +584,8 @@ def verify_email_token(token):
 
 def send_verify_email(email, userID):
     token = generate_verify_email_token(userID)
-    message = Message("[CourseFinity] Welcome to CourseFinity!", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Welcome to CourseFinity!", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>Welcome to CourseFinity!<br>
 We would like you to verify your email for verifications purposes.</p>
@@ -594,12 +600,14 @@ We would like you to verify your email for verifications purposes.</p>
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 def send_verify_changed_email(email, oldEmail, userID):
     token = generate_verify_email_token(userID)
-    message = Message("[CourseFinity] Verify Updated Email", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Verify Updated Email", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>You have recently updated your email from {oldEmail} to {email}<br>
 We would like you to verify your email for verifications purposes.</p>
@@ -614,12 +622,14 @@ We would like you to verify your email for verifications purposes.</p>
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 def send_another_verify_email(email, userID):
     token = generate_verify_email_token(userID)
-    message = Message("[CourseFinity] Verify Email", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Verify Email", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>We would like you to verify your email for verifications purposes.</p>
 
@@ -633,11 +643,13 @@ def send_another_verify_email(email, userID):
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 def send_admin_reset_email(email, password):
-    message = Message("[CourseFinity] Account Recovery Request Accepted", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CourseFinity] Account Recovery Request Accepted", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>As per requested, we have helped you reset your email and password to the following,<br>
 Updated email: {email}<br>
@@ -654,15 +666,17 @@ You can login using the following link:<br>
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 # Sending a follow up email if user has submitted a ban appeal and is accepted.
 # However, I am not sending a ban email notification as users who have followed the rules should not be worried about getting banned.
 # Hence, upon logging in, if the user is mistakenly banned, he/she will receive a "You have banned" alert from the login and will proceed to contact CourseFinity support email instead.
 # If the user knows that they have violated the rules and receives a ban email, they may go on other platform or create another account immediately after the knowledge of their ban. (In a way, without sending a ban email notification, it is delaying their time for actions)
 def send_admin_unban_email(email):
-    message = Message("[CouseFinity] Ban Appeal Successful", sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello,</p>
+    subject, from_email = "[CouseFinity] Ban Appeal Successful", app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello,</p>
 
 <p>We have looked at your ban appeal application and we have unbanned your account.<br>
 We are really sorry for the inconvenience caused and will do our part to investigate the mistake on our end.</p>
@@ -674,7 +688,9 @@ We are really sorry for the inconvenience caused and will do our part to investi
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 # For generating a 6 character ID using shortuuid library for the support ticket ID.
 # Out of 10 test cases that generated one million id(s), there were an average of 206 collisions which is feasible as CourseFinity should not expect a million support tickets to be generated everyday unless the system is intentionally attacked which can be prevented to a certain extent using the flask-limiter.
@@ -687,9 +703,9 @@ def generate_6_char_id(ticketDict):
 # use this to send the creation of support ticket notification email to be sent to the user
 # for Wei Ren
 def send_contact_us_email(ticketID, issueTitle, name, email):
-    title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
-    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello {name},</p>
+    subject = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID
+    from_email = app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello {name},</p>
 
 <p>Thanks for contacting CourseFinity support! We have received your request (#{ticketID}) and will respond back as soon as we are able to.</p>
 
@@ -704,7 +720,9 @@ def send_contact_us_email(ticketID, issueTitle, name, email):
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 def generate_password():
     combinations = string.digits + "!@#$%^&*()" + string.ascii_lowercase + string.ascii_uppercase
@@ -883,9 +901,9 @@ def ellipsis(text, textType):
 # Weights taken here: https://gist.github.com/imaurer/d330e68e70180c985b380f25e195b90c
 
 def send_ticket_closed_email(ticketID, issueTitle, name, email):
-    title = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID + " Closed"
-    message = Message(title, sender="CourseFinity123@gmail.com", recipients=[email])
-    message.html = f"""<p>Hello {name},</p>
+    subject = "[CourseFinity] Support Request - " + issueTitle + " #" + ticketID + " Closed"
+    from_email = app.config["MAIL_USERNAME"]
+    html_content = f"""<p>Hello {name},</p>
 
 <p>Your ticket #{ticketID} has been closed as the issue has been dealt with by our staff.</p>
 
@@ -896,7 +914,9 @@ def send_ticket_closed_email(ticketID, issueTitle, name, email):
 <p>Sincerely,<br>
 <b>CourseFinity Team</b></p>
 """
-    mail.send(message)
+    message = EmailMessage(subject, html_content, from_email, [email])
+    message.content_subtype = "html"
+    message.send()
 
 # Use this to initialise statistics dictionary
 """

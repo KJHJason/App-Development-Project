@@ -6,7 +6,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
 from requests import get as pyGet, post as pyPost
-from flask_mail import Mail
+from flask_mailman import Mail
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -2627,7 +2627,6 @@ def dashboard():
                 writer.writerow(["Dates", "Number Of Users"])
                 for key, value in graphDict.items():
                     writer.writerow([key, value])
-                file.close()
 
             userDataCSVFilePath = "static/data/users/csv/user_database.csv"
             # for generating the csv data to collate all user data for other purposes such as marketing, etc.
@@ -2654,7 +2653,6 @@ def dashboard():
                     else:
                         twoFAEnabled = "No"
                     writer.writerow([key, value.get_username(), value.get_email(), value.get_email_verification(), twoFAEnabled, value.get_acc_type(), teacherJoinedDate, value.get_status(), numOfCourseTeaching, value.get_highest_tag(), len(value.get_purchases())])
-                file.close()
 
             return render_template('users/admin/admin_dashboard.html', lastUpdated=lastUpdated, xAxisData=xAxisData, yAxisData=yAxisData, figureFilename=figureFilename, csvFilePath=csvFilePath, userDataCSVFilePath=userDataCSVFilePath)
         else:
@@ -2751,7 +2749,6 @@ def userProfile():
                                 imageData.seek(int(request.form['dzchunkbyteoffset']))
                                 print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
                                 imageData.write(file.stream.read())
-                                imageData.close()
                         except OSError:
                             print('Could not write to file')
                             return make_response("Error writing to file", 500)
@@ -5895,7 +5892,6 @@ def uploadLesson(courseID):
                             imageData.seek(int(request.form['dzchunkbyteoffset']))
                             print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
                             imageData.write(file.stream.read())
-                            imageData.close()
                     except OSError:
                         print('Could not write to file')
                         return make_response("Error writing to file", 500)
@@ -6046,7 +6042,6 @@ def upload(courseID):
             with open(savePath, 'ab') as f:
                 f.seek(int(request.form['dzchunkbyteoffset']))
                 f.write(file.stream.read())
-                f.close()
         except OSError:
             return make_response(("Not sure why,"
                                 " but we couldn't write the file to disk", 500))

@@ -9,7 +9,6 @@ class Teacher(Common):
         self.__bio = ""
         # Added by Wei Ren for courses
         self.__coursesTeaching = [] # Course IDs here
-
         # Added by Wei Ren for Cashout
         self.__cashoutPreference = "Email" # Uses normal email
         self.__phoneVerification = "Not Verified"
