@@ -6070,7 +6070,7 @@ shoppingCartLen = len(userKey.get_shoppingCart())
 
 """Zoom Upload app.route(") by Clarence"""
 
-@app.route("course/<courseID>/upload_zoom", methods=["POST"])
+@app.route("/course/<courseID>/upload_zoom", methods=["POST"])
 def function(courseID):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
