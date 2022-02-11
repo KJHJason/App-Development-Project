@@ -71,6 +71,66 @@ client = vimeo.VimeoClient(
     secret = environ.get("VIMEO_SECRET")
 )
 
+"""
+# Create a variable with a hard coded path to your file system
+file_name = '{path_to_a_video_on_the_file_system}'
+
+print('Uploading: %s' % file_name)
+
+try:
+    # Upload the file and include the video title and description.
+    uri = client.upload(file_name, data={
+        'name': 'Vimeo API SDK test upload',
+        'description': CourseLesson.get_description()
+    })
+
+    # Get the metadata response from the upload and log out the Vimeo.com url
+    video_data = client.get(uri + '?fields=link').json()
+    print('"{}" has been uploaded to {}'.format(file_name, video_data['link']))
+
+    # Make an API call to edit the title and description of the video.
+    client.patch(uri, data={
+        'name': 'Vimeo API SDK test edit',
+        'description': "This video was edited through the Vimeo API's " +
+                       "Python SDK."
+    })
+
+    print('The title and description for %s has been edited.' % uri)
+
+    # Make an API call to see if the video is finished transcoding.
+    video_data = client.get(uri + '?fields=transcode.status').json()
+    print('The transcode status for {} is: {}'.format(
+        uri,
+        video_data['transcode']['status']
+    ))
+except vimeo.exceptions.VideoUploadFailure as e:
+    # We may have had an error. We can't resolve it here necessarily, so
+    # report it to the user.
+    print('Error uploading %s' % file_name)
+    print('Server reported: %s' % e.message)
+"""
+
+""" # Uploading of videos
+file_name = '{path_to_a_video_on_the_file_system}'
+uri = client.upload(file_name, data={
+    'name': 'Untitled',
+    'description': 'The description goes here.'
+})
+
+print ('Your video URI is: %s' % (uri))
+
+# Error handling while video transcodes
+response = client.get(uri + '?fields=transcode.status').json()
+if response['transcode']['status'] == 'complete':
+    print ('Your video finished transcoding.')
+elif response['transcode']['status'] == 'in_progress':
+    print ('Your video is still transcoding.')
+else:
+    print ('Your video encountered an error during transcoding.')
+
+response = client.get(uri + '?fields=link').json()
+print("Your video link is: " + response['link']) """
+
 """End of Web app configurations"""
 
 """Home page by Jason"""
@@ -735,7 +795,7 @@ def logout():
 @app.route('/2FA', methods=['GET', 'POST'])
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def twoFactorAuthenticationSetup():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
@@ -808,7 +868,7 @@ def twoFactorAuthenticationSetup():
 @app.route('/2FA_disable')
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def removeTwoFactorAuthentication():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
@@ -1183,7 +1243,7 @@ def userSignUp():
 
 @app.route("/generate_verify_email_token")
 def verifyEmail():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -1362,7 +1422,7 @@ def teacherSignUp():
 
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
 def signUpPayment():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         if "teacher" in session:
             teacherID = session["teacher"]
@@ -1564,7 +1624,7 @@ def adminChangeUsername():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear()
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -1631,7 +1691,7 @@ def adminChangeEmail():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear()
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -1692,8 +1752,12 @@ def adminChangePassword():
         create_update_password_form = Forms.CreateChangePasswordForm(request.form)
         if request.method == "POST" and create_update_password_form.validate():
 
+            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
             passwordNotMatched = True
             passwordVerification = False
+
+            # for jinja2
+            errorMessage = False
 
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             try:
@@ -1702,7 +1766,7 @@ def adminChangePassword():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear()
+                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -2672,7 +2736,7 @@ def dashboard():
 @app.route('/user_profile', methods=["GET","POST"])
 @limiter.limit("80/second") # to prevent ddos attacks
 def userProfile():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
 
         userSession = session["userSession"]
@@ -2859,7 +2923,7 @@ def userProfile():
 
 @app.route("/change_username", methods=["GET","POST"])
 def updateUsername():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -2944,7 +3008,7 @@ def updateUsername():
 
 @app.route("/change_email", methods=["GET","POST"])
 def updateEmail():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -3035,7 +3099,7 @@ def updateEmail():
 
 @app.route("/change_password", methods=["GET","POST"])
 def updatePassword():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -3142,7 +3206,7 @@ def updatePassword():
 
 @app.route('/change_account_type', methods=["GET","POST"])
 def changeAccountType():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3239,7 +3303,7 @@ def changeAccountType():
 @app.route('/cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def cashoutPreference():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3338,7 +3402,7 @@ def cashoutPreference():
 @app.route('/edit_cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def editCashoutPreference():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3519,7 +3583,7 @@ def editCashoutPreference():
 
 @app.route("/teacher_cashout", methods=['GET', 'POST'])
 def teacherCashOut():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3818,6 +3882,7 @@ def search(pageNum):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # add in your code here (if any)
             checker = ""
+            course = ""
             courseDict = {}
             courseTitleList = []
             userDict = {}
@@ -3833,6 +3898,12 @@ def search(pageNum):
             searchInput = str(request.args.get("q"))
 
             searchURL = "?q=" + searchInput
+
+            userObject = userDict.get(userSession)
+
+            print(userObject)
+
+            purchasedCourses = userKey.get_purchases()
 
             searchfound = []
             for courseID in courseDict:
@@ -3854,13 +3925,18 @@ def search(pageNum):
                     if titleCourse == key:
                         course = courseDict[courseID]
                         courseOwner = userDict[course.get_userID()].get_username()
+                        bought = False
+                        if courseID in purchasedCourses:
+                            bought = True
 
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner": courseOwner}
+                            "Owner": courseOwner,
+                            "Bought": bought}
 
                         searchfound.append(searchInformation)
+                        print(course)
 
             print(searchfound)
             if bool(searchfound): #If there is something inside the list
@@ -3904,17 +3980,15 @@ def search(pageNum):
                 else:
                     teacherUID = ""
 
-                if accType != "Admin":
-                    # Get shopping cart len
-                    shoppingCartLen = len(userKey.get_shoppingCart())
-                else:
-                    shoppingCartLen = 0
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
 
                 db.close()
-                return render_template('users/general/search.html', accType=accType , shoppingCartLen=shoppingCartLen, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
+                return render_template('users/general/search.html',userObject=userObject, course=course, accType=accType , shoppingCartLen=shoppingCartLen, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
         else:
             print("Admin/User account is not found or is not active/banned.")
             checker = ""
+            course = ""
             courseDict = {}
             courseTitleList = []
             userDict = {}
@@ -3997,9 +4071,10 @@ def search(pageNum):
                 nextPage = pageNum + 1
 
                 db.close()
-                return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
+                return render_template('users/general/search.html',course=course, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
     else:
         checker = ""
+        course = ""
         courseDict = {}
         courseTitleList = []
         userDict = {}
@@ -4084,7 +4159,7 @@ def search(pageNum):
             nextPage = pageNum + 1
 
             db.close()
-            return render_template('users/general/search.html', courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
+            return render_template('users/general/search.html',course=course, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, checker=checker, searchfound=paginatedCourseList,searchURL=searchURL,submittedParameters=searchURL, accType="Guest")
 
 """End of Search Function by Royston"""
 
@@ -4092,7 +4167,7 @@ def search(pageNum):
 
 @app.route("/purchasehistory/<int:pageNum>")
 def purchaseHistory(pageNum):
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -4222,14 +4297,18 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
+# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 def createPurchaseReview(courseID):
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
+        # userFound, accGoodStatus = validate_session_open_file(userSession)
+        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
             if accType == "Teacher":
                 teacherUID = userSession
             else:
@@ -4304,10 +4383,10 @@ def createPurchaseReview(courseID):
 
 @app.post("/deletereview/<courseID>")
 def deleteReview(courseID):
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
 
         if userFound and accGoodStatus:
@@ -4329,23 +4408,16 @@ def deleteReview(courseID):
             course = courseDict[courseID]
 
             reviewlist = course.get_review()
-            reviewDeleted = False
             for review in reviewlist:
                 user = review.get_userID()
                 if user == userSession:
                     course.remove_review(review)
-                    reviewDeleted = True
-                    
-            if reviewDeleted:
-                db["Courses"] = courseDict
-                db.close()
-                flash("Your deletion of review has been successful!","Success!")
-                return redirect(redirectURL)
-            else:
-                db.close()
-                print("Either the user did not review the course or the course has no reviews.")
-                flash("You did not review this course or you have already deleted your review!","Error in deleting review!")
-                return redirect(redirectURL)
+                    flash("Your deletion of review has been successful!","Success!")
+                    db["Courses"] = courseDict
+                    return redirect(redirectURL)
+
+            print("Either the user did not review the course or the course has no reviews.")
+            return redirect(redirectURL)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4365,7 +4437,7 @@ def deleteReview(courseID):
 
 @app.route("/purchaseview/<courseID>", methods=["GET", "POST"])
 def purchaseView(courseID):
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -4524,112 +4596,6 @@ def aboutUs():
 
 @app.route('/explore/<tag>/<int:pageNum>', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def explore(pageNum, tag):
-    checker = ""
-    courseTagTuple = ("Programming",
-                "Web_Development",
-                "Game_Development",
-                "Mobile_App_Development",
-                "Software_Development",
-                "Other_Development",
-                "Entrepreneurship",
-                "Project_Management",
-                "BI_Analytics",
-                "Business_Strategy",
-                "Other_Business",
-                "3D_Modelling",
-                "Animation",
-                "UX_Design",
-                "Design_Tools",
-                "Other_Design",
-                "Digital_Photography",
-                "Photography_Tools",
-                "Video_Production",
-                "Video_Design_Tools",
-                "Other_Photography_Videography",
-                "Science",
-                "Math",
-                "Language",
-                "Test_Prep",
-                "Other_Academics")
-
-    searchfound = []
-
-    try:
-        userDict = {}
-        courseDict = {}
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
-        courseDict = db["Courses"]
-        userDict = db["Users"]
-        course= ""
-
-    except:
-        print("Unable to open up course shelve")
-        return redirect(url_for("home"))
-    
-    if tag in courseTagTuple:
-        for courseID in courseDict:
-            courseObject = courseDict.get(courseID)
-            tagCourse = courseObject.get_tag()
-            if tagCourse == tag:
-                course = courseDict[courseID]
-                courseOwner = userDict[course.get_userID()].get_username()
-                reviews = courseObject.get_review()
-                searchInformation = {"Title":course.get_title(),
-                                    "Description":course.get_description(),
-                                    "Thumbnail":course.get_thumbnail(),
-                                    "Owner": courseOwner,
-                                    "review": reviews}
-                searchfound.append(searchInformation)
-            else:
-                print("The tags does not match.")
-                print(tagCourse)
-                print(tag)
-    else:
-        print("Tag is not inside the course Tag Dictionary.")
-        print(tag)
-        print(courseTagTuple)
-
-    print(searchfound)
-    if bool(searchfound): #If there is something inside the list
-        checker = True
-    else:
-        checker = False
-
-    noOfCourse = len(searchfound)
-
-    session["noOfCourseFound"] = noOfCourse
-
-    session["courseTag"] = tag
-
-    maxItemsPerPage = 5 # declare the number of items that can be seen per pages
-    courseListLen = len(searchfound) # get the length of the userList
-    maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
-    pageNum = int(pageNum)
-    # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
-    if pageNum < 0:
-        session["pageNumber"] = 0
-        return redirect("/explore/" + tag + "/0")
-    elif courseListLen > 0 and pageNum == 0:
-        session["pageNumber"] = 1
-        return redirect("/explore/" + tag + "/1")
-    elif pageNum > maxPages:
-        session["pageNumber"] = maxPages
-        redirectRoute = "/explore/" + tag + "/" + str(maxPages)
-        return redirect(redirectRoute)
-    else:
-        # pagination algorithm starts here
-        courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
-        pageNumForPagination = pageNum - 1 # minus for the paginate function
-        paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
-        searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
-
-        paginationList = get_pagination_button_list(pageNum, maxPages)
-
-        previousPage = pageNum - 1
-        nextPage = pageNum + 1
-
-        db.close() # remember to close your shelve files!
-
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
             userSession = session["adminSession"]
@@ -4650,12 +4616,330 @@ def explore(pageNum, tag):
             else:
                 shoppingCartLen = 0
 
-            return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            checker = ""
+            courseTagTuple = ("Programming",
+                        "Web_Development",
+                        "Game_Development",
+                        "Mobile_App_Development",
+                        "Software_Development",
+                        "Other_Development",
+                        "Entrepreneurship",
+                        "Project_Management",
+                        "BI_Analytics",
+                        "Business_Strategy",
+                        "Other_Business",
+                        "3D_Modelling",
+                        "Animation",
+                        "UX_Design",
+                        "Design_Tools",
+                        "Other_Design",
+                        "Digital_Photography",
+                        "Photography_Tools",
+                        "Video_Production",
+                        "Video_Design_Tools",
+                        "Other_Photography_Videography",
+                        "Science",
+                        "Math",
+                        "Language",
+                        "Test_Prep",
+                        "Other_Academics")
+
+            searchfound = []
+            purchasedCourses = userKey.get_purchases()
+
+            try:
+                userDict = {}
+                courseDict = {}
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+                userDict = db["Users"]
+                course= ""
+
+            except:
+                print("Unable to open up course shelve")
+                return redirect(url_for("home"))
+            
+            if tag in courseTagTuple:
+                for courseID in courseDict:
+                    courseObject = courseDict.get(courseID)
+                    tagCourse = courseObject.get_tag()
+                    if tagCourse == tag:
+                        course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
+                        bought = False
+                        if courseID in purchasedCourses:
+                            bought = True
+
+                        searchInformation = {"Title":course.get_title(),
+                            "Description":course.get_description(),
+                            "Thumbnail":course.get_thumbnail(),
+                            "Owner": courseOwner,
+                            "Bought":bought}
+                        searchfound.append(searchInformation)
+                    else:
+                        print("The tags does not match.")
+                        print(tagCourse)
+                        print(tag)
+            else:
+                print("Tag is not inside the course Tag Dictionary.")
+                print(tag)
+                print(courseTagTuple)
+
+            print(searchfound)
+            if bool(searchfound): #If there is something inside the list
+                checker = True
+            else:
+                checker = False
+
+            noOfCourse = len(searchfound)
+
+            session["noOfCourseFound"] = noOfCourse
+
+            session["courseTag"] = tag
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(searchfound) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                session["pageNumber"] = 0
+                return redirect("/explore/" + tag + "/0")
+            elif courseListLen > 0 and pageNum == 0:
+                session["pageNumber"] = 1
+                return redirect("/explore/" + tag + "/1")
+            elif pageNum > maxPages:
+                session["pageNumber"] = maxPages
+                redirectRoute = "/explore/" + tag + "/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+
+                return render_template('users/general/explore.html', course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("Admin/User account is not found or is not active/banned.")
-            return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+            checker = ""
+            courseTagTuple = ("Programming",
+                        "Web_Development",
+                        "Game_Development",
+                        "Mobile_App_Development",
+                        "Software_Development",
+                        "Other_Development",
+                        "Entrepreneurship",
+                        "Project_Management",
+                        "BI_Analytics",
+                        "Business_Strategy",
+                        "Other_Business",
+                        "3D_Modelling",
+                        "Animation",
+                        "UX_Design",
+                        "Design_Tools",
+                        "Other_Design",
+                        "Digital_Photography",
+                        "Photography_Tools",
+                        "Video_Production",
+                        "Video_Design_Tools",
+                        "Other_Photography_Videography",
+                        "Science",
+                        "Math",
+                        "Language",
+                        "Test_Prep",
+                        "Other_Academics")
+
+            searchfound = []
+
+            try:
+                userDict = {}
+                courseDict = {}
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+                userDict = db["Users"]
+                course= ""
+
+            except:
+                print("Unable to open up course shelve")
+                return redirect(url_for("home"))
+            
+            if tag in courseTagTuple:
+                for courseID in courseDict:
+                    courseObject = courseDict.get(courseID)
+                    tagCourse = courseObject.get_tag()
+                    if tagCourse == tag:
+                        course = courseDict[courseID]
+                        courseOwner = userDict[course.get_userID()].get_username()
+
+                        searchInformation = {"Title":course.get_title(),
+                            "Description":course.get_description(),
+                            "Thumbnail":course.get_thumbnail(),
+                            "Owner": courseOwner}
+                        searchfound.append(searchInformation)
+                    else:
+                        print("The tags does not match.")
+                        print(tagCourse)
+                        print(tag)
+            else:
+                print("Tag is not inside the course Tag Dictionary.")
+                print(tag)
+                print(courseTagTuple)
+
+            print(searchfound)
+            if bool(searchfound): #If there is something inside the list
+                checker = True
+            else:
+                checker = False
+
+            noOfCourse = len(searchfound)
+
+            session["noOfCourseFound"] = noOfCourse
+
+            session["courseTag"] = tag
+
+            maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+            courseListLen = len(searchfound) # get the length of the userList
+            maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+            pageNum = int(pageNum)
+            # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+            if pageNum < 0:
+                session["pageNumber"] = 0
+                return redirect("/explore/" + tag + "/0")
+            elif courseListLen > 0 and pageNum == 0:
+                session["pageNumber"] = 1
+                return redirect("/explore/" + tag + "/1")
+            elif pageNum > maxPages:
+                session["pageNumber"] = maxPages
+                redirectRoute = "/explore/" + tag + "/" + str(maxPages)
+                return redirect(redirectRoute)
+            else:
+                # pagination algorithm starts here
+                courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+                pageNumForPagination = pageNum - 1 # minus for the paginate function
+                paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+                searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+                paginationList = get_pagination_button_list(pageNum, maxPages)
+
+                previousPage = pageNum - 1
+                nextPage = pageNum + 1
+
+                db.close() # remember to close your shelve files!
+                return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
     else:
-        return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
+        checker = ""
+        courseTagTuple = ("Programming",
+                    "Web_Development",
+                    "Game_Development",
+                    "Mobile_App_Development",
+                    "Software_Development",
+                    "Other_Development",
+                    "Entrepreneurship",
+                    "Project_Management",
+                    "BI_Analytics",
+                    "Business_Strategy",
+                    "Other_Business",
+                    "3D_Modelling",
+                    "Animation",
+                    "UX_Design",
+                    "Design_Tools",
+                    "Other_Design",
+                    "Digital_Photography",
+                    "Photography_Tools",
+                    "Video_Production",
+                    "Video_Design_Tools",
+                    "Other_Photography_Videography",
+                    "Science",
+                    "Math",
+                    "Language",
+                    "Test_Prep",
+                    "Other_Academics")
+
+        searchfound = []
+
+        try:
+            userDict = {}
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+            courseDict = db["Courses"]
+            userDict = db["Users"]
+            course= ""
+
+        except:
+            print("Unable to open up course shelve")
+            return redirect(url_for("home"))
+        
+        if tag in courseTagTuple:
+            for courseID in courseDict:
+                courseObject = courseDict.get(courseID)
+                tagCourse = courseObject.get_tag()
+                if tagCourse == tag:
+                    course = courseDict[courseID]
+                    courseOwner = userDict[course.get_userID()].get_username()
+                    
+                    searchInformation = {"Title":course.get_title(),
+                        "Description":course.get_description(),
+                        "Thumbnail":course.get_thumbnail(),
+                        "Owner": courseOwner}
+                    searchfound.append(searchInformation)
+                else:
+                    print("The tags does not match.")
+                    print(tagCourse)
+                    print(tag)
+        else:
+            print("Tag is not inside the course Tag Dictionary.")
+            print(tag)
+            print(courseTagTuple)
+
+        print(searchfound)
+        if bool(searchfound): #If there is something inside the list
+            checker = True
+        else:
+            checker = False
+
+        noOfCourse = len(searchfound)
+
+        session["noOfCourseFound"] = noOfCourse
+
+        session["courseTag"] = tag
+
+        maxItemsPerPage = 5 # declare the number of items that can be seen per pages
+        courseListLen = len(searchfound) # get the length of the userList
+        maxPages = math.ceil(courseListLen/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
+        pageNum = int(pageNum)
+        # redirecting for handling different situation where if the user manually keys in the url and put "/user_management/0" or negative numbers, "user_management/-111" and where the user puts a number more than the max number of pages available, e.g. "/user_management/999999"
+        if pageNum < 0:
+            session["pageNumber"] = 0
+            return redirect("/explore/" + tag + "/0")
+        elif courseListLen > 0 and pageNum == 0:
+            session["pageNumber"] = 1
+            return redirect("/explore/" + tag + "/1")
+        elif pageNum > maxPages:
+            session["pageNumber"] = maxPages
+            redirectRoute = "/explore/" + tag + "/" + str(maxPages)
+            return redirect(redirectRoute)
+        else:
+            # pagination algorithm starts here
+            courseList = searchfound[::-1] # reversing the list to show the newest users in CourseFinity using list slicing
+            pageNumForPagination = pageNum - 1 # minus for the paginate function
+            paginatedCourseList = paginate(courseList, pageNumForPagination, maxItemsPerPage)
+            searchInformation = paginate(searchfound[::-1], pageNumForPagination, maxItemsPerPage)
+
+            paginationList = get_pagination_button_list(pageNum, maxPages)
+
+            previousPage = pageNum - 1
+            nextPage = pageNum + 1
+
+            db.close() # remember to close your shelve files!
+            return render_template('users/general/explore.html',course=course,noOfCourse=noOfCourse,tag=tag,checker=checker, searchfound=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType="Guest")
 
 """End of Explore Category by Royston"""
 
@@ -4663,7 +4947,7 @@ def explore(pageNum, tag):
 
 @app.route("/shopping_cart", methods = ["GET","POST"])
 def shoppingCart():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -5329,13 +5613,14 @@ def teacherPage(teacherPageUID):
             userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
             if userFound and accGoodStatus:
+
                 if accType != "Admin":
                     # Get shopping cart len
                     shoppingCartLen = len(userKey.get_shoppingCart())
                 else:
                     shoppingCartLen = 0
-
                 return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
+
             else:
                 print("Admin/User account is not found or is not active/banned.")
                 session.clear()
@@ -5358,9 +5643,9 @@ def teacherCourses(teacherCoursesUID):
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+        userKey, userFound, accGoodStanding, accType, imagesrcPath = validate_session_get_userKey_open_file(userSession)
 
-        if userFound and accGoodStatus:
+        if userFound and accGoodStanding:
             if accType != "Admin":
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
@@ -5733,11 +6018,8 @@ def courseReviews(courseID, reviewPageNum):
                 else:
                     teacherUID = ""
 
-                if accType != "Admin":
-                    # Get shopping cart len
-                    shoppingCartLen = len(userKey.get_shoppingCart())
-                else:
-                    shoppingCartLen = 0
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
 
                 return render_template('users/general/course_page_reviews.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, userReviewed=userReviewed, userReview=userReview, userPurchased=userPurchased, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
             else:
@@ -6031,7 +6313,7 @@ def function(courseID):
         return redirect("/404")
 
     courseTitle = courseObject.get_title()
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -6070,10 +6352,7 @@ def function(courseID):
                 teacherUID = userSession
             else:
                 teacherUID = ""
-
-            shoppingCartLen = len(userKey.get_shoppingCart())
-
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen)
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -6120,10 +6399,7 @@ def channelContent(teacherUID):
                 courseList = []
                 for course in courseDict.values():
                     courseList.append(course)
-
-                shoppingCartLen = len(userKey.get_shoppingCart())
-
-                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList, shoppingCartLen=shoppingCartLen)
+                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList)
             else:
                 return redirect(url_for("userProfile"))
         else:
@@ -6309,7 +6585,7 @@ def teacherHandbook():
 
 @app.route("/")
 def function():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -6370,7 +6646,7 @@ def function():
 
 @app.route("/")
 def function():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -6413,7 +6689,7 @@ def function():
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
-    if "userSession" in session:
+    if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
