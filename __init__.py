@@ -1252,9 +1252,10 @@ def verifyEmail():
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        email = userKey.get_email()
-        userID = userKey.get_user_id()
+        
         if userFound and accGoodStatus:
+            email = userKey.get_email()
+            userID = userKey.get_user_id()
             emailVerified = userKey.get_email_verification()
             if emailVerified == "Not Verified":
                 try:
@@ -1300,34 +1301,39 @@ def verifyEmailToken(token):
                 return redirect(url_for("home"))
 
             userKey = userDict.get(validateToken)
-            # checking if the user is banned
-            accGoodStatus = userKey.get_status()
-            if accGoodStatus == "Good":
-                emailVerification = userKey.get_email_verification()
-                if emailVerification == "Not Verified":
-                    userKey.set_email_verification("Verified")
-                    db["Users"] = userDict
-                    db.close()
+            if userKey != None:
+                # checking if the user is banned
+                accGoodStatus = userKey.get_status()
+                if accGoodStatus == "Good":
+                    emailVerification = userKey.get_email_verification()
+                    if emailVerification == "Not Verified":
+                        userKey.set_email_verification("Verified")
+                        db["Users"] = userDict
+                        db.close()
 
-                    if "userSession" in session:
-                        flash("Your email has been successfully verified!", "Email Verified")
-                        return redirect(url_for("userProfile"))
+                        if "userSession" in session:
+                            flash("Your email has been successfully verified!", "Email Verified")
+                            return redirect(url_for("userProfile"))
+                        else:
+                            flash("Your email has been successfully verified!", "Email Verified")
+                            return redirect(url_for("userLogin"))
                     else:
-                        flash("Your email has been successfully verified!", "Email Verified")
-                        return redirect(url_for("userLogin"))
+                        db.close()
+                        if "userSession" in session:
+                            flash("You have already verified your email.", "Email Already Verified")
+                            return redirect(url_for("userProfile"))
+                        else:
+                            print("Email already verified")
+                            flash("You have already verified your email.", "Email Already Verified")
+                            return redirect(url_for("userLogin"))
                 else:
                     db.close()
-                    if "userSession" in session:
-                        flash("You have already verified your email.", "Email Already Verified")
-                        return redirect(url_for("userProfile"))
-                    else:
-                        print("Email already verified")
-                        flash("You have already verified your email.", "Email Already Verified")
-                        return redirect(url_for("userLogin"))
+                    print("User account banned.")
+                    return redirect(url_for("home"))
             else:
                 db.close()
-                print("User account banned.")
-                return redirect(url_for("home"))
+                print("User not found in database.")
+                return redirect(url_for("userLogin"))
         else:
             print("Invalid/Expired Token.")
             if "userSession" in session:
@@ -5851,8 +5857,8 @@ def coursePage(courseID):
     reviews = courseObject.get_review() # get a list of review objects
 
     reviewsCount = len(reviews)
-    if reviewsCount > 5:
-        reviews = reviews[-5:][::-1] # get latest five reviews and reverses it such that the latest review is first
+    if reviewsCount > 3:
+        reviews = reviews[-3:][::-1] # get latest five reviews and reverses it such that the latest review is first
     else:
         reviews = reviews[::-1] # get latest reviews
 
@@ -6031,7 +6037,7 @@ def courseReviews(courseID, reviewPageNum):
     reviews = courseObject.get_review() # get a list of review objects
 
     reviewsCount = len(reviews)
-    if reviewsCount > 5:
+    if reviewsCount > 3:
         reviews = reviews[::-1] # get latest reviews
         reviewsDict = {}
         for review in reviews:

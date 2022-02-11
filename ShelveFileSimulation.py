@@ -130,7 +130,7 @@ userDict[userID] = user
 #Courses Teaching (Wei Ren)
 title = "Making Web Apps The Easy Way (Spoilers: You can't!)"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_2.webp"
 zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 
@@ -143,7 +143,7 @@ course.set_views(13)
 
 title = "How to make a web app part 1"
 description = "You will learn the ups & downs here."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
 zoomURL = "https://www.youtube.com/watch?v=SUugKFRhaQ4"
 zoomPassword= "abc123"
 
@@ -151,7 +151,7 @@ course.add_zoom_lessons(title, description, thumbnail, zoomURL, zoomPassword, "1
 
 title = "How to make a web app part 2"
 description = "You will now learn about the birds and the bees."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
 zoomURL = "https://www.youtube.com/watch?v=g_vV3bE3GNo"
 zoomPassword= "123abc"
 
@@ -186,7 +186,7 @@ userDict[userID] = user
 #Courses Teaching (Wei Ren)
 title = "Using Math to Find When Your Dad is Coming Home"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
 price = "{:,.2f}".format(69)
 courseType = "Video"
 
@@ -214,7 +214,7 @@ courseDict[courseID] = course
 
 title = "How to be a Daniel"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.webp"
 price = "{:,.2f}".format(69)
 courseType = "Video"
 
@@ -233,7 +233,7 @@ courseDict[courseID] = course
 
 title = "How to be a Daniel 2"
 description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
-thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.png"
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_3.webp"
 videoPrice = "{:,.2f}".format(69)
 courseType = "Video"
 
