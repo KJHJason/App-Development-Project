@@ -1402,7 +1402,7 @@ def teacherSignUp():
                     print("User ID setted: ", userID)
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, passwordInput)
-                    user.set_teacher_join_date(date.today())
+                    user.update_teacher_join_date_to_today()
 
                     userDict[userID] = user
                     db['Users'] = userDict
@@ -3187,7 +3187,7 @@ def changeAccountType():
                             profileImagePathExists = False
 
                     user = Teacher.Teacher(userID, username, email, password)
-                    user.set_teacher_join_date(date.today())
+                    user.update_teacher_join_date_to_today()
 
 
                     # saving the user's profile image if the user has uploaded their profile image
@@ -3199,7 +3199,7 @@ def changeAccountType():
                     # checking if the user has already became a teacher
                     # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
                     if bool(userKey.get_teacher_join_date()) == False:
-                        user.set_teacher_join_date(date.today())
+                        user.update_teacher_join_date_to_today()
                         print("User has not been a teacher, setting today's date as joined date.")
 
                     if bool(userKey.get_purchases()):
@@ -3551,8 +3551,6 @@ def teacherCashOut():
             if accType == "Teacher":
                 imagesrcPath = retrieve_user_profile_pic(userKey)
                 joinedDate = userKey.get_teacher_join_date()
-                print(joinedDate)
-                print(type(joinedDate))
                 zeroCommissionEndDate = joinedDate + timedelta(days=90)
                 currentDate = date.today()
 
