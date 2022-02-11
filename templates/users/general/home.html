@@ -95,6 +95,19 @@
 						</div>
 						<p class="card-text">Views: {{ course.get_views() }}</p>
 					</div>
+					<div class="card-footer">
+						{% if accType=="Guest" %}
+						<form action="/login" method="GET">
+							<button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+						</form>
+						{% elif accType=="Admin" %}
+						<button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
+						{% else %}
+						<form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+							<button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+						</form>
+						{% endif %}
+					</div>
 				</div>
 			</div>
 			{% endfor %}
@@ -170,6 +183,19 @@
 							{% endwith %}
 						</div>
 						<p class="card-text">Views: {{ course.get_views() }}</p>
+					</div>
+					<div class="card-footer">
+						{% if accType=="Guest" %}
+						<form action="/login" method="GET">
+							<button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+						</form>
+						{% elif accType=="Admin" %}
+						<button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
+						{% else %}
+						<form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+							<button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+						</form>
+						{% endif %}
 					</div>
 				</div>
 			</div>
