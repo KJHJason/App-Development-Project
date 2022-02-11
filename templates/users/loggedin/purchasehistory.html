@@ -49,11 +49,11 @@
                 <div class="row g-0">
                     <div class="selection col">
                         {% if "CourseTypeCheck" == "Video" %}
-                        <p class="info">Online Videos</p>
-                        <a href="{{ link }}" class="view">View Recording</a>
+                        <p class="info">Lesson Type: Online Videos</p>
+                        <a href="/purchaseview/{{courseID}}" class="view">View Recordings</a>
                         {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
-                        <p class="info">Zoom Session</p>
-                        <a href="{{ link }}" class="view">View Zoom Link</a>
+                        <p class="info">Lesson Type: Zoom Session</p>
+                        <a href="/purchaseview/{{courseID}}" class="view">View Zoom Links</a>
                         {% endif %}
                         {% if courseInformation["ReviewChecker"] == False %}
                         <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
