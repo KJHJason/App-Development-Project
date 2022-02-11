@@ -45,31 +45,22 @@ class VideoLesson(Lesson):
 # Zoom Link --> To be changed
 # Different timings for different students for different courses
 class ZoomLesson(Lesson):
-    def __init__(self, title, description, thumbnail, zoomURL, zoomPassword):
+    def __init__(self, title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay):
         super().__init__(title, description, thumbnail)
-        self.__timings = []
-        self.__userTimings = {}
+        self.__timings = str(timings) # a string, e.g. 13:30
         self.__zoomURL = zoomURL
         self.__zoomPassword = zoomPassword
+        self.__weeklyDay = weeklyDay # a string, e.g. "Monday"
 
-    def set_timing(self, date, time):
-        self.__timings.append([date, time])
-    def remove_timing(self, date, time):
-        self.__timings.remove([date, time])
-
+    def set_timing(self, timings):
+        self.__timings = timings
     def get_timings(self):
         return self.__timings
-
-    def add_user_timing(self, userID, date, time):
-        for timing in self.__timings:
-            if timing == [date, time]:
-                self.__userTimings[userID] = {"date":timing[0],"time":timing[1]}  # As a way to index the timing; a format of [date, time, [userID, ...]] cannot be easily removed
-                break                                # Instead, {userID:[date, time]}
-    def remove_user_timing(self, userID):
-        self.__userTimings.pop(userID)
-
-    def get_user_timing(self, userID):  # [date, time]
-        return self.__userTimings[userID]
+    
+    def set_weekly_day(self, weeklyDay):
+        self.__weeklyDay = weeklyDay
+    def get_weekly_day(self):
+        return self.__weeklyDay
 
     def set_zoom_link(self, zoomURL):
         self.__zoomURL = zoomURL

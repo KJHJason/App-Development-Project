@@ -12,3 +12,4 @@ __pycache__/*.pyc
 python_files/__pycache__/*.pyc
 static/images/qrcode/*.png
 static/images/user/**
+test.html
