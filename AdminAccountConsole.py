@@ -675,13 +675,12 @@ Hence, please only force shut down the program if necessary.
                     if statusLengthToCheck > statusOffset:
                         statusOffset = statusLengthToCheck
 
-                for key in adminDict:
-                    adminKey = adminDict[key]
-                    adminID = adminKey.get_user_id()
-                    username = adminKey.get_username()
-                    email = adminKey.get_email()
-                    status = adminKey.get_status()
-                    if bool(adminKey.get_otp_setup_key()):
+                for account in adminDict.values():
+                    adminID = account.get_user_id()
+                    username = account.get_username()
+                    email = account.get_email()
+                    status = account.get_status()
+                    if bool(account.get_otp_setup_key()):
                         twoFAEnabled = "Yes"
                     else:
                         twoFAEnabled = "No"
