@@ -5395,7 +5395,6 @@ def teacherCourses(teacherCoursesUID):
 
 @app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
 def course_thumbnail_upload(teacherUID):
-    createCourseForm = Forms.CreateCourse(request.form)
     if "userSession" in session:
         userSession = session["userSession"]
 
@@ -5425,31 +5424,96 @@ def course_thumbnail_upload(teacherUID):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            createCourseForm = Forms.CreateCourse(request.form)
-            if request.method == "POST" and createCourseForm.validate():
-                coursePrice = createCourseForm.coursePrice.data
-                course = Course( coursePrice, teacherUID)
-                courseDict[courseTitle] = course
-                db["Courses"] = courseDict
+            courseID = generate_course_ID(courseDict)
+
+            for courseID in courseDict:
+                courseObject = courseDict.get(courseID)
+                
+            if request.method == "POST":
+                typeOfFormSubmitted = request.form.get("submittedForm")
+                if typeOfFormSubmitted == "courseDetails":
+                    courseTitleInput = sanitise(request.form.get("courseDetails"))
+                    courseDescriptionInput = sanitise(request.form.get("courseDescription"))
+                    courseCategoryInput = sanitise(request.form.get("courseCategory"))
+                    coursePriceInput = sanitise(request.form.get("coursePrice"))
+                    
+                    courseObject.set_title(courseTitleInput)
+                    courseObject.set_description(courseDescriptionInput)
+                    courseObject.set_category(courseCategoryInput)
+                    courseObject.set_price(coursePriceInput)
+                    
+                    db.close()
+                    print("Course details have been created.")
+                    return redirect(url_for("teacherPage"))
+                elif typeOfFormSubmitted == "image":
+                    if "profileImage" not in request.files:
+                        print("No file sent.")
+                        return redirect(url_for("userProfile"))
+
+                    file = request.files["profileImage"]
+
+                    totalChunks = int(request.form["dztotalchunkcount"])
+                    currentChunk = int(request.form['dzchunkindex'])
+
+                    extensionType = get_extension(file.filename)
+                    if extensionType != False:
+                        file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
+                        filename = file.filename
+                    else:
+                        filename = "invalid"
+
+                    if file and allowed_image_file(filename):
+                        # will only accept .png, .jpg, .jpeg
+                        print("File extension accepted and is within size limit.")
+
+                        courseThumbnailFileName = file.filename
+                        newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], courseThumbnailFileName)
+
+                        if currentChunk == 0:
+                            newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+
+                        print("Total file size:", int(request.form['dztotalfilesize']))
+
+                        try:
+                            with open(newFilePath, "ab") as imageData: # ab flag for opening a file for appending data in binary format
+                                imageData.seek(int(request.form['dzchunkbyteoffset']))
+                                print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
+                                imageData.write(file.stream.read())
+                                imageData.close()
+                        except OSError:
+                            print('Could not write to file')
+                            return make_response("Error writing to file", 500)
+                        except:
+                            print("Unexpected error.")
+                            return make_response("Unexpected error", 500)
+
+                        if currentChunk + 1 == totalChunks:
+                            # This was the last chunk, the file should be complete and the size we expect
+                            if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
+                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
+                                # remove corrupted image
+                                newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                return make_response("Uploaded image is corrupted! Please try again!", 500)
+                            else:
+                                print(f'File {file.filename} has been uploaded successfully')
+                    else:
+                            db.close()
+                            print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
+                            return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
+                else:
+                    db.close()
+                    return make_response("Image extension not supported!", 500)
+            else:
                 db.close()
-                return redirect(url_for("teacherCourses", teacherCoursesUID=teacherUID))
-            courseCategory = request.form.get("category")
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherUID = userSession
-                if request.method == "POST":
-                    if createCourseForm.validate():
-                        #add course object to courseDict then save to user shelve
-                        db["Courses"] = courseDict
-                        db.close()
-                else:
-                    teacherUID = ""
 
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
                 db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, form=createCourseForm)
+                return render_template('users/teacher/create_course.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
             else:
                 db.close()
                 print("User not found or is banned")

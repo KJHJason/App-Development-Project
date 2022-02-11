@@ -6,9 +6,7 @@
 
 {% block title %}Create Course | CourseFinity{% endblock %}
 
-
 {% block content %}
-{% from "includes/_formHelper.html" import render_field %}
 
 {% if imageFailed %}
 <div class="modal fade" id="imageFailedModal" tabindex="-1" aria-labelledby="imageFailedModalLabel" aria-hidden="true">
@@ -37,9 +35,8 @@
         <div class="LSUForm col">
             <div class="login-form bg-dark mt-4 p-4 rounded" id="userForm">
                 <form action="" method="POST" class="row g-3">
+                    <input type="hidden" name="submittedForm" value="courseDetails">
                     <h4 class="text-white">Create Course</h4>
-                    
-                    
                     <div class="col-md-12 text-white">
                         <!-- Title -->
                         <label for="course title"> Title: </label>
@@ -52,29 +49,6 @@
                             <textarea placeholder="Give a brief summary of the course..." name="" id="" cols="30" rows="10" required></textarea>
                         </fieldset>
                     </div>
-
-                    
-
-                    <!-- Thumbnail -->
-                    <div class="col-md-12 text-white">
-                        <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
-                        <button class="btn btn-primary" id="uploadThumbnailButton">Upload Thumbnail</button>
-                        <div id="imageForm" style="display: none;">
-                            <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
-                                <input type="hidden" name="submittedForm" value="image">
-                                <div class="dz-default dz-message">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <br>
-                                    <span>Click here or drop files here</span>
-                                </div>
-                                <button type="submit" id="submit-button" hidden>Save Profile Icon</button>
-                                <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
-                            </form>
-                            <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
-                            <label for="remove-thumbnail" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
-                        </div>
-                    </div>
-
                     <label for="course-category">Choose Your Course Category!</label>
                     <input list="course-category" name="course-category" class="dropdown" required>
                     <select id="browsers" class="form-select" aria-label="Course Category">
@@ -114,40 +88,63 @@
                             <option value="Other Academics">Other Academics</option>
                         </optgroup>
                     </select>
-
+                    
                     <!-- Radio buttons for video or zoom lesson-->
                     <div class="col-md-12 text-white">
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="videoOrZoom" id="video" value="video"
-                                required>
+                            <input class="form-check-input" type="radio" name="videoOrZoom" id="video" value="video" required>
                             <label class="form-check-label" for="video">
                                 Video Lesson
                             </label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="videoOrZoom" id="zoom" value="zoom"
-                                required>
+                            <input class="form-check-input" type="radio" name="videoOrZoom" id="zoom" value="zoom" required>
                             <label class="form-check-label" for="zoom">
                                 Zoom Lesson
                             </label>
                         </div>
                     </div>
-
-
+                    
                     <!-- coursePrice -->
                     <div class="col-md-12 text-white">
-                        {{ render_field(createCourseForm.coursePrice) }}
-                    </div>
-                    <div class="col-md-12 form_checkbox">
-                        <input class="form-check-input" type="checkbox" value="" id="teacher_condition2" required>
-                        <label class="form-label text-white" for="teacher_condition2">I understand that videos uploaded must comply with CourseFinity's terms and conditions.</label>
+                        <label for="coursePrice">Course Price:</label>
+                        <fieldset>
+                            <input type="number" placeholder="Course Price" required>
+                        </fieldset>
                     </div>
 
+                    <!-- checkbox -->
+                    <div class="col-md-12 form_checkbox">
+                        <input class="form-check-input" type="checkbox" value="" id="teacher_condition2" required>
+                        <label class="form-label text-white" for="teacher_condition2">I understand that videos uploaded must comply with
+                            CourseFinity's terms and conditions.</label>
+                    </div>
+                    
                     <!-- Submit Button -->
                     <div class="col-md-12">
                         <button type="submit" id="submit" class="btn btn-colour text-white float-end">Create</button>
                     </div>
                 </form>
+
+                <!-- Thumbnail -->
+                <div class="col-md-12 text-white">
+                    <!-- Use html to upload picture to database("static/images/courses/thumbnails") -->
+                    <button class="btn btn-primary" id="uploadThumbnailButton">Upload Thumbnail</button>
+                    <div id="imageForm" style="display: none;">
+                        <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
+                            <input type="hidden" name="submittedForm" value="image">
+                            <div class="dz-default dz-message">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <br>
+                                <span>Click here or drop files here</span>
+                            </div>
+                            <button type="submit" id="submit-button" hidden>Save Profile Icon</button>
+                            <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
+                        </form>
+                        <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
+                        <label for="remove-thumbnail" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
