@@ -1404,6 +1404,9 @@ def teacherSignUp():
                     user = Teacher.Teacher(userID, usernameInput, emailInput, passwordInput)
                     user.set_teacher_join_date(date.today())
 
+                    userDict[userID] = user
+                    db['Users'] = userDict
+
                     session["teacher"] = userID # to send the user ID under the teacher session for user verification in the sign up payment process
 
                     print("Teacher added.")
@@ -1415,7 +1418,9 @@ def teacherSignUp():
                         print("Email server is down or its port is blocked")
 
                     session["userSession"] = userID
-                    return redirect(url_for("signUpPayment"))
+
+                    flash("Here you can update your Cashout Preferences. The default value will be your own email. Happy Teaching!","Teacher Sign Up Successful")
+                    return redirect(url_for("cashoutPreference"))
                 else:
                     # if there were still duplicates or passwords entered were not the same, used Jinja to show the error messages
                     db.close()
@@ -1430,88 +1435,6 @@ def teacherSignUp():
             return redirect(url_for("changeAccountType"))
         else:
             return redirect(url_for("home"))
-
-@app.route('/sign_up_payment', methods=['GET', 'POST'])
-def signUpPayment():
-    if "userSession" in session and "adminSession" not in session:
-        userSession = session["userSession"]
-        if "teacher" in session:
-            teacherID = session["teacher"]
-            if teacherID == userSession:
-                # Retrieving data from shelve and to set the teacher's payment method info data
-                userDict = {}
-                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-                try:
-                    if 'Users' in db:
-                        # there must be user data in the user shelve files as this is the 2nd part of the teacher signup process which would have created the teacher acc and store in the user shelve files previously
-                        userDict = db['Users']
-                    else:
-                        db.close()
-                        print("No user data in user shelve files.")
-                        # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage
-                        session.clear()
-                        return redirect(url_for("home"))
-                except:
-                    db.close()
-                    print("Error in retrieving Users from user.db")
-                    return redirect(url_for("home"))
-
-                # retrieving the object from the shelve based on the user's email
-                teacherKey, userFound, accGoodStatus, accType = get_key_and_validate(teacherID, userDict)
-
-                create_teacher_payment_form = Forms.CreateAddPaymentForm(request.form)
-                if request.method == 'POST' and create_teacher_payment_form.validate():
-                    if userFound and accGoodStatus:
-                        # further checking to see if the user ID in the session is equal to the teacher ID session from the teacher sign up process
-
-                        cardName = sanitise(create_teacher_payment_form.cardName.data)
-
-                        cardNo = sanitise(create_teacher_payment_form.cardNo.data)
-                        cardValid = validate_card_number(cardNo)
-
-                        cardType = get_credit_card_type(cardNo, cardValid)
-
-                        cardExpiry = sanitise(create_teacher_payment_form.cardExpiry.data)
-                        cardExpiryValid = validate_expiry_date(cardExpiry)
-
-                        if cardValid and cardExpiryValid:
-                            if cardType != False: # checking if the card type is supported
-                                # setting the teacher's payment method which in a way editing the teacher's object
-                                teacherKey.set_card_name(cardName)
-                                teacherKey.set_card_no(cardNo)
-                                cardExpiry = cardExpiryStringFormatter(cardExpiry)
-                                teacherKey.set_card_expiry(cardExpiry)
-                                teacherKey.set_card_type(cardType)
-                                teacherKey.display_card_info()
-                                db['Users'] = userDict
-                                print("Payment added")
-                                db.close()
-
-                                session.pop("teacher", None) # deleting data from the session after registering the payment method
-                                flash("Your payment method has been successfully added! You can still edit your payment method in the user account settings. Good luck and have fun teaching!","Payment Method Added")
-                                return redirect(url_for("home"))
-                            else:
-                                return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, invalidCardType=True, accType=accType)
-                        else:
-                            db.close()
-                            return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, cardValid=cardValid, cardExpiryValid=cardExpiryValid, accType=accType)
-                    else:
-                        db.close()
-                        print("User not found or is banned.")
-                        # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                        session.clear()
-                        return redirect(url_for("home"))
-                else:
-                    db.close()
-                    return render_template('users/guest/teacher_signup_payment.html', form=create_teacher_payment_form, accType=accType)
-            else:
-                # clear the teacher session if the logged in user somehow have a teacher session, it will then redirect them to the home page
-                session.pop("teacher", None)
-                return redirect(url_for("home"))
-        else:
-            return redirect(url_for("home"))
-    else:
-        return redirect(url_for("home"))
 
 """End of Teacher's login/signup process by Jason"""
 
@@ -3173,18 +3096,18 @@ def updatePassword():
                 if passwordVerification == False:
                     db.close()
                     flash("Entered current password is incorrect!")
-                    return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    return render_template('users/loggedin/change_password.html', shoppingCartLen=shoppingCartLen, form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                 else:
                     if passwordNotMatched:
                         db.close()
                         flash("New password and confirm password inputs did not match!")
-                        return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        return render_template('users/loggedin/change_password.html', shoppingCartLen=shoppingCartLen, form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                     else:
                         if oldPassword:
                             db.close()
                             print("User cannot change password to their current password!")
                             flash("Sorry, you cannot change your password to your current password!")
-                            return render_template('users/loggedin/change_password.html', form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                            return render_template('users/loggedin/change_password.html', shoppingCartLen=shoppingCartLen, form=create_update_password_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
                         else:
                             # updating password of the user once validated
                             userKey.set_password(updatedPassword)
@@ -3265,7 +3188,7 @@ def changeAccountType():
 
                     user = Teacher.Teacher(userID, username, email, password)
                     user.set_teacher_join_date(date.today())
-                    
+
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
@@ -3286,7 +3209,7 @@ def changeAccountType():
                         user.set_shoppingCart(userKey.get_shoppingCart())
 
                     user.set_tags_viewed(userKey.get_tags_viewed())
-                    
+
                     userDict[userID] = user # overrides old student object with the new teacher object
                     db["Users"] = userDict
                     db.close()
@@ -3397,7 +3320,7 @@ def cashoutPreference():
 
                 db.close()
                 print("Yes Return?")
-                return render_template('users/teacher/cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
+                return render_template('users/teacher/cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession, accType=accType)
             else:
                 db.close()
                 print("User is a student.")
@@ -3578,7 +3501,7 @@ def editCashoutPreference():
 
                 db.close()
                 print("Yes Return?")
-                return render_template('users/teacher/edit_cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession)
+                return render_template('users/teacher/edit_cashout_preference.html', shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, phoneError=phoneError, cashoutForm=cashoutForm, renderedInfo=renderedInfo, teacherUID=userSession, accType=accType)
             else:
                 db.close()
                 print("User is a student.")
@@ -4248,7 +4171,7 @@ def purchaseHistory(pageNum):
                         user = review.get_userID()
                         if user == userSession:
                             reviewCourse = True
-                            
+
                     courseInformation = {"CourseID":course,
                         "Title":course.get_title(),
                         "Description":course.get_description(),
@@ -4410,7 +4333,7 @@ def deleteReview(courseID):
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
-            
+
             courseID = session.get("courseIDGrab")
             redirectURL = "/purchaseview/" + courseID
             reviewlist = []
@@ -4423,7 +4346,7 @@ def deleteReview(courseID):
                 print("Unable to open up course shelve")
                 db.close()
                 return redirect(redirectURL)
-            
+
             course = courseDict[courseID]
 
             reviewlist = course.get_review()
@@ -4514,7 +4437,7 @@ def purchaseView(courseID):
                         print("Unable to open up course shelve")
                         db.close()
                         return redirect(redirectURL)
-                    
+
                     date = purchasedCourses[courseID]['Date']
                     time = purchasedCourses[courseID]['Time']
                     order = purchasedCourses[courseID]['PayPalOrderID']
@@ -4677,7 +4600,7 @@ def explore(pageNum, tag):
             except:
                 print("Unable to open up course shelve")
                 return redirect(url_for("home"))
-            
+
             if tag in courseTagTuple:
                 for courseID in courseDict:
                     courseObject = courseDict.get(courseID)
@@ -4789,7 +4712,7 @@ def explore(pageNum, tag):
             except:
                 print("Unable to open up course shelve")
                 return redirect(url_for("home"))
-            
+
             if tag in courseTagTuple:
                 for courseID in courseDict:
                     courseObject = courseDict.get(courseID)
@@ -4895,7 +4818,7 @@ def explore(pageNum, tag):
         except:
             print("Unable to open up course shelve")
             return redirect(url_for("home"))
-        
+
         if tag in courseTagTuple:
             for courseID in courseDict:
                 courseObject = courseDict.get(courseID)
@@ -4903,7 +4826,7 @@ def explore(pageNum, tag):
                 if tagCourse == tag:
                     course = courseDict[courseID]
                     courseOwner = userDict[course.get_userID()].get_username()
-                    
+
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
@@ -5081,11 +5004,12 @@ def shoppingCart():
                     # Getting subtototal
                     subtotal += float(course.get_price())
 
-                    # Getting course owner username
-                    courseOwnerUsername = userDict[course.get_userID()].get_username()
+                    # Getting course owner info
+                    courseOwner = userDict[course.get_userID()]
 
-                    # Getting course owner profile pic
-                    courseOwnerProfile = None
+                    courseOwnerID = courseOwner.get_user_id()
+                    courseOwnerUsername = courseOwner.get_username()
+                    courseOwnerProfile = retrieve_user_profile_pic(courseOwner)
 
                     # Add additional info to list
                     courseList.append({"courseID" : courseID,
@@ -5093,12 +5017,10 @@ def shoppingCart():
                                        "courseTitle" : course.get_shortTitle(),
                                        "courseDescription" : course.get_shortDescription(),
                                        "coursePricePaying" : course.get_price(),
-                                       "courseZoomCondition" : course.get_course_type(),
-                                       "courseVideoCondition":course.get_course_type(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
-                                       "courseOwnerLink" : None,
-                                       "courseThumbnail" : None})
+                                       "courseOwnerLink" : "/teacher_page/" + courseOwnerID,
+                                       "courseThumbnail" : course.get_thumbnail()})
 
                 if accType == "Teacher":
                     teacherUID = userSession
@@ -5180,14 +5102,17 @@ def contactUs():
                     ticketDict[ticketID] = ticket
                     dbAdmin['Tickets'] = ticketDict
 
-                    success = True
-
                     try:
                         send_contact_us_email(ticketID, subject, name, email)
                     except:
                         print("Email server is down, please try again later.")
 
                     dbAdmin.close()
+
+
+                    flash("Our staff will be with you shortly. Check your email soon!", "Thank you for your Feedback!")
+
+                    return(redirect(url_for("home")))
 
                 if accType == "Teacher":
                     teacherUID = userSession
@@ -5197,7 +5122,7 @@ def contactUs():
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
-                return render_template('users/general/contact_us.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, form = contactForm, success=success, teacherUID=teacherUID)
+                return render_template('users/general/contact_us.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, form = contactForm, teacherUID=teacherUID)
             else:
                 # Admin user
                 return redirect("/support_ticket_management/0")
@@ -5294,21 +5219,21 @@ def supportTicketManagement(pageNum):
                 session['Query'] = ""
             # GET is a client request for data from the web server,
             # while POST and PUT are used to send messages that upload data to the web server
-
+            print(ticketSearch.querySearch(placeholder="Search for ticket (using ID, name, etc.)", value='query'))
             # Only if there are entries
             if request.method == "POST" and ticketDict != {}:
 
                 # Change Filter Parameters; only if form submitted
                 print(ticketSearch.data)
                 print(ticketAction.data)
-                if not(ticketSearch.checkedFilters.data == None and ticketSearch.query.data == None):
+                if not(ticketSearch.checkedFilters.data == None and ticketSearch.querySearch.data == None):
                     print(ticketSearch.checkedFilters.data)
                     session["Checked Filters"] = json.loads(ticketSearch.checkedFilters.data)
-                    print(ticketSearch.query.data)
-                    if ticketSearch.query.data == None:
+                    print(ticketSearch.querySearch.data)
+                    if ticketSearch.querySearch.data == None:
                         session["Query"] = ""
                     else:
-                        session["Query"] = ticketSearch.query.data.lower()
+                        session["Query"] = ticketSearch.querySearch.data
                     search = True
 
                 # Ticket Toggling
@@ -5339,18 +5264,17 @@ def supportTicketManagement(pageNum):
                         ticketDict.pop(ticketID)
 
 
-            print(ticketDict)
+            # print(ticketDict)
 
             # Preparing filtration system
-            query = session["Query"]
+            query = session["Query"].lower()
             filters = ["Open", "Closed", "Guest", "Student", "Teacher", "General", "Account", "Business", "Bugs", "Jobs", "News", "Others"]
             for filter in session["Checked Filters"]:
                 if filter in filters:
                     filters.remove(filter)
 
             # Checking tickets
-            for ticketID in list(ticketDict.keys()):
-                ticket = ticketDict[ticketID]
+            for ticket in ticketDict.values():
 
                 # Checking filters
                 filtered = False
@@ -5368,9 +5292,9 @@ def supportTicketManagement(pageNum):
                             filtered = True
 
 
-                if not filtered and (query in ticket['Name'].lower() or query in ticket['Email'].lower() or query in ticketID.lower()):
+                if not filtered and (query in ticket['Name'].lower() or query in ticket['Email'].lower() or query in ticket['Ticket ID'].lower()):
                     ticketList.append(ticket)
-                    print(ticket)
+                    # print(ticket)
 
             renderedFilters = session['Checked Filters']
 
@@ -5719,7 +5643,7 @@ def course_thumbnail_upload(teacherUID):
 
             for courseID in courseDict:
                 courseObject = courseDict.get(courseID)
-                
+
             if request.method == "POST":
                 typeOfFormSubmitted = request.form.get("submittedForm")
                 if typeOfFormSubmitted == "courseDetails":
@@ -5727,12 +5651,12 @@ def course_thumbnail_upload(teacherUID):
                     courseDescriptionInput = sanitise(request.form.get("courseDescription"))
                     courseCategoryInput = sanitise(request.form.get("courseCategory"))
                     coursePriceInput = sanitise(request.form.get("coursePrice"))
-                    
+
                     courseObject.set_title(courseTitleInput)
                     courseObject.set_description(courseDescriptionInput)
                     courseObject.set_category(courseCategoryInput)
                     courseObject.set_price(coursePriceInput)
-                    
+
                     db.close()
                     print("Course details have been created.")
                     return redirect(url_for("teacherPage"))
@@ -6409,27 +6333,27 @@ def function(courseID):
                 if zoomTitleInput == False:
                     zoomTitleInput = ""
                     return redirect(redirectURL)
-                
+
                 zoomDescriptionInput = sanitise(request.form.get("zoomDescription"))
                 if zoomDescriptionInput == False:
                     zoomDescriptionInput = ""
                     return redirect(redirectURL)
-                
+
                 zoomScheduleInput = sanitise(request.form.get("zoomSchedule"))
                 if zoomScheduleInput == False:
                     zoomScheduleInput = ""
                     return redirect(redirectURL)
-                
+
                 zoomLinkInput = sanitise(request.form.get("zoomLink"))
                 if zoomLinkInput == False:
                     zoomLinkInput = ""
                     return redirect(redirectURL)
-                
+
                 zoomThumbnailInput = sanitise(request.files.get("zoomThumbnail"))
                 if zoomThumbnailInput == False:
                     zoomThumbnailInput = ""
                     return redirect(redirectURL)
-                
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherUID = userSession
@@ -6473,7 +6397,7 @@ def channelContent(teacherUID):
                     else:
                         db.close()
                         return redirect(url_for("home"))
-                
+
                 except:
                     db.close()
                     print("Error in retrieving Users from user.db")
