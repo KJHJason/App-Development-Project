@@ -30,13 +30,13 @@
         <div class="card">
             <div class="row g-0">
                 <div class="col">
-                    <img src= "{{ None }}" class="card-img" alt="Course Thumbnail">
+                    <img src= "{{ course['courseThumbnail'] }}" class="card-img" alt="Course Thumbnail">
                     <!--url_for('static', filename=course['courseThumbnail'])-->
                 </div>
                 <div class="col">
                     <div class="information">
                         <!--url_for('static', filename=course['courseOwnerLink'])--><!--url_for('static', filename=course['courseOwnerProfile'])-->
-                        <p><a href="{{ None }}"><img src="{{ None }}" class="" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>{{ course['courseOwnerUsername'] }}&nbsp;</a></p>
+                        <p><a href="{{ course['courseOwnerLink'] }}"><img src="{{ course['courseOwnerProfile'] }}" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>{{ course['courseOwnerUsername'] }}&nbsp;</a></p>
                         <p>US${{ course['coursePricePaying'] }}</p>
                     </div>
                 </div>
