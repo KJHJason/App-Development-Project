@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup
-from werkzeug.utils import secure_filename # this is for sanitising a filename for security reasons, remove if not needed (E.g. if you're changing the filename to use a id such as 0a18dd92.png before storing the file, it is not needed)
 import shelve, math, paypalrestsdk, difflib, json, csv, vimeo, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
@@ -16,7 +15,6 @@ from python_files import Student, Teacher, Forms, Course, CourseLesson
 from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
-from python_files.CardValidation import validate_card_number, get_credit_card_type, validate_cvv, validate_expiry_date, cardExpiryStringFormatter, validate_formatted_expiry_date
 from python_files.IntegratedFunctions import *
 
 """Web app configurations"""
@@ -1402,7 +1400,7 @@ def teacherSignUp():
                     print("User ID setted: ", userID)
 
                     user = Teacher.Teacher(userID, usernameInput, emailInput, passwordInput)
-                    user.set_teacher_join_date(date.today())
+                    user.update_teacher_join_date_to_today()
 
                     userDict[userID] = user
                     db['Users'] = userDict
@@ -3187,7 +3185,7 @@ def changeAccountType():
                             profileImagePathExists = False
 
                     user = Teacher.Teacher(userID, username, email, password)
-                    user.set_teacher_join_date(date.today())
+                    user.update_teacher_join_date_to_today()
 
 
                     # saving the user's profile image if the user has uploaded their profile image
@@ -3199,7 +3197,7 @@ def changeAccountType():
                     # checking if the user has already became a teacher
                     # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
                     if bool(userKey.get_teacher_join_date()) == False:
-                        user.set_teacher_join_date(date.today())
+                        user.update_teacher_join_date_to_today()
                         print("User has not been a teacher, setting today's date as joined date.")
 
                     if bool(userKey.get_purchases()):
@@ -3551,8 +3549,6 @@ def teacherCashOut():
             if accType == "Teacher":
                 imagesrcPath = retrieve_user_profile_pic(userKey)
                 joinedDate = userKey.get_teacher_join_date()
-                print(joinedDate)
-                print(type(joinedDate))
                 zeroCommissionEndDate = joinedDate + timedelta(days=90)
                 currentDate = date.today()
 

@@ -1,4 +1,5 @@
 from .User import User
+from datetime import date
 
 # to check for unique values in a list or dictionary
 def checkUniqueElements(inputToCheck):
@@ -99,8 +100,10 @@ class Common(User):
     def get_email_verification(self):
         return self.__email_verification
 
+    def update_teacher_join_date_to_today(self):
+        self.__teacher_joined_date = date.today()
     def set_teacher_join_date(self, join_date):
-        self.__teacher_joined_date = join_date.strftime("%d-%m-%Y")
+        self.__teacher_joined_date = join_date
     def get_teacher_join_date(self):
         return self.__teacher_joined_date
 
