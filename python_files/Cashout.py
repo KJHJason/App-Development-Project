@@ -18,7 +18,7 @@ class Cashout():
         self.__time = time
 
     def get_amount(self):
-        return self.__time
+        return self.__amount
     def set_amount(self, amount):
         self.__amount = amount
 

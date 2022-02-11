@@ -19,7 +19,6 @@ class Common(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
         super().__init__(user_id, username, email, password, acc_type, status)
         self.__email_verification = "Not Verified"
-        self.__purchaseID = []
         self.__teacher_joined_date = ""
         # Added by Wei Ren for Courses
         self.__shoppingCart = [] # Course IDs here
@@ -60,8 +59,15 @@ class Common(User):
         self.__purchasedCourses = purchasesDict
     def get_purchases(self): # Get a dictionary of the user's purchased courses
         return self.__purchasedCourses
-
+    
     """End of Done by Royston"""
+
+    # Done by Wei Ren for scalability
+    def remove_purchased_course(self, courseID): 
+        if courseID in self.__purchasedCourses:
+            self.__purchasedCourses.pop(courseID)
+        else:
+            return False
 
     """Done by Jason"""
 
@@ -94,23 +100,13 @@ class Common(User):
         return self.__email_verification
 
     def set_teacher_join_date(self, join_date):
-        self.__teacher_joined_date = join_date
+        self.__teacher_joined_date = join_date.strftime("%d-%m-%Y")
     def get_teacher_join_date(self):
         return self.__teacher_joined_date
 
     """End of Done by Jason"""
 
     """Done by Wei Ren"""
-
-    def add_purchaseID(self, purchaseID):
-        self.__purchaseID.append(purchaseID)
-    def get_purchaseID(self):
-        return self.__purchaseID
-    def remove_purchaseID(self, purchaseID):
-        if purchaseID in self.__purchaseID:
-            self.__purchaseID.remove(purchaseID)
-        else:
-            return False
 
     def add_to_cart(self, courseID):        #e.g. add_to_cart(0)
         if courseID not in self.__shoppingCart:
@@ -125,7 +121,8 @@ class Common(User):
         except:
             print("Unexpected error.")
 
-
+    def set_shoppingCart(self, shoppingCart):
+        self.__shoppingCart = shoppingCart
     def get_shoppingCart(self):
         return self.__shoppingCart
     def addCartToPurchases(self, courseID, date, time, cost, orderID, payerID):

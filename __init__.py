@@ -1053,43 +1053,48 @@ def resetPassword(token):
                 return redirect(url_for("home"))
 
             userKey = userDict.get(validateToken)
-            twoFAEnabled = bool(userKey.get_otp_setup_key())
+            if userKey != None:
+                twoFAEnabled = bool(userKey.get_otp_setup_key())
 
-            create_reset_password_form = Forms.CreateResetPasswordForm(request.form)
-            if request.method == "POST" and create_reset_password_form.validate():
-                password = create_reset_password_form.resetPassword.data
-                confirmPassword = create_reset_password_form.confirmPassword.data
+                create_reset_password_form = Forms.CreateResetPasswordForm(request.form)
+                if request.method == "POST" and create_reset_password_form.validate():
+                    password = create_reset_password_form.resetPassword.data
+                    confirmPassword = create_reset_password_form.confirmPassword.data
 
-                if password == confirmPassword:
-                    # checking if the user is banned
-                    accGoodStatus = userKey.get_status()
-                    if accGoodStatus == "Good":
-                        if twoFAEnabled:
-                            otpInput = sanitise_quote(request.form.get("otpInput"))
-                            secret = userKey.get_otp_setup_key()
-                            isValid = pyotp.TOTP(secret).verify(otpInput)
+                    if password == confirmPassword:
+                        # checking if the user is banned
+                        accGoodStatus = userKey.get_status()
+                        if accGoodStatus == "Good":
+                            if twoFAEnabled:
+                                otpInput = sanitise_quote(request.form.get("otpInput"))
+                                secret = userKey.get_otp_setup_key()
+                                isValid = pyotp.TOTP(secret).verify(otpInput)
+                            else:
+                                isValid = True
+                            if isValid:
+                                userKey.set_password(password)
+                                db["Users"] = userDict
+                                db.close()
+                                print("Password Reset Successful.")
+                                flash("Your password has been updated! You can now login with your updated password.", "Success")
+                                return redirect(url_for("userLogin"))
+                            else:
+                                flash("Invalid OTP!")
+                                return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
                         else:
-                            isValid = True
-                        if isValid:
-                            userKey.set_password(password)
-                            db["Users"] = userDict
-                            db.close()
-                            print("Password Reset Successful.")
-                            flash("Your password has been updated! You can now login with your updated password.", "Success")
-                            return redirect(url_for("userLogin"))
-                        else:
-                            flash("Invalid OTP!")
+                            print("User account banned.")
+                            flash("Your account has been banned, please contact us if you think that this is a mistake.")
                             return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
                     else:
-                        print("User account banned.")
-                        flash("Your account has been banned, please contact us if you think that this is a mistake.")
+                        flash("Passwords entered did not match!")
                         return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
                 else:
-                    flash("Passwords entered did not match!")
+                    db.close()
                     return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
             else:
                 db.close()
-                return render_template('users/guest/reset_password.html', form=create_reset_password_form, twoFAEnabled=twoFAEnabled)
+                print("User not in database.")
+                return redirect(url_for("userSignUp"))
         else:
             flash("Token is invalid or has expired.", "Danger")
             return redirect(url_for("requestPasswordReset"))
@@ -3188,10 +3193,9 @@ def changeAccountType():
                         else:
                             profileImagePathExists = False
 
-                    userDict.pop(userID)
                     user = Teacher.Teacher(userID, username, email, password)
                     user.set_teacher_join_date(date.today())
-                    userDict[userID] = user
+                    
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
@@ -3201,10 +3205,19 @@ def changeAccountType():
 
                     # checking if the user has already became a teacher
                     # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
-                    if bool(user.get_teacher_join_date) == False:
+                    if bool(userKey.get_teacher_join_date()) == False:
                         user.set_teacher_join_date(date.today())
                         print("User has not been a teacher, setting today's date as joined date.")
 
+                    if bool(userKey.get_purchases()):
+                        user.set_purchases(userKey.get_purchases())
+
+                    if bool(userKey.get_shoppingCart()):
+                        user.set_shoppingCart(userKey.get_shoppingCart())
+
+                    user.set_tags_viewed(userKey.get_tags_viewed())
+                    
+                    userDict[userID] = user # overrides old student object with the new teacher object
                     db["Users"] = userDict
                     db.close()
                     print("Account type updated to teacher.")

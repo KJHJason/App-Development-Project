@@ -147,7 +147,7 @@ thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 zoomURL = "https://www.youtube.com/watch?v=SUugKFRhaQ4"
 zoomPassword= "abc123"
 
-course.add_zoom_lessons(title, description, thumbnail, zoomURL, zoomPassword)
+course.add_zoom_lessons(title, description, thumbnail, zoomURL, zoomPassword, "13:00", "Monday")
 
 title = "How to make a web app part 2"
 description = "You will now learn about the birds and the bees."
@@ -155,7 +155,7 @@ thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.png"
 zoomURL = "https://www.youtube.com/watch?v=g_vV3bE3GNo"
 zoomPassword= "123abc"
 
-course.add_zoom_lessons(title, description, thumbnail, zoomURL, zoomPassword)
+course.add_zoom_lessons(title, description, thumbnail, zoomURL, zoomPassword, "15:00", "Wednesday")
 
 user.set_courseTeaching(courseID)
 

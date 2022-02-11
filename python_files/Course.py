@@ -181,27 +181,4 @@ class Course():
     def set_numberPurchased(self,numberPurchased):
         self.__numberPurchased = numberPurchased
 
-    # def add_VideoLesson(self, title, description, thumbnail, videoData):
-    #     videoLesson = VideoLesson(title, description, thumbnail, videoData)
-    #     self.__schedule.append(videoLesson)
-    # def remove_scheduleVideoLesson(self, title, description):
-    #     for VideoLesson in self.__schedule:
-    #         if VideoLesson.get_title() == title and VideoLesson.get_description() == description:
-    #             self.__schedule.remove(VideoLesson)
-    #             break
-
-    # def add_scheduleZoomLesson(self, title, description, thumbnail):
-    #     zoomLesson = ZoomLesson(title, description, thumbnail)
-    #     self.__schedule.append(zoomLesson)
-    # def remove_scheduleZoomLesson(self, title, description):
-    #     for ZoomLesson in self.__schedule:
-    #         if ZoomLesson.get_title() == title and ZoomLesson.get_description() == description:
-    #             self.__schedule.remove(ZoomLesson)
-
-    # def get_schedule(self):
-    #     return self.__schedule
-
-    # def get_lesson(self, lesson):
-    #     return self.__schedule[int(lesson)]
-
     """End of Done by Wei Ren"""
