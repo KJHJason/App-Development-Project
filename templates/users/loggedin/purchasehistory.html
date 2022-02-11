@@ -37,10 +37,9 @@
     {% else %}
     {% for courseInformation in historyList %}
     <div class="row g-0 casing mx-auto">
-        <div class="col-md-4">
-            <img class="resize img-fluid rounded float-start" src="{{ courseInformation['Thumbnail']}}" alt="">
+        <div class="col-5">            <img class="resize img-fluid rounded float-start" src="{{ courseInformation['Thumbnail']}}" alt="">
         </div>
-        <div class="col-8">
+        <div class="col-7">
             <div class="card-body text">
                 <h5 class="card-title"><a href="/purchaseview/{{courseID}}">{{ courseInformation["Title"] }}</a></h5>
                 <p class="card-text">{{ courseInformation["Description"] }}</p>

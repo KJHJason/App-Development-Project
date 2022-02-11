@@ -59,10 +59,10 @@
 
     {% for Lesson in courseInformation["Lesson"] %}
     <div class="row g-0 casing mx-auto">
-        <div class="col-md-4">
+        <div class="col-5">
             <img class="resize img-fluid rounded float-start" src="{{ Lesson.get_thumbnail() }}" alt="">
         </div>
-        <div class="col-8">
+        <div class="col-7">
             <div class="card-body text">
                 <h5 class="card-title">{{ Lesson.get_title() }}</h5>
                 <p class="card-text">{{ Lesson.get_description() }}</p>
