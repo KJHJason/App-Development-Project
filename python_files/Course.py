@@ -174,6 +174,7 @@ class Course():
         total = 0
         for review in self.__review:
             total += int(review.get_rating())
+            print(int(review.get_rating()))
         return math.floor(total/len(self.__review))
 
     def get_numberPurchased(self):

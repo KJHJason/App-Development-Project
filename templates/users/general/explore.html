@@ -40,7 +40,7 @@
                                 </form>
                             {% endif %}
                             <p class="card-text"><span class="fw-bold">Overall Rating:</span>
-                                {% with averageCourseRating = course.get_averageRating() %}
+                                {% with averageCourseRating = searchInformation["Rating"] %}
                                     {% if averageCourseRating == 5 %}
                                     <span class="fas fa-star ratings"></span>
                                     <span class="fas fa-star ratings"></span>

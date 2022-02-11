@@ -3871,14 +3871,16 @@ def search(pageNum):
                         if courseID in purchasedCourses:
                             bought = True
 
+                        rating = course.get_averageRating()
+
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
                             "Owner": courseOwner,
-                            "Bought": bought}
+                            "Bought": bought,
+                            "Rating": rating}
 
                         searchfound.append(searchInformation)
-                        print(course)
 
             print(searchfound)
             if bool(searchfound): #If there is something inside the list
@@ -4612,11 +4614,14 @@ def explore(pageNum, tag):
                         if courseID in purchasedCourses:
                             bought = True
 
+                        rating = course.get_averageRating()
+
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
                             "Owner": courseOwner,
-                            "Bought":bought}
+                            "Bought":bought,
+                            "Rating":rating}
                         searchfound.append(searchInformation)
                     else:
                         print("The tags does not match.")
@@ -4721,10 +4726,13 @@ def explore(pageNum, tag):
                         course = courseDict[courseID]
                         courseOwner = userDict[course.get_userID()].get_username()
 
+                        rating = course.get_averageRating()
+
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner": courseOwner}
+                            "Owner": courseOwner,
+                            "Rating": rating}
                         searchfound.append(searchInformation)
                     else:
                         print("The tags does not match.")
@@ -4827,10 +4835,13 @@ def explore(pageNum, tag):
                     course = courseDict[courseID]
                     courseOwner = userDict[course.get_userID()].get_username()
 
+                    rating = course.get_averageRating()
+
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner": courseOwner}
+                        "Owner": courseOwner,
+                        "Rating": rating}
                     searchfound.append(searchInformation)
                 else:
                     print("The tags does not match.")
