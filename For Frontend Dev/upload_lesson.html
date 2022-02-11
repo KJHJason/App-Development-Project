@@ -16,18 +16,214 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/basic.min.css" />
     <link rel="stylesheet" href="../static/styles/upload_lesson.css">
 
-    <script type="application/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.4.0/min/dropzone.min.js"></script>
-    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
-    <script src="{{ url_for('static', filename='scripts/upload_lesson.js') }}"></script>
-
     <title>File Dropper</title>
 
 </head>
 
 <body>
-    <div class="container" id="details">
+    <nav class="navbar navbar-expand-lg bg-dark">
+        <div class="container-fluid">
+            <a id="logo" href="/"><img src="../static/images/common/logo.png" alt="CourseFinity Logo"></a>
+            </a>
+            <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbar-content">
+                <div class="hamburger-toggle">
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </button>
+            <div class="collapse navbar-collapse" id="navbar-content">
+                <ul class="navbar-nav mr-auto mb-2 mb-lg-0">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="javascript:void(0)" data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside">Explore Categories!</a>
+                        <ul class="dropdown-menu shadow">
+                            <li class="dropend">
+                                <a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside">Subject 1</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 1</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 2</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 3</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Third level 5</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="dropend">
+                                <a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside">Subject 2</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 1</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 2</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 3</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Third level 5</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="dropend">
+                                <a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside">Subject 3</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 1</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 2</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 3</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Third level 5</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="dropend">
+                                <a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside">Subject 4</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 1</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 2</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 3</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Third level 5</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="dropend">
+                                <a href="javascript:void(0)" class="dropdown-item dropdown-toggle" data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside">Subject 5</a>
+                                <ul class="dropdown-menu shadow">
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 1</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 2</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Second level 3</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#"> Third level 5</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex ms-auto">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a href="#" class="nav-link text-white"><i
+                                    class="fas fa-shopping-cart fa-lg"></i> Cart</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="javascript:void(0)"
+                                data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                                    class="fas fa-user-circle fa-lg"></i> Account</a>
+                            <ul class="dropdown-menu shadow">
+                                <li><a class="dropdown-item" href="#">Purchases</a></li>
+                                <li><a class="dropdown-item" href="/user_profile">Settings</a></li>
+                                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <form action="#" method="GET" class="d-flex">
+                    <div class="input-group">
+                        <input class="form-control border-0 mr-2" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-secondary border-0" type="submit"><i class="fas fa-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container-sm" id="form">
+        <form action="" method="POST" enctype="multipart/form-data">
+            <h2>Video Lesson Creation</h2>
+            <div class="row">
+                <!-- Zoom Thumbnail -->
+                <div class="mb-5 col-6 gx-5">
+                    <div class="card" style="width:180px;">
+                        <img id="thumbnail"
+                            src="https://st2.depositphotos.com/3765753/5349/v/600/depositphotos_53491489-stock-illustration-example-rubber-stamp-vector-over.jpg"
+                            alt="Your thumbnail will appear here" class="card-img-top" />
+                    </div>
+                    <br>
+                    <label for="formFile" class="form-label">Upload Video Lesson Thumbnail Here!</label>
+                    <input name="videoThumbnail" class="form-control" id="formFile" type='file' value=""
+                        onchange="readURL(this);" />
+                </div>
+    
+                <div class="mb-3 col-5">
+                    <!-- Video Title -->
+                    <div class="mb-4">
+                        <label for="vidoeTitle" class="form-label">Video Lesson Title</label>
+                        <input name="zoomTitle" class="form-control" id="videoTitle" type="text" value="" required
+                            placeholder="Lesson Title" />
+                    </div>
+    
+                    <!-- Video Description -->
+                    <div class="mb-4">
+                        <label for="videoDescription" class="form-label">Video Lesson Description</label>
+                        <textarea name="videoDescription" class="form-control" id="videoDescription" rows="4" value=""
+                            required placeholder="Lesson Description"></textarea>
+                    </div>
+                </div>
+                <!-- Video Upload -->
+                <label for="video thumbnail"> Upload Video:</label>
+                <div class="row">
+                    <div class="col-md-5 image-center">
+                        <div class="mb-9">
+                            <div id="imageForm">
+                                <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
+                                    <input type="hidden" name="submittedForm" value="image">
+                                    <div class="dz-default dz-message upload-background">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <br>
+                                        <span>Click or drop your video file here</span>
+                                    </div>
+                                    <button type="submit" id="submit-button" hidden>Upload Video</button>
+                                    <button class="" id="remove-pfp" hidden data-dz-remove>Cancel</button>
+                                </form>
+                                <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
+                                <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <button type="button" class="btn">
+                <span>Submit</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- <div class="container" id="details">
         <form action="POST" method="post" id="title_des">
-            <h3>Upload your course video here!</h3>
+            <h3></h3>
             <label for="video title"> Title: </label>
             <fieldset>
                 <input type="text" placeholder="Video Title" required autofocus>
@@ -38,7 +234,7 @@
             </fieldset>
         </form>
 
-        <!-- This is for thumbnail upload -->
+        <!- This is for thumbnail upload ->
         <label for="video thumbnail"> Lesson thumbnail:</label>
         <div class="row">
             <div class="col-md-5 image-center">
@@ -51,8 +247,8 @@
                                 <br>
                                 <span>Click here or drop your thumbnail image here</span>
                             </div>
-                            <button type="submit" id="submit-button" hidden>Save Profile Icon</button>
-                            <button class="" id="remove-pfp" hidden data-dz-remove>Reset</button>
+                            <button type="submit" id="submit-button" hidden>Upload Thumbnail</button>
+                            <button class="" id="remove-pfp" hidden data-dz-remove>Cancel</button>
                         </form>
                         <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
                         <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
@@ -61,7 +257,7 @@
             </div>
         </div>
 
-        <!-- This is lesson video upload -->
+        <!- This is lesson video upload ->
         <label for="video thumbnail"> Lesson Video:</label>
         <div class="row">
             <form method="POST" action='/upload' class="dropzone dz-clickable" id="dropper" enctype="multipart/form-data">
@@ -71,29 +267,18 @@
                     <br>
                     <span>Click here or drop your video file here</span>
                 </div>
+                <button type="submit" id="submit-button" hidden>Upload video</button>
+                <button class="" id="remove-pfp" hidden data-dz-remove>Cancel</button>
             </form>
+            <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
+            <label for="remove-pfp" class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
         </div>
         <div class="container" id="container">
             <br>
             <div id="actions" class="row">
-                <div class="col-lg-7">
-                    <!-- The file input-button span is used to style the file input field as button -->
-                    <span class="btn btn-success fileinput-button">
-                        <i class="glyphicon glyphicon-plus"></i>
-                        <span>Add your lesson video here!</span>
-                    </span>
-                    <button type="submit" class="btn btn-primary start">
-                        <i class="glyphicon glyphicon-upload"></i>
-                        <span>Start upload</span>
-                    </button>
-                    <button type="reset" class="btn btn-warning cancel">
-                        <i class="glyphicon glyphicon-ban-circle"></i>
-                        <span>Cancel upload</span>
-                    </button>
-                </div>
         
                 <div class="col-lg-5">
-                    <!-- The global file processing state -->
+                    <!- The global file processing state ->
                     <span class="fileupload-process">
                         <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0"
                             aria-valuemax="100" aria-valuenow="0">
@@ -101,7 +286,7 @@
                         </div>
                     </span>
                 </div>
-            </div>
+            </div> -->
         
             <!-- <div class="table table-striped files" id="previews">
                 <div id="template" class="file-row">
@@ -120,24 +305,75 @@
                             <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
                         </div>
                     </div>
-                    <div>
-                        <button class="btn btn-primary start">
-                            <i class="glyphicon glyphicon-upload"></i>
-                            <span>Start</span>
-                        </button>
-                        <button data-dz-remove class="btn btn-warning cancel">
-                            <i class="glyphicon glyphicon-ban-circle"></i>
-                            <span>Cancel</span>
-                        </button>
-                        <button data-dz-remove class="btn btn-danger delete">
-                            <i class="glyphicon glyphicon-trash"></i>
-                            <span>Delete</span>
-                        </button>
-                    </div>
                 </div>
         
-            </div> -->
+            </div> 
         </div>
-    </div>
+    </div>-->
+    <footer class="mt-5 pt-5 pb-5 footer bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <h4 class="header">Company<div></div>
+                    </h4>
+                    <ul class="links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="header">Useful Links<div></div>
+                    </h4>
+                    <ul class="links">
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Community Guidelines</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="header">Teaching<div></div>
+                    </h4>
+                    <ul class="links">
+                        <li><a href="#">Teacher's Handbook</a></li>
+                        <li><a href="/teacher_signup">Become a Teacher</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="header">Contact Info<div></div>
+                    </h4>
+                    <ul class="contact_details links">
+                        <li><i class="far fa-envelope"></i> Email: <a
+                                href="mailto:coursefinity@support.com">coursefinity@support.com</a></li>
+                        <li><i class="far fa-clock"></i> Operating Hours</li>
+                        <li>Monday to Friday: <br>08:00 to 18:00</li>
+                        <li>Saturday: <br>08:00 to 12:00</li>
+                        <li>Closed on Sundays and PH</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <hr>
+                <div class="col">
+                    <small class="text-white float-start copyright">&copy; CourseFinity, Inc. <span
+                            id="copyright_year"></span></small>
+                    <small class="about_company float-end">
+                        <a href="#" target="_blank"><i class="fab fa-instagram"></i></a>
+                        <a href="#" target="_blank" class="logo_margin"><i class="fab fa-twitter"></i></a>
+                        <a href="#" target="_blank" class="logo_margin"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Bootstrap JS bundle -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../static/scripts/common.js"></script>
+    <script src="../static/scripts/upload_video.js"></script>
 </body>
 </html>

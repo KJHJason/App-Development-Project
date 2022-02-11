@@ -15,50 +15,63 @@ $(document).ready(function(){
 // https://docs.dropzone.dev/
 
 //Dropzone for lesson thumbnail
-Dropzone.options.dropper = {
-    maxFiles: 1,
-    paramName: 'lessonThumbnail',
-    acceptedFiles: ".jpeg,.jpg,.png",
-    chunking: true,
-    forceChunking: true,
-    url: '/upload_lesson',
-    maxFilesize: 50, // megabytes
-    chunkSize: 1000000, // bytes
-    retryChunks: true,
-    retryChunksLimit: 3,
-    autoProcessQueue: false,
+// Dropzone.options.dropper = {
+//     maxFiles: 1,
+//     paramName: 'lessonThumbnail',
+//     acceptedFiles: ".jpeg,.jpg,.png",
+//     chunking: true,
+//     forceChunking: true,
+//     url: '/upload_lesson',
+//     maxFilesize: 50, // megabytes
+//     chunkSize: 1000000, // bytes
+//     retryChunks: true,
+//     retryChunksLimit: 3,
+//     autoProcessQueue: false,
 
-    init: function() {
-        let lessonThumbnailDropzone = this;
+//     init: function() {
+//         let lessonThumbnailDropzone = this;
         
-        // when the user uploads more than one image, this function will remove the old lesson thumbnail and replace it with the new lesson thumbnail that was added by the user
-       lessonThumbnailDropzone.on("addedfile", function() {
-            $(".dz-progress").hide();
-            if (lessonThumbnailDropzone.files[1] == null) return;
-           lessonThumbnailDropzone.removeFile(userProfileImageDropzone.files[0]);
-        });
+//         // when the user uploads more than one image, this function will remove the old lesson thumbnail and replace it with the new lesson thumbnail that was added by the user
+//        lessonThumbnailDropzone.on("addedfile", function() {
+//             $(".dz-progress").hide();
+//             if (lessonThumbnailDropzone.files[1] == null) return;
+//            lessonThumbnailDropzone.removeFile(userProfileImageDropzone.files[0]);
+//         });
 
-        // tells dropzone to upload the image data to the web server when the user clicks on the upload button
-        document.getElementById('submit-button').addEventListener("click", function (e) {
-            e.preventDefault();
-           lessonThumbnailDropzone.processQueue();
-        });
+//         // tells dropzone to upload the image data to the web server when the user clicks on the upload button
+//         document.getElementById('submit-button').addEventListener("click", function (e) {
+//             e.preventDefault();
+//            lessonThumbnailDropzone.processQueue();
+//         });
 
-        // sending the chunks of data when user clicks on the upload button
-       lessonThumbnailDropzone.on('sending', function(file, xhr, formData) {
-            /* Append inputs to FormData */
-            $(".dz-progress").show();
-            formData.append("lessonThumbnail", document.getElementById('dropper').value);
-        });
+//         // sending the chunks of data when user clicks on the upload button
+//        lessonThumbnailDropzone.on('sending', function(file, xhr, formData) {
+//             /* Append inputs to FormData */
+//             $(".dz-progress").show();
+//             formData.append("lessonThumbnail", document.getElementById('dropper').value);
+//         });
         
-        // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
-       lessonThumbnailDropzone.on("success", function () {
-            function redirectUser() {
-                location.reload();
-            }
-            setInterval(redirectUser, 1500);
-        });
-    }
+//         // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
+//        lessonThumbnailDropzone.on("success", function () {
+//             function redirectUser() {
+//                 location.reload();
+//             }
+//             setInterval(redirectUser, 1500);
+//         });
+//     }
+// };
+
+function readURL(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    $('#thumbnail')
+                        .attr('src', e.target.result);
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            };
 };
 
 //Dropzone for lesson video
@@ -126,21 +139,6 @@ Dropzone.options.dropper = {
           document.querySelector("#total-progress").style.opacity = "0";
         });
         /* End of Progress bar */
-
-        // Setup the buttons for all transfers
-        // The "add files" button doesn't need to be setup because the config
-        // `clickable` has already been specified.
-        document.querySelector("#actions .start").onclick = function() {
-          lessonVideoDropzone.enqueueFiles(lessonVideoDropzone.getFilesWithStatus(Dropzone.ADDED));
-        };
-        document.querySelector("#actions .cancel").onclick = function() {
-          lessonVideoDropzone.removeAllFiles(true);
-        };
-        lessonVideoDropzone.on("addedfile", function(file) {
-          // Hookup the start button
-          file.previewElement.querySelector(".start").onclick = function() { lessonVideoDropzone.enqueueFile(file); };
-        });
-
     }
 };
 
