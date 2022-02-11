@@ -71,66 +71,6 @@ client = vimeo.VimeoClient(
     secret = environ.get("VIMEO_SECRET")
 )
 
-"""
-# Create a variable with a hard coded path to your file system
-file_name = '{path_to_a_video_on_the_file_system}'
-
-print('Uploading: %s' % file_name)
-
-try:
-    # Upload the file and include the video title and description.
-    uri = client.upload(file_name, data={
-        'name': 'Vimeo API SDK test upload',
-        'description': CourseLesson.get_description()
-    })
-
-    # Get the metadata response from the upload and log out the Vimeo.com url
-    video_data = client.get(uri + '?fields=link').json()
-    print('"{}" has been uploaded to {}'.format(file_name, video_data['link']))
-
-    # Make an API call to edit the title and description of the video.
-    client.patch(uri, data={
-        'name': 'Vimeo API SDK test edit',
-        'description': "This video was edited through the Vimeo API's " +
-                       "Python SDK."
-    })
-
-    print('The title and description for %s has been edited.' % uri)
-
-    # Make an API call to see if the video is finished transcoding.
-    video_data = client.get(uri + '?fields=transcode.status').json()
-    print('The transcode status for {} is: {}'.format(
-        uri,
-        video_data['transcode']['status']
-    ))
-except vimeo.exceptions.VideoUploadFailure as e:
-    # We may have had an error. We can't resolve it here necessarily, so
-    # report it to the user.
-    print('Error uploading %s' % file_name)
-    print('Server reported: %s' % e.message)
-"""
-
-""" # Uploading of videos
-file_name = '{path_to_a_video_on_the_file_system}'
-uri = client.upload(file_name, data={
-    'name': 'Untitled',
-    'description': 'The description goes here.'
-})
-
-print ('Your video URI is: %s' % (uri))
-
-# Error handling while video transcodes
-response = client.get(uri + '?fields=transcode.status').json()
-if response['transcode']['status'] == 'complete':
-    print ('Your video finished transcoding.')
-elif response['transcode']['status'] == 'in_progress':
-    print ('Your video is still transcoding.')
-else:
-    print ('Your video encountered an error during transcoding.')
-
-response = client.get(uri + '?fields=link').json()
-print("Your video link is: " + response['link']) """
-
 """End of Web app configurations"""
 
 """Home page by Jason"""
@@ -795,7 +735,7 @@ def logout():
 @app.route('/2FA', methods=['GET', 'POST'])
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def twoFactorAuthenticationSetup():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
@@ -868,7 +808,7 @@ def twoFactorAuthenticationSetup():
 @app.route('/2FA_disable')
 @limiter.limit("10/second") # to prevent attackers from trying to crack passwords or doing enumeration attacks by sending too many automated requests from their ip address
 def removeTwoFactorAuthentication():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         userDict = {}
         db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
@@ -1243,7 +1183,7 @@ def userSignUp():
 
 @app.route("/generate_verify_email_token")
 def verifyEmail():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -1422,7 +1362,7 @@ def teacherSignUp():
 
 @app.route('/sign_up_payment', methods=['GET', 'POST'])
 def signUpPayment():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         if "teacher" in session:
             teacherID = session["teacher"]
@@ -1624,7 +1564,7 @@ def adminChangeUsername():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    session.clear()
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -1691,7 +1631,7 @@ def adminChangeEmail():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    session.clear()
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -1752,12 +1692,8 @@ def adminChangePassword():
         create_update_password_form = Forms.CreateChangePasswordForm(request.form)
         if request.method == "POST" and create_update_password_form.validate():
 
-            # declaring passwordNotMatched, passwordVerification, and errorMessage variable to initialise and prevent unboundLocalError
             passwordNotMatched = True
             passwordVerification = False
-
-            # for jinja2
-            errorMessage = False
 
             db = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
             try:
@@ -1766,7 +1702,7 @@ def adminChangePassword():
                 else:
                     db.close()
                     print("Admin account data in shelve is empty.")
-                    session.clear() # since the file data is empty either due to the admin deleting the admin shelve files or something else, it will clear any session and redirect the user to the homepage
+                    session.clear()
                     return redirect(url_for("home"))
             except:
                 db.close()
@@ -2738,7 +2674,7 @@ def dashboard():
 @app.route('/user_profile', methods=["GET","POST"])
 @limiter.limit("80/second") # to prevent ddos attacks
 def userProfile():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         session.pop("teacher", None) # deleting data from the session if the user chooses to skip adding a payment method from the teacher signup process
 
         userSession = session["userSession"]
@@ -2926,7 +2862,7 @@ def userProfile():
 
 @app.route("/change_username", methods=["GET","POST"])
 def updateUsername():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -3011,7 +2947,7 @@ def updateUsername():
 
 @app.route("/change_email", methods=["GET","POST"])
 def updateEmail():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -3102,7 +3038,7 @@ def updateEmail():
 
 @app.route("/change_password", methods=["GET","POST"])
 def updatePassword():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
         # Retrieving data from shelve and to write the data into it later
         userDict = {}
@@ -3209,7 +3145,7 @@ def updatePassword():
 
 @app.route('/change_account_type', methods=["GET","POST"])
 def changeAccountType():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3306,7 +3242,7 @@ def changeAccountType():
 @app.route('/cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def cashoutPreference():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3405,7 +3341,7 @@ def cashoutPreference():
 @app.route('/edit_cashout_preference', methods=["GET","POST"])
 @limiter.limit("30/second") # to prevent ddos attacks
 def editCashoutPreference():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3586,7 +3522,7 @@ def editCashoutPreference():
 
 @app.route("/teacher_cashout", methods=['GET', 'POST'])
 def teacherCashOut():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -3971,8 +3907,11 @@ def search(pageNum):
                 else:
                     teacherUID = ""
 
-                # Get shopping cart len
-                shoppingCartLen = len(userKey.get_shoppingCart())
+                if accType != "Admin":
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+                else:
+                    shoppingCartLen = 0
 
                 db.close()
                 return render_template('users/general/search.html', accType=accType , shoppingCartLen=shoppingCartLen, courseDict=courseDict, matchedCourseTitleList=matchedCourseTitleList,searchInput=searchInput, pageNum=pageNum, previousPage = previousPage, nextPage = nextPage, paginationList = paginationList, maxPages=maxPages, imagesrcPath=imagesrcPath, checker=checker, searchfound=paginatedCourseList, teacherUID=teacherUID,submittedParameters=searchURL)
@@ -4156,7 +4095,7 @@ def search(pageNum):
 
 @app.route("/purchasehistory/<int:pageNum>")
 def purchaseHistory(pageNum):
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -4286,18 +4225,14 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
-# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 def createPurchaseReview(courseID):
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
-        # userFound, accGoodStatus = validate_session_open_file(userSession)
-        # if there's a need to retrieve the userKey for reading the user's account details, use the function below instead of the one above
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
 
         if userFound and accGoodStatus:
-            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
             if accType == "Teacher":
                 teacherUID = userSession
             else:
@@ -4372,10 +4307,10 @@ def createPurchaseReview(courseID):
 
 @app.post("/deletereview/<courseID>")
 def deleteReview(courseID):
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
 
         if userFound and accGoodStatus:
@@ -4397,16 +4332,23 @@ def deleteReview(courseID):
             course = courseDict[courseID]
 
             reviewlist = course.get_review()
+            reviewDeleted = False
             for review in reviewlist:
                 user = review.get_userID()
                 if user == userSession:
                     course.remove_review(review)
-                    flash("Your deletion of review has been successful!","Success!")
-                    db["Courses"] = courseDict
-                    return redirect(redirectURL)
-
-            print("Either the user did not review the course or the course has no reviews.")
-            return redirect(redirectURL)
+                    reviewDeleted = True
+                    
+            if reviewDeleted:
+                db["Courses"] = courseDict
+                db.close()
+                flash("Your deletion of review has been successful!","Success!")
+                return redirect(redirectURL)
+            else:
+                db.close()
+                print("Either the user did not review the course or the course has no reviews.")
+                flash("You did not review this course or you have already deleted your review!","Error in deleting review!")
+                return redirect(redirectURL)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4426,7 +4368,7 @@ def deleteReview(courseID):
 
 @app.route("/purchaseview/<courseID>", methods=["GET", "POST"])
 def purchaseView(courseID):
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -4724,7 +4666,7 @@ def explore(pageNum, tag):
 
 @app.route("/shopping_cart", methods = ["GET","POST"])
 def shoppingCart():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -5390,14 +5332,13 @@ def teacherPage(teacherPageUID):
             userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
             if userFound and accGoodStatus:
-
                 if accType != "Admin":
                     # Get shopping cart len
                     shoppingCartLen = len(userKey.get_shoppingCart())
                 else:
                     shoppingCartLen = 0
-                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
 
+                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
             else:
                 print("Admin/User account is not found or is not active/banned.")
                 session.clear()
@@ -5420,9 +5361,9 @@ def teacherCourses(teacherCoursesUID):
         else:
             userSession = session["userSession"]
 
-        userKey, userFound, accGoodStanding, accType, imagesrcPath = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
-        if userFound and accGoodStanding:
+        if userFound and accGoodStatus:
             if accType != "Admin":
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
@@ -5795,8 +5736,11 @@ def courseReviews(courseID, reviewPageNum):
                 else:
                     teacherUID = ""
 
-                # Get shopping cart len
-                shoppingCartLen = len(userKey.get_shoppingCart())
+                if accType != "Admin":
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+                else:
+                    shoppingCartLen = 0
 
                 return render_template('users/general/course_page_reviews.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, userReviewed=userReviewed, userReview=userReview, userPurchased=userPurchased, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
             else:
@@ -6092,7 +6036,7 @@ def function(courseID):
         return redirect("/404")
 
     courseTitle = courseObject.get_title()
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -6131,7 +6075,10 @@ def function(courseID):
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+            shoppingCartLen = len(userKey.get_shoppingCart())
+
+            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -6178,7 +6125,10 @@ def channelContent(teacherUID):
                 courseList = []
                 for course in courseDict.values():
                     courseList.append(course)
-                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList)
+
+                shoppingCartLen = len(userKey.get_shoppingCart())
+
+                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList, shoppingCartLen=shoppingCartLen)
             else:
                 return redirect(url_for("userProfile"))
         else:
@@ -6364,7 +6314,7 @@ def teacherHandbook():
 
 @app.route("/")
 def function():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         # Retrieving data from shelve and to write the data into it later
@@ -6425,7 +6375,7 @@ def function():
 
 @app.route("/")
 def function():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
@@ -6468,7 +6418,7 @@ def function():
 
 @app.route('', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
 def insertName():
-    if "userSession" in session and "adminSession" not in session:
+    if "userSession" in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
