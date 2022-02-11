@@ -26,7 +26,7 @@ CourseFinity Web Application using Flask
   <li>Flask-Limiter Version 2.0.4 [pip install Flask-Limiter==2.0.4]</li>
   <li>argon2-cffi Version 21.3.0 [pip install argon2-cffi==21.3.0]</li>
   <li>Pillow Version 9.0.0 [pip install Pillow==9.0.0]</li>
-  <li>Flask-mail Version 0.9.1 [pip install flask-mail==0.9.1]</li>
+  <li>Flask-Mailman Version 0.3.0 [pip install flask-mailman==0.3.0]</li>
   <li>paypalrestsdk Version 1.13.1 [pip install paypalrestsdk==1.13.1]</li>
   <li>PyVimeo Version 1.1.0 [pip install PyVimeo==1.1.0]</li>
   <li>shortuuid Version 1.0.8 [pip install shortuuid==1.0.8]</li>
