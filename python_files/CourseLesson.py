@@ -59,7 +59,7 @@ class ZoomLesson(Lesson):
     
     def set_weekly_day(self, weeklyDay):
         self.__weeklyDay = weeklyDay
-    def get_zoom_password(self):
+    def get_weekly_day(self):
         return self.__weeklyDay
 
     def set_zoom_link(self, zoomURL):

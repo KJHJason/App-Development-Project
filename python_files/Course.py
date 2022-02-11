@@ -56,8 +56,8 @@ class Course():
 
     def add_video_lesson(self, title, description, thumbnail, videoAbsolutePath): 
         self.__lessons.append(VideoLesson(title, description, thumbnail, videoAbsolutePath))
-    def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword):
-        self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword))
+    def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay):
+        self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay))
 
     def remove_a_lesson_from_list(self, lessonID):
         lessonsList = self.__lessons

@@ -135,8 +135,9 @@
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
                                 {% if (lessonsCount >= 1) and (userPurchased) and (course.get_course_type() == "Zoom") %}
                                     {% with zoomCourseLink = lessons[0].get_zoom_link() %}
-                                <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
+                                    <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
                                     {% endwith %}
+                                    <p class="card-text">Weekly Schedule (24HR):<span class="fw-bold"></span> Every {{ lessons[0].get_weekly_day() }} at {{ lessons[0].get_timings() }}</p>
                                 {% endif %}
                             </div>
                             <div class="card-footer">
