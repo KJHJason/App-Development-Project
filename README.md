@@ -17,7 +17,7 @@ This project consists of us making a web application using Flask as its framewor
 
 **Project Description:** 
 
->In the past, CourseFinity (a fictional company) provided physical lessons at their main centre in >Aljunied. It was a place for teachers and students, both as a place to teach, and a place to learn skills through upskilling.
+>In the past, CourseFinity (a fictional company) provided physical lessons at their main centre in Aljunied. It was a place for teachers and students, both as a place to teach, and a place to learn skills through upskilling.
 >
 >However, with the rise of the online era, along with the COVID-19 pandemic, the convenience of online learning started becoming more appealing to students. CourseFinity hence experienced a steep drop in students and teachers coming to the centre for lessons.
 >
