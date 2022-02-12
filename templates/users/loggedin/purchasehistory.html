@@ -41,7 +41,7 @@
         </div>
         <div class="col-7">
             <div class="card-body text">
-                <h5 class="card-title"><a href="/purchaseview/{{courseID}}">{{ courseInformation["Title"] }}</a></h5>
+                <h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ courseInformation["Title"] }}</a></h5>
                 <p class="card-text">{{ courseInformation["Description"] }}</p>
             </div>
             <div class="card-body">
@@ -49,11 +49,10 @@
                     <div class="selection col">
                         {% if "CourseTypeCheck" == "Video" %}
                         <p class="info">Lesson Type: Online Videos</p>
-                        <a href="/purchaseview/{{courseID}}" class="view">View Recordings</a>
                         {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
                         <p class="info">Lesson Type: Zoom Session</p>
-                        <a href="/purchaseview/{{courseID}}" class="view">View Zoom Links</a>
                         {% endif %}
+                        <a href="/purchaseview/{{courseID}}" class="view">View course materials</a>
                         {% if courseInformation["ReviewChecker"] == False %}
                         <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
                         {% else %}
