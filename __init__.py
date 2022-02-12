@@ -4417,6 +4417,7 @@ def purchaseView(courseID):
             historyCheck = True
             reviewlist = []
             reviewMatch = ""
+            checker = False
             # Get purchased courses
             purchasedCourses = userKey.get_purchases()
             print("PurchaseID exists?: ", purchasedCourses)
