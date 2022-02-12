@@ -5534,7 +5534,7 @@ def teacherPage(teacherPageUID):
             return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
     else:
         print("No such teacher exists...")
-        return redirect("/404")
+        abort(404)
 
 """End of Teacher's Channel Page by Clarence"""
 
@@ -5550,16 +5550,16 @@ def teacherCourses(teacherPageUID, coursePageNum):
             db.close()
         else:
             db.close()
-            return redirect("/404")
+            abort(404)
     except:
         db.close()
         print("Error in retrieving Users from user.db")
-        return redirect("/404")
+        abort(404)
 
     teacherObject = userDict.get(teacherPageUID)
     
     if teacherObject == None:  # if the teacherPageUID does not exist in userDict
-        return redirect("/404")
+        abort(404)
 
     teacherCourseList = teacherObject.get_coursesTeaching() # list of Course IDs
     
@@ -5783,16 +5783,16 @@ def coursePage(courseID):
             userDict = db['Users']
         else:
             db.close()
-            return redirect("/404")
+            abort(404)
     except:
         db.close()
         print("Error in retrieving Users from user.db")
-        return redirect("/404")
+        abort(404)
 
     courseObject = courseDict.get(courseID)
 
     if courseObject == None: # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
 
@@ -5978,7 +5978,7 @@ def courseReviews(courseID, reviewPageNum):
     courseObject = courseDict.get(courseID)
 
     if courseObject == None: # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
 
@@ -6096,12 +6096,13 @@ def uploadLesson(courseID):
 
         lessonObject = LessonDict.get(courseID)
 
-        lessons = lessonObject.get_lessonID()[num]  # get a list of lessonIDs
+
+        lessons = lessonObject.get_lessonID()  # get a list of lessonIDs
         for lesson in lessons:
             lessonID = lesson.get_lessonID()
 
         if lessonID == None: # if courseID does not exist in courseDict
-            return redirect("/404")
+            abort(404)
 
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
@@ -6118,8 +6119,8 @@ def uploadLesson(courseID):
                 # file = request.files["profileImage"]
                 file = request.files["lessonThumbnail"]
 
-                totalChunks = int(request.form["dztotalchunkcount"])
-                currentChunk = int(request.form['dzchunkindex'])
+                # totalChunks = int(request.form["dztotalchunkcount"])
+                # currentChunk = int(request.form['dzchunkindex'])
 
                 extensionType = get_extension(file.filename)
                 if extensionType != False:
@@ -6138,12 +6139,12 @@ def uploadLesson(courseID):
                     # newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
                     newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], lessonThumbnailFileName)
 
-                    if currentChunk == 0:
-                        # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                        newFilePath.unlink(missing_ok=True)
+                    # if currentChunk == 0:
+                    #     # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    #     newFilePath.unlink(missing_ok=True)
 
-                        print("Total file size:", int(
-                        request.form['dztotalfilesize']))
+                    #     print("Total file size:", int(
+                    #     request.form['dztotalfilesize']))
 
                     try:
                         # ab flag for opening a file for appending data in binary format
@@ -6159,40 +6160,40 @@ def uploadLesson(courseID):
                         print("Unexpected error.")
                         return make_response("Unexpected error", 500)
 
-                    if currentChunk + 1 == totalChunks:
-                        # This was the last chunk, the file should be complete and the size we expect
-                        if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
-                            print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
-                            # remove corrupted image
-                            # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                            newFilePath.unlink(missing_ok=True)
-                            return make_response("Uploaded image is corrupted! Please try again!", 500)
-                        else:
-                            print(f'File {file.filename} has been uploaded successfully')
-                            imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
+                    # if currentChunk + 1 == totalChunks:
+                    #     # This was the last chunk, the file should be complete and the size we expect
+                    #     if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
+                    #         print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
+                    #         # remove corrupted image
+                    #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    #         newFilePath.unlink(missing_ok=True)
+                    #         return make_response("Uploaded image is corrupted! Please try again!", 500)
+                    #     else:
+                    #         print(f'File {file.filename} has been uploaded successfully')
+                    #         imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
 
-                            if imageResized:
-                                # if file was successfully resized, it means the image is a valid image
-                                userKey.set_profile_image(newImageFilePath.name)
-                                db['Users'] = userDict
-                                db.close()
-                                # flash("Your profile image has been successfully saved.", "Profile Image Updated")
-                                flash("Thumbnail has been uploaded successfully.", "Thumbnail Uploaded")
-                                # return make_response(("Profile Image Uploaded!", 200))
-                                return make_response(("Thumbnail Uploaded!", 200))
-                            else:
-                                # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
-                                userKey.set_profile_image("")
+                    #         if imageResized:
+                    #             # if file was successfully resized, it means the image is a valid image
+                    #             userKey.set_profile_image(newImageFilePath.name)
+                    #             db['Users'] = userDict
+                    #             db.close()
+                    #             # flash("Your profile image has been successfully saved.", "Profile Image Updated")
+                    #             flash("Thumbnail has been uploaded successfully.", "Thumbnail Uploaded")
+                    #             # return make_response(("Profile Image Uploaded!", 200))
+                    #             return make_response(("Thumbnail Uploaded!", 200))
+                    #         else:
+                    #             # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
+                    #             userKey.set_profile_image("")
 
-                                db['Users'] = userDict
-                                db.close()
-                                # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                                newFilePath.unlink(missing_ok=True)
-                                return make_response("Uploaded image is corrupted! Please try again!", 500)
-                    else:
-                        db.close()
-                        print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
-                        return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
+                    #             db['Users'] = userDict
+                    #             db.close()
+                    #             # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    #             newFilePath.unlink(missing_ok=True)
+                    #             return make_response("Uploaded image is corrupted! Please try again!", 500)
+                    # else:
+                    #     db.close()
+                    #     print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
+                    #     return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
                 else:
                     db.close()
                     return make_response("Image extension not supported!", 500)
@@ -6227,7 +6228,7 @@ def uploadLesson(courseID):
 
 """Video Upload by Clarence"""
 
-@app.route('/upload/lesson<num>', methods=['POST'])
+@app.route('/upload/<lessonID>', methods=['POST'])
 def upload(courseID):
     if "userSession" in session:
         file = request.files['file']
@@ -6250,12 +6251,12 @@ def upload(courseID):
 
         lessonObject = LessonDict.get(courseID)
 
-        lessons = lessonObject.get_lessonID()[num]  # get a list of lessonIDs
+        lessons = lessonObject.get_lessonID()  # get a list of lessonIDs
         for lesson in lessons:
             lessonID = lesson.get_lessonID()
 
-        if lessonID == None: # if courseID does not exist in courseDict
-            return redirect("/404")
+        if lessonID == None: # if lessonID does not exist in courseDict
+            abort(404)
 
         file.filename = lessonID
         savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
@@ -6321,7 +6322,7 @@ def function(courseID):
     courseObject = courseDict.get(courseID)
     redirectURL = "course/" + courseID + "/upload_zoom"
     if courseObject == None:  # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTitle = courseObject.get_title()
     if "userSession" in session:
