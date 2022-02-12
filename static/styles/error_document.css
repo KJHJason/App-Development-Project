@@ -26,6 +26,10 @@ html {
   -webkit-transform: translateY(-50%)
 }
 
+.fa-arrow-left {
+    z-index: 5;
+}
+
 h1 {
   margin: -10px 0 -30px;
   font-size: calc(17vw + 40px);

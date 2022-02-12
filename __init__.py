@@ -4289,7 +4289,7 @@ def deleteReview(courseID):
                 print("Unable to open up course shelve")
                 db.close()
                 return redirect(redirectURL)
-            
+
             if courseID in courseDict:
                 course = courseDict[courseID]
 
@@ -4339,7 +4339,7 @@ def coursePageDeleteReview(courseID):
                 print("Unable to open up course shelve")
                 db.close()
                 return redirect(redirectURL)
-                
+
             if courseID in courseDict:
                 course = courseDict[courseID]
 
@@ -4927,11 +4927,22 @@ def addToCart(courseID):
             except:
                 print("Error in retrieving Course from user.db")
 
-            if courseID in courseDict:
-                userKey.add_to_cart(courseID)
-            else:
+            # Does Course Exist?
+            if courseID not in courseDict:
                 print("Course ID not in CourseDict")
                 abort(404)
+
+            # Is course already in cart?
+            if courseID in userKey.get_shoppingCart():
+                session["Course Already Added"] = courseDict[courseID].get_title()
+                return redirect(url_for('shoppingCart'))
+
+            # Is course already purchased?
+            elif courseID in userKey.get_purchases():
+                session["Course Already Purchased"] = courseDict[courseID].get_title()
+                return redirect(url_for('shoppingCart'))
+
+            userKey.add_to_cart(courseID)
 
             userDict[userKey.get_user_id()] = userKey
             db["Users"] = userDict
@@ -4940,6 +4951,7 @@ def addToCart(courseID):
 
             session["Course Added"] = courseDict[courseID].get_title()
             return redirect(url_for('shoppingCart'))
+
         else:
             db.close()
             print("User not found or is banned")
@@ -5013,16 +5025,19 @@ def shoppingCart():
                     date = timing.split("T")[0]
                     time = timing.split("T")[1]
 
+                    orderID = checkoutCompleteForm.checkoutOrderID.data
+                    payerID = checkoutCompleteForm.checkoutPayerID.data
+
+                    purchasedCourses = userKey.get_purchases()
+
                     for courseID in shoppingCart:
 
                         course = courseDict[courseID]
 
                         cost = course.get_price()
 
-                        orderID = checkoutCompleteForm.checkoutOrderID.data
-                        payerID = checkoutCompleteForm.checkoutPayerID.data
-
-                        userKey.addCartToPurchases(courseID, date, time, cost, orderID, payerID)
+                        if courseID not in purchasedCourses:
+                            purchasedCourses[courseID] = {'Course ID' : courseID, "Date" : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}
 
                         # Add some earnings to teacher
                         teacher = userDict[course.get_userID()]
@@ -5035,11 +5050,14 @@ def shoppingCart():
                     print("Shopping Cart:", userKey.get_shoppingCart())
                     print("Purchases:", userKey.get_purchases())
 
+                    userKey.set_purchases(purchasedCourses)
+                    userKey.set_shoppingCart([])
+
                     userDict[userKey.get_user_id()] = userKey
                     db['Users'] = userDict
                     db.close()
 
-                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course successfully purchased!")
+                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course(s) successfully purchased!")
                     return redirect(url_for('home'))
 
                 elif removeCourseForm.validate():
@@ -5070,11 +5088,22 @@ def shoppingCart():
                 print(shoppingCart)
                 print(session)
 
+                # Check if there were courses added
                 if "Course Added" in session:
                     courseAddedTitle = session["Course Added"]
+                    status = "Success"
                     session.pop("Course Added")
+                elif "Course Already Added" in session:
+                    courseAddedTitle = session["Course Already Added"]
+                    status = "Added"
+                    session.pop("Course Already Added")
+                elif "Course Already Purchased" in session:
+                    courseAddedTitle = session["Course Already Purchased"]
+                    status = "Purchased"
+                    session.pop("Course Already Purchased")
                 else:
                     courseAddedTitle = None
+                    status = None
 
                 for courseID in shoppingCart:
                     # Getting course info
@@ -5521,11 +5550,11 @@ def teacherCourses(courseID):
         return redirect("/404")
 
     courseObject = courseDict.get(courseID)
-    
-    
+
+
     if courseObject == None:  # if courseID does not exist in courseDict
         return redirect("/404")
-    
+
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
