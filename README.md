@@ -47,14 +47,19 @@ This project consists of us making a web application using Flask as its framewor
 >8. Pillow Version 9.0.0
 >9. Flask-Mailman Version 0.3.0
 >10. paypalrestsdk Version 1.13.1
->11. PyVimeo Version 1.1.0
->12. shortuuid Version 1.0.8
->13. dicebear Version 0.2.15
->14. matplotlib Version 3.5.1
->15. APScheduler Version 3.8.1
->16. phonenumbers Version 8.12.42
->17. qrcode Version 7.3.1
->18. pyotp Version 2.6.0
+>11. shortuuid Version 1.0.8
+>12. dicebear Version 0.2.15
+>13. matplotlib Version 3.5.1
+>14. APScheduler Version 3.8.1
+>15. phonenumbers Version 8.12.42
+>16. qrcode Version 7.3.1
+>17. pyotp Version 2.6.0
+
+**To Install All Libraries At Once:**
+
+```
+pip install -r requirements.txt
+```
 
 ---
 

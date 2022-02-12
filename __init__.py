@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort
-import shelve, math, paypalrestsdk, difflib, json, csv, vimeo, phonenumbers, pyotp, qrcode
+import shelve, math, paypalrestsdk, difflib, json, csv, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -61,14 +61,6 @@ paypalrestsdk.configure({
 
 # Flask limiter configuration
 limiter = Limiter(app, key_func=get_remote_address, default_limits=["30 per second"])
-
-# vimeo api configurations
-client = vimeo.VimeoClient(
-    # client token, key, and secret all generated from vimeo
-    token = environ.get("VIMEO_TOKEN"),
-    key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
-    secret = environ.get("VIMEO_SECRET")
-)
 
 """End of Web app configurations"""
 
