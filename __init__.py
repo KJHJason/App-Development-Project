@@ -5537,7 +5537,7 @@ def teacherPage(teacherPageUID):
             return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
     else:
         print("No such teacher exists...")
-        return redirect("/404")
+        abort(404)
 
 """End of Teacher's Channel Page by Clarence"""
 
@@ -5553,16 +5553,16 @@ def teacherCourses(teacherPageUID, coursePageNum):
             db.close()
         else:
             db.close()
-            return redirect("/404")
+            abort(404)
     except:
         db.close()
         print("Error in retrieving Users from user.db")
-        return redirect("/404")
+        abort(404)
 
     teacherObject = userDict.get(teacherPageUID)
     
     if teacherObject == None:  # if the teacherPageUID does not exist in userDict
-        return redirect("/404")
+        abort(404)
 
     teacherCourseList = teacherObject.get_coursesTeaching() # list of Course IDs
     
@@ -5786,16 +5786,16 @@ def coursePage(courseID):
             userDict = db['Users']
         else:
             db.close()
-            return redirect("/404")
+            abort(404)
     except:
         db.close()
         print("Error in retrieving Users from user.db")
-        return redirect("/404")
+        abort(404)
 
     courseObject = courseDict.get(courseID)
 
     if courseObject == None: # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
 
@@ -5981,7 +5981,7 @@ def courseReviews(courseID, reviewPageNum):
     courseObject = courseDict.get(courseID)
 
     if courseObject == None: # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTeacherUsername = userDict.get(courseObject.get_userID()).get_username()
 
@@ -6105,7 +6105,7 @@ def uploadLesson(courseID):
             lessonID = lesson.get_lessonID()
 
         if lessonID == None: # if courseID does not exist in courseDict
-            return redirect("/404")
+            abort(404)
 
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
@@ -6259,7 +6259,7 @@ def upload(courseID):
             lessonID = lesson.get_lessonID()
 
         if lessonID == None: # if lessonID does not exist in courseDict
-            return redirect("/404")
+            abort(404)
 
         file.filename = lessonID
         savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
@@ -6325,7 +6325,7 @@ def function(courseID):
     courseObject = courseDict.get(courseID)
     redirectURL = "course/" + courseID + "/upload_zoom"
     if courseObject == None:  # if courseID does not exist in courseDict
-        return redirect("/404")
+        abort(404)
 
     courseTitle = courseObject.get_title()
     if "userSession" in session:
