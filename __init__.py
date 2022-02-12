@@ -4848,7 +4848,7 @@ def contactUs():
             return(redirect(url_for("home")))
 
         else:
-            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
+            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""
 
@@ -6154,6 +6154,36 @@ def teacherHandbook():
     else:
         return render_template("users/general/teacher_handbook.html", accType="Guest")
 
+@app.route('/community_guidelines')
+def communityGuidelines():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+
+        if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
+            if accType != "Admin":
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+            else:
+                shoppingCartLen = 0
+
+            return render_template('users/general/community_guidelines.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/community_guidelines.html", accType="Guest")
+    else:
+        return render_template("users/general/community_guidelines.html", accType="Guest")
+
 """End of Genral Pages"""
 
 # 7 template app.route("") for you guys :prayge:
@@ -6287,7 +6317,10 @@ def insertName():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                
+            shoppingCartLen = len(userKey.get_shoppingCart())
+                
+            return render_template('users/loggedin/page.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
