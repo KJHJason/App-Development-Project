@@ -5111,7 +5111,7 @@ def shoppingCart():
 
                 db.close() # remember to close your shelve files!
                 print(courseAddedTitle)
-                return render_template('users/student/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
