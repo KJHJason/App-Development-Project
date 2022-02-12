@@ -141,7 +141,7 @@ def home():
                 userPurchasedCourses = userKey.get_purchases() # to be edited once the attribute in the class has been updated
                 for courseID in list(courseDict.keys()):
                     if courseID in userPurchasedCourses:
-                        print("User has purchases the course,", courseDict[courseID].get_title())
+                        print("User has purchased the course,", courseDict[courseID].get_title())
                         courseDict.pop(courseID)
 
                 if len(courseDict) > 3:
@@ -307,6 +307,7 @@ def home():
                             else:
                                 courseDict.pop(randomisedCourse.get_courseID())
                 else:
+                    print("Not enough courses to personalise the recommendations...")
                     for value in courseDict.values():
                         if userDict.get(value.get_userID()).get_status() == "Good":
                             recommendCourseList.append(value)
@@ -519,6 +520,7 @@ def home():
                             # if the teacher of the course has been banned
                             courseDict.pop(randomisedCourse.get_courseID())
             else:
+                print("Not enough courses to personalise the recommendations...")
                 for value in courseDict.values():
                     if userDict.get(value.get_userID()).get_status() == "Good":
                         recommendCourseList.append(value)
@@ -3905,10 +3907,13 @@ def search(pageNum):
                         course = courseDict[courseID]
                         courseOwner = userDict[course.get_userID()].get_username()
 
+                        rating = course.get_averageRating()
+
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":courseOwner}
+                            "Owner":courseOwner,
+                            "Rating": rating}
 
                         searchfound.append(searchInformation)
 
@@ -3991,10 +3996,13 @@ def search(pageNum):
                     course = courseDict[courseID]
                     courseOwner = userDict[course.get_userID()].get_username()
 
+                    rating = course.get_averageRating()
+
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner":courseOwner}
+                        "Owner":courseOwner,
+                        "Rating": rating}
 
                     searchfound.append(searchInformation)
 
@@ -4159,7 +4167,7 @@ def purchaseHistory(pageNum):
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', shoppingCartLen=shoppingCartLen, courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchasehistory.html',course=course, shoppingCartLen=shoppingCartLen, courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
         else:
             print("Invalid Session")
             db.close()
@@ -4265,13 +4273,11 @@ def deleteReview(courseID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
-            courseID = session.get("courseIDGrab")
             redirectURL = "/purchaseview/" + courseID
             reviewlist = []
 
@@ -4283,20 +4289,24 @@ def deleteReview(courseID):
                 print("Unable to open up course shelve")
                 db.close()
                 return redirect(redirectURL)
+            
+            if courseID in courseDict:
+                course = courseDict[courseID]
 
-            course = courseDict[courseID]
+                reviewlist = course.get_review()
+                for review in reviewlist:
+                    user = review.get_userID()
+                    if user == userSession:
+                        course.remove_review(review)
+                        flash("Your deletion of review has been successful!","Success!")
+                        db["Courses"] = courseDict
+                        return redirect(redirectURL)
 
-            reviewlist = course.get_review()
-            for review in reviewlist:
-                user = review.get_userID()
-                if user == userSession:
-                    course.remove_review(review)
-                    flash("Your deletion of review has been successful!","Success!")
-                    db["Courses"] = courseDict
-                    return redirect(redirectURL)
-
-            print("Either the user did not review the course or the course has no reviews.")
-            return redirect(redirectURL)
+                print("Either the user did not review the course or the course has no reviews.")
+                return redirect(redirectURL)
+            else:
+                print("Course not found.")
+                return redirect(redirectURL)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4304,11 +4314,59 @@ def deleteReview(courseID):
             return redirect(url_for("home"))
     else:
         if "adminSession" in session:
-            return redirect(url_for("home"))
+            return redirect("/course/" + courseID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect("/course/" + courseID)
+
+@app.post("/course/deletereview/<courseID>")
+def coursePageDeleteReview(courseID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+
+            redirectURL = "/course/" + courseID
+            reviewlist = []
+
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                courseDict = db["Courses"]
+            except:
+                print("Unable to open up course shelve")
+                db.close()
+                return redirect(redirectURL)
+                
+            if courseID in courseDict:
+                course = courseDict[courseID]
+
+                reviewlist = course.get_review()
+                for review in reviewlist:
+                    user = review.get_userID()
+                    if user == userSession:
+                        course.remove_review(review)
+                        flash("Your deletion of review has been successful!","Success!")
+                        db["Courses"] = courseDict
+                        return redirect(redirectURL)
+
+                print("Either the user did not review the course or the course has no reviews.")
+                return redirect(redirectURL)
+            else:
+                print("Course not found.")
+                return redirect(redirectURL)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(redirectURL)
+        else:
+            return redirect(redirectURL)
 
 """End of Purchase Review by Royston"""
 
@@ -4412,7 +4470,7 @@ def purchaseView(courseID):
                     shoppingCartLen = len(userKey.get_shoppingCart())
 
                     db.close()
-                    return render_template('users/loggedin/purchaseview.html',checker=checker, courseList = courseList, courseID=courseID, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
+                    return render_template('users/loggedin/purchaseview.html',course=course, checker=checker, courseList = courseList, courseID=courseID, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
                 else:
                     print("User has not purchased the course.")
                     db.close()
@@ -5053,7 +5111,7 @@ def shoppingCart():
 
                 db.close() # remember to close your shelve files!
                 print(courseAddedTitle)
-                return render_template('users/student/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -5431,14 +5489,14 @@ def teacherPage(teacherPageUID):
                     shoppingCartLen = len(userKey.get_shoppingCart())
                 else:
                     shoppingCartLen = 0
-                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
+                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
 
             else:
                 print("Admin/User account is not found or is not active/banned.")
                 session.clear()
-                return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile,teacherCourseLen=teacherCourseLen)
+                return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile,teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
         else:
-            return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
+            return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
     else:
         print("No such teacher exists...")
         return redirect("/404")
@@ -5915,13 +5973,15 @@ def courseReviews(courseID, reviewPageNum):
                 else:
                     userPurchased = False
 
+                # for showing the user's own review on the page
                 userReviewed = False
                 userReview = {}
                 for review in reviewsDict.keys():
                     if review.get_userID() == userSession:
                         userReviewed = True
                         userReview[review] = reviewsDict.get(review)
-                        reviewsDict.pop(review)
+                        if review in paginatedReviewDict:
+                            del paginatedReviewDict[review]
                         break
 
                 if accType == "Teacher":
