@@ -10,10 +10,10 @@ CourseFinity Web Application using Flask
 This project consists of us making a web application using Flask as its framework.
 
 **Group Members:**
-1. Jason (Group Leader)
-2. Wei Ren (Assistant Group Leader)
-3. Clarence
-4. Royston
+>1. Jason (Group Leader)
+>2. Wei Ren (Assistant Group Leader)
+>3. Clarence
+>4. Royston
 
 **Project Description:** 
 
@@ -25,66 +25,62 @@ This project consists of us making a web application using Flask as its framewor
 
 **Libraries needed:**
 
-1. Flask Version 2.0.2
-2. WTForms Version 3.0.0
-3. Jinja2 Version 3.0.3
-4. email-validator Version 1.1.3
-5. setuptools Version 60.1.0 
-6. Flask-Limiter Version 2.0.4
-7. argon2-cffi Version 21.3.0
-8. Pillow Version 9.0.0
-9. Flask-Mailman Version 0.3.0
-10. paypalrestsdk Version 1.13.1
-11. PyVimeo Version 1.1.0
-12. shortuuid Version 1.0.8
-13. dicebear Version 0.2.15
-14. matplotlib Version 3.5.1
-15. APScheduler Version 3.8.1
-16. phonenumbers Version 8.12.42
-17. qrcode Version 7.3.1
-18. pyotp Version 2.6.0
+>1. Flask Version 2.0.2
+>2. WTForms Version 3.0.0
+>3. Jinja2 Version 3.0.3
+>4. email-validator Version 1.1.3
+>5. setuptools Version 60.1.0 
+>6. Flask-Limiter Version 2.0.4
+>7. argon2-cffi Version 21.3.0
+>8. Pillow Version 9.0.0
+>9. Flask-Mailman Version 0.3.0
+>10. paypalrestsdk Version 1.13.1
+>11. PyVimeo Version 1.1.0
+>12. shortuuid Version 1.0.8
+>13. dicebear Version 0.2.15
+>14. matplotlib Version 3.5.1
+>15. APScheduler Version 3.8.1
+>16. phonenumbers Version 8.12.42
+>17. qrcode Version 7.3.1
+>18. pyotp Version 2.6.0
 
 **Task Allocation:**
 
+>* Jason
+   >>1. Login and signup
+   >>2. Two Factor Authentication using compatible apps such as Google Authenticator (6 digits time-based one time passcode)
+   >>3. Reset password (10 mins reset link sent via email)
+   >>4. Verification of Emails (24 hr verify link sent via email)
+   >>5. User and Admin profile settings
+   >>6. User management for Admins
+   >>7. Admin Console (Part 1 and 4) [Admin account creation, updating passwords, removing 2FA, deactivation or deletion of all admin accounts without 2FA]
+   >>8. Content Personalisation (Recommendations and Trending)
+   >>9. Cash out system logic for teachers
+   >>10. Admin dashboard [Graphs and generating user database to a CSV file]
+   >>11. Course page and its review page
 
-* Jason
-   1. Login and signup
-   2. Two Factor Authentication using compatible apps such as Google Authenticator (6 digits time-based one time passcode)
-   3. Reset password (10 mins reset link sent via email)
-   4. Verification of Emails (24 hr verify link sent via email)
-   5. User and Admin profile settings
-   6. User management for Admins
-   7. Admin Console (Part 1 and 4) [Admin account creation, updating passwords, removing 2FA, deactivation or deletion of all admin accounts without 2FA]
-   8. Content Personalisation (Recommendations and Trending)
-   9. Cash out system logic for teachers
-   10. Admin dashboard [Graphs and generating user database to a CSV file]
-   11. Course page and its review page
-<br>
-<br>
-* Wei Ren
-  1. Shopping Cart
-  2. PayPal Checkout
-  3. Contact Us [Ticket]
-  4. Ticket Management
-  5. Cashout Preference Settings [Edit, View]
-  6. PayPal Payouts API Integration [when Cashing Out] 
-<br>
-<br>
-* Clarence
-  1. Teacher Page
-  2. Teacher All Courses (Student View)
-  3. Teacher Course Management
-  4. Create Course
-  5. Create Video Lesson
-  6. Create Zoom Lesson
-  7. Admin Console (Part 2) [Deactivation, reactivation and deletion of admin accounts]
-  8. Teacher’s Handbook
-<br>
-<br>
-* Royston
-  1. Explore Category
-  2. Search Function
-  3. Purchase History
-  4. Purchase View
-  5. Purchase Review
-  6. Admin Console (Part 3) [Reading of all admin account]
+>* Wei Ren
+  >>1. Shopping Cart
+  >>2. PayPal Checkout
+  >>3. Contact Us [Ticket]
+  >>4. Ticket Management
+  >>5. Cashout Preference Settings [Edit, View]
+  >>6. PayPal Payouts API Integration [when Cashing Out] 
+
+>* Clarence
+  >>1. Teacher Page
+  >>2. Teacher All Courses (Student View)
+  >>3. Teacher Course Management
+  >>4. Create Course
+  >>5. Create Video Lesson
+  >>6. Create Zoom Lesson
+  >>7. Admin Console (Part 2) [Deactivation, reactivation and deletion of admin accounts]
+  >>8. Teacher’s Handbook
+
+>* Royston
+  >>1. Explore Category
+  >>2. Search Function
+  >>3. Purchase History
+  >>4. Purchase View
+  >>5. Purchase Review
+  >>6. Admin Console (Part 3) [Reading of all admin account]
