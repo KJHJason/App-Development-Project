@@ -131,12 +131,5 @@ class Common(User):
         self.__shoppingCart = shoppingCart
     def get_shoppingCart(self):
         return self.__shoppingCart
-    def addCartToPurchases(self, courseID, date, time, cost, orderID, payerID):
-        if courseID in self.__shoppingCart:
-            self.__purchasedCourses[courseID] = {'Course ID' : courseID, "Date" : date, 'Time' : time, 'Cost' : cost, "PayPalOrderID" : orderID, "PayPalAccountID" : payerID}
-            self.__shoppingCart.remove(courseID)
-        else:
-            # raise Exception("PayPal dislikes you.")
-            print("PayPal dislikes you. Alternatively, you didn't validate correctly.")
 
     """End of Done by Wei Ren"""
