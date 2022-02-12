@@ -1,3 +1,4 @@
+from email.mime import image
 from __init__ import app, mail
 from PIL import Image
 from itsdangerous import TimedJSONWebSignatureSerializer as jsonSerializer
@@ -275,14 +276,15 @@ def overwrite_file(file, oldFilePath, newFilePath):
 def resize_image(imagePath, dimensions):
     # try and except as a user might have use a unsupported image file and manually change it to .png, .jpg, etc. in which the Pillow library will raise a runtime error as it is unable to open the image
     try:
-        image = Image.open(imagePath)
+        image = Image.open(imagePath).convert("RGB")
         resizedImage = image.resize(dimensions)
         imagePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-        resizedImage.save(imagePath, optimize=True, quality=75)
-        return True
+        newImagePath = imagePath.with_suffix(".webp") # changes the extension to .webp
+        resizedImage.save(newImagePath, format="webp", optimize=True, quality=75)
+        return True, newImagePath
     except:
         print("Error in resizing and compressing image...")
-        return False
+        return False, ""
 
 # use this function to construct a path for storing files such as images in the web app directory
 # pass in a relative path, e.g. "/static/images/users" and a filename, e.g. "test.png"
@@ -315,7 +317,12 @@ def get_user_profile_pic(userID):
     if profileFileNameBool != False and profileFilePath.is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        try:
+            imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        except:
+            # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
+            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+
         if profileFileNameBool != False:
             print("Image file does not exist anymore, resetting user's profile image...")
             # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
@@ -324,6 +331,7 @@ def get_user_profile_pic(userID):
             db["Users"] = userDict
             profileReset = True
             print("User's profile image reset successfully.")
+            
     db.close()
     return imagesrcPath, profileReset
 
@@ -350,7 +358,12 @@ def get_user_profile_pic_only(userID):
     if profileFileNameBool != False and profileFilePath.is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        try:
+            imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        except:
+            # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
+            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+
         if profileFileNameBool != False:
             print("Image file does not exist anymore, resetting user's profile image...")
             # if user profile pic does not exist but the user object has a filename in the profile image attribute, then set the attribute data to empty string
@@ -358,6 +371,7 @@ def get_user_profile_pic_only(userID):
             userObject.set_profile_image("")
             db["Users"] = userDict
             print("User's profile image reset successfully.")
+
     db.close()
     return imagesrcPath
 
@@ -369,7 +383,12 @@ def retrieve_user_profile_pic(userKey):
     if profileFileNameBool != False and profileFilePath.is_file():
         imagesrcPath = "/static/images/user/" + profileFileName
     else:
-        imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        try:
+            imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
+        except:
+            # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
+            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+
     return imagesrcPath
 
 def delete_user_profile(userImageFileName):

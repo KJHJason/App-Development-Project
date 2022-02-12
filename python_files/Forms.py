@@ -4,20 +4,9 @@ from wtforms import Form, validators, ValidationError, StringField, RadioField, 
 
 """WTForms by Jason"""
 
-# Research notes for the different types of credit cards:
-# https://support.cybersource.com/s/article/Whatarethenumberformatsfordifferentcreditcards
-
 # Research note for email length:
 # https://stackoverflow.com/questions/386294/whatisthemaximumlengthofavalidemailaddress
-"""
-class CreateEditPaymentForm(Form):
-    cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
 
-class CreateAddPaymentForm(Form):
-    cardName = StringField("Card Name:", [validators.Length(min=1, max=50), validators.DataRequired()])
-    cardNo = StringField("Card Number:", [validators.Length(min=13, max=19), validators.DataRequired()])
-    cardExpiry = StringField("Expiry Date:", [validators.Length(min=4, max=7), validators.DataRequired()])
-"""
 class CreateLoginForm(Form):
     email = EmailField("Email:", [validators.Email(), validators.Length(min=3, max=254), validators.DataRequired()])
     password = PasswordField("Password:", [validators.DataRequired()])
@@ -107,7 +96,7 @@ class ContactUs(Form):
     enquiry = TextAreaField("Enquiry: Easter Sunday", [validators.DataRequired()])
 
 class TicketSearchForm(Form):# Very cursed. I love lack of Checkbox Field.
-    query = HiddenField([validators.Optional()])
+    querySearch = HiddenField([validators.Optional()])
     checkedFilters = HiddenField([validators.DataRequired(), validators.InputRequired()])
 
 #   filterStatus = RadioField("Ticket Status", [validators.DataRequired()], choices = ['Open','Closed'], default = 'Open'),
@@ -371,6 +360,7 @@ class CashoutForm(Form):
 """"End of WTForms by Wei Ren"""
 
 """WTForms by Clarence"""
+
 class CreateCourse(Form):
     '''
     zoomconditions
@@ -381,4 +371,5 @@ class CreateCourse(Form):
     courseDescription = TextAreaField("Description: ", [validators.DataRequired(), validators.Length(min=1)])
     #thumbnail use HTML to validate size, type
     coursePrice = IntegerField("Price for Course (USD$): ", [validators.DataRequired(), validators.NumberRange(min=0, max=500)])
+    
 """End of WTForms by Clarence"""

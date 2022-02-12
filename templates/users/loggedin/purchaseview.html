@@ -47,6 +47,11 @@
                 <h5 class="card-text">Time: {{ courseInformation["Time"] }}</h5>
                 <h5 class="card-text">Order ID: {{ courseInformation["OrderID"] }}</h5>
                 <h5 class="card-text">Paypal ID: {{ courseInformation["PaypalID"] }}</h5>
+                {% if "CourseTypeCheck" == "Video" %}
+                <h5 class="card-text">Lesson Type: Video Recording</h5>
+                {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
+                <h5 class="card-text">Lesson Type: Zoom</h5>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -54,13 +59,18 @@
 
     {% for Lesson in courseInformation["Lesson"] %}
     <div class="row g-0 casing mx-auto">
-        <div class="col-md-4">
+        <div class="col-5">
             <img class="resize img-fluid rounded float-start" src="{{ Lesson.get_thumbnail() }}" alt="">
         </div>
-        <div class="col-8">
+        <div class="col-7">
             <div class="card-body text">
                 <h5 class="card-title">{{ Lesson.get_title() }}</h5>
                 <p class="card-text">{{ Lesson.get_description() }}</p>
+                {% if "CourseTypeCheck" == "Video" %}
+                <a href="{{ link }}" class="view">View Recording</a>
+                {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
+                <a href="{{ link }}" class="view">View Zoom Link</a>
+                {% endif %}
             </div>
             <div class="card-body">
                 <div class="row">

@@ -36,6 +36,8 @@ class User:
 
     def set_password(self, password):
         self.__password = PasswordHasher().hash(password) # password is hashed using argon2
+    def set_password_hash(self, password):
+        self.__password = password # password is an argon2 hash
     def get_password(self):
         return self.__password
 

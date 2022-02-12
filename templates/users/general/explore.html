@@ -20,20 +20,27 @@
     {% else %}
         {% for searchInformation in searchfound %}
         <div class="row g-0 casing mx-auto">
-            <div class="col-4">
+            <div class="col-5">
                 <img class="resize img-fluid rounded float-start" src="{{ searchInformation['Thumbnail']}}" alt="">
             </div>
-            <div class="col-8">
+            <div class="col-7">
                 <div class="card-body text">
-                    <h5 class="card-title">{{ searchInformation["Title"] }}</h5>
+                    <a href="{{ link }}"><h5 class="card-title">{{ searchInformation["Title"] }}</h5></a>
                     <p class="card-text">{{ searchInformation["Description"] }}</p>
                 </div>
                 <div class="card-body">
                     <div class="row g-0">
                         <div class="selection col">
                             <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+                            {% if searchInformation["Bought"] == True %}
+                                <a class="float-end" href="#">View Course</a>
+                            {% else %}
+                                <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+                                    <button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
+                                </form>
+                            {% endif %}
                             <p class="card-text"><span class="fw-bold">Overall Rating:</span>
-                                {% with averageCourseRating = course.get_averageRating() %}
+                                {% with averageCourseRating = searchInformation["Rating"] %}
                                     {% if averageCourseRating == 5 %}
                                     <span class="fas fa-star ratings"></span>
                                     <span class="fas fa-star ratings"></span>
@@ -81,4 +88,15 @@
     {% endfor %}
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		<script>
+			var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+			alertModal.show();
+		</script>
+		{% endif %}
+	{% endwith %}
 {% endblock %}

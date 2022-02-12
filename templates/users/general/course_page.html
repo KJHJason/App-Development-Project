@@ -135,21 +135,24 @@
                                 <p class="card-text"><span class="fw-bold">Views:</span> {{ course.get_views() }}</p>
                                 {% if (lessonsCount >= 1) and (userPurchased) and (course.get_course_type() == "Zoom") %}
                                     {% with zoomCourseLink = lessons[0].get_zoom_link() %}
-                                <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
+                                    <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
                                     {% endwith %}
+                                {% endif %}
+                                {% if course.get_course_type() == "Zoom" %}
+                                <p class="card-text"><span class="fw-bold">Weekly Schedule (24HR):</span> Every {{ lessons[0].get_weekly_day() }} at {{ lessons[0].get_timings() }} (UTC+8)</p>
                                 {% endif %}
                             </div>
                             <div class="card-footer">
                                 {% if userPurchased != True %}
                                     {% if accType=="Guest" %}
                                     <form action="/login" method="GET">
-                                        <button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                        <button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
                                     </form>
                                     {% elif accType=="Admin" %}
                                     <button type="button" class="btn btn-success course_buy_button float-end">Admin cannot add to cart!</button>
                                     {% else %}
                                     <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
-                                        <button type="submit" class="btn btn-success course_buy_button float-end"><i class="fas fa-shopping-cart fa-lg"></i> Add to Cart</button>
+                                        <button type="submit" class="btn btn-success course_buy_button float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
                                     </form>
                                     {% endif %}
                                 {% else %}
@@ -245,7 +248,7 @@
                 {% endif %}
             </table>
         </div>
-        {% if reviewsCount > 5 %}
+        {% if reviewsCount > 3 %}
             <a href="/course/{{ course.get_courseID() }}/reviews/page_1" class="float-end">See all reviews...</a>
         {% endif %}
     </div>

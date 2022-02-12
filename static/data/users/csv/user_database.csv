@@ -1,9 +1,9 @@
-UserID,Username,Email,Email Verification,2FA Enabled,Account Type,Account Status,Number of Courses Teaching,Highly Watched Tag,No. of Purchases
-f6d4a58a-ceee-4b87-881f-0f73492d23b7,James,coursefinity123@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-c0cba46d-aa9a-41ae-b17e-2f94cb3952bc,Daniel,abc.net@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-66be5b93-dd71-494e-b29b-69c604a766d7,Waffles,waffles.net@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-3af5fd38-89d5-4066-a22e-9defaf38691e,MikuChan,miku.net@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-85f03835-e06e-4a00-a2d7-368998d550e9,Edan Pang,edan.net@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-ed7b5d62-e499-424b-aadc-83bcd9b5e1db,Daniel Fan,daniel.net@gmail.com,Not Verified,No,Student,Good,N/A,No highly watched tag,0
-858dac68-77b8-463a-b1df-88a40b86ec8e,Avery,ice_cream@gmail.com,Not Verified,No,Teacher,Good,1,Other_Academics,0
-a27b62e8-19a1-407e-b003-498e0d0bfbea,Sara,tourism@gmail.com,Not Verified,No,Teacher,Good,3,No highly watched tag,0
+UserID,Username,Email,Email Verification,2FA Enabled,Account Type,Teacher Joined Date,Account Status,Number of Courses Teaching,Highly Watched Tag,No. of Purchases
+500241b3-7da4-469f-b93e-f2ee914edb32,James,coursefinity123@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+72ea4155-85ed-4440-a709-09901dbfb6f8,Daniel,abc.net@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+5b171c42-0be1-4733-9271-6b22ddab3b29,Waffles,waffles.net@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+f18b51ba-14f7-4cde-975b-b276c82bee6b,MikuChan,miku.net@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+8927de9c-d438-4840-b89c-89c698ffc02f,Edan Pang,edan.net@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+36450bfb-b901-421d-b2d3-7e69cf44658a,Daniel Fan,daniel.net@gmail.com,Not Verified,No,Student,N/A,Good,N/A,No highly watched tag,0
+64265d70-7378-4e2c-a48c-ca387f81d14b,Avery,ice_cream@gmail.com,Not Verified,No,Teacher,2022-01-01,Good,1,No highly watched tag,0
+261bc208-de98-41bb-8127-eb13d5543f85,Sara,tourism@gmail.com,Not Verified,No,Teacher,2020-05-02,Good,3,No highly watched tag,0

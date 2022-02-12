@@ -1,30 +1,3 @@
-'''
-User --> Teacher (Object) 1
-  - Courses (Object) 1
-    - Name 1
-    - Description 1
-    - Thumbnail 1
-    - Price 1
-    - Overall Rating 1
-    - Zoom Link --> Zoom Lessons 1
-    - Tags (List) 1
-    - Ratings (List) 1
-      - Rating (Object) 1
-        - User_ID 1
-        - Title 1
-        - Comment 1
-        - Ratings 1
-    - Schedule/Parts (List) --> Course Structure 1
-      - Part (Object) 1
-        - Title 1
-        - Description 1
-        - Thumbnail 1
-        - Dates & Times      [[date, time, [user_ID, ...]], [date, time, [user_ID, ...]]] --> Zoom 1
-    - Students (List) 1
-      - Student User_ID 1
-      - Date, Time Selected 1
-'''
-
 from .Review import Review
 from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
@@ -56,8 +29,8 @@ class Course():
 
     def add_video_lesson(self, title, description, thumbnail, videoAbsolutePath): 
         self.__lessons.append(VideoLesson(title, description, thumbnail, videoAbsolutePath))
-    def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword):
-        self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword))
+    def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay):
+        self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay))
 
     def remove_a_lesson_from_list(self, lessonID):
         lessonsList = self.__lessons

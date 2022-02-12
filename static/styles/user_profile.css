@@ -275,11 +275,7 @@
 
 /*          /////           Ticket Management          /////           */
 
-.ticket_id_text {
-    max-width: 200px;
-}
-
-.ticket_id_text:hover, .ticket_name_text:hover, .email_text:hover, .subject_text:hover, .enquiry_text:hover, .quick-form span:hover {
+.ticket_id_text:hover, .ticket_info_text:hover, .ticket_name_text:hover, .email_text:hover, .subject_text:hover, .enquiry_text:hover, .quick-form span:hover {
     color:#007bff;
     text-decoration:underline;
     cursor:pointer;

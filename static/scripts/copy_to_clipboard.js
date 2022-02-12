@@ -36,6 +36,10 @@ function userIDTooltipMouseOut(userID) {
     $(tooltipEl).attr('title', 'Copy to clipboard').tooltip('_fixTitle').tooltip('hide')
 }
 
+
+
+
+
 // For general usage such as on the user profile page
 function copyToClipBoard(typeOfData) {
     var copiedText = document.getElementById('tooltipValue' + typeOfData);
@@ -50,6 +54,10 @@ function tooltipMouseOut(typeOfData) {
     $(tooltipEl).attr('title', 'Copy to clipboard').tooltip('_fixTitle').tooltip('hide')
 }
 
+
+
+
+
 //For enquiry messages which are gigantic and contain very a lot of unescaped characters
 function copyEnquiryToClipBoard(enquiryNumber) {
     var copiedText = document.getElementById('tooltipEnquiryValue' + enquiryNumber).innerText;
@@ -62,3 +70,18 @@ function openEnquiryModal(enquiryNumber) {
     var copyButton = document.getElementById('copyEnquiryToClipboardButton' + enquiryNumber);
     copyButton.innerText = "Copy to Clipboard";
 }
+
+
+function ticketIDCopyToClipBoard(ticketID) {
+    var copiedText = document.getElementById('ticketIDTooltipValue' + ticketID);
+    navigator.clipboard.writeText(copiedText.innerText);
+    var tooltipEl = document.getElementById('ticketIDTooltip' + ticketID);
+    // using jquery to change the tooltip title so that the admin knows that they have copied
+    $(tooltipEl).attr('title', 'Copied to clipboard!').tooltip('_fixTitle').tooltip('show')
+}
+function ticketIDTooltipMouseOut(ticketID) {
+    var tooltipEl = document.getElementById('ticketIDTooltip' + ticketID);
+    // using jquery to reset the tooltip title
+    $(tooltipEl).attr('title', 'Copy to clipboard').tooltip('_fixTitle').tooltip('hide')
+}
+

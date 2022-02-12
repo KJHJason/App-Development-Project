@@ -32,11 +32,6 @@
     width:75%;
 }
 
-.contact-form select {
-    appearance:auto;
-    padding:0.5rem 0.75rem;
-}
-
 .contact-form textarea {
     resize:vertical;
 }

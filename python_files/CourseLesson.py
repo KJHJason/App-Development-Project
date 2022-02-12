@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 """Made by Wei Ren"""
-"""Edited by Clarence"""
+"""Edited by Clarence and Jason"""
 
 class Lesson():
     def __init__(self, title, description, thumbnail):
@@ -29,7 +29,6 @@ class Lesson():
         self.__lessonID = lessonID
     def get_lessonID(self):
         return self.__lessonID
-
 
 # Video Data
 class VideoLesson(Lesson):
@@ -59,7 +58,7 @@ class ZoomLesson(Lesson):
     
     def set_weekly_day(self, weeklyDay):
         self.__weeklyDay = weeklyDay
-    def get_zoom_password(self):
+    def get_weekly_day(self):
         return self.__weeklyDay
 
     def set_zoom_link(self, zoomURL):
