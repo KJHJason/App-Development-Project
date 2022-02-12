@@ -3124,15 +3124,13 @@ def changeAccountType():
                         else:
                             profileImagePathExists = False
 
-                    user = Teacher.Teacher(userID, username, email, password)
+                    user = Teacher.Teacher(userID, username, email, "") # password will be empty string as placeholder as to avoid hashing a hash
+                    user.set_password_hash(password) # set the hash as the user password
                     user.update_teacher_join_date_to_today()
-
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
                         user.set_profile_image(profileImageFilename)
-
-                    # add in other saved attributes of the student object
 
                     # checking if the user has already became a teacher
                     # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
