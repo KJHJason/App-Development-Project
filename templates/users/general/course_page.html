@@ -47,9 +47,9 @@
         <table class="table table-borderless">
             <tr>
                 <td class="td_cells_min_width">
-                    <div class="row page_wrapper">
-                        <div class="col-8 no_padding">
-                            <div class="course_info_left">
+                    <div class="row">
+                        <div class="col-8 no_padding border rounded">
+                            <div class="course_info_left border-bottom rounded">
                                 <h3>{{ course.get_title() }}</h3>
                                 <p><span class="fw-bold">Course Detail:</span> {{ course.get_description() }}</p>
                                 <h6>By <a href="/teacher_page/{{ course.get_userID() }}">{{ courseTeacherUsername }}</a></h6>
@@ -107,8 +107,8 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <div class="col-4 course_info_wrapper no_padding columns card">
-                            <img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="{{ course.get_shortTitle() }} Thumbnail">
+                        <div class="col-4 no_padding columns card">
+                            <img src="{{ course.get_thumbnail() }}" class="card-img-top border-bottom rounded" alt="{{ course.get_shortTitle() }} Thumbnail">
                             <div class="card-body">
                                 <p class="card-text"><span class="fw-bold">Price:</span> ${{ course.get_price() }}</p>
                                 <p class="card-text"><span class="fw-bold">Learning Style:</span> {{ course.get_course_type() }}</p>
