@@ -4159,7 +4159,7 @@ def purchaseHistory(pageNum):
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/loggedin/purchasehistory.html', shoppingCartLen=shoppingCartLen, courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
+                return render_template('users/loggedin/purchasehistory.html',course=course, shoppingCartLen=shoppingCartLen, courseID=courseID, courseType=courseType,historyList=paginatedCourseList, maxPages=maxPages, pageNum=pageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage, accType=accType, imagesrcPath=imagesrcPath,historyCheck=historyCheck, teacherUID=teacherUID)
         else:
             print("Invalid Session")
             db.close()
@@ -4412,7 +4412,7 @@ def purchaseView(courseID):
                     shoppingCartLen = len(userKey.get_shoppingCart())
 
                     db.close()
-                    return render_template('users/loggedin/purchaseview.html',checker=checker, courseList = courseList, courseID=courseID, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
+                    return render_template('users/loggedin/purchaseview.html',course=course, checker=checker, courseList = courseList, courseID=courseID, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath,historyCheck = historyCheck, teacherUID = teacherUID, pageNum = pageNum, courseInformation = courseInformation)
                 else:
                     print("User has not purchased the course.")
                     db.close()
