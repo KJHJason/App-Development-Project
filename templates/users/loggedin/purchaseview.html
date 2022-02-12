@@ -95,7 +95,7 @@
                     <div class="col">
                         <div class="card-body">
                             <form action="/deletereview/{{ courseID }}" method="POST">
-                                <button type="submit" class="btn mb-2 float-end"><i class="fas fa-trash float-end" style="color:red"></i></button>
+                                <button type="submit" class="btn mb-2 float-end"><i class="fas fa-trash float-end text-danger"></i></button>
                             </form>
                             <h5 class="card-title">{{ courseInformation["Review"].get_title() }}</h5>
                             <p class="card-text">{{ courseInformation["Review"].get_comment() }}</p>

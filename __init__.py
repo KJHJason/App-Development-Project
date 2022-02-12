@@ -4265,13 +4265,11 @@ def deleteReview(courseID):
     if "userSession" in session and "adminSession" not in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
 
         if userFound and accGoodStatus:
             # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
 
-            courseID = session.get("courseIDGrab")
             redirectURL = "/purchaseview/" + courseID
             reviewlist = []
 
@@ -4283,20 +4281,24 @@ def deleteReview(courseID):
                 print("Unable to open up course shelve")
                 db.close()
                 return redirect(redirectURL)
+            
+            if courseID in courseDict:
+                course = courseDict[courseID]
 
-            course = courseDict[courseID]
+                reviewlist = course.get_review()
+                for review in reviewlist:
+                    user = review.get_userID()
+                    if user == userSession:
+                        course.remove_review(review)
+                        flash("Your deletion of review has been successful!","Success!")
+                        db["Courses"] = courseDict
+                        return redirect(redirectURL)
 
-            reviewlist = course.get_review()
-            for review in reviewlist:
-                user = review.get_userID()
-                if user == userSession:
-                    course.remove_review(review)
-                    flash("Your deletion of review has been successful!","Success!")
-                    db["Courses"] = courseDict
-                    return redirect(redirectURL)
-
-            print("Either the user did not review the course or the course has no reviews.")
-            return redirect(redirectURL)
+                print("Either the user did not review the course or the course has no reviews.")
+                return redirect(redirectURL)
+            else:
+                print("Course not found.")
+                return redirect(redirectURL)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -4304,11 +4306,59 @@ def deleteReview(courseID):
             return redirect(url_for("home"))
     else:
         if "adminSession" in session:
-            return redirect(url_for("home"))
+            return redirect("/course/" + courseID)
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect("/course/" + courseID)
+
+@app.post("/course/deletereview/<courseID>")
+def coursePageDeleteReview(courseID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+
+            redirectURL = "/course/" + courseID
+            reviewlist = []
+
+            courseDict = {}
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                courseDict = db["Courses"]
+            except:
+                print("Unable to open up course shelve")
+                db.close()
+                return redirect(redirectURL)
+                
+            if courseID in courseDict:
+                course = courseDict[courseID]
+
+                reviewlist = course.get_review()
+                for review in reviewlist:
+                    user = review.get_userID()
+                    if user == userSession:
+                        course.remove_review(review)
+                        flash("Your deletion of review has been successful!","Success!")
+                        db["Courses"] = courseDict
+                        return redirect(redirectURL)
+
+                print("Either the user did not review the course or the course has no reviews.")
+                return redirect(redirectURL)
+            else:
+                print("Course not found.")
+                return redirect(redirectURL)
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(redirectURL)
+        else:
+            return redirect(redirectURL)
 
 """End of Purchase Review by Royston"""
 
@@ -5431,14 +5481,14 @@ def teacherPage(teacherPageUID):
                     shoppingCartLen = len(userKey.get_shoppingCart())
                 else:
                     shoppingCartLen = 0
-                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
+                return render_template('users/general/teacher_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
 
             else:
                 print("Admin/User account is not found or is not active/banned.")
                 session.clear()
-                return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile,teacherCourseLen=teacherCourseLen)
+                return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile,teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
         else:
-            return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen)
+            return render_template("users/general/teacher_page.html", accType="Guest", teacherPageUID=teacherPageUID, bio=bio, teacherCourseList=teacherCourseList, lastThreeCourseList=lastThreeCourseList, lastThreeCourseLen=lastThreeCourseLen, popularCourseList=popularCourseList, popularCourseLen=popularCourseLen, teacherUsername=teacherUsername, teacherProfile=teacherProfile, teacherCourseLen=teacherCourseLen, teacherUID=teacherPageUID)
     else:
         print("No such teacher exists...")
         return redirect("/404")
@@ -5890,13 +5940,15 @@ def courseReviews(courseID, reviewPageNum):
                 else:
                     userPurchased = False
 
+                # for showing the user's own review on the page
                 userReviewed = False
                 userReview = {}
                 for review in reviewsDict.keys():
                     if review.get_userID() == userSession:
                         userReviewed = True
                         userReview[review] = reviewsDict.get(review)
-                        reviewsDict.pop(review)
+                        if review in paginatedReviewDict:
+                            del paginatedReviewDict[review]
                         break
 
                 if accType == "Teacher":
