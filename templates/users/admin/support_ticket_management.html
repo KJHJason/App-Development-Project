@@ -221,63 +221,63 @@
 
                                         <!--Ticket ID-->
                                         <td>
-                                            {% if ticket["Status"] == "Open" %}
+                                            {% if ticket.get_status() == "Open" %}
                                             <p><div class="email-div">
-                                                <span onclick="ticketIDCopyToClipBoard('{{ ticket['Ticket ID'] }}')" id="ticketIDTooltip{{ ticket['Ticket ID'] }}" class="table_full_data_text ticket_id_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="ticketIDTooltipMouseOut('{{ ticket['Ticket ID'] }}')">{{ ticket['Ticket ID'] }}</span>
-                                                <a href="mailto:{{ ticket['Email']}}?subject=Re: {{ ticket['Subject'] }}"><i class="fas fa-envelope-open-text"></i></a>
+                                                <span onclick="ticketIDCopyToClipBoard('{{ ticket.get_ticketID() }}')" id="ticketIDTooltip{{ ticket.get_ticketID() }}" class="table_full_data_text ticket_id_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="ticketIDTooltipMouseOut('{{ ticket.get_ticketID() }}')">{{ ticket.get_ticketID() }}</span>
+                                                <a href="mailto:{{ ticket.get_email()}}?subject=Re: {{ ticket.get_email() }}"><i class="fas fa-envelope-open-text"></i></a>
                                             </div></p>
 
-                                            <span class="tooltip_value" id="ticketIDTooltipValue{{ ticket['Ticket ID'] }}">{{ ticket['Ticket ID'] }}</span><!--New-->
+                                            <span class="tooltip_value" id="ticketIDTooltipValue{{ ticket.get_ticketID() }}">{{ ticket.get_ticketID() }}</span><!--New-->
 
-                                            {% elif ticket["Status"] == "Closed" %}
-                                            <p class="closed-ticket">{{ ticket['Ticket ID'] }}</p>
+                                            {% elif ticket.get_status() == "Closed" %}
+                                            <p class="closed-ticket">{{ ticket.get_ticketID() }}</p>
                                             {% endif %}
                                         </td>
 
-                                        {% if ticket["Status"] == "Open" %}
-                                        <td>{{ ticket['Account Type'] }}</td>
-                                        {% elif ticket["Status"] == "Closed" %}
-                                        <td class="closed-ticket">{{ ticket['Account Type'] }}</td>
+                                        {% if ticket.get_status() == "Open" %}
+                                        <td>{{ ticket.get_accType() }}</td>
+                                        {% elif ticket.get_status() == "Closed" %}
+                                        <td class="closed-ticket">{{ ticket.get_accType() }}</td>
                                         {% endif %}
 
                                         <!--User ID-->
                                         <td>
-                                            {% if ticket['Status'] == "Open" %}
-                                            <span onclick="userIDCopyToClipBoard('{{ loop.index }}')" id="userIDTooltip{{ loop.index }}" class="table_full_data_text ticket_info_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ loop.index }}')">{{ ticket['User ID'] }}</span>
-                                            <span class="tooltip_value" id="userIDTooltipValue{{ loop.index }}">{{ ticket['User ID'] }}</span>
-                                            {% elif ticket['Status'] == "Closed" %}
-                                            <p class="closed-ticket">{{ ticket['User ID'] }}</p>
+                                            {% if ticket.get_status() == "Open" %}
+                                            <span onclick="userIDCopyToClipBoard('{{ loop.index }}')" id="userIDTooltip{{ loop.index }}" class="table_full_data_text ticket_info_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="userIDTooltipMouseOut('{{ loop.index }}')">{{ ticket.get_userID() }}</span>
+                                            <span class="tooltip_value" id="userIDTooltipValue{{ loop.index }}">{{ ticket.get_userID() }}</span>
+                                            {% elif ticket.get_status() == "Closed" %}
+                                            <p class="closed-ticket">{{ ticket.get_userID() }}</p>
                                             {% endif %}
                                         </td>
 
                                         <!--User Name-->
                                         <td>
-                                            {% if ticket['Status'] == "Open" %}
-                                            <span onclick="usernameCopyToClipBoard('{{ loop.index }}')" id="usernameTooltip{{ loop.index }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ loop.index }}')">{{ ticket['Name'] }}</span>
-                                            <span class="tooltip_value" id="usernameTooltipValue{{ loop.index }}">{{ ticket['Name'] }}</span>
-                                            {% elif ticket['Status'] == "Closed" %}
-                                            <p class="closed-ticket">{{ ticket['Name'] }}</p>
+                                            {% if ticket.get_status() == "Open" %}
+                                            <span onclick="usernameCopyToClipBoard('{{ loop.index }}')" id="usernameTooltip{{ loop.index }}" class="table_full_data_text ticket_name_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="usernameTooltipMouseOut('{{ loop.index }}')">{{ ticket.get_name() }}</span>
+                                            <span class="tooltip_value" id="usernameTooltipValue{{ loop.index }}">{{ ticket.get_name() }}</span>
+                                            {% elif ticket.get_status() == "Closed" %}
+                                            <p class="closed-ticket">{{ ticket.get_name() }}</p>
                                             {% endif %}
                                         </td>
 
                                         <!--User Email-->
                                         <td>
-                                            {% if ticket['Status'] == 'Open' %}
-                                            <span onclick="emailCopyToClipBoard('{{ loop.index }}')" id="userEmailTooltip{{ loop.index }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="emailTooltipMouseOut('{{ loop.index }}')">{{ ticket['Email'] }}</span>
-                                            <span class="tooltip_value" id="emailTooltipValue{{ loop.index }}">{{ ticket['Email'] }}</span>
-                                            {% elif ticket["Status"] == "Closed" %}
-                                            <p class="closed-ticket">{{ ticket['Email'] }}</p>
+                                            {% if ticket.get_status() == 'Open' %}
+                                            <span onclick="emailCopyToClipBoard('{{ loop.index }}')" id="userEmailTooltip{{ loop.index }}" class="table_full_data_text email_text text-break" data-bs-toggle="tooltip" data-bs-placement="top" title="Copy to clipboard" onmouseout="emailTooltipMouseOut('{{ loop.index }}')">{{ ticket.get_email() }}</span>
+                                            <span class="tooltip_value" id="emailTooltipValue{{ loop.index }}">{{ ticket.get_email() }}</span>
+                                            {% elif ticket.get_status() == "Closed" %}
+                                            <p class="closed-ticket">{{ ticket.get_email() }}</p>
                                             {% endif %}
                                         </td>
 
-                                        {% if ticket["Status"] == "Open" %}
-                                        <td>{{ ticket['Subject'] }}</td>
-                                        {% elif ticket["Status"] == "Closed" %}
-                                        <td class="closed-ticket">{{ ticket['Subject'] }}</td>
+                                        {% if ticket.get_status() == "Open" %}
+                                        <td>{{ ticket.get_subject() }}</td>
+                                        {% elif ticket.get_status() == "Closed" %}
+                                        <td class="closed-ticket">{{ ticket.get_subject() }}</td>
                                         {% endif %}
 
-                                        {% if ticket['Status'] == 'Open' %}
-                                        <div class="modal fade" id="ticketEnquiryModal-{{ loop.index }}" tabindex="-1" aria-labelledby="ticketEnquiryModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
+                                        {% if ticket.get_status() == 'Open' %}
+                                        <div class="modal fade" id="ticketEnquiryModal-{{ loop.index }}" tabindex="-1" aria-labelledby="ticketEnquiryModalLabel-{{ ticket.get_ticketID() }}" aria-hidden="true">
                                                 <div class="modal-dialog modal-dialog-scrollable modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
@@ -285,7 +285,7 @@
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            <p id="tooltipEnquiryValue{{ loop.index }}" class="text-break m-3" >{{ ticket['Enquiry'] }}</p>
+                                                            <p id="tooltipEnquiryValue{{ loop.index }}" class="text-break m-3" >{{ ticket.get_enquiry() }}</p>
 
                                                         </div>
                                                         <div class="modal-footer">
@@ -300,72 +300,72 @@
                                             <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#ticketEnquiryModal-{{ loop.index }}" onclick="openEnquiryModal('{{ loop.index }}')">Read&nbsp;Enquiry</button>
                                         </td>
 
-                                        {% elif ticket["Status"] == "Closed" %}
+                                        {% elif ticket.get_status() == "Closed" %}
                                         <td><button type="button" class="btn btn-secondary" disabled>Read&nbsp;Enquiry</button></td>
                                         {% endif %}
 
                                         <!--Open/Close Ticket-->
                                         <td>
-                                            <div class="modal fade" id="toggleTicketStatusModal-{{ ticket['Ticket ID'] }}" tabindex="-1" aria-labelledby="toggleTicketStatusModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
+                                            <div class="modal fade" id="toggleTicketStatusModal-{{ ticket.get_ticketID() }}" tabindex="-1" aria-labelledby="toggleTicketStatusModalLabel-{{ ticket.get_ticketID() }}" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            {% if ticket["Status"] == "Open" %}
-                                                            <h5 class="modal-title" id="toggleTicketStatusModalLabel{{ ticket['Ticket ID'] }}">Close Ticket</h5>
-                                                            {% elif ticket["Status"] == "Closed" %}
-                                                            <h5 class="modal-title" id="toggleTicketStatusModalLabel{{ ticket['Ticket ID'] }}">Open Ticket</h5>
+                                                            {% if ticket.get_status() == "Open" %}
+                                                            <h5 class="modal-title" id="toggleTicketStatusModalLabel{{ ticket.get_ticketID() }}">Close Ticket</h5>
+                                                            {% elif ticket.get_status() == "Closed" %}
+                                                            <h5 class="modal-title" id="toggleTicketStatusModalLabel{{ ticket.get_ticketID() }}">Open Ticket</h5>
                                                             {% endif %}
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            {% if ticket["Status"] == "Open" %}
-                                                            <h6>Are you sure that you want to close this ticket with the ID {{ ticket["Ticket ID"] }}?</h6>
+                                                            {% if ticket.get_status() == "Open" %}
+                                                            <h6>Are you sure that you want to close this ticket with the ID {{ ticket.get_ticketID() }}?</h6>
                                                             <h6>Note: While tickets can be re-opened, closing a ticket means that the issue has been closed.</h6>
                                                             <h6 class="text-danger">The sender will be informed.</h6>
-                                                            {% elif ticket["Status"] == "Closed" %}
-                                                            <h6>Are you sure that you want to re-open this ticket with the ID {{ ticket["Ticket ID"] }}?</h6>
+                                                            {% elif ticket.get_status() == "Closed" %}
+                                                            <h6>Are you sure that you want to re-open this ticket with the ID {{ ticket.get_ticketID() }}?</h6>
                                                             <h6>Note: Please only re-open a ticket if the issue is not actually closed.</h6>
                                                             {% endif %}
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                                            {% if ticket["Status"] == "Open" %}
-                                                            <button onclick="ticketToggle('{{ ticket['Ticket ID'] }}')" class="btn btn-danger">Confirm Close Ticket</button>
-                                                            {% elif ticket["Status"] == "Closed" %}
-                                                            <button onclick="ticketToggle('{{ ticket['Ticket ID'] }}')" class="btn btn-danger">Confirm Open Ticket</button>
+                                                            {% if ticket.get_status() == "Open" %}
+                                                            <button onclick="ticketToggle('{{ ticket.get_ticketID() }}')" class="btn btn-danger">Confirm Close Ticket</button>
+                                                            {% elif ticket.get_status() == "Closed" %}
+                                                            <button onclick="ticketToggle('{{ ticket.get_ticketID() }}')" class="btn btn-danger">Confirm Open Ticket</button>
                                                             {% endif %}
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {% if ticket["Status"] == "Open" %}
-                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#toggleTicketStatusModal-{{ ticket['Ticket ID'] }}">Close&nbsp;Ticket</button>
-                                            {% elif ticket["Status"] == "Closed" %}
-                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#toggleTicketStatusModal-{{ ticket['Ticket ID'] }}">Open&nbsp;Ticket</button>
+                                            {% if ticket.get_status() == "Open" %}
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#toggleTicketStatusModal-{{ ticket.get_ticketID() }}">Close&nbsp;Ticket</button>
+                                            {% elif ticket.get_status() == "Closed" %}
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#toggleTicketStatusModal-{{ ticket.get_ticketID() }}">Open&nbsp;Ticket</button>
                                             {% endif %}
                                         </td>
 
                                         <!--Delete Ticket-->
                                         <td>
-                                            <div class="modal fade" id="deleteTicketModal-{{ ticket['Ticket ID'] }}" tabindex="-1" aria-labelledby="deleteUserModalLabel-{{ ticket['Ticket ID'] }}" aria-hidden="true">
+                                            <div class="modal fade" id="deleteTicketModal-{{ ticket.get_ticketID() }}" tabindex="-1" aria-labelledby="deleteUserModalLabel-{{ ticket.get_ticketID() }}" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
-                                                            <h5 class="modal-title" id="deleteTicketModalLabel{{ ticket['Ticket ID'] }}">Delete Ticket</h5>
+                                                            <h5 class="modal-title" id="deleteTicketModalLabel{{ ticket.get_ticketID() }}">Delete Ticket</h5>
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            <h6>Are you sure that you want to delete this ticket with the ID {{ ticket["Ticket ID"] }}?</h6>
+                                                            <h6>Are you sure that you want to delete this ticket with the ID {{ ticket.get_ticketID() }}?</h6>
                                                             <h6 class="text-danger">Warning: There is no going back if you were to delete this ticket.</h6>
                                                         </div>
                                                         <div class="modal-footer">
                                                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                                                            <button onclick="ticketDelete('{{ ticket['Ticket ID'] }}')" class="btn btn-danger">Confirm Delete Ticket</button>
+                                                            <button onclick="ticketDelete('{{ ticket.get_ticketID() }}')" class="btn btn-danger">Confirm Delete Ticket</button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteTicketModal-{{ ticket['Ticket ID'] }}">Delete&nbsp;Ticket</button>
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteTicketModal-{{ ticket.get_ticketID() }}">Delete&nbsp;Ticket</button>
                                         </td>
                                     </tr>
                                     {% endfor %}
