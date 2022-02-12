@@ -328,7 +328,7 @@ def home():
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
-                return render_template('users/general/home.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID)
+                return render_template('users/general/home.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, trendingCourseDict=trendingDict, recommendCourseDict=recommedationDict, trendingCourseLen=len(trendingCourseList), recommendCourseLen=len(recommendCourseList), teacherUID=teacherUID, userPurchasedCourses=userPurchasedCourses)
             else:
                 # admins
                 recommendCourseList = get_random_courses(courseDict)
@@ -5408,11 +5408,13 @@ def supportTicketManagement(pageNum):
 
 """End of Support Ticket Management by Wei Ren"""
 
-"""Teapot by Wei Ren"""
+"""Teapot by Wei Ren for fun"""
+
 @app.route("/teapot")
 def teapot():
     abort(418)
-"""End of Teapot by Wei Ren"""
+
+"""End of Teapot by Wei Ren for fun"""
 
 """Teacher's Channel Page by Clarence"""
 
@@ -5638,10 +5640,14 @@ def course_thumbnail_upload(teacherUID):
                                 return make_response("Uploaded image is corrupted! Please try again!", 500)
                             else:
                                 print(f'File {file.filename} has been uploaded successfully')
-                    else:
+                        else:
                             db.close()
                             print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
                             return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
+                    else:
+                        db.close()
+                        print("Image extension not supported.")
+                        return make_response("Image extension not supported!", 500)
                 else:
                     db.close()
                     return make_response("Image extension not supported!", 500)

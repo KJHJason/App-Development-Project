@@ -1,33 +1,6 @@
 .thumbnails{
   height:auto;
   width:100%;
-  margin-bottom:15px;
-  border-radius:10px;
-}
-
-.col-md-4 p{
-  margin-bottom:100px;
-}
-
-.teacher {
-  text-align:center;
-}
-
-.teacher img{
-  margin-bottom:100px;
-}
-.teacher p{
-  margin-bottom:40px !important;
-}
-
-.teacher-button{
-  margin-bottom:50px;
-}
-
-@media screen and (max-width: 1500px){
-  .thebutton{
-    margin-bottom:50px;
-  }
 }
 
 #recommendations {
@@ -37,4 +10,10 @@
 
 .become_headings {
   margin-top: 100px;
+}
+
+@media (max-width: 768px) {
+  .become_headings {
+    margin-top: 50px;
+  }
 }

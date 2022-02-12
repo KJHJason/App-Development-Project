@@ -96,16 +96,22 @@
 						<p class="card-text">Views: {{ course.get_views() }}</p>
 					</div>
 					<div class="card-footer">
-						{% if accType=="Guest" %}
-						<form action="/login" method="GET">
-							<button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
-						</form>
-						{% elif accType=="Admin" %}
-						<button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
+						{% if course.get_courseID() in userPurchasedCourses %}
+							<form action="/purchaseview/{{ course.get_courseID() }}" method="POST">
+								<button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-bag"></i> View Purchase</button>
+							</form>
 						{% else %}
-						<form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
-							<button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
-						</form>
+							{% if accType=="Guest" %}
+							<form action="/login" method="GET">
+								<button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
+							</form>
+							{% elif accType=="Admin" %}
+							<button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
+							{% else %}
+							<form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
+								<button type="submit" class="btn btn-success float-end"><i class="fas fa-cart-plus fa-lg"></i> Add to Cart</button>
+							</form>
+							{% endif %}
 						{% endif %}
 					</div>
 				</div>
@@ -114,7 +120,7 @@
 		{% else %}
 			<div class="col">
 				<div class="card h-100">
-					<img src="/static/images/courses/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+					<img src="{{ url_for('static', filename='images/courses/placeholder.jpg') }}" class="card-img-top" alt="Course Thumbnail">
 					<div class="card-body">
 						<h4 class="card-title">No Course Available</h4>
 						<p class="card-text">Sorry, there are currently no courses available.</p>
@@ -203,7 +209,7 @@
 		{% else %}
 		<div class="col">
 			<div class="card h-100">
-				<img src="/static/images/courses/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+				<img src="{{ url_for('static', filename='images/courses/placeholder.jpg') }}" class="card-img-top" alt="Course Thumbnail">
 				<div class="card-body">
 					<h4 class="card-title">No Course Available</h4>
 					<p class="card-text">Sorry, there are currently no courses available.</p>
@@ -213,18 +219,20 @@
 		{% endif %}
 		</div>
 	</div>
+	{% if accType == "Guest" %}
 	<div class="row become_headings">
-		<div class="col-md teacher">
-			<img src="/static/images/courses/placeholder.jpg" alt="Become a Teacher Promo Image" class="thumbnails">
+		<div class="col-md">
+			<img src="{{ url_for('static', filename='images/home/home_teacher_banner.webp') }}" alt="Become a Teacher Promo Image" class="thumbnails rounded">
 		</div>
-		<div class="col-md teacher">
+		<div class="col-md text-center">
 			<h2>Become A Teacher Today!</h2>
-			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+			<p>We provide the platform for you to teach what you love.<br>For the first 90 days, you will earn 100% of your monthly earnings instead of the usual 75% due to the 25% commission!</p>
 			<form action="/teacher_signup" method="GET">
-				<button type="submit" class="teacher-button btn btn-primary btn-lg">Start Teaching Today</button>
+				<button type="submit" class="btn btn-primary btn-lg">Start Teaching Today</button>
 			</form>
 		</div>
 	</div>
+	{% endif %}
 </div>
 {% endblock %}
 
