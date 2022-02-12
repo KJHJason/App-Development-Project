@@ -4583,7 +4583,10 @@ def explore(pageNum, tag):
                         "Other_Academics")
 
             searchfound = []
-            purchasedCourses = userKey.get_purchases()
+            if accType != "Admin":
+                purchasedCourses = userKey.get_purchases()
+            else:
+                purchasedCourses = ""
 
             try:
                 userDict = {}
@@ -4700,6 +4703,11 @@ def explore(pageNum, tag):
 
             searchfound = []
 
+            if accType != "Admin":
+                purchasedCourses = userKey.get_purchases()
+            else:
+                purchasedCourses = ""
+
             try:
                 userDict = {}
                 courseDict = {}
@@ -4808,6 +4816,11 @@ def explore(pageNum, tag):
                     "Other_Academics")
 
         searchfound = []
+
+        if accType != "Admin":
+            purchasedCourses = userKey.get_purchases()
+        else:
+            purchasedCourses = ""
 
         try:
             userDict = {}
