@@ -17,16 +17,40 @@
 {% if courseList != [] %}
 <div class="row g-0">
 
-    <div class="col"> <!--col-8 if PayPal exists courseAddedTitle != None-->
+    <div class="col"> <!--col-8 if PayPal exists -->
 
-        {% if True %}
+        {% if status == "Success" %}
         <div>
-            <div class="alert-div alert alert-primary alert-dismissible fade show" role="alert">
+            <div class="alert-div alert alert-info alert-dismissible fade show" role="alert">
                 <div>
                     <i class="bi bi-info-circle"></i>
                 </div>
                 <div>
                     Course Titled '{{ courseAddedTitle }}' Added to Cart
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        {% elif status == "Added" %}
+        <div>
+            <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+                <div>
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div>
+                    Course Titled '{{ courseAddedTitle }}' Already In Cart
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+        {% elif status == "Purchased" %}
+        <div>
+            <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
+                <div>
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    Course Titled '{{ courseAddedTitle }}' Already Purchased
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -62,7 +86,7 @@
 
 
             <div class="card-body text">
-                <h5 class="card-title">{{ course['courseTitle'] }}<i class="fas fa-times" onclick="removeCourse('{{ course['courseID'] }}')"></i></h5>
+                <a href="/course/{{ course['courseID'] }}"><h5 class="card-title">{{ course['courseTitle'] }}<i class="fas fa-times" onclick="removeCourse('{{ course['courseID'] }}')"></i></h5></a>
                 <p class="card-text">{{ course['courseDescription'] }}</p>
             </div>
 
@@ -148,8 +172,46 @@
 
 {% else %}
 
+{% if status == "Success" %}
+<div class="div d-flex justify-content-center">
+    <div class="alert-div alert alert-info alert-dismissible fade show" role="alert">
+        <div>
+            <i class="bi bi-info-circle"></i>
+        </div>
+        <div>
+            Course Titled '{{ courseAddedTitle }}' Added to Cart
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% elif status == "Added" %}
+<div class="div d-flex justify-content-center">
+    <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+        <div>
+            <i class="bi bi-exclamation-circle"></i>
+        </div>
+        <div>
+            Course Titled '{{ courseAddedTitle }}' Already In Cart
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% elif status == "Purchased" %}
+<div class="div d-flex justify-content-center">
+    <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
+        <div>
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div>
+            Course Titled '{{ courseAddedTitle }}' Already Purchased
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endif %}
+
 <div class="empty-cart">
-    <a href="#" onclick="return false;"><i class="fas fa-cart-plus"></i></a>
+    <a href="/"><i class="fas fa-cart-plus"></i></a>
     <p>Seems like there isn't anything here. Continue Shopping?</p>
 </div>
 
