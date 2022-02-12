@@ -3125,15 +3125,13 @@ def changeAccountType():
                         else:
                             profileImagePathExists = False
 
-                    user = Teacher.Teacher(userID, username, email, password)
+                    user = Teacher.Teacher(userID, username, email, "") # password will be empty string as placeholder as to avoid hashing a hash
+                    user.set_password_hash(password) # set the hash as the user password
                     user.update_teacher_join_date_to_today()
-
 
                     # saving the user's profile image if the user has uploaded their profile image
                     if profileImageExists and profileImagePathExists:
                         user.set_profile_image(profileImageFilename)
-
-                    # add in other saved attributes of the student object
 
                     # checking if the user has already became a teacher
                     # Not needed but for scability as if there's a feature that allows teachers to revert back to a student in the future, the free three months 0% commission system can be abused.
@@ -6031,12 +6029,12 @@ def uploadLesson(courseID):
                             #         userOldImageFilePath.unlink(missing_ok=True)
                             #         print("Old Image file has been deleted.")
 
-                            # resizing the image to a 1:1 ratio and compresses it
-                            imageResized = resize_image(newFilePath, (250, 250))
+                            # resizing the image to a 1:1 ratio and compresses it and converts it to webp
+                            imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
 
                             if imageResized:
                                 # if file was successfully resized, it means the image is a valid image
-                                userKey.set_profile_image(lessonThumbnailFileName)
+                                userKey.set_profile_image(newImageFilePath.name)
                                 db['Users'] = userDict
                                 db.close()
                                 # flash("Your profile image has been successfully saved.", "Profile Image Updated")
@@ -6044,14 +6042,14 @@ def uploadLesson(courseID):
                                 # return make_response(("Profile Image Uploaded!", 200))
                                 return make_response(("Thumbnail Uploaded!", 200))
                             else:
-                                    # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
-                                    userKey.set_profile_image("")
+                                # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
+                                userKey.set_profile_image("")
 
-                                    db['Users'] = userDict
-                                    db.close()
-                                    # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                                    newFilePath.unlink(missing_ok=True)
-                                    return make_response("Uploaded image is corrupted! Please try again!", 500)
+                                db['Users'] = userDict
+                                db.close()
+                                # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                                newFilePath.unlink(missing_ok=True)
+                                return make_response("Uploaded image is corrupted! Please try again!", 500)
                     else:
                         db.close()
                         print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")

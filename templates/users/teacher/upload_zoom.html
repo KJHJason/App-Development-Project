@@ -1,0 +1,73 @@
+{% extends "user_base.html" %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/upload_zoom.css') }}">
+{% endblock %}
+
+{% block title %}Create Zoom Lesson | CourseFinity{% endblock %}
+
+{% block content %}
+
+<div class="container-sm" id="form">
+    <form action="" method="POST" enctype="multipart/form-data">
+        <h2>Zoom Lesson Creation</h2>
+        <div class="row">
+            <!-- Zoom Thumbnail -->
+            <div class="mb-5 col-6 gx-5">
+                <div class="card" style="width:180px;">
+                    <img id="thumbnail"
+                        src="https://st2.depositphotos.com/3765753/5349/v/600/depositphotos_53491489-stock-illustration-example-rubber-stamp-vector-over.jpg"
+                        alt="Your thumbnail will appear here" class="card-img-top" />
+                </div>
+                <br>
+                <label for="formFile" class="form-label">Upload Zoom Lesson Thumbnail Here!</label>
+                <input name="zoomThumbnail" class="form-control" id="formFile" type='file' value=""
+                    onchange="readURL(this);" />
+            </div>
+
+            <div class="mb-3 col-5">
+                <!-- Zoom Title -->
+                <div class="mb-4">
+                    <label for="zoomTitle" class="form-label">Zoom Lesson Title</label>
+                    <input name="zoomTitle" class="form-control" id="zoomTitle" type="text" value="" required
+                        placeholder="Lesson Title" />
+                </div>
+
+                <!-- Zoom Description -->
+                <div class="mb-4">
+                    <label for="zoomDescription" class="form-label">Zoom Lesson Description</label>
+                    <textarea name="zoomDescription" class="form-control" id="zoomDescription" rows="4" value=""
+                        required placeholder="Lesson Description"></textarea>
+                </div>
+
+                <!-- Zoom Schedule -->
+                <div class="mb-4">
+                    <label for="zoomSchedule" class="form-label">Zoom Lesson Schedule (UTC +8)</label>
+                    <input name="zoomSchedule" class="form-control" id="zoomSchedule" type="time" value="zoomSchedule"
+                        required>
+                    <label for="" class="form-label">Day of Lesson</label>
+                    <input name="zoomSchedule" class="form-control" id="zoomSchedule" type="text" value="zoomSchedule"
+                        required>
+                </div>
+
+
+                <!-- Zoom Link -->
+                <div>
+                    <label for="zoomLink" class="form-label">Zoom Lesson Link</label>
+                    <input name="zoomLink" class="form-control" id="zoomLink" type="text" value="" required
+                        placeholder="Paste your Zoom Link here" />
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn">
+            <span>Submit</span>
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/upload_zoom.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="../static/scripts/upload_zoom.js"></script>
+{% endblock %}
