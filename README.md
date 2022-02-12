@@ -15,13 +15,23 @@ This project consists of us making a web application using Flask as its framewor
 >3. Clarence
 >4. Royston
 
-**Project Description:** 
+**Project Situation:** 
 
 >In the past, CourseFinity (a fictional company) provided physical lessons at their main centre in Aljunied. It was a place for teachers and students, both as a place to teach, and a place to learn skills through upskilling.
 >
 >However, with the rise of the online era, along with the COVID-19 pandemic, the convenience of online learning started becoming more appealing to students. CourseFinity hence experienced a steep drop in students and teachers coming to the centre for lessons.
 >
 >In response, CourseFinity wants to hop onto the bandwagon, wanting to become fully digital and wants to shift its focus to cater more to an online platform and its global market. By attracting an even larger global consumer base, CourseFinity’s plans to digitally transform itself will definitely allow itself to regain and even surpass its previous customer count.
+
+**Project Description:**
+
+>Our web application is based off the fictional company CourseFinity, which is part of the tutoring industry.
+>
+>The web application is for students and teachers to connect together from all over the world and share their skills.
+>
+>The teachers can either upload videos or host weekly Zoom sessions and sell the course to earn extra money for themselves.
+>
+>The students can then buy the courses, using PayPal as the payment gateway, and start learning! 
 
 ---
 
