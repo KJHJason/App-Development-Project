@@ -1,9 +1,3 @@
-$(document).ready(function(){
-    $("#uploadThumnailButton").click(function(){
-        $("#imageForm").toggle();
-    });
-});
-
 // Dropzone.js for segmenting data payload to chunks of data
 Dropzone.options.dropper = {
     maxFiles: 1,
