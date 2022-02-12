@@ -5554,7 +5554,7 @@ def teacherCourses(teacherPageUID, coursePageNum):
 
     teacherObject = userDict.get(teacherPageUID)
     
-    if teacherObject == None:  # if courseID does not exist in courseDict
+    if teacherObject == None:  # if the teacherPageUID does not exist in userDict
         return redirect("/404")
 
     teacherCourseList = teacherObject.get_coursesTeaching() # list of Course IDs
@@ -5594,7 +5594,6 @@ def teacherCourses(teacherPageUID, coursePageNum):
         userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
 
         if userFound and accGoodStatus:
-            # add in your CRUD or other code
             if accType == "Teacher":
                 teacherUID = userSession
             else:
