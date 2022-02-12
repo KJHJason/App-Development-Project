@@ -13,6 +13,29 @@
 {% block title %}{{ course.get_title() }} | CourseFinity{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            {% for category, message in messages %}
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">{{ category }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>{{ message }}</h6>
+            </div>
+            {% endfor %}
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endwith %}
+
 <div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -182,6 +205,11 @@
                                     </div>
                                     <div class="col-10">
                                         <div class="card-body">
+                                            {% if review.get_userID() == session.get("userSession") %}
+                                            <form action="/course/deletereview/{{ course.get_courseID() }}" method="POST">
+                                                <button type="submit" class="btn mb-2 float-end"><i class="fas fa-trash float-end text-danger"></i></button>
+                                            </form>
+                                            {% endif %}
                                             <h5 class="card-title">{{ review.get_title() }}</h5>
                                             <p class="card-text">{{ review.get_comment() }}</p>
                                             <div class="ratings float-end">
@@ -253,4 +281,15 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+		<script>
+			var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+			alertModal.show();
+		</script>
+		{% endif %}
+	{% endwith %}
 {% endblock %}

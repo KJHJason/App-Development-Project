@@ -36,6 +36,9 @@
                                 </div>
                                 <div class="col-10">
                                     <div class="card-body">
+                                        <form action="/course/deletereview/{{ course.get_courseID() }}" method="POST">
+                                            <button type="submit" class="btn mb-2 float-end"><i class="fas fa-trash float-end text-danger"></i></button>
+                                        </form>
                                         <h5 class="card-title">{{ review.get_title() }}</h5>
                                         <p class="card-text">{{ review.get_comment() }}</p>
                                         <div class="ratings float-end">
@@ -108,73 +111,13 @@
             </table>
         </div>
     {% endif %}
-    <h3>There are {{ count }} user reviews</h3>
+    {% if userReviewed %}
+    <h3>There are {{ count }} user reviews including yours!</h3>
+    {% else %}
+    <h3>There are {{ count }} user reviews!</h3>
+    {% endif %}
     <div class="table-responsive-lg">
         <table class="table table-borderless">
-            {% if userReviewed %}
-                {% for review, userInfo in userReview.items() %}
-                <tr>
-                    <td class="td_cells_min_width_reviews">
-                        <div class="card mb-3 course_card">
-                            <div class="row g-0">
-                                <div class="col-2">
-                                    <!-- Get User Profile Pic-->
-                                    <img src="{{ userInfo[1] }}" class="img-fluid user_profile" alt="{{ userInfo[0] }}'s profile image">
-                                </div>
-                                <div class="col-10">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ review.get_title() }}</h5>
-                                        <p class="card-text">{{ review.get_comment() }}</p>
-                                        <div class="ratings float-end">
-                                            {% with reviewRating = review.get_rating() %}
-                                                {% if reviewRating == 5 %}
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                {% elif reviewRating >= 4 and reviewRating < 5 %}
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                {% elif reviewRating >= 3 and reviewRating < 4 %}
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span> 
-                                                {% elif reviewRating >= 2 and reviewRating < 3 %}
-                                                <span class="fas fa-star"></span>
-                                                <span class="fas fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                {% elif reviewRating >= 1 and reviewRating < 2 %}
-                                                <span class="fas fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                {% elif reviewRating >= 0 and reviewRating < 1 %}
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                <span class="far fa-star"></span>
-                                                {% endif %}
-                                            {% endwith %}
-                                        </div>
-                                        <small class="text-muted">Reviewed by {{ userInfo[0] }} at {{ review.get_review_time() }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            {% endif %}
             {% if reviewsCount >= 1 %}
                 {% for review, userInfo in reviews.items() %}
                 <tr>
