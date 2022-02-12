@@ -23,6 +23,8 @@ This project consists of us making a web application using Flask as its framewor
 >
 >In response, CourseFinity wants to hop onto the bandwagon, wanting to become fully digital and wants to shift its focus to cater more to an online platform and its global market. By attracting an even larger global consumer base, CourseFinity’s plans to digitally transform itself will definitely allow itself to regain and even surpass its previous customer count.
 
+---
+
 **Libraries needed:**
 
 >1. Flask Version 2.0.2
@@ -43,6 +45,8 @@ This project consists of us making a web application using Flask as its framewor
 >16. phonenumbers Version 8.12.42
 >17. qrcode Version 7.3.1
 >18. pyotp Version 2.6.0
+
+---
 
 **Task Allocation:**
 
