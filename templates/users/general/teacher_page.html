@@ -15,10 +15,12 @@
 {% block content %}
 <div class="container">
     <h1>Welcome to {{ teacherUsername }}'s page!</h1>
-    <div id="pfp_bio">
-        <div class="row">
-            <img src="{{ teacherProfile }}" alt="{{ teacherProfile }}'s Profile Icon" id="user-icon-setting">
-            <div id="bio" class="col-9">
+    <div class="container row">
+        <div class="card mb-3 pfp_bio">
+            <div id="pfp" class="col-2">
+                <img src="{{ teacherProfile }}" alt="{{ teacherProfile }}'s Profile Icon" id="user-icon-setting">
+            </div>
+            <div id="bio" class="card-body col-9">
                 {% if bio == "" %}
                 <p>Hello! Please take a look at the courses that I am teaching!</p>
                 {% else %}
