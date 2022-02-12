@@ -4084,6 +4084,7 @@ def purchaseHistory(pageNum):
             imagesrcPath = retrieve_user_profile_pic(userKey)
             # insert your C,R,U,D operation here to deal with the user shelve data files
 
+            course = ""
             courseID = ""
             courseType = ""
             historyCheck = True
