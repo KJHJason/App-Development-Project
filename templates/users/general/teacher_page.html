@@ -94,7 +94,7 @@
         {% else %}
             <div class="col">
                 <div class="card h-100">
-                    <img src="/static/images/courses/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+                    <img src="{{ url_for('static', filename='images/courses/placeholder.webp') }}" class="card-img-top" alt="Course Thumbnail">
                     <div class="card-body">
                         <h4 class="card-title">No Course Available</h4>
                         <p class="card-text">Sorry, there are currently no courses available.</p>
@@ -169,7 +169,7 @@
         {% else %}
             <div class="col">
                 <div class="card h-100">
-                    <img src="/static/images/courses/placeholder.jpg" class="card-img-top" alt="Course Thumbnail">
+                    <img src="{{ url_for('static', filename='images/courses/placeholder.webp') }}" class="card-img-top" alt="Course Thumbnail">
                     <div class="card-body">
                         <h4 class="card-title">No Course Available</h4>
                         <p class="card-text">Sorry, there are currently no courses available.</p>

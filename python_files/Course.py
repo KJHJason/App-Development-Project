@@ -145,9 +145,13 @@ class Course():
 
     def get_averageRating(self):
         total = 0
-        for review in self.__review:
-            total += int(review.get_rating())
-        return math.floor(total/len(self.__review))
+        if len(self.__review) >= 1:
+            for review in self.__review:
+                total += int(review.get_rating())
+            averageRating = math.floor(total/len(self.__review))
+        else:
+            averageRating = 0
+        return averageRating
 
     def get_numberPurchased(self):
         return self.__numberPurchased
