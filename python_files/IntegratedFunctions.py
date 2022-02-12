@@ -291,6 +291,9 @@ def resize_image(imagePath, dimensions):
 def construct_path(relativeUploadPath, filename):
     return Path(app.root_path).joinpath(relativeUploadPath, filename)
 
+def dicebear_failsafe(username):
+    return f"https://avatars.dicebear.com/api/initials/{username}.svg?size=250&"
+
 # function for retrieving user's profile picture using dicebear library based on the user ID
 # Condition: Only use this function when there is no shelve files opened previously
 def get_user_profile_pic(userID):
@@ -321,7 +324,7 @@ def get_user_profile_pic(userID):
             imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
         except:
             # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
-            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+            imagesrcPath = dicebear_failsafe(userKey.get_username())
 
         if profileFileNameBool != False:
             print("Image file does not exist anymore, resetting user's profile image...")
@@ -362,7 +365,7 @@ def get_user_profile_pic_only(userID):
             imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
         except:
             # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
-            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+            imagesrcPath = dicebear_failsafe(userKey.get_username())
 
         if profileFileNameBool != False:
             print("Image file does not exist anymore, resetting user's profile image...")
@@ -387,7 +390,7 @@ def retrieve_user_profile_pic(userKey):
             imagesrcPath = DAvatar(style=DStyle.initials, seed=userKey.get_username(), options=app.config["DICEBEAR_OPTIONS"]).url_svg
         except:
             # a failsafe if multiple connections are made to dicebear.com and causes a ConnectionResetError to occur
-            imagesrcPath = f"https://avatars.dicebear.com/api/initials/{userKey.get_username()}.svg?size=250&"
+            imagesrcPath = dicebear_failsafe(userKey.get_username())
 
     return imagesrcPath
 
