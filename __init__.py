@@ -3905,10 +3905,13 @@ def search(pageNum):
                         course = courseDict[courseID]
                         courseOwner = userDict[course.get_userID()].get_username()
 
+                        rating = course.get_averageRating()
+
                         searchInformation = {"Title":course.get_title(),
                             "Description":course.get_description(),
                             "Thumbnail":course.get_thumbnail(),
-                            "Owner":courseOwner}
+                            "Owner":courseOwner,
+                            "Rating": rating}
 
                         searchfound.append(searchInformation)
 
@@ -3991,10 +3994,13 @@ def search(pageNum):
                     course = courseDict[courseID]
                     courseOwner = userDict[course.get_userID()].get_username()
 
+                    rating = course.get_averageRating()
+
                     searchInformation = {"Title":course.get_title(),
                         "Description":course.get_description(),
                         "Thumbnail":course.get_thumbnail(),
-                        "Owner":courseOwner}
+                        "Owner":courseOwner,
+                        "Rating": rating}
 
                     searchfound.append(searchInformation)
 
