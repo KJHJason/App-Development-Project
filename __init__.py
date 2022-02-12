@@ -5447,31 +5447,54 @@ def teacherPage(teacherPageUID):
 
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/teacher_courses/<teacherCoursesUID>', methods=["GET", "POST"])
-def teacherCourses(teacherCoursesUID):
-    if "adminSession" in session or "userSession" in session:
-        if "adminSession" in session:
-            userSession = session["adminSession"]
+@app.route('/teacher_courses', methods=["GET"])
+def teacherCourses(courseID):
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
         else:
-            userSession = session["userSession"]
+            db.close()
+            return redirect("/404")
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect("/404")
 
-        userKey, userFound, accGoodStanding, accType, imagesrcPath = validate_session_get_userKey_open_file(userSession)
+    courseObject = courseDict.get(courseID)
+    
+    
+    if courseObject == None:  # if courseID does not exist in courseDict
+        return redirect("/404")
+    
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
 
-        if userFound and accGoodStanding:
-            if accType != "Admin":
-                # Get shopping cart len
-                shoppingCartLen = len(userKey.get_shoppingCart())
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your code below
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
             else:
-                shoppingCartLen = 0
-
-            return render_template('users/general/teacher_courses.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherCoursesUID=teacherCoursesUID)
-
+                teacherUID = ""
+            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
-            print("Admin/User account is not found or is not active/banned.")
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
-            return render_template("users/general/teacher_courses.html", accType="Guest")
+            return redirect(url_for("home"))
     else:
-        return render_template("users/general/teacher_courses.html", accType="Guest")
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
 
 """End of Teacher's Courses Page by Clarence"""
 
@@ -5518,12 +5541,14 @@ def course_thumbnail_upload(teacherUID):
                 if typeOfFormSubmitted == "courseDetails":
                     courseTitleInput = sanitise(request.form.get("courseDetails"))
                     courseDescriptionInput = sanitise(request.form.get("courseDescription"))
-                    courseCategoryInput = sanitise(request.form.get("courseCategory"))
+                    courseTagInput = sanitise(request.form.get("courseTag"))
+                    courseTypeInput = request.form.get("courseType")
                     coursePriceInput = sanitise(request.form.get("coursePrice"))
 
                     courseObject.set_title(courseTitleInput)
                     courseObject.set_description(courseDescriptionInput)
-                    courseObject.set_category(courseCategoryInput)
+                    courseObject.set_tag(courseTagInput)
+                    courseObject.set_type(courseTypeInput)
                     courseObject.set_price(coursePriceInput)
 
                     db.close()
@@ -6015,21 +6040,6 @@ def uploadLesson(courseID):
                             return make_response("Uploaded image is corrupted! Please try again!", 500)
                         else:
                             print(f'File {file.filename} has been uploaded successfully')
-                            # constructing a file path to see if the user has already uploaded an image and if the file exists
-                            # userOldImageFilename = userKey.get_profile_image()
-
-                            # if bool(userOldImageFilename):
-                            #     userOldImageFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userOldImageFilename)
-
-                            #     # using Path from pathlib to check if the file path of userID.png (e.g. 0.png) already exist.
-                            #     #since dropzone will actually send multiple requests,
-                            #     if userOldImageFilePath != newFilePath:
-                            #         print("User has already uploaded a profile image before.")
-                            #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                            #         userOldImageFilePath.unlink(missing_ok=True)
-                            #         print("Old Image file has been deleted.")
-
-                            # resizing the image to a 1:1 ratio and compresses it and converts it to webp
                             imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
 
                             if imageResized:
@@ -6057,21 +6067,6 @@ def uploadLesson(courseID):
                 else:
                     db.close()
                     return make_response("Image extension not supported!", 500)
-            # elif typeOfFormSubmitted == "resetUserIcon":
-            #     print("Deleting user's profile image...")
-            #     userImageFileName = userKey.get_profile_image()
-            #     profileFilePath = construct_path(
-            #     app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
-            #     # check if the user has already uploaded an image and checks if the image file path exists on the web server before deleting it
-            #     if bool(userImageFileName) != False:
-            #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-            #         Path(profileFilePath).unlink(missing_ok=True)
-            #     userKey.set_profile_image("")
-            #     db['Users'] = userDict
-            #     db.close()
-            #     print("User profile image deleted.")
-            #     flash("Your profile image has been successfully deleted.","Profile Image Deleted")
-            #     return redirect(url_for("userProfile"))
             else:
                 db.close()
                 # checking if the user have uploaded a profile image before and if the image file exists
