@@ -5271,7 +5271,7 @@ def courseUpload(teacherUID):
 
                     if imageResized:
                         # if file was successfully resized, it means the image is a valid image
-                        relativeWebpFilePath = "".join([app.config["THUMBNAIL_UPLOAD_PATH"], webpFilePath.name])
+                        relativeWebpFilePath = "".join([app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
                         course = Course.Course(courseID, courseTypeInput, coursePriceInput ,courseTagInput ,courseTitleInput, courseDescriptionInput, relativeWebpFilePath, teacherUID)
                         courseDict[courseID] = course
                         db["Courses"] = courseDict
