@@ -5523,7 +5523,7 @@ def course_thumbnail_upload(teacherUID):
 
                     courseObject.set_title(courseTitleInput)
                     courseObject.set_description(courseDescriptionInput)
-                    courseObject.set_course_type(courseCategoryInput)
+                    courseObject.set_category(courseCategoryInput)
                     courseObject.set_price(coursePriceInput)
 
                     db.close()
