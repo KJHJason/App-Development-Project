@@ -141,7 +141,7 @@ def home():
                 userPurchasedCourses = userKey.get_purchases() # to be edited once the attribute in the class has been updated
                 for courseID in list(courseDict.keys()):
                     if courseID in userPurchasedCourses:
-                        print("User has purchases the course,", courseDict[courseID].get_title())
+                        print("User has purchased the course,", courseDict[courseID].get_title())
                         courseDict.pop(courseID)
 
                 if len(courseDict) > 3:
@@ -307,6 +307,7 @@ def home():
                             else:
                                 courseDict.pop(randomisedCourse.get_courseID())
                 else:
+                    print("Not enough courses to personalise the recommendations...")
                     for value in courseDict.values():
                         if userDict.get(value.get_userID()).get_status() == "Good":
                             recommendCourseList.append(value)
@@ -519,6 +520,7 @@ def home():
                             # if the teacher of the course has been banned
                             courseDict.pop(randomisedCourse.get_courseID())
             else:
+                print("Not enough courses to personalise the recommendations...")
                 for value in courseDict.values():
                     if userDict.get(value.get_userID()).get_status() == "Good":
                         recommendCourseList.append(value)
