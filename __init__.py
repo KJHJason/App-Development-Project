@@ -5226,92 +5226,71 @@ def courseUpload(teacherUID):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            courseID = generate_course_ID(courseDict)
-
-            for courseID in courseDict:
-                courseObject = courseDict.get(courseID)
-
+            
             if request.method == "POST":
-                typeOfFormSubmitted = request.form.get("submittedForm")
-                if typeOfFormSubmitted == "courseDetails":
-                    courseTitleInput = sanitise(request.form.get("courseTitle"))
-                    courseDescriptionInput = sanitise(request.form.get("courseDescription"))
-                    courseTagInput = sanitise(request.form.get("courseTag"))
-                    courseTypeInput = request.form.get("courseType")
-                    coursePriceInput = sanitise(request.form.get("coursePrice"))
+                courseID = generate_course_ID(courseDict)
 
-                    courseObject.set_title(courseTitleInput)
-                    courseObject.set_description(courseDescriptionInput)
-                    courseObject.set_tag(courseTagInput)
-                    courseObject.set_type(courseTypeInput)
-                    courseObject.set_price(coursePriceInput)
+                courseTitleInput = sanitise(request.form.get("courseTitle"))
+                courseDescriptionInput = sanitise(request.form.get("courseDescription"))
+                courseTagInput = sanitise(request.form.get("courseTag"))
+                courseTypeInput = request.form.get("courseType")
+                coursePriceInput = sanitise(request.form.get("coursePrice"))
+                
+                if "courseThumbnail" not in request.files:
+                    print("No file sent.")
+                    return redirect(url_for("courseUpload", teacherUID=teacherUID))
 
-                    db.close()
-                    print("Course details have been created.")
-                    return redirect(url_for("teacherPage"))
+                file = request.files.get("courseThumbnail")
 
-                elif typeOfFormSubmitted == "image":
-                    if "courseThumbnail" not in request.files:
-                        print("No file sent.")
-                        return redirect(url_for("courseUpload", teacherUID=teacherUID))
+                extensionType = get_extension(file.filename)
+                if extensionType != False:
+                    # renaming the file name of the submitted image data payload
+                    file.filename = courseID + extensionType
+                    filename = file.filename
+                else:
+                    filename = "invalid"
 
-                    file = request.files["profileImage"]
+                # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                uploadedFileSize = request.cookies.get("filesize")
+                print("Uploaded file size:", uploadedFileSize, "bytes")
 
-                    totalChunks = int(request.form["dztotalchunkcount"])
-                    currentChunk = int(request.form['dzchunkindex'])
 
-                    extensionType = get_extension(file.filename)
-                    if extensionType != False:
-                        file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
-                        filename = file.filename
-                    else:
-                        filename = "invalid"
+                if file and allowed_image_file(filename):
+                    # will only accept .png, .jpg, .jpeg
+                    print("File extension accepted and is within size limit.")
 
-                    if file and allowed_image_file(filename):
-                        # will only accept .png, .jpg, .jpeg
-                        print("File extension accepted and is within size limit.")
+                    # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
 
-                        courseThumbnailFileName = file.filename
-                        newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], courseThumbnailFileName)
+                    userImageFileName = file.filename
+                    newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                    file.save(newFilePath)
 
-                        if currentChunk == 0:
-                            newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    # resizing the image to a 1:1 ratio that was recently uploaded and stored in the server directory
+                    imageResized, webpFilePath = resize_image(newFilePath, (1920, 1080))
 
-                        print("Total file size:", int(request.form['dztotalfilesize']))
 
-                        try:
-                            with open(newFilePath, "ab") as imageData: # ab flag for opening a file for appending data in binary format
-                                imageData.seek(int(request.form['dzchunkbyteoffset']))
-                                print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
-                                imageData.write(file.stream.read())
-                                imageData.close()
-                        except OSError:
-                            print('Could not write to file')
-                            return make_response("Error writing to file", 500)
-                        except:
-                            print("Unexpected error.")
-                            return make_response("Unexpected error", 500)
-
-                        if currentChunk + 1 == totalChunks:
-                            # This was the last chunk, the file should be complete and the size we expect
-                            if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
-                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
-                                # remove corrupted image
-                                newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                                return make_response("Uploaded image is corrupted! Please try again!", 500)
-                            else:
-                                print(f'File {file.filename} has been uploaded successfully')
-                        else:
-                            db.close()
-                            print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
-                            return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
+                    if imageResized:
+                        # if file was successfully resized, it means the image is a valid image
+                        relativeWebpFilePath = "".join([app.config["THUMBNAIL_UPLOAD_PATH"], webpFilePath.name])
+                        course = Course.Course(courseID, courseTypeInput, coursePriceInput ,courseTagInput ,courseTitleInput, courseDescriptionInput, relativeWebpFilePath, teacherUID)
+                        courseDict[courseID] = course
+                        db["Courses"] = courseDict
+                        print("Course created successfully.")
+                        db.close()
+                        print("Course details have been created.")
+                        flash("Your course has been created", "Course Created")
+                        return redirect("/teacher/" + teacherUID + "/page_1")
                     else:
                         db.close()
-                        print("Image extension not supported.")
-                        return make_response("Image extension not supported!", 500)
+                        flash("Image file is corrupted", "Corrupted File")
+                        webpFilePath.unlink(missing_ok=True)
+
+                        return redirect(url_for("courseUpload", teacherUID=teacherUID))
                 else:
                     db.close()
-                    return make_response("Image extension not supported!", 500)
+                    flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"), "File Extension Not Accepted")
+                    return redirect(url_for("courseUpload", teacherUID=teacherUID))
+                
             else:
                 db.close()
             imagesrcPath = retrieve_user_profile_pic(userKey)

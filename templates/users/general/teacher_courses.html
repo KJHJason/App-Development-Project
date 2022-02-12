@@ -20,7 +20,8 @@
             <li class="breadcrumb-item active" aria-current="page">All Courses</li>
         </ol>
     </nav>
-
+    
+    {% if session.get("userSession") == teacherPageUID %}
     <div class="container">
         {% for course in courseList%}
             <div class="row">
