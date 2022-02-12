@@ -7,7 +7,7 @@ $(document).ready(function(){
 // Dropzone.js for segmenting data payload to chunks of data
 Dropzone.options.dropper = {
     maxFiles: 1,
-    paramName: 'profileImage',
+    paramName: 'courseThumbnail',
     acceptedFiles: ".jpeg,.jpg,.png",
     chunking: true,
     forceChunking: true,
@@ -41,7 +41,7 @@ Dropzone.options.dropper = {
         myDropzone.on('sending', function(file, xhr, formData) {
             /* Append inputs to FormData */
             $(".dz-progress").show();
-            formData.append("imageProfile", document.getElementById('dropper').value);
+            formData.append("courseThumbnail", document.getElementById('dropper').value);
         });
     }
 };

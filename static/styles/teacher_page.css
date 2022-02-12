@@ -40,11 +40,14 @@ h2{
 
 #bio{
     display: block;
+    height: 70%;
     margin: auto;
     border: 2px solid black;
     padding: 20px;
     background-color: white;
     margin-left:10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 @media screen and (max-width: 1500px){

@@ -25,51 +25,25 @@
   margin-right: 10px;
 }
 
-#uploadThumbnailButton {
+
+#dropzoneText{
+  color: #000000;
+}
+
+label{
   margin-top: 10px;
 }
 
-/* Course Title */
-/* input#title.form-control {
-  border-radius: 0;
-  border: 1px solid #ddd;
-  height: 50px;
-  font-size: 1.5em;
-  font-weight: bold;
-  padding: 0 10px;
-  margin-bottom: 10px;
+#radioBtn{
+  margin-top: 15px;
 }
-/* End of Dropzone */
 
-/* Price */
-/* Checkbox */
-/*.form-check-input{
-  margin-top: 10px;
+#teacher_condition2{
   margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all .3s cubic-bezier(0.175, 0.885, 0.320, 1.275);
-  transform: translateY(-55px);
-} */
-
-/* Create Course Submit Button */
-#submit{
-  width: 100px;
-  height: 50%;
-  border-radius: 5px;
-  border: none;
-  background-color: #009DF8;
-  color: #fff;
-  font-size: 1em;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all .3s;
+  margin-top: 15px;
 }
-#submit:hover {
-  color: #273C4D;
+* {
+  background: #000 !important;
+  color: #0f0 !important;
+  outline: solid #f00 1px !important;
 }

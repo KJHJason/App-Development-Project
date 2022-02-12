@@ -5662,7 +5662,7 @@ def course_thumbnail_upload(teacherUID):
             if request.method == "POST":
                 typeOfFormSubmitted = request.form.get("submittedForm")
                 if typeOfFormSubmitted == "courseDetails":
-                    courseTitleInput = sanitise(request.form.get("courseDetails"))
+                    courseTitleInput = sanitise(request.form.get("courseTitle"))
                     courseDescriptionInput = sanitise(request.form.get("courseDescription"))
                     courseTagInput = sanitise(request.form.get("courseTag"))
                     courseTypeInput = request.form.get("courseType")
