@@ -32,7 +32,9 @@
                     <div class="row g-0">
                         <div class="selection col">
                             <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
-                            {% if searchInformation["Bought"] == True %}
+                            {% if accType == "Admin" %}
+                                <button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
+                            {% elif searchInformation["Bought"] == True %}
                                 <a class="float-end" href="#">View Course</a>
                             {% else %}
                                 <form action="/add_to_cart/{{ course.get_courseID() }}" method="POST">
