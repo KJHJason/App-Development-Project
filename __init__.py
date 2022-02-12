@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort
 import shelve, math, paypalrestsdk, difflib, json, csv, vimeo, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
@@ -11,7 +11,8 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course
+from python_files import Student, Teacher, Forms, Course, CourseLesson
+from python_files.Ticket import Ticket
 from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
@@ -1190,7 +1191,7 @@ def verifyEmail():
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-        
+
         if userFound and accGoodStatus:
             email = userKey.get_email()
             userID = userKey.get_user_id()
@@ -2671,7 +2672,7 @@ def userProfile():
                     if file and allowed_image_file(filename):
                         # will only accept .png, .jpg, .jpeg
                         print("File extension accepted and is within size limit.")
-                    
+
                         userImageFileName = file.filename
                         newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
 
@@ -4832,6 +4833,74 @@ def explore(pageNum, tag):
 
 """End of Explore Category by Royston"""
 
+"""Add to Cart by Wei Ren"""
+@app.post("/add_to_cart/<courseID>")
+def addToCart(courseID):
+    if "userSession" in session and "adminSession" not in session:
+        userSession = session["userSession"]
+
+        # Retrieving data from shelve and to write the data into it later
+        userDict = {}
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        try:
+            if 'Users' in db:
+                userDict = db['Users']
+            else:
+                db.close()
+                print("User data in shelve is empty.")
+                session.clear() # since the file data is empty either due to the admin deleting the shelve files or something else, it will clear any session and redirect the user to the homepage (This is assuming that is impossible for your shelve file to be missing and that something bad has occurred)
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Users from user.db")
+            return redirect(url_for("home"))
+
+        # retrieving the object based on the shelve files using the user's user ID
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+
+            # Remember to validate
+            try:
+                if "Courses" in db:
+                    courseDict = db['Courses']
+                else:
+                    print("user.db has no course entries.")
+                    courseDict = {}
+            except:
+                print("Error in retrieving Course from user.db")
+
+            if courseID in courseDict:
+                userKey.add_to_cart(courseID)
+            else:
+                print("Course ID not in CourseDict")
+                abort(404)
+
+            userDict[userKey.get_user_id()] = userKey
+            db["Users"] = userDict
+
+            db.close() # remember to close your shelve files!
+
+            session["Course Added"] = courseDict[courseID].get_title()
+            return redirect(url_for('shoppingCart'))
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of Add to Cart by Wei Ren"""
+
+
 """Shopping Cart by Wei Ren"""
 
 @app.route("/shopping_cart", methods = ["GET","POST"])
@@ -4943,6 +5012,13 @@ def shoppingCart():
                 subtotal = 0
 
                 print(shoppingCart)
+                print(session)
+
+                if "Course Added" in session:
+                    courseAddedTitle = session["Course Added"]
+                    session.pop("Course Added")
+                else:
+                    courseAddedTitle = None
 
                 for courseID in shoppingCart:
                     # Getting course info
@@ -4978,7 +5054,8 @@ def shoppingCart():
                 shoppingCartLen = len(userKey.get_shoppingCart())
 
                 db.close() # remember to close your shelve files!
-                return render_template('users/student/shopping_cart.html', courseList=courseList,form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                print(courseAddedTitle)
+                return render_template('users/student/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -5035,14 +5112,7 @@ def contactUs():
 
                     ticketID = generate_6_char_id(list(ticketDict.keys()))
 
-                    ticket = {"Ticket ID" : ticketID,
-                              "User ID" : userKey.get_user_id(),
-                              "Account Type" : accType,
-                              "Name" : name,
-                              "Email" : email,
-                              "Subject" : subject,
-                              "Enquiry" : contactForm.enquiry.data,
-                              "Status" : "Open"}
+                    ticket = Ticket(ticketID, userKey.get_user_id(), accType, name, email, subject, contactForm.enquiry.data)
 
                     print(ticket)
 
@@ -5055,7 +5125,6 @@ def contactUs():
                         print("Email server is down, please try again later.")
 
                     dbAdmin.close()
-
 
                     flash("Our staff will be with you shortly. Check your email soon!", "Thank you for your Feedback!")
 
@@ -5082,8 +5151,6 @@ def contactUs():
         print("Admin/User account is not found or is not active/banned.")
         session.clear()
 
-        success = False
-
         if request.method == "POST" and contactForm.validate():
 
             dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
@@ -5103,19 +5170,10 @@ def contactUs():
 
             ticketID = generate_6_char_id(ticketDict)
 
-            ticket = {"Ticket ID" : ticketID,
-                      "User ID" : None,
-                      "Account Type" : "Guest",
-                      "Name" : name,
-                      "Email" : email,
-                      "Subject" : subject,
-                      "Enquiry" : contactForm.enquiry.data,
-                      "Status" : "Open"}
+            ticket = Ticket(ticketID, None, "Guest", name, email, subject, contactForm.enquiry.data)
 
             ticketDict[ticketID] = ticket
             dbAdmin['Tickets'] = ticketDict
-
-            success = True
 
             try:
                 send_contact_us_email(ticketID, subject, name, email)
@@ -5124,7 +5182,12 @@ def contactUs():
 
             dbAdmin.close()
 
-        return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
+            flash("Our staff will be with you shortly. Check your email soon!", "Thank you for your Feedback!")
+
+            return(redirect(url_for("home")))
+
+        else:
+            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
 
 """End of Contact Us by Wei Ren"""
 
@@ -5188,11 +5251,21 @@ def supportTicketManagement(pageNum):
                     print("Toggling")
                     print(ticketAction.ticketID.data)
                     ticket = ticketDict[ticketAction.ticketID.data]
-                    if ticket["Status"] == "Open":
-                        ticket["Status"] = "Closed"
+                    if ticket.get_status() == "Open":
+                        ticket.set_status("Closed")
                     else:
-                        ticket["Status"] = "Open"
+                        ticket.set_status("Open")
                     ticketDict[ticketAction.ticketID.data] = ticket
+
+                    issueTitle = ticket.get_subject()
+                    name = ticket.get_name()
+                    email = ticket.get_email()
+
+                    try:
+                        send_ticket_closed_email(ticketAction.ticketID.data, issueTitle, name, email)
+                    except:
+                        print("Email server is down, please try again later.")
+
                     print(ticketDict)
 
                 # Ticket Deleting
@@ -5200,14 +5273,6 @@ def supportTicketManagement(pageNum):
                     print("Deleting")
                     if ticketAction.ticketID.data in ticketDict:
                         ticketID = ticketAction.ticketID.data
-                        ticket = ticketDict(ticketID)
-                        issueTitle = ticket["Subject"]
-                        name = ticket["Name"]
-                        email = ticket["Email"]
-                        try:
-                            send_ticket_closed_email(ticketID, issueTitle, name, email)
-                        except:
-                            print("Email server is down, please try again later.")
                         ticketDict.pop(ticketID)
 
 
@@ -5229,17 +5294,17 @@ def supportTicketManagement(pageNum):
                     if filtered == True:
                         continue
                     if filter == "Open" or filter == "Closed":
-                        if ticket["Status"] == filter:
+                        if ticket.get_status() == filter:
                             filtered = True
                     elif filter == "Guest" or filter == "Student" or filter == "Teacher":
-                        if ticket["Account Type"] == filter:
+                        if ticket.get_accType() == filter:
                             filtered = True
                     else:
-                        if ticket["Subject"] == filter:
+                        if ticket.get_subject() == filter:
                             filtered = True
 
 
-                if not filtered and (query in ticket['Name'].lower() or query in ticket['Email'].lower() or query in ticket['Ticket ID'].lower()):
+                if not filtered and (query in ticket.get_name().lower() or query in ticket.get_email().lower() or query in ticket.get_ticketID().lower()):
                     ticketList.append(ticket)
                     # print(ticket)
 
@@ -5287,152 +5352,11 @@ def supportTicketManagement(pageNum):
 
 """End of Support Ticket Management by Wei Ren"""
 
-"""Admin Statistics by Wei Ren"""
-
-@app.route("/admin_statistics/<string:statistic>/<int:year>/<int:month>/<int:day>")
-def adminStatistics(statistic, year, month, day):
-    if "adminSession" in session:
-        adminSession = session["adminSession"]
-        print(adminSession)
-        userFound, accActive = admin_validate_session_open_file(adminSession)
-
-        if userFound and accActive:
-
-            dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
-            # Remember to validate
-            try:
-                if "Statistics" in dbAdmin:
-                    statisticDict = dbAdmin['Statistics']
-                else:
-                    print("admin.db has no statistic entries.")
-                    statisticDict = create_statistic_dict('Courses Created','Courses Purchased','User Sign Ups','Teacher Sign Ups','Tickets Created','Tickets Open','Users Banned','Users Deleted')
-            except:
-                print("Error in retrieving statistics from admin.db")
-
-            # add in your code here
-
-
-
-            # print(statisticDict)
-
-            dbAdmin.close() # remember to close the admin shelve file!
-            return render_template('users/admin/admin_statistics.html')
-        else:
-            print("Admin account is not found or is not active.")
-            # if the admin is not found/inactive for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            # determine if it make sense to redirect the admin to the home page or the admin login page
-            return redirect(url_for("home"))
-            # return redirect(url_for("adminLogin"))
-    else:
-        return redirect(url_for("home"))
-
-"""
-
-            graphList = []
-            db = shelve.open("user", "c")
-            try:
-                if 'userGraphData' in db and "Users" in db:
-                    graphList = db['userGraphData']
-                else:
-                    print("No data in user shelve files")
-                    db["userGraphData"] = graphList
-            except:
-                print("Error in retrieving userGraphData from user.db")
-            finally:
-                db.close()
-
-            print("Retrieved graph data:", graphList)
-            try:
-                lastUpdated = graphList[-1].get_lastUpdate() # retrieve latest object
-            except:
-                lastUpdated = str(datetime.now().strftime("%d/%m/%Y, %H:%M:%S (UTC +8)"))
-
-            selectedGraphDataList = graphList[-15:] # get last 15 elements from the list to show the total number of user per day for the last 15 days
-            print("Selected graph data:", selectedGraphDataList)
-
-            # for matplotlib and chartjs graphs
-            xAxisData = [] # dates
-            yAxisData = [] # number of users
-            for objects in selectedGraphDataList:
-                xAxisData.append(str(objects.get_date()))
-                yAxisData.append(objects.get_noOfUser())
-
-            # for csv
-            graphDict = {}
-            for objects in graphList:
-                graphDict[objects.get_date()] = objects.get_noOfUser()
-
-            # try and except as matplotlib may fail since it is outside of main thread
-            try:
-                fig = plt.figure(figsize=(20, 10)) # configure ratio of the graph image saved # configure ratio of the graph image saved
-                plt.style.use("fivethirtyeight") # use fivethirtyeight style for the graph
-
-                x = xAxisData # date labels for x-axis
-                y = yAxisData # data for y-axis
-
-                plt.plot(x, y, color="#009DF8", linewidth=3)
-
-                # graph configurations
-                plt.ylabel('Total Numbers of Users')
-                plt.title("Total Userbase by Day")
-                plt.ylim(bottom=0) # set graph to start from 0 (y-axis)
-                fig.autofmt_xdate() # auto formats the date label to be tilted
-                fig.tight_layout() # eliminates padding
-
-                figureFilename = "static/data/user_base/graphs/user_base_" + str(datetime.now().strftime("%d-%m-%Y")) + ".png"
-                plt.savefig(figureFilename)
-            except:
-                print("Error in saving graph image...")
-
-            csvFileName = "static/data/user_base/csv/user_base.csv"
-
-            # # below code for simulation purposes
-            # xAxisData = [str(date.today()), str(date.today() + timedelta(days=1)), str(date.today() + timedelta(days=2))] # dates
-            # yAxisData = [12, 240, 500] # number of users
-            # graphDict = {
-            #     "21/1/2022": 4,
-            #     "22/1/2022": 20,
-            #     "23/1/2022": 25,
-            #     "24/1/2022": 100
-            # }
-
-            # for generating the csv data to collate all data as the visualisation on the web app only can show the last 15 days
-            with open(csvFileName, "w", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(["Dates", "Number Of Users"])
-                for key, value in graphDict.items():
-                    writer.writerow([key, value])
-
-            print("X-axis data:", xAxisData)
-            print("Y-axis data:", yAxisData)"""
-"""
-x-axis:
- - Time (Over 24 hours)
- - Time (Days)
- - Time (Weeks)
- - Time (Months)
- - Time (Quarterly)
- - Time (Year)
-
-y-axis:
- - Courses Created
- - Courses Purchased
- - User Sign Ups
- - Teacher Sign Ups
- - Tickets Opened
- - Tickets Active (and then closed)
- - Users Banned (and then unbanned)
- - Users Deleted
-
-Previous Next
-
-
-
-"""
-
-
-"""End of Admin Statistics by Wei Ren"""
+"""Teapot by Wei Ren"""
+@app.route("/teapot")
+def teapot():
+    abort(418)
+"""End of Teapot by Wei Ren"""
 
 """Teacher's Channel Page by Clarence"""
 
@@ -5923,7 +5847,7 @@ def courseReviews(courseID, reviewPageNum):
             else:
                 # if user account is deleted from the database
                 courseObject.remove_review(review)
-        
+
         db["Courses"] = courseDict
         db.close()
 
@@ -6891,6 +6815,11 @@ def error405(e):
 @app.errorhandler(413)
 def error413(e):
     return render_template("errors/413.html"), 413
+
+# I'm a Teapot
+@app.errorhandler(418)
+def error418(e):
+    return render_template("errors/418.html"), 418
 
 # Too Many Requests
 @app.errorhandler(429)
