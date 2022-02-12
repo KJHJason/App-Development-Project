@@ -56,6 +56,12 @@ This project consists of us making a web application using Flask as its framewor
 >17. qrcode Version 7.3.1
 >18. pyotp Version 2.6.0
 
+**To Install All Libraries At Once**
+
+```
+pip install -r requirements.txt
+```
+
 ---
 
 **Task Allocation:**
