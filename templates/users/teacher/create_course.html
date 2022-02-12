@@ -109,7 +109,7 @@
                 <!-- Thumbnail -->
                 <div class="row mb-0 g-3 m2 text-white">
                     <div id="imageForm">
-                        <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
+                        <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="courseThumbnail">
                             <input type="hidden" name="submittedForm" value="image">
                             <div class="dz-default dz-message">
                                 <i class="fas fa-cloud-upload-alt upload-icon"></i>
@@ -132,4 +132,47 @@
 {% block extra_js %}
 <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
 <script src="{{url_for('static', filename='scripts/create_course.js')}}"></script>
+<script type="application/javascript">
+    Dropzone.options.courseThumbnail = {
+        maxFiles: 1,
+        paramName: 'courseThumbnail',
+        acceptedFiles: ".jpeg,.jpg,.png",
+        chunking: true,
+        forceChunking: true,
+        url: '/create_course/{{ teacherUID }}',
+        maxFilesize: 50, // megabytes
+        chunkSize: 1000000, // bytes
+        retryChunks: true,
+        retryChunksLimit: 3,
+        autoProcessQueue: false,
+
+        init: function() {
+            let myDropzone = this;
+
+            myDropzone.on("addedfile", function() {
+                $(".dz-progress").hide();
+                if (myDropzone.files[1] == null) return;
+                myDropzone.removeFile(myDropzone.files[0]);
+            });
+
+            document.getElementById('submit-button').addEventListener("click", function (e) {
+                e.preventDefault();
+                myDropzone.processQueue();
+            });
+
+            myDropzone.on("success", function () {
+                function redirectUser() {
+                location.reload();
+                }
+                setInterval(redirectUser, 1500);
+            });
+
+            myDropzone.on('sending', function(file, xhr, formData) {
+            /* Append inputs to FormData */
+                $(".dz-progress").show();
+                formData.append("courseThumbnail", document.getElementById('courseThumbnail').value);
+            });
+        }
+    };
+</script>
 {% endblock %}

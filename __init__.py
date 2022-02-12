@@ -5196,7 +5196,7 @@ def teacherCourses(teacherPageUID, coursePageNum):
 """Course Creation by Clarence"""
 
 @app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
-def course_thumbnail_upload(teacherUID):
+def courseUpload(teacherUID):
     if "userSession" in session:
         userSession = session["userSession"]
 
@@ -5249,10 +5249,11 @@ def course_thumbnail_upload(teacherUID):
                     db.close()
                     print("Course details have been created.")
                     return redirect(url_for("teacherPage"))
+
                 elif typeOfFormSubmitted == "image":
                     if "courseThumbnail" not in request.files:
                         print("No file sent.")
-                        return redirect(url_for("userProfile"))
+                        return redirect(url_for("courseUpload", teacherUID=teacherUID))
 
                     file = request.files["profileImage"]
 
