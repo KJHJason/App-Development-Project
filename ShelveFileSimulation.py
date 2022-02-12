@@ -122,7 +122,7 @@ user = Teacher(userID, username, email, password)
 #Teacher
 user.set_earnings("5")
 user.set_accumulated_earnings("100")
-user.set_teacher_join_date(date(2022, 1, 1)) ## wtforms default datefield format = YYYY-MM-DD
+user.update_teacher_join_date_to_today()
 
 userDict[userID] = user
 #Courses (Royston)
@@ -173,7 +173,7 @@ user = Teacher(userID, username, email, password)
 
 #Teacher
 user.set_earnings("100")
-user.set_teacher_join_date(date(2020, 5, 2)) ## wtforms default datefield format = YYYY-MM-DD
+user.update_teacher_join_date_to_today()
 """
 #Cashout Info
 user.set_cashoutPreference("Phone")

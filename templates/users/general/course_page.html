@@ -139,7 +139,7 @@
                                     {% endwith %}
                                 {% endif %}
                                 {% if course.get_course_type() == "Zoom" %}
-                                <p class="card-text"><span class="fw-bold">Weekly Schedule (24HR):</span> Every {{ lessons[0].get_weekly_day() }} at {{ lessons[0].get_timings() }}</p>
+                                <p class="card-text"><span class="fw-bold">Weekly Schedule (24HR):</span> Every {{ lessons[0].get_weekly_day() }} at {{ lessons[0].get_timings() }} (UTC+8)</p>
                                 {% endif %}
                             </div>
                             <div class="card-footer">
@@ -248,7 +248,7 @@
                 {% endif %}
             </table>
         </div>
-        {% if reviewsCount > 5 %}
+        {% if reviewsCount > 3 %}
             <a href="/course/{{ course.get_courseID() }}/reviews/page_1" class="float-end">See all reviews...</a>
         {% endif %}
     </div>

@@ -4,14 +4,14 @@ from os import environ
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from pathlib import Path
-from requests import get as pyGet, post as pyPost
+from requests import post as pyPost
 from flask_mailman import Mail
 from datetime import date, timedelta, datetime
 from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course, CourseLesson
+from python_files import Student, Teacher, Forms, Course
 from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
 from python_files.Security import sanitise, sanitise_quote
@@ -68,66 +68,6 @@ client = vimeo.VimeoClient(
     key = '8ae482ba677dcdad1866b53280d00ea2a8e8ce05',
     secret = environ.get("VIMEO_SECRET")
 )
-
-"""
-# Create a variable with a hard coded path to your file system
-file_name = '{path_to_a_video_on_the_file_system}'
-
-print('Uploading: %s' % file_name)
-
-try:
-    # Upload the file and include the video title and description.
-    uri = client.upload(file_name, data={
-        'name': 'Vimeo API SDK test upload',
-        'description': CourseLesson.get_description()
-    })
-
-    # Get the metadata response from the upload and log out the Vimeo.com url
-    video_data = client.get(uri + '?fields=link').json()
-    print('"{}" has been uploaded to {}'.format(file_name, video_data['link']))
-
-    # Make an API call to edit the title and description of the video.
-    client.patch(uri, data={
-        'name': 'Vimeo API SDK test edit',
-        'description': "This video was edited through the Vimeo API's " +
-                       "Python SDK."
-    })
-
-    print('The title and description for %s has been edited.' % uri)
-
-    # Make an API call to see if the video is finished transcoding.
-    video_data = client.get(uri + '?fields=transcode.status').json()
-    print('The transcode status for {} is: {}'.format(
-        uri,
-        video_data['transcode']['status']
-    ))
-except vimeo.exceptions.VideoUploadFailure as e:
-    # We may have had an error. We can't resolve it here necessarily, so
-    # report it to the user.
-    print('Error uploading %s' % file_name)
-    print('Server reported: %s' % e.message)
-"""
-
-""" # Uploading of videos
-file_name = '{path_to_a_video_on_the_file_system}'
-uri = client.upload(file_name, data={
-    'name': 'Untitled',
-    'description': 'The description goes here.'
-})
-
-print ('Your video URI is: %s' % (uri))
-
-# Error handling while video transcodes
-response = client.get(uri + '?fields=transcode.status').json()
-if response['transcode']['status'] == 'complete':
-    print ('Your video finished transcoding.')
-elif response['transcode']['status'] == 'in_progress':
-    print ('Your video is still transcoding.')
-else:
-    print ('Your video encountered an error during transcoding.')
-
-response = client.get(uri + '?fields=link').json()
-print("Your video link is: " + response['link']) """
 
 """End of Web app configurations"""
 
@@ -2731,7 +2671,7 @@ def userProfile():
                     if file and allowed_image_file(filename):
                         # will only accept .png, .jpg, .jpeg
                         print("File extension accepted and is within size limit.")
-
+                    
                         userImageFileName = file.filename
                         newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
 
@@ -2773,12 +2713,12 @@ def userProfile():
                                         userOldImageFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
                                         print("Old Image file has been deleted.")
 
-                                # resizing the image to a 1:1 ratio and compresses it
-                                imageResized = resize_image(newFilePath, (250, 250))
+                                # resizing the image to a 1:1 ratio and compresses it and converts to a webp
+                                imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
 
                                 if imageResized:
                                     # if file was successfully resized, it means the image is a valid image
-                                    userKey.set_profile_image(userImageFileName)
+                                    userKey.set_profile_image(newImageFilePath.name) # saves the filename with its extension only instead of the full file path
                                     db['Users'] = userDict
                                     db.close()
                                     flash("Your profile image has been successfully saved.", "Profile Image Updated")
@@ -5798,8 +5738,12 @@ def coursePage(courseID):
     for review in reviews:
         userID = review.get_userID()
         userObject = userDict.get(userID)
-        userProfile = retrieve_user_profile_pic(userObject)
-        reviewsDict[review] = [userObject.get_username(), userProfile]
+        if userObject != None:
+            userProfile = retrieve_user_profile_pic(userObject)
+            reviewsDict[review] = [userObject.get_username(), userProfile]
+        else:
+            # if user account is deleted from the database
+            courseObject.remove_review(review)
 
     if "adminSession" in session or "userSession" in session:
         if "adminSession" in session:
@@ -5825,7 +5769,6 @@ def coursePage(courseID):
                 userKey.change_no_of_view(courseObject.get_tag())
                 courseObject.increase_view()
                 db["Users"] = userDict
-                db["Courses"] = courseDict
 
                 # Get shopping cart len
                 shoppingCartLen = len(userKey.get_shoppingCart())
@@ -5834,6 +5777,7 @@ def coursePage(courseID):
                 userPurchased = False
                 shoppingCartLen = 0
 
+            db["Courses"] = courseDict
             db.close()
 
             return render_template('users/general/course_page.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, userPurchased=userPurchased, lessons=lessons, lessonsCount=lessonsCount, reviews=reviewsDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername)
@@ -5949,7 +5893,6 @@ def courseReviews(courseID, reviewPageNum):
         if "Courses" in db and "Users" in db:
             courseDict = db['Courses']
             userDict = db['Users']
-            db.close()
         else:
             db.close()
             return redirect(url_for("home"))
@@ -5974,8 +5917,15 @@ def courseReviews(courseID, reviewPageNum):
         for review in reviews:
             userID = review.get_userID()
             userObject = userDict.get(userID)
-            userProfile = retrieve_user_profile_pic(userObject)
-            reviewsDict[review] = [userObject.get_username(), userProfile]
+            if userObject != None:
+                userProfile = retrieve_user_profile_pic(userObject)
+                reviewsDict[review] = [userObject.get_username(), userProfile]
+            else:
+                # if user account is deleted from the database
+                courseObject.remove_review(review)
+        
+        db["Courses"] = courseDict
+        db.close()
 
         maxItemsPerPage = 10 # declare the number of items that can be seen per pages
         maxPages = math.ceil(reviewsCount/maxItemsPerPage) # calculate the maximum number of pages and round up to the nearest whole number
@@ -6043,6 +5993,7 @@ def courseReviews(courseID, reviewPageNum):
         else:
             return render_template("users/general/course_page_reviews.html", accType="Guest", course=courseObject, userReviewed=False, userPurchased=False, reviews=paginatedReviewDict, reviewsCount=reviewsCount, courseTeacherUsername=courseTeacherUsername, count=reviewsCount, maxPages=maxPages, pageNum=reviewPageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
     else:
+        db.close()
         return redirect("/course/" + courseID)
 
 """End of Course Page and its review page by Jason"""

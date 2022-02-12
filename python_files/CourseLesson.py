@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 """Made by Wei Ren"""
-"""Edited by Clarence"""
+"""Edited by Clarence and Jason"""
 
 class Lesson():
     def __init__(self, title, description, thumbnail):
@@ -29,7 +29,6 @@ class Lesson():
         self.__lessonID = lessonID
     def get_lessonID(self):
         return self.__lessonID
-
 
 # Video Data
 class VideoLesson(Lesson):

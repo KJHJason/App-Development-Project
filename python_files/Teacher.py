@@ -1,5 +1,7 @@
 from .Common import Common
 
+# Created by Jason and edited by Wei Ren
+
 class Teacher(Common):
     def __init__(self, user_id, username, email, password):
         super().__init__(user_id, username, email, password, "Teacher", "Good")

@@ -2,6 +2,7 @@ from .User import User
 from datetime import date
 
 # to check for unique values in a list or dictionary
+# Done by Jason
 def checkUniqueElements(inputToCheck):
     listOf = []
     if isinstance(inputToCheck, dict):
@@ -15,6 +16,8 @@ def checkUniqueElements(inputToCheck):
     else:
         raise Exception("Function checkUniqueElements can only accept dictionary or lists!")
     return uniqueNumbersOfViews
+
+# Created by Jason and edited by Wei Ren and Royston
 
 class Common(User):
     def __init__(self, user_id, username, email, password, acc_type, status):
