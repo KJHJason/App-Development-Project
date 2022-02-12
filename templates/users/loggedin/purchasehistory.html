@@ -41,26 +41,23 @@
         </div>
         <div class="col-7">
             <div class="card-body text">
-                <h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ courseInformation["Title"] }}</a></h5>
+                <h5 class="card-title"><a href="/course/{{ courseInformation['CourseID'] }}">{{ courseInformation["Title"] }}</a></h5>
                 <p class="card-text">{{ courseInformation["Description"] }}</p>
             </div>
             <div class="card-body">
                 <div class="row g-0">
                     <div class="selection col">
-                        {% if "CourseTypeCheck" == "Video" %}
-                        <p class="info">Lesson Type: Online Videos</p>
-                        {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
-                        <p class="info">Lesson Type: Zoom Session</p>
+                        {% if courseInformation["CourseTypeCheck"] == "Video" %}
+                            <p class="info">Lesson Type: Online Videos</p>
+                        {% elif courseInformation["CourseTypeCheck"] == "Zoom" %}
+                            <p class="info">Lesson Type: Zoom Session</p>
                         {% endif %}
-                        <a href="/purchaseview/{{courseID}}" class="view">View course materials</a>
+                        <a href="/purchaseview/{{ courseInformation['CourseID'] }}" class="view">View course materials</a>
                         {% if courseInformation["ReviewChecker"] == False %}
-                        <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
+                            <a class="btn btn-link" href="/purchasereview/{{courseID}}">Submit Review</a>
                         {% else %}
-                        <a class="btn btn-link" href="/purchaseview/{{courseID}}">View Review</a>
+                            <a class="btn btn-link" href="/purchaseview/{{courseID}}">View Review</a>
                         {% endif %}
-                    </div>
-                    <div class="information col">
-                        <!--Placeholders-->
                     </div>
                 </div>
             </div>

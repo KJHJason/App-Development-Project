@@ -41,15 +41,15 @@
     <div class="row g-0 casing mx-auto">
         <div class="col">
             <div class="card-body text">
-                <h5 class="card-title text-center"><a href="/course/{{ course.get_courseID() }}">{{ courseInformation["Title"] }}</a></h5>
+                <h5 class="card-title text-center"><a href="/course/{{ courseInformation['CourseID'] }}">{{ courseInformation["Title"] }}</a></h5>
                 <br>
                 <h5 class="card-text">Date: {{ courseInformation["Date"] }}</h5>
                 <h5 class="card-text">Time: {{ courseInformation["Time"] }}</h5>
                 <h5 class="card-text">Order ID: {{ courseInformation["OrderID"] }}</h5>
                 <h5 class="card-text">Paypal ID: {{ courseInformation["PaypalID"] }}</h5>
-                {% if "CourseTypeCheck" == "Video" %}
+                {% if courseInformation["CourseTypeCheck"] == "Video" %}
                 <h5 class="card-text">Lesson Type: Video Recording</h5>
-                {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
+                {% elif courseInformation["CourseTypeCheck"] == "Zoom" %}
                 <h5 class="card-text">Lesson Type: Zoom</h5>
                 {% endif %}
             </div>
@@ -66,12 +66,14 @@
             <div class="card-body text">
                 <h5 class="card-title">{{ Lesson.get_title() }}</h5>
                 <p class="card-text">{{ Lesson.get_description() }}</p>
-                {% if "CourseTypeCheck" == "Video" %}
-                <a target="_blank" href="{{ Lesson.get_videoAbsolutePath() }}" class="view">View Recording</a>
-                {% elif "CourseTypeCheck" == "Zoom" or "Video" %}
-                <a target="_blank" href="{{ Lesson.get_zoom_link() }}" class="view">View Zoom Link</a>
-                <p>Zoom Password: {{ Lesson.get_zoom_password() }}</p>
-                {% endif %}
+                {% for courseInformation in courseList %}
+                    {% if courseInformation["CourseTypeCheck"] == "Video" %}
+                    <a target="_blank" href="{{ Lesson.get_videoAbsolutePath() }}" class="view">View Recording</a>
+                    {% elif courseInformation["CourseTypeCheck"] == "Zoom" or "Video" %}
+                    <a target="_blank" href="{{ Lesson.get_zoom_link() }}" class="view">View Zoom Link</a>
+                    <p>Zoom Password: {{ Lesson.get_zoom_password() }}</p>
+                    {% endif %}
+                {% endfor %}
             </div>
             <div class="card-body">
                 <div class="row">

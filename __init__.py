@@ -4101,7 +4101,6 @@ def purchaseHistory(pageNum):
 
                     # Find the correct course
                     course = courseDict[courseID]
-                    courseType = purchasedCourses.get(courseID).get("Course Type")
                     courseOwner = userDict[course.get_userID()].get_username()
                     reviewlist = course.get_review()
                     reviewCourse = False
@@ -4110,14 +4109,14 @@ def purchaseHistory(pageNum):
                         if user == userSession:
                             reviewCourse = True
 
-                    courseInformation = {"CourseID":course,
-                        "Title":course.get_title(),
-                        "Description":course.get_description(),
-                        "Thumbnail":course.get_thumbnail(),
-                        "CourseTypeCheck":course.get_course_type(),
-                        "Price":course.get_price(),
-                        "Owner":courseOwner,
-                        "ReviewChecker":reviewCourse}
+                    courseInformation = {"CourseID":course.get_courseID(),
+                                        "Title":course.get_title(),
+                                        "Description":course.get_description(),
+                                        "Thumbnail":course.get_thumbnail(),
+                                        "CourseTypeCheck":course.get_course_type(),
+                                        "Price":course.get_price(),
+                                        "Owner":courseOwner,
+                                        "ReviewChecker":reviewCourse}
                     historyList.append(courseInformation)
                     session["courseIDGrab"] = courseID
                 print(historyList)
@@ -4177,7 +4176,6 @@ def purchaseHistory(pageNum):
 
 """Purchase Review by Royston"""
 
-# THIS APP ROUTE HAS POTENTIAL BUGS, PLEASE FIX
 @app.route("/purchasereview/<courseID>", methods=["GET","POST"])
 def createPurchaseReview(courseID):
     if "userSession" in session:
@@ -4405,7 +4403,6 @@ def purchaseView(courseID):
                 pageNum = 0
 
             courseList = []
-            courseID = session.get("courseIDGrab")
             historyCheck = True
             reviewlist = []
             reviewMatch = ""
