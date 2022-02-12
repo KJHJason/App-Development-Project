@@ -89,7 +89,6 @@ This project consists of us making a web application using Flask as its framewor
 > 5. Create Video Lesson
 > 6. Create Zoom Lesson
 > 7. Admin Console (Part 2) [Deactivation, reactivation and deletion of admin accounts]
-> 8. Teacher’s Handbook
 
 * Royston
 > 1. Explore Category
