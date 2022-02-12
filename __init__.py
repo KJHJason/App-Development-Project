@@ -5505,8 +5505,9 @@ def teacherPage(teacherPageUID):
 
 """Teacher's Courses Page by Clarence"""
 
-@app.route('/teacher_courses', methods=["GET"])
-def teacherCourses(courseID):
+
+@app.route('/teacher_courses/page_<int:coursePageNum>', methods=["GET"])
+def teacherCourses(courseID, coursePageNum):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
         if "Courses" in db and "Users" in db:
@@ -5521,7 +5522,7 @@ def teacherCourses(courseID):
         return redirect("/404")
 
     courseObject = courseDict.get(courseID)
-    
+    courseList = []
     
     if courseObject == None:  # if courseID does not exist in courseDict
         return redirect("/404")
@@ -5534,12 +5535,49 @@ def teacherCourses(courseID):
 
         if userFound and accGoodStatus:
             # add in your code below
+            courseList = courseObject.get_courseID()  # get a list of course objects
+            courseCount = len(courseList)
+            for course in courseList:
+                if course.get_userID() == userSession:
+                    courseList.remove(course)
+    #         userID = review.get_userID()
+    #         userObject = userDict.get(userID)
+            maxItemsPerPage = 10  # declare the number of items that can be seen per pages
+            # calculate the maximum number of pages and round up to the nearest whole number
+            maxPages = math.ceil(courseCount/maxItemsPerPage)
+
+            #redirecting for handling different situation
+            if coursePageNum < 0:
+                return redirect("/course/" + courseID + "/page_0")
+            elif courseCount > 0 and coursePageNum == 0:
+                return redirect("/course/" + courseID + "/page_1")
+            elif coursePageNum > maxPages:
+                return redirect("/course/" + courseID + "/page_" + str(maxPages))
+            else:
+                # reversing the dictionary keys to show the latest course in CourseFinity using list slicing
+                courseKeyList = []
+                for courseList in reversed(courseDict):
+                    courseKeyList.append(courseList)
+
+                pageNumForPagination = coursePageNum - 1  # minus for the paginate function
+                paginatedCourseKeyList = paginate(
+                    courseKeyList, pageNumForPagination, maxItemsPerPage)
+                paginationList = get_pagination_button_list(
+                    coursePageNum, maxPages)
+
+                paginatedCourseDict = {}
+                for key in paginatedCourseKeyList:
+                    paginatedCourseDict[key] = courseDict.get(key)
+
+                previousPage = coursePageNum - 1
+                nextPage = coursePageNum + 1
+
             imagesrcPath = retrieve_user_profile_pic(userKey)
             if accType == "Teacher":
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, course=courseObject, courseList=paginatedCourseDict, courseCount=courseCount, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
@@ -5613,7 +5651,7 @@ def course_thumbnail_upload(teacherUID):
                     print("Course details have been created.")
                     return redirect(url_for("teacherPage"))
                 elif typeOfFormSubmitted == "image":
-                    if "profileImage" not in request.files:
+                    if "courseThumbnail" not in request.files:
                         print("No file sent.")
                         return redirect(url_for("userProfile"))
 
