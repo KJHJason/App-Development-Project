@@ -5605,14 +5605,14 @@ def teacherCourses(teacherPageUID, coursePageNum):
             else:
                 shoppingCartLen = 0
 
-            return render_template('users/general/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen, courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/general/tecaher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen, courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
-            return render_template("users/general/page.html", accType="Guest", courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template("users/general/teacher_courses.html", accType="Guest", courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
             # return redirect(url_for("insertName"))
     else:
-        return render_template("users/general/page.html", accType="Guest", courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+        return render_template("users/general/teacher_courses.html", accType="Guest", courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
 
 
 """End of Teacher's Courses Page by Clarence"""
