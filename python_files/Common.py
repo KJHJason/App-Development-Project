@@ -118,12 +118,12 @@ class Common(User):
         if courseID not in self.__shoppingCart:
             self.__shoppingCart.append(courseID)
         else:
-            print("Course ID", courseID, "Type", type, "already in shopping cart.")
+            print("Course ID", courseID, "already in shopping cart.")
     def remove_from_cart(self,courseID):
         try:
             self.__shoppingCart.remove(courseID)
         except KeyError:
-            print("Course ID", courseID, "Type", type, "not in shopping cart.")
+            print("Course ID", courseID, "not in shopping cart.")
         except:
             print("Unexpected error.")
 
