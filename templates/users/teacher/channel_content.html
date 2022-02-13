@@ -262,7 +262,7 @@
             // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
             lessonVideoDropzone.on("success", function () {
                 function redirectUser() {
-                location.reload();
+                location.href = "/course/{{ course.get_courseID() }}";
                 }
                 setInterval(redirectUser, 1500);
             });
