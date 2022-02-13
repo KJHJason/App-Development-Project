@@ -3787,6 +3787,7 @@ def search(pageNum):
                     "Description":course.get_description(),
                     "Thumbnail":course.get_thumbnail(),
                     "Owner": courseOwner,
+                    "OwnerID":course.get_userID(),
                     "Rating": rating}
 
                 searchfound.append(searchInformation)
@@ -4381,6 +4382,7 @@ def explore(pageNum, tag):
                     "Description":course.get_description(),
                     "Thumbnail":course.get_thumbnail(),
                     "Owner": courseOwner,
+                    "OwnerID":course.get_userID(),
                     "Rating":rating}
                 searchfound.append(searchInformation)
             else:

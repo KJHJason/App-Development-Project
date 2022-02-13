@@ -25,13 +25,13 @@
             </div>
             <div class="col-7">
                 <div class="card-body text">
-                    <a href="{{ link }}"><h5 class="card-title">{{ searchInformation["Title"] }}</h5></a>
+                    <a href="/course/{{ searchInformation['CourseID'] }}"><h5 class="card-title">{{ searchInformation["Title"] }}</h5></a>
                     <p class="card-text">{{ searchInformation["Description"] }}</p>
                 </div>
                 <div class="card-body">
                     <div class="row g-0">
                         <div class="selection col">
-                            <a href="{{ link }}" class="view">{{ searchInformation["Owner"] }}</a>
+                            <a href="/teacher_page/{{ searchInformation['OwnerID'] }}" class="view">{{ searchInformation["Owner"] }}</a>
                             {% if accType == "Admin" %}
                                 <button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
                             {% elif searchInformation["Bought"] == True %}
