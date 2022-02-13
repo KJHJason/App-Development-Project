@@ -5856,9 +5856,8 @@ def uploadZoom(courseID):
 
                         # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
 
-                        userImageFileName = file.filename
                         newFilePath = construct_path(
-                            app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                            app.config["THUMBNAIL_UPLOAD_PATH"], filename)
                         file.save(newFilePath)
 
                         # resizing, compressing, and converting the thumbnail image to webp
