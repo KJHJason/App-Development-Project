@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort, send_from_directory
 import shelve, math, paypalrestsdk, difflib, json, csv, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
@@ -4559,12 +4559,15 @@ def viewVideo(courseID,lessonID):
 # blocks all user from viewing the video so that they are only allowed to view the video from the purchase view
 @app.route("/static/course_videos/<courseID>/<lessonID>")
 def blockAccess(courseID, lessonID):
+    # courseID is the folder for the course videos and lessonID is technically the file name with its extension, e.g. hello.mp4
     if "userSession" in session:
         userSession = session["userSession"]
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
         if userFound and accGoodStatus:
             if courseID in userKey.get_purchases():
-                return make_response(206)
+                directoryPath = construct_path(app.config["COURSE_VIDEO_FOLDER"], courseID)
+                # first argument is the absolute path to the course video directory and the second argument is the filename (e.g. hello.mp4)
+                return send_from_directory(directoryPath, lessonID, as_attachment=False) # display instead of telling the user to download the video
             else:
                 abort(403)
         else:

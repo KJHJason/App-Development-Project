@@ -253,14 +253,16 @@ user.set_courseTeaching(courseID)
 title = "How to be a daniel part 1"
 description = "You will learn the ups & up here."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
-videoPath = "/static/course_videos/demo/Aiming at legs.mp4"
+videoPath = "".join(["/static/course_videos/", courseID,"/Aiming at legs.mp4"])
 
 course.add_video_lesson(title, description, thumbnail, videoPath)
 
 title = "How to make a daniel part 2"
 description = "You will now learn about the bees and the birds."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
-videoPath = "/static/course_videos/demo/Test_video.mp4"
+videoPath = "".join(["/static/course_videos/", courseID, "/Test_video.mp4"])
+
+print(f"Please change demo video folder to {courseID}")
 
 course.add_video_lesson(title, description, thumbnail, videoPath)
 
@@ -354,8 +356,6 @@ graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph
 
 for i in range(len(graphList)-1, -1, -1):
     graphList[i].set_date(todayDate - timedelta(days=30-i))
-
-print(graphList)
 
 # Overwrite entire shelve with updated dictionary
 userBase["Users"] = userDict
