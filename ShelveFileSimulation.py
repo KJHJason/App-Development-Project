@@ -229,14 +229,14 @@ user.set_courseTeaching(courseID)
 title = "How to be a daniel part 1"
 description = "You will learn the ups & up here."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
-videoPath = "https://www.youtube.com/watch?v=MP87VxcKvzY"
+videoPath = "/static/course_videos/Aiming at legs.mp4"
 
 course.add_video_lesson(title, description, thumbnail, videoPath)
 
 title = "How to make a daniel part 2"
 description = "You will now learn about the bees and the birds."
 thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
-videoPath = "https://www.youtube.com/watch?v=g1h0XECsMDs"
+videoPath = "/static/course_videos/Test_video.mp4"
 
 course.add_video_lesson(title, description, thumbnail, videoPath)
 
