@@ -41,6 +41,8 @@ class Teacher(Common):
         return self.__coursesTeaching
     def set_courseTeaching(self, courseID):
         self.__coursesTeaching.append(courseID)
+    def remove_courseTeaching(self, courseID):
+        self.__coursesTeaching.remove(courseID)
 
     def set_paypalID(self, paypalID):
         self.__paypalID = paypalID

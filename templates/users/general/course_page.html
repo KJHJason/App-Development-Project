@@ -69,6 +69,9 @@
                                                     <div class="card-body">
                                                         <h5 class="card-title">{{ lesson.get_title() }}</h5>
                                                         <p class="card-text">{{ lesson.get_description() }}</p>
+                                                        {% if course.get_userID() == session.get('userSession') %}
+                                                        <a href="/course/{{ course.get_courseID() }}/edit/{{ lesson.get_lessonID() }}" class="btn btn-primary">Edit Video</a>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </div>
@@ -85,6 +88,7 @@
                                                     <div class="card-body">
                                                         <h5 class="card-title">{{ lesson.get_title() }}</h5>
                                                         <p class="card-text">{{ lesson.get_description() }}</p>
+                                                        <p class="card-text"><span class="fw-bold">Weekly Schedule (24HR):</span> Every {{ lesson.get_weekly_day() }} at {{ lesson.get_timings() }} (UTC+8)</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,9 +165,6 @@
                                     {% with zoomCourseLink = lessons[0].get_zoom_link() %}
                                     <p class="card-text"><span class="fw-bold">Zoom Link:</span> <a href="{{ zoomCourseLink }}" target="_blank">{{ zoomCourseLink }}</a></p>
                                     {% endwith %}
-                                {% endif %}
-                                {% if course.get_course_type() == "Zoom" %}
-                                <p class="card-text"><span class="fw-bold">Weekly Schedule (24HR):</span> Every {{ lessons[0].get_weekly_day() }} at {{ lessons[0].get_timings() }} (UTC+8)</p>
                                 {% endif %}
                             </div>
                             <div class="card-footer">

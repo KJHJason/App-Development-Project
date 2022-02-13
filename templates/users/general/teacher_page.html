@@ -16,16 +16,18 @@
 <div class="container">
     <h1>Welcome to {{ teacherUsername }}'s page!</h1>
     <div class="container row">
-        <div class="card w-90 mb-3 pfp_bio flex-row">
-            <div id="pfp" class="col-2">
-                <img src="{{ teacherProfile }}" alt="{{ teacherProfile }}'s Profile Icon" id="user-icon-setting">
-            </div>
-            <div id="bio" class="card-body text-dark bg-light col-9">
-                {% if bio == "" %}
-                <p>Hello! Please take a look at the courses that I am teaching!</p>
-                {% else %}
-                <p>{{ bio }}</p>
-                {% endif %}
+        <div class="col card w-90 mb-3 border bg-light flex-row">
+            <div class="row">
+                <div id="pfp" class="col-md-3">
+                    <img src="{{ teacherProfile }}" alt="{{ teacherProfile }}'s Profile Icon" id="user-icon-setting">
+                </div>
+                <div id="bio" class="text-dark bg-light col-md-9">
+                    {% if bio == "" %}
+                    <p>Hello! Please take a look at the courses that I am teaching!</p>
+                    {% else %}
+                    <p>{{ bio }}</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -182,7 +184,7 @@
     {% if teacherCourseLen > 3 %}
     <div class="row">
         <div class="col">
-            <a class="float-end" href="/teacher/{{teacherPageUID}}/page_<int:coursePageNum>">See All Courses</a>
+            <a class="float-end" href="/teacher/{{teacherPageUID}}/page_1">See All Courses</a>
         </div>
     </div> 
     {% endif %}    

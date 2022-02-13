@@ -3,6 +3,11 @@ from .CourseLesson import ZoomLesson, VideoLesson
 from .IntegratedFunctions import ellipsis
 import math
 
+# for rounding off a float to 2dp by Jason
+def get_two_decimal_pt(numberInput):
+    numberInput = round(numberInput, 2)
+    return f"{numberInput:.2f}"
+
 class Course():
     def __init__(self, courseID, courseType, price, tag, title, description, thumbnail, userID):
         self.__courseID = courseID
@@ -10,7 +15,7 @@ class Course():
         self.__title = title
         self.__description = description
         self.__thumbnail = thumbnail
-        self.__price = price
+        self.__price = get_two_decimal_pt(float(price))
         self.__course_type = courseType # "Zoom" or "Video"
         self.__tag = tag #  PLEASE ADHERE TO THE ATTRIBUTE, tags_viewed, ON THE Common.py
         self.__views = 0

@@ -77,7 +77,7 @@ def validate_session_get_userKey_open_file(userSession):
 # However, UUID v4 is completely random but has a very small chance for collision but it is very unlikely to happen
 # useful resource: https://stackoverflow.com/questions/53096198/prevent-uuid-collision-in-python-same-process
 def generate_ID(inputDict):
-    generatedID = str(uuid.uuid4())
+    generatedID = str(uuid.uuid4().hex)
     if generatedID in inputDict:
         generate_ID(inputDict) # using recursion if there is a collision to generate a new unique ID
     return generatedID
@@ -519,10 +519,6 @@ def check_first_day_of_month(inputDate):
         return True
     else:
         return False
-
-def get_two_decimal_pt(numberInput):
-    numberInput = round(numberInput, 2)
-    return f"{numberInput:.2f}"
 
 # functions for reset password process via email
 # helpful resources: https://stackoverflow.com/questions/56699115/timedjsonwebsignatureserializer-vs-urlsafetimedserializer-when-should-i-use-wha
