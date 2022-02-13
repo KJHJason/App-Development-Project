@@ -5807,7 +5807,6 @@ def uploadZoom(courseID):
         if "Courses" in db and "Users" in db:
             courseDict = db['Courses']
             userDict = db['Users']
-            db.close()
         else:
             db.close()
             return redirect(url_for("home"))
@@ -5824,7 +5823,7 @@ def uploadZoom(courseID):
     if "userSession" in session:
         userSession = session["userSession"]
 
-        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
             if accType == "Teacher":
@@ -5846,14 +5845,10 @@ def uploadZoom(courseID):
                     extensionType = get_extension(file.filename)
                     if extensionType != False:
                         # renaming the file name of the submitted image data payload
-                        file.filename = courseID + extensionType
+                        file.filename = generate_ID_to_length_no_dict(16) + extensionType
                         filename = file.filename
                     else:
                         filename = "invalid"
-
-                    # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
-                    uploadedFileSize = request.cookies.get("filesize")
-                    print("Uploaded file size:", uploadedFileSize, "bytes")
 
                     if file and allowed_image_file(filename):
                         # will only accept .png, .jpg, .jpeg
@@ -5875,23 +5870,23 @@ def uploadZoom(courseID):
                             relativeWebpFilePath = "".join(
                                 ["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
 
-                            courseObject.add_zoom_lessons(courseID, zoomTitleInput, zoomDescriptionInput, relativeWebpFilePath, zoomLinkInput, zoomPasswordInput, zoomTimeInput, zoomDayInput)
+                            courseObject.add_zoom_lessons(zoomTitleInput, zoomDescriptionInput, relativeWebpFilePath, zoomLinkInput, zoomPasswordInput, zoomTimeInput, zoomDayInput)
 
                             db["Courses"] = courseDict
-                            print("Zoom Lesson created successfully.")
                             db.close()
+                            print("Zoom Lesson created successfully.")
                             flash("Your zoom lesson has been created!", "Zoom Lesson Created")
-                            return redirect("/teacher/" + userSession + "/page_1")
+                            return redirect("/channel_content/" + userSession + "/1")
                         else:
                             db.close()
                             flash("Image file is corrupted", "Corrupted File")
                             webpFilePath.unlink(missing_ok=True)
-                            return redirect(url_for("zoomUpload",courseID=courseID))
+                            return redirect(redirectURL)
                     else:
                         db.close()
                         flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"),
                             "File Extension Not Accepted")
-                        return redirect(url_for("zoomUpload",courseID=courseID))
+                        return redirect(redirectURL)
                 else:
                     db.close()
                     imagesrcPath = retrieve_user_profile_pic(userKey)
@@ -5911,6 +5906,7 @@ def uploadZoom(courseID):
             session.clear()
             return redirect(url_for("home"))
     else:
+        db.close()
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:

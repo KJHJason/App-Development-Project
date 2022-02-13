@@ -97,6 +97,10 @@ def generate_ID_to_length(inputDict, length):
         generate_ID_to_length(inputDict, length) # using recursion if there is a collision to generate a new unique ID
     return generatedID
 
+def generate_ID_to_length_no_dict(length):
+    generatedID = str(shortuuid.ShortUUID().random(length=length)) # using shortuuid to generate a 16 character ID for the course ID which will be used in the url
+    return generatedID
+
 def general_page_open_file_with_userKey(userID):
     imagesrcPath = ""
     try:
