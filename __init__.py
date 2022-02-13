@@ -4486,6 +4486,78 @@ def explore(pageNum, tag):
 
 """End of Explore Category by Royston"""
 
+"""View Video Courses by Royston"""
+
+@app.route("/purchaseview/<courseID>/view_video/<lessonID>" , methods=["GET","POST"])
+def viewVideo(courseID,lessonID):
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
+
+            try:
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+                db.close()
+
+            except:
+                print("Error in obtaining course.db data")
+                return redirect(url_for("home"))
+
+            pageNum = session.get("pageNumber")
+
+            if "pageNumber" in session:
+                pageNum = session["pageNumber"]
+            else:
+                pageNum = 0
+            
+            if purchasedCourses != {}:
+                if courseID in purchasedCourses:
+                    course = courseDict[courseID]
+                    lessonList = course.get_lesson_list()
+                    for lessonObject in lessonList:
+                        lessonObjectID = lessonObject.get_lessonID()
+                        if lessonID == lessonObjectID:
+                            video = lessonObject.get_videoPath()
+                            print(video)
+                            break
+
+            else:
+                print("Purchase History is Empty")
+                return redirect(url_for("home"))
+            
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+            
+            return render_template('users/loggedin/view_video.html',courseID=courseID, pageNum = pageNum, shoppingCartLen=shoppingCartLen,video = video, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+"""End of View Video Courses by Royston"""
+
 """Add to Cart by Wei Ren"""
 @app.post("/add_to_cart/<courseID>")
 def addToCart(courseID):
