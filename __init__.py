@@ -2615,6 +2615,23 @@ def dashboard():
     else:
         return redirect(url_for("home"))
 
+# block users that are not admins from accessing the files
+@app.route("/static/data/<folder>/<childFolder>/<filename>")
+def blockAccessToData(folder, childFolder, filename):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+
+        userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            # add in your code here
+            directoryPath = "".join([str(app.root_path), "\\static\\data\\", folder, "\\", childFolder])
+            return send_from_directory(directoryPath, filename, as_attachment=True)
+        else:
+            abort(403)
+    else:
+        abort(403)
+
 """End of Admin Data Visualisation (Total user per day) by Jason"""
 
 """User Profile Settings by Jason"""
