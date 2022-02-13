@@ -5870,59 +5870,102 @@ def function(courseID):
     if courseObject == None:  # if courseID does not exist in courseDict
         abort(404)
 
-    courseTitle = courseObject.get_title()
     if "userSession" in session:
         userSession = session["userSession"]
 
         userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
-
-
         if userFound and accGoodStatus:
-            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+
             if request.method == "POST":
+
                 zoomTitleInput = sanitise(request.form.get("zoomTitle"))
-                if zoomTitleInput == False:
-                    zoomTitleInput = ""
-                    return redirect(redirectURL)
-
                 zoomDescriptionInput = sanitise(request.form.get("zoomDescription"))
-                if zoomDescriptionInput == False:
-                    zoomDescriptionInput = ""
-                    return redirect(redirectURL)
-
-                zoomScheduleInput = sanitise(request.form.get("zoomSchedule"))
-                if zoomScheduleInput == False:
-                    zoomScheduleInput = ""
-                    return redirect(redirectURL)
-
+                zoomTimeInput = request.form.get("zoomTime")
+                zoomDayInput = request.form.get("zoomDay")
                 zoomLinkInput = sanitise(request.form.get("zoomLink"))
-                if zoomLinkInput == False:
-                    zoomLinkInput = ""
+                zoomPasswordInput = sanitise(request.form.get("zoomPassword"))
+
+                if "zoomThumbnail" not in request.files:
+                    print("No file sent.")
                     return redirect(redirectURL)
 
-                zoomThumbnailInput = sanitise(request.files.get("zoomThumbnail"))
-                if zoomThumbnailInput == False:
-                    zoomThumbnailInput = ""
-                    return redirect(redirectURL)
+                file = request.files.get("zoomThumbnail")
 
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            if accType == "Teacher":
-                teacherUID = userSession
+                extensionType = get_extension(file.filename)
+                if extensionType != False:
+                    # renaming the file name of the submitted image data payload
+                    file.filename = courseID + extensionType
+                    filename = file.filename
+                else:
+                    filename = "invalid"
+
+                # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                uploadedFileSize = request.cookies.get("filesize")
+                print("Uploaded file size:", uploadedFileSize, "bytes")
+
+                if file and allowed_image_file(filename):
+                    # will only accept .png, .jpg, .jpeg
+                    print("File extension accepted and is within size limit.")
+
+                    # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+
+                    userImageFileName = file.filename
+                    newFilePath = construct_path(
+                        app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                    file.save(newFilePath)
+
+                    # resizing, compressing, and converting the thumbnail image to webp
+                    imageResized, webpFilePath = resize_image(
+                        newFilePath, (1920, 1080))
+
+                    if imageResized:
+                        # if file was successfully resized, it means the image is a valid image
+                        relativeWebpFilePath = "".join(
+                            ["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
+                        courseObject.add_zoom_lessons(courseID, zoomTitleInput, zoomDescriptionInput, relativeWebpFilePath, zoomLinkInput, zoomPasswordInput, zoomTimeInput, zoomDayInput)
+
+                        db["Courses"] = courseDict
+                        print("Zoom Lesson created successfully.")
+                        db.close()
+                        flash(
+                            "Your zoom lesson has been created!", "Zoom Lesson Created")
+                        return redirect("/teacher/" + userSession + "/page_1")
+                    else:
+                        db.close()
+                        flash("Image file is corrupted", "Corrupted File")
+                        webpFilePath.unlink(missing_ok=True)
+                        return redirect(url_for("zoomUpload",courseID=courseID))
+                else:
+                    db.close()
+                    flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"),
+                          "File Extension Not Accepted")
+                    return redirect(url_for("zoomUpload",courseID=courseID))
             else:
-                teacherUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                db.close()
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                if accType == "Teacher":
+                    teacherUID = userSession
+
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+
+                    db.close()  # remember to close your shelve files!
+                    return render_template('users/teacher/upload_zoom.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                else:
+                    db.close()
+                    print("User not found or is banned")
+                    # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                    session.clear()
+                    return redirect(url_for("home"))
         else:
-            print("User not found or is banned.")
-            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-            session.clear()
-            return redirect(url_for("home"))
+            db.close()
+            return redirect(url_for("userLogin"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
-            # determine if it make sense to redirect the user to the home page or the login page
-            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-            # return redirect(url_for("userLogin"))
+            return redirect(url_for("userLogin"))
 
 """End of Zoom Upload app.route by Clarence"""
 
