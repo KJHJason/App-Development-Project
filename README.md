@@ -54,7 +54,6 @@ This project consists of us making a web application using Flask as its framewor
 >15. phonenumbers Version 8.12.42
 >16. qrcode Version 7.3.1
 >17. pyotp Version 2.6.0
->18. pymediainfo Version 5.1.0
 
 **To Install All Libraries At Once:**
 
