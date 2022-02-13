@@ -33,7 +33,31 @@ adminDict = {}
 courseDict = {}
 ticketDict = {}
 graphList = []
+"""
+                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
+                    # Remember to validate
+                    try:
+                        if "Tickets" in dbAdmin:
+                            ticketDict = dbAdmin['Tickets']
+                        else:
+                            print("admin.db has no contact entries.")
+                            ticketDict = {}
+                    except:
+                        print("Error in retrieving Tickets from admin.db")
 
+                    name = contactForm.name.data
+                    email = contactForm.email.data
+                    subject = contactForm.subject.data
+
+                    ticketID = generate_6_char_id(list(ticketDict.keys()))
+
+                    ticket = Ticket(ticketID, userKey.get_user_id(), accType, name, email, subject, contactForm.enquiry.data)
+
+                    print(ticket)
+
+                    ticketDict[ticketID] = ticket
+                    dbAdmin['Tickets'] = ticketDict
+"""
 """
 {"Users":{userID:User()}
          {userID:User()}

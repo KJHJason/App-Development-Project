@@ -16,9 +16,6 @@ class Teacher(Common):
         self.__phoneVerification = "Not Verified"
         self.__cashoutPhone = None
 
-        self.__cashoutEmailVerification = self.get_email_verification()
-        self.__cashoutEmail = email
-
     """Done by Jason"""
     
     def set_earnings(self, earnings):

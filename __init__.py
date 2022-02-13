@@ -4614,9 +4614,10 @@ def addToCart(courseID):
                 return redirect(url_for('shoppingCart'))
 
             # Is it your own course?
-            elif courseID in userKey.get_coursesTeaching():
-                session["Add To Cart Status"] = "Own Course"
-                return redirect(url_for('shoppingCart'))
+            elif accType == "Teacher":
+                if courseID in userKey.get_coursesTeaching():
+                    session["Add To Cart Status"] = "Own Course"
+                    return redirect(url_for('shoppingCart'))
 
             userKey.add_to_cart(courseID)
 
@@ -4733,8 +4734,8 @@ def shoppingCart():
                     db['Users'] = userDict
                     db.close()
 
-                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course(s) successfully purchased!")
-                    return redirect(url_for('home'))
+                    flash("Your purchase is successful. For more info on courses, view your course materials. Good luck and have fun learning!", "Course(s) successfully purchased!")
+                    return redirect('/purchasehistory/0')
 
                 elif removeCourseForm.validate():
                     courseID =  removeCourseForm.courseID.data
