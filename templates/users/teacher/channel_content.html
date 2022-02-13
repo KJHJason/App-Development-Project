@@ -134,7 +134,7 @@
     acceptedFiles: ".mp4, .mov, .avi",
     chunking: true,
     forceChunking: true,
-    url: '/course/{{course.get_courseID()}}/upload_lesson',
+    url: '/upload/{{ course.get_courseID() }}',
     maxFilesize: 10000, // megabytes
     chunkSize: 10000000, // bytes
     retryChunks: true,
