@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort, send_from_directory
+from werkzeug.utils import secure_filename
 import shelve, math, paypalrestsdk, difflib, json, csv, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
@@ -4585,7 +4586,7 @@ def blockAccess(courseID, lessonID):
             if courseID in userKey.get_purchases():
                 directoryPath = construct_path(app.config["COURSE_VIDEO_FOLDER"], courseID)
                 # first argument is the absolute path to the course video directory and the second argument is the filename (e.g. hello.mp4)
-                return send_from_directory(directoryPath, lessonID, as_attachment=False) # display instead of telling the user to download the video
+                return send_from_directory(directoryPath, lessonID, as_attachment=False) # display instead of telling the browser to download the video
             else:
                 abort(403)
         else:
@@ -4596,6 +4597,7 @@ def blockAccess(courseID, lessonID):
 """End of View Video Courses by Royston"""
 
 """Add to Cart by Wei Ren"""
+
 @app.post("/add_to_cart/<courseID>")
 def addToCart(courseID):
     if "userSession" in session:
@@ -4681,7 +4683,6 @@ def addToCart(courseID):
             # return redirect(url_for("userLogin"))
 
 """End of Add to Cart by Wei Ren"""
-
 
 """Shopping Cart by Wei Ren"""
 
@@ -5754,13 +5755,12 @@ def courseReviews(courseID, reviewPageNum):
 
 """Lesson Creation by Clarence"""
 
-@app.route("/course/<courseID>/upload_lesson", methods=["GET", "POST"])
-def uploadLesson(courseID):
+@app.route("/course/<courseID>/edit/<lessonID>", methods=["GET", "POST"])
+def uploadLesson(courseID, lessonID):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
-        if "Courses" in db and "Users" in db:
+        if "Courses" in db:
             courseDict = db['Courses']
-            userDict = db['Users']
             db.close()
         else:
             db.close()
@@ -5773,6 +5773,18 @@ def uploadLesson(courseID):
     courseObject = courseDict.get(courseID)
     redirectURL = "course/" + courseID + "/upload_lesson"
     if courseObject == None:  # if courseID does not exist in courseDict
+        abort(404)
+
+    lessonList = courseObject.get_lesson_list()
+    lessonFound = False
+    for lesson in lessonList:
+        if lesson.get_lessonID() == lessonID:
+            lessonObject = lesson
+            # lessonIndex = lessonList.index(lesson) # if the object doesn't reflect the changes
+            lessonFound = True
+            break
+    
+    if lessonFound != True:
         abort(404)
 
     if "userSession" in session:
@@ -5790,64 +5802,72 @@ def uploadLesson(courseID):
                         request.form.get("videoDescription"))
 
                     if "videoThumbnail" not in request.files:
+                        # if user did not upload a thumbnail
                         print("No file sent.")
-                        return redirect(redirectURL)
+                        lessonObject.set_title(videoTitleInput)
+                        lessonObject.set_description(videoDescriptionInput)
 
-                    file = request.files.get("videoThumbnail")
-
-                    extensionType = get_extension(file.filename)
-                    if extensionType != False:
-                        # renaming the file name of the submitted image data payload
-                        file.filename = courseID + extensionType
-                        filename = file.filename
+                        db["Courses"] = courseDict
+                        print("Video Lesson created successfully.")
+                        db.close()
+                        flash(
+                            "Your Video lesson has been edited!", "Video Lesson Edited")
+                        return redirect("/teacher/" + userSession + "/page_1")
                     else:
-                        filename = "invalid"
+                        # if the user has uploaded a thumbnail for the course details to be edited
+                        file = request.files.get("videoThumbnail")
 
-                    # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
-                    uploadedFileSize = request.cookies.get("filesize")
-                    print("Uploaded file size:", uploadedFileSize, "bytes")
+                        extensionType = get_extension(file.filename)
+                        if extensionType != False:
+                            # renaming the file name of the submitted image data payload
+                            file.filename = courseID + extensionType
+                            filename = file.filename
+                        else:
+                            filename = "invalid"
 
-                    if file and allowed_image_file(filename):
-                        # will only accept .png, .jpg, .jpeg
-                        print("File extension accepted and is within size limit.")
+                        # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                        uploadedFileSize = request.cookies.get("filesize")
+                        print("Uploaded file size:", uploadedFileSize, "bytes")
 
-                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+                        if file and allowed_image_file(filename):
+                            # will only accept .png, .jpg, .jpeg
+                            print("File extension accepted and is within size limit.")
 
-                        userImageFileName = file.filename
-                        newFilePath = construct_path(
-                            app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
-                        file.save(newFilePath)
+                            # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
 
-                        # resizing, compressing, and converting the thumbnail image to webp
-                        imageResized, webpFilePath = resize_image(
-                            newFilePath, (1920, 1080))
+                            userImageFileName = file.filename
+                            newFilePath = construct_path(
+                                app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                            file.save(newFilePath)
 
-                        if imageResized:
-                            # if file was successfully resized, it means the image is a valid image
-                            relativeWebpFilePath = "".join(["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
+                            # resizing, compressing, and converting the thumbnail image to webp
+                            imageResized, webpFilePath = resize_image(
+                                newFilePath, (1920, 1080))
 
-                            # directoryPath initialises video path
-                            directoryPath = ""
-                            courseObject.add_video_lesson(courseID, videoTitleInput, videoDescriptionInput, relativeWebpFilePath, directoryPath)
+                            if imageResized:
+                                # if file was successfully resized, it means the image is a valid image
+                                relativeWebpFilePath = "".join(["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
 
-                            
+                                lessonObject.set_title(videoTitleInput)
+                                lessonObject.set_description(videoDescriptionInput)
+                                lessonObject.set_thumbnail(relativeWebpFilePath)
 
-                            db["Courses"] = courseDict
-                            print("Video Lesson created successfully.")
-                            db.close()
-                            flash(
-                                "Your Video lesson has been created!", "Video Lesson Created")
-                            return redirect("/teacher/" + userSession + "/page_1")
+                                db["Courses"] = courseDict
+                                print("Video Lesson created successfully.")
+                                db.close()
+                                flash(
+                                    "Your Video lesson has been edited!", "Video Lesson Edited")
+                                return redirect("/teacher/" + userSession + "/page_1")
+                            else:
+                                db.close()
+                                flash("Image file is corrupted", "Corrupted File")
+                                webpFilePath.unlink(missing_ok=True)
+                                return redirect(url_for("zoomUpload", courseID=courseID))
                         else:
                             db.close()
-                            flash("Image file is corrupted", "Corrupted File")
-                            webpFilePath.unlink(missing_ok=True)
+                            flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"),
+                                "File Extension Not Accepted")
                             return redirect(url_for("zoomUpload", courseID=courseID))
-                    else:
-                        db.close()
-                        flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"),
-                              "File Extension Not Accepted")
-                        return redirect(url_for("zoomUpload", courseID=courseID))
                 else:
                     db.close()
                     imagesrcPath = retrieve_user_profile_pic(userKey)
@@ -5879,65 +5899,59 @@ def uploadLesson(courseID):
 @app.post('/upload/<courseID>')
 def upload(courseID):
     if "userSession" in session:
-        file = request.files['file']
-
-        # secure_filename if you are not renaming the uploaded video filename to the courseID
-        # else if you're renaming it to the courseID before uploading to the web server, you can omit secure_filename
-        # to change filename, file.filename = courseID
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if "Courses" in db:
-                courseDict = db['Courses']
-
-            else:
-                db.close()
-                return redirect(url_for("home"))
-        except:
-            db.close()
-            print("Error in retrieving Lessons from user.db")
-            return redirect(url_for("home"))
-
-        courseObject = courseDict.get(courseID)
-        if courseObject == None: # if courseID does not exist in courseDict
-            return make_response("Course noot found!", 404)
 
         userSession = session["userSession"]
-        userFound, accGoodStatus, accType = validate_session_open_file(userSession)
+        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
+
         if userFound and accGoodStatus and accType == "Teacher":
+
+            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+            try:
+                if "Courses" in db and "Users" in db:
+                    courseDict = db['Courses']
+                    userDict = db['Users']
+                else:
+                    db.close()
+                    return redirect(url_for("home"))
+            except:
+                db.close()
+                print("Error in retrieving Lessons from user.db")
+                return redirect(url_for("home"))
+
+            courseObject = courseDict.get(courseID)
+            if courseObject == None: # if courseID does not exist in courseDict
+                return make_response("Course noot found!", 404)
+
             file = request.files.get("video")
-            
-            lessonID = lessonObject.get_lessonID()
             
             extensionType = get_extension(file.filename)
             if extensionType != False:
-                # renaming the file name of the submitted image data payload
-                file.filename = lessonID + extensionType
-                filename = file.filename
+                # using secure_filename to get a safe version of the filename to prevent malicious attacks
+                filename = secure_filename(file.filename)
             else:
                 filename = "invalid"
-
-            relativePath = "".join["/", app.config["COURSE_VIDEO_FOLDER"], f"/{courseID}", filename]
+                return make_response("Not a valid file!", 500)
 
             # create the folder if it doesn't exist
             directoryPath = construct_path(app.config["COURSE_VIDEO_FOLDER"], courseID)
             directoryPath.mkdir(parents=True, exist_ok=True)
 
-
-            savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
+            savePath = directoryPath.joinpath(filename)
+            
             currentChunk = int(request.form['dzchunkindex'])
             
             # If the file already exists it's ok if we are appending to it,
             # but not if it's new file that would overwrite the existing one
             if savePath.is_file():
-                # 400 and 500s will tell dropzone that an error occurred and show an error
-                savePath.unlink(missing_ok=True)
-                return make_response(('File already exists', 400))
+                # if the user has uploaded another video with the same filename of an existing video
+                return make_response("Video file with the same name already exists! Please rename to a different filename.", 500)
 
             try:
                 with open(savePath, 'ab') as f:
                     f.seek(int(request.form['dzchunkbyteoffset']))
                     f.write(file.stream.read())
             except OSError:
+                db.close()
                 return make_response(("Not sure why,"
                                     " but we couldn't write the file to disk", 500))
 
@@ -5946,21 +5960,30 @@ def upload(courseID):
             if currentChunk + 1 == totalChunks:
                 # This was the last chunk, the file should be complete and the size we expect
                 if savePath.stat().st_size != int(request.form['dztotalfilesize']):
-                    return make_response(('Size mismatch', 500))
+                    db.close()
+                    return make_response(('The uploaded video is corrupted, please try again!', 500))
                 else:
                     oldVideoPath = lessonObject.get_videoPath()
 
                     if bool(oldVideoPath):
                         Path(app.root_path).joinpath(oldVideoPath).unlink(missing_ok=True)
-                    
-                    lessonObject = courseObject.get_lesson_list()[-1]
-                    lessonObject.set_videoPath(relativePath)
 
-                    return make_response("File " + file.filename + " has been uploaded successfully")
+                    relativePath = "".join["/", app.config["COURSE_VIDEO_FOLDER"], f"/{courseID}/", filename]
+                    courseObject.add_video_lesson(filename, "", "/static/images/courses/placeholder.webp", relativePath) # initialise the title to the filename, empty description, placeholder thumbnail, and relative path of the video
+                    
+                    lessonObject = courseObject.get_lesson_list()[-1] # get the latest lesson object
+                    userKey.set_courseTeaching(lessonObject.get_lessonID())
+
+                    db["Courses"] = courseDict
+                    db['Users'] = userDict
+                    db.close()
+
+                    return make_response("File " + filename + " has been uploaded successfully", 200)
             else:
-                return make_response("Chunk " + str(currentChunk + 1) + " of " + str(totalChunks) + " for file " + file.filename + " complete")
-            #return make_response(("Chunk upload successful", 200))
+                db.close()
+                return make_response("Chunk " + str(currentChunk + 1) + " of " + str(totalChunks) + " for file " + file.filename + " complete", 200)
         else:
+            db.close()
             print("User is banned/not found or is not a teacher!")
             return redirect(url_for("home"))
     else:
@@ -5968,11 +5991,6 @@ def upload(courseID):
             return redirect(url_for("home"))
         else:
             return redirect(url_for("userLogin"))
-
-"""
-# Get shopping cart len
-shoppingCartLen = len(userKey.get_shoppingCart())
-"""
 
 """End of Video Upload by Clarence"""
 
