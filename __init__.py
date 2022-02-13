@@ -5948,12 +5948,13 @@ def upload(courseID):
             directoryPath.mkdir(parents=True, exist_ok=True)
 
             savePath = directoryPath.joinpath(filename)
+            print(savePath)
             
             currentChunk = int(request.form['dzchunkindex'])
             
             # If the file already exists it's ok if we are appending to it,
             # but not if it's new file that would overwrite the existing one
-            if savePath.is_file() and currentChunk== 0:
+            if savePath.is_file() and currentChunk == 0:
                 # if the user has uploaded another video with the same filename of an existing video
                 return make_response("Video file with the same name already exists! Please rename to a different filename.", 500)
 
@@ -5964,7 +5965,7 @@ def upload(courseID):
             except OSError:
                 db.close()
                 return make_response(("Not sure why,"
-                                    " but we couldn't write the file to disk", 500))
+                                    " but we couldn't write the file to web server", 500))
 
             totalChunks = int(request.form['dztotalchunkcount'])
 
@@ -5974,12 +5975,7 @@ def upload(courseID):
                     db.close()
                     return make_response(('The uploaded video is corrupted, please try again!', 500))
                 else:
-                    oldVideoPath = lessonObject.get_videoPath()
-
-                    if bool(oldVideoPath):
-                        Path(app.root_path).joinpath(oldVideoPath).unlink(missing_ok=True)
-
-                    relativePath = "".join["/", app.config["COURSE_VIDEO_FOLDER"], f"/{courseID}/", filename]
+                    relativePath = "".join(["/", app.config["COURSE_VIDEO_FOLDER"], f"/{courseID}/", filename])
                     courseObject.add_video_lesson(filename, "", "/static/images/courses/placeholder.webp", relativePath) # initialise the title to the filename, empty description, placeholder thumbnail, and relative path of the video
                     
                     lessonObject = courseObject.get_lesson_list()[-1] # get the latest lesson object
