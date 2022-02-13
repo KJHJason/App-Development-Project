@@ -5771,7 +5771,6 @@ def uploadLesson(courseID, lessonID):
         return redirect(url_for("home"))
 
     courseObject = courseDict.get(courseID)
-    redirectURL = "course/" + courseID + "/upload_lesson"
     if courseObject == None:  # if courseID does not exist in courseDict
         abort(404)
 
