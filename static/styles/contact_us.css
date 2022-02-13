@@ -27,7 +27,7 @@
     display:block;
 }
 
-.contact-form input, .contact-form select, .contact-form textarea, .contact-form button {
+.contact-form input, .contact-form select, .contact-form textarea, .contact-form button, .text-danger {
     margin:1em auto;
     width:75%;
 }
