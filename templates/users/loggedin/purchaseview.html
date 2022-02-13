@@ -38,7 +38,7 @@
     <br>
 
     {% for courseInformation in courseList %}
-    <div class="row g-0 casing mx-auto">
+    <div class="row g-0 casing mx-auto border">
         <div class="col">
             <div class="card-body text">
                 <h5 class="card-title text-center"><a href="/course/{{ courseInformation['CourseID'] }}">{{ courseInformation["Title"] }}</a></h5>
@@ -58,7 +58,7 @@
     {% endfor %}
 
     {% for Lesson in courseInformation["Lesson"] %}
-    <div class="row g-0 casing mx-auto">
+    <div class="row g-0 casing mx-auto border">
         <div class="col-5">
             <img class="resize img-fluid rounded float-start" src="{{ Lesson.get_thumbnail() }}" alt="">
         </div>
