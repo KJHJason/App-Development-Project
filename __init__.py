@@ -2152,6 +2152,10 @@ def deleteUser(userID):
             try:
                 if 'Users' in db:
                     userDict = db['Users']
+                    if "Courses" in db:
+                        courseDict = db['Courses']
+                    else:
+                        courseDict = {}
                 else:
                     db.close()
                     print("No user data in user shelve files.")
@@ -2166,10 +2170,24 @@ def deleteUser(userID):
 
             if userKey != None:
                 userImageFileName = userKey.get_profile_image()
+
+                # deletes any courses if the teacher has uploaded any courses previously
+                if userKey.get_acc_type() == "Teacher":
+                    numOfCoursesTeaching = len(userKey.get_coursesTeaching())
+                    if numOfCoursesTeaching >= 1:
+                        courseDictCopy = courseDict.copy()
+                        for courseID, course in courseDictCopy.items():
+                            if course.get_userID() == userID:
+                                courseDict.pop(courseID)
+
                 userDict.pop(userID)
+                db["Courses"] = courseDict
                 db['Users'] = userDict
                 db.close()
-                delete_user_profile(userImageFileName)
+
+                if bool(userImageFileName):
+                    delete_user_profile(userImageFileName)
+
                 print(f"User account with the ID, {userID}, has been deleted.")
                 flash(f"User with user ID, {userID}, has been successfully deleted.", "User has been deleted")
                 return redirect(redirectURL)
@@ -2404,7 +2422,8 @@ def resetProfileImage(userID):
                 userImageFileName = userKey.get_profile_image()
                 db['Users'] = userDict
                 db.close()
-                delete_user_profile(userImageFileName)
+                if bool(userImageFileName):
+                    delete_user_profile(userImageFileName)
                 print(f"User account with the ID, {userID}, has its profile picture reset.")
                 flash(f"User account with the ID, {userID}, profile picture has been reset and deleted from the web server successfully.", "User's profile picture has been reset!")
                 return redirect(redirectURL)
