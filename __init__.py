@@ -3797,6 +3797,11 @@ def search(pageNum):
 
     searchURL = "?q=" + searchInput
 
+    courseDictCopy = courseDict.copy()
+    for courseID, courseObject in courseDictCopy.items():
+        if userDict.get(courseObject.get_userID()).get_status() != "Good":
+            courseDict.pop(courseID)
+
     searchfound = []
     for courseID in courseDict:
         courseTitle = courseDict.get(courseID).get_title()
@@ -4392,6 +4397,7 @@ def explore(pageNum, tag):
                         "Test_Prep": "Academics - Test Prep",
                         "Other_Academics": "Academics - Other Academics"}
 
+
     searchfound = []
     course= ""
 
@@ -4404,6 +4410,11 @@ def explore(pageNum, tag):
     except:
         print("Unable to open up course shelve")
         return redirect(url_for("home"))
+
+    courseDictCopy = courseDict.copy()
+    for courseID, courseObject in courseDictCopy.items():
+        if userDict.get(courseObject.get_userID()).get_status() != "Good":
+            courseDict.pop(courseID)
 
     if tag in readableTagDict:
         for courseID in courseDict:
