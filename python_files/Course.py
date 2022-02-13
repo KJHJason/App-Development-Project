@@ -129,7 +129,7 @@ class Course():
         return self.__thumbnail
 
     def set_price(self, price):
-        self.__price = price
+        self.__price = get_two_decimal_pt(float(price))
     def get_price(self):
         return self.__price
 
