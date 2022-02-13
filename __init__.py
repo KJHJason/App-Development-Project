@@ -43,6 +43,8 @@ app.config["ALLOWED_IMAGE_EXTENSIONS"] = {"png", "jpg", "jpeg"}
 
 # for course video uploads file path
 app.config["COURSE_VIDEO_FOLDER"] = "static/course_videos"
+app.config["ALLOWED_VIDEO_EXTENSIONS"] = (
+    ".mp4, .mov, .avi, .3gpp, .flv, .mpeg4, .flv, .webm, .mpegs, .wmv")
 
 # configuration for email
 # Make sure to enable access for less secure apps
@@ -5273,13 +5275,18 @@ def courseUpload(teacherUID):
                             # if file was successfully resized, it means the image is a valid image
                             relativeWebpFilePath = "".join(["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
                             course = Course.Course(courseID, courseTypeInput, coursePriceInput ,courseTagInput ,courseTitleInput, courseDescriptionInput, relativeWebpFilePath, teacherUID)
+
+                            userKey.set_courseTeaching(courseID)
+                            db["Users"] = userDict
+
                             courseDict[courseID] = course
                             db["Courses"] = courseDict
                             print("Course created successfully.")
                             db.close()
                             print("Course details have been created.")
                             flash("Your course has been created! You can now add lessons to the course.", "Course Created")
-                            return redirect("/teacher/" + teacherUID + "/page_1")
+
+                            return redirect("/channel_content/" + teacherUID)
                         else:
                             db.close()
                             flash("Image file is corrupted", "Corrupted File")
@@ -5618,161 +5625,131 @@ def courseReviews(courseID, reviewPageNum):
 
 """End of Course Page and its review page by Jason"""
 
-"""Lesson Upload by Clarence"""
+"""Lesson Creation by Clarence"""
 
 @app.route("/course/<courseID>/upload_lesson", methods=["GET", "POST"])
 def uploadLesson(courseID):
-    if "userSession" in session:
-        userDict = {}
-        userSession = session["userSession"]
-        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-        try:
-            if "Lesson" in db:
-                LessonDict = db['Lessons']
-                db.close()
-            else:
-                db.close()
-                return redirect(url_for("home"))
-        except:
+    db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+    try:
+        if "Courses" in db and "Users" in db:
+            courseDict = db['Courses']
+            userDict = db['Users']
             db.close()
-            print("Error in retrieving Lessons from user.db")
-            return redirect(url_for("home"))
-
-        lessonObject = LessonDict.get(courseID)
-
-
-        lessons = lessonObject.get_lessonID()  # get a list of lessonIDs
-        for lesson in lessons:
-            lessonID = lesson.get_lessonID()
-
-        if lessonID == None: # if courseID does not exist in courseDict
-            abort(404)
-
-        userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
-
-        # thumbnail upload edited from Jason's Code
-        if userFound and accGoodStatus:
-            if request.method == "POST":
-                typeOfFormSubmitted = request.form.get("submittedForm")
-                if typeOfFormSubmitted == "image":
-                    # if "profileImage" not in request.files:
-                    if "lessonThumbnail" not in request.files:
-                        print("No file sent.")
-                        return redirect(url_for("uploadLesson"))
-
-                # file = request.files["profileImage"]
-                file = request.files["lessonThumbnail"]
-
-                # totalChunks = int(request.form["dztotalchunkcount"])
-                # currentChunk = int(request.form['dzchunkindex'])
-
-                extensionType = get_extension(file.filename)
-                if extensionType != False:
-                    # renaming the file name of the submitted image data payload
-                    file.filename = userSession + extensionType
-                    filename = file.filename
-                else:
-                    filename = "invalid"
-
-                if file and allowed_image_file(filename):
-                    # will only accept .png, .jpg, .jpeg
-                    print("File extension accepted and is within size limit.")
-
-                    # userImageFileName = file.filename
-                    lessonThumbnailFileName = file.filename
-                    # newFilePath = construct_path(app.config["PROFILE_UPLOAD_PATH"], userImageFileName)
-                    newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], lessonThumbnailFileName)
-
-                    # if currentChunk == 0:
-                    #     # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                    #     newFilePath.unlink(missing_ok=True)
-
-                    #     print("Total file size:", int(
-                    #     request.form['dztotalfilesize']))
-
-                    try:
-                        # ab flag for opening a file for appending data in binary format
-                        with open(newFilePath, "ab") as imageData:
-                            imageData.seek(int(request.form['dzchunkbyteoffset']))
-                            print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
-                            imageData.write(file.stream.read())
-                    except OSError:
-                        print('Could not write to file')
-                        return make_response("Error writing to file", 500)
-
-                    except:
-                        print("Unexpected error.")
-                        return make_response("Unexpected error", 500)
-
-                    # if currentChunk + 1 == totalChunks:
-                    #     # This was the last chunk, the file should be complete and the size we expect
-                    #     if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
-                    #         print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
-                    #         # remove corrupted image
-                    #         # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                    #         newFilePath.unlink(missing_ok=True)
-                    #         return make_response("Uploaded image is corrupted! Please try again!", 500)
-                    #     else:
-                    #         print(f'File {file.filename} has been uploaded successfully')
-                    #         imageResized, newImageFilePath = resize_image(newFilePath, (250, 250))
-
-                    #         if imageResized:
-                    #             # if file was successfully resized, it means the image is a valid image
-                    #             userKey.set_profile_image(newImageFilePath.name)
-                    #             db['Users'] = userDict
-                    #             db.close()
-                    #             # flash("Your profile image has been successfully saved.", "Profile Image Updated")
-                    #             flash("Thumbnail has been uploaded successfully.", "Thumbnail Uploaded")
-                    #             # return make_response(("Profile Image Uploaded!", 200))
-                    #             return make_response(("Thumbnail Uploaded!", 200))
-                    #         else:
-                    #             # else this means that the image is not an image since Pillow is unable to open the image due to it being an unsupported image file or due to corrupted image in which the code below will reset the user's profile image
-                    #             userKey.set_profile_image("")
-
-                    #             db['Users'] = userDict
-                    #             db.close()
-                    #             # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                    #             newFilePath.unlink(missing_ok=True)
-                    #             return make_response("Uploaded image is corrupted! Please try again!", 500)
-                    # else:
-                    #     db.close()
-                    #     print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
-                    #     return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
-                else:
-                    db.close()
-                    return make_response("Image extension not supported!", 500)
-            else:
-                db.close()
-                # checking if the user have uploaded a profile image before and if the image file exists
-                userProfileFilenameSaved = bool(userKey.get_profile_image())
-                imagesrcPath, profileReset = get_user_profile_pic(userSession)
-                if profileReset:
-                    userProfileFilenameSaved = False
-
-                if accType == "Teacher":
-                    teacherUID = userSession
-                else:
-                    teacherUID = ""
-
-                # Get shopping cart len
-                shoppingCartLen = len(userKey.get_shoppingCart())
-
-                return render_template('users/loggedin/upload_lesson.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID, userProfileFilenameSaved=userProfileFilenameSaved)
         else:
             db.close()
+            return redirect(url_for("home"))
+    except:
+        db.close()
+        print("Error in retrieving Users from user.db")
+        return redirect(url_for("home"))
+
+    courseObject = courseDict.get(courseID)
+    redirectURL = "course/" + courseID + "/upload_lesson"
+    if courseObject == None:  # if courseID does not exist in courseDict
+        abort(404)
+
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(
+            userSession)
+        if userFound and accGoodStatus:
+            # insert your C,R,U,D operation here to deal with the user shelve data files
+            if accType == "Teacher":
+                if request.method == "POST":
+
+                    videoTitleInput = sanitise(request.form.get("videoTitle"))
+                    videoDescriptionInput = sanitise(
+                        request.form.get("videoDescription"))
+
+                    if "videoThumbnail" not in request.files:
+                        print("No file sent.")
+                        return redirect(redirectURL)
+
+                    file = request.files.get("videoThumbnail")
+
+                    extensionType = get_extension(file.filename)
+                    if extensionType != False:
+                        # renaming the file name of the submitted image data payload
+                        file.filename = courseID + extensionType
+                        filename = file.filename
+                    else:
+                        filename = "invalid"
+
+                    # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                    uploadedFileSize = request.cookies.get("filesize")
+                    print("Uploaded file size:", uploadedFileSize, "bytes")
+
+                    if file and allowed_image_file(filename):
+                        # will only accept .png, .jpg, .jpeg
+                        print("File extension accepted and is within size limit.")
+
+                        # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
+
+                        userImageFileName = file.filename
+                        newFilePath = construct_path(
+                            app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                        file.save(newFilePath)
+
+                        # resizing, compressing, and converting the thumbnail image to webp
+                        imageResized, webpFilePath = resize_image(
+                            newFilePath, (1920, 1080))
+
+                        if imageResized:
+                            # if file was successfully resized, it means the image is a valid image
+                            relativeWebpFilePath = "".join(["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
+
+                            # directoryPath initialises video path
+                            directoryPath = ""
+                            courseObject.add_video_lesson(courseID, videoTitleInput, videoDescriptionInput, relativeWebpFilePath, directoryPath)
+
+                            
+
+                            db["Courses"] = courseDict
+                            print("Video Lesson created successfully.")
+                            db.close()
+                            flash(
+                                "Your Video lesson has been created!", "Video Lesson Created")
+                            return redirect("/teacher/" + userSession + "/page_1")
+                        else:
+                            db.close()
+                            flash("Image file is corrupted", "Corrupted File")
+                            webpFilePath.unlink(missing_ok=True)
+                            return redirect(url_for("zoomUpload", courseID=courseID))
+                    else:
+                        db.close()
+                        flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"),
+                              "File Extension Not Accepted")
+                        return redirect(url_for("zoomUpload", courseID=courseID))
+                else:
+                    db.close()
+                    imagesrcPath = retrieve_user_profile_pic(userKey)
+                    teacherUID = userSession
+
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
+                    return render_template('users/teacher/upload_zoom.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+            else:
+                db.close()
+                print("User is not a teacher!")
+                return redirect(url_for("userProfile"))
+        else:
+            db.close()
+            print("User not found or is banned")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
             session.clear()
-            return redirect(url_for("userLogin"))
+            return redirect(url_for("home"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
         else:
             return redirect(url_for("userLogin"))
 
-"""End of Lesson Upload by Clarence"""
+"""End of Lesson Creation by Clarence"""
 
 """Video Upload by Clarence"""
 
-@app.route('/upload/<lessonID>', methods=['POST'])
+@app.post('/upload/<courseID>')
 def upload(courseID):
     if "userSession" in session:
         file = request.files['file']
@@ -5784,7 +5761,7 @@ def upload(courseID):
         try:
             if "Courses" in db:
                 courseDict = db['Courses']
-                db.close()
+
             else:
                 db.close()
                 return redirect(url_for("home"))
@@ -5800,22 +5777,33 @@ def upload(courseID):
         userSession = session["userSession"]
         userFound, accGoodStatus, accType = validate_session_open_file(userSession)
         if userFound and accGoodStatus and accType == "Teacher":
-                
-            lessons = courseObject.get_lessonID()  # get a list of lessonIDs
-            for lesson in lessons:
-                lessonID = lesson.get_lessonID()
+            file = request.files.get("video")
+            
+            lessonID = lessonObject.get_lessonID()
+            
+            extensionType = get_extension(file.filename)
+            if extensionType != False:
+                # renaming the file name of the submitted image data payload
+                file.filename = lessonID + extensionType
+                filename = file.filename
+            else:
+                filename = "invalid"
 
-            if lessonID == None: # if lessonID does not exist in courseDict
-                abort(404)
+            relativePath = "".join["/", app.config["COURSE_VIDEO_FOLDER"], f"/{courseID}", filename]
 
-            file.filename = lessonID
+            # create the folder if it doesn't exist
+            directoryPath = construct_path(app.config["COURSE_VIDEO_FOLDER"], courseID)
+            directoryPath.mkdir(parents=True, exist_ok=True)
+
+
             savePath = construct_path(app.config["COURSE_VIDEO_FOLDER"], file.filename)
             currentChunk = int(request.form['dzchunkindex'])
-
+            
             # If the file already exists it's ok if we are appending to it,
             # but not if it's new file that would overwrite the existing one
             if savePath.is_file():
                 # 400 and 500s will tell dropzone that an error occurred and show an error
+                savePath.unlink(missing_ok=True)
                 return make_response(('File already exists', 400))
 
             try:
@@ -5833,10 +5821,17 @@ def upload(courseID):
                 if savePath.stat().st_size != int(request.form['dztotalfilesize']):
                     return make_response(('Size mismatch', 500))
                 else:
+                    oldVideoPath = lessonObject.get_videoPath()
+
+                    if bool(oldVideoPath):
+                        Path(app.root_path).joinpath(oldVideoPath).unlink(missing_ok=True)
+                    
+                    lessonObject = courseObject.get_lesson_list()[-1]
+                    lessonObject.set_videoPath(relativePath)
+
                     return make_response("File " + file.filename + " has been uploaded successfully")
             else:
                 return make_response("Chunk " + str(currentChunk + 1) + " of " + str(totalChunks) + " for file " + file.filename + " complete")
-
             #return make_response(("Chunk upload successful", 200))
         else:
             print("User is banned/not found or is not a teacher!")
@@ -5854,10 +5849,10 @@ shoppingCartLen = len(userKey.get_shoppingCart())
 
 """End of Video Upload by Clarence"""
 
-"""Zoom Upload app.route(") by Clarence"""
+"""Zoom Creation app.route(") by Clarence"""
 
-@app.route("/course/<courseID>/upload_zoom", methods=["POST"])
-def function(courseID):
+@app.route("/course/<courseID>/upload_zoom", methods=["GET", "POST"])
+def uploadZoom(courseID):
     db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
     try:
         if "Courses" in db and "Users" in db:
@@ -5972,11 +5967,11 @@ def function(courseID):
         else:
             return redirect(url_for("userLogin"))
 
-"""End of Zoom Upload app.route by Clarence"""
+"""End of Zoom Creation app.route by Clarence"""
 
 """Course Content Management by Clarence"""
 
-@app.route('/<teacherUID>/channel_content', methods=["GET","POST"]) # delete the methods if you do not think that any form will send a request to your app route/webpage
+@app.route('/channel_content/<teacherUID>') # delete the methods if you do not think that any form will send a request to your app route/webpage
 def channelContent(teacherUID):
     if "userSession" in session:
         userSession = session["userSession"]
@@ -6003,9 +5998,14 @@ def channelContent(teacherUID):
                     return redirect(url_for("home"))
 
                 courseList = []
-                for course in courseDict.values():
+
+                for courseID in userKey.get_coursesTeaching():
+                    course = courseDict[courseID]
                     courseList.append(course)
-                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList)
+
+                shoppingCartLen = len(userKey.get_shoppingCart())
+                print(courseList)
+                return render_template('users/teacher/channel_content.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=userSession, courseList=courseList, shoppingCartLen=shoppingCartLen)
             else:
                 return redirect(url_for("userProfile"))
         else:
@@ -6021,7 +6021,7 @@ def channelContent(teacherUID):
             return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
 
-"""End of Template app.route by INSERT_YOUR_NAME"""
+"""End of Course Management app.route by Clarence"""
 """General Pages"""
 
 @app.route('/cookie_policy')

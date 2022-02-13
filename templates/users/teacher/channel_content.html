@@ -17,111 +17,82 @@
 <div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{}}">Your Profile</a></li>
+            <li class="breadcrumb-item"><a href="/teacher_page/{{ session.get(userSession) }}">Your Profile</a></li>
             <li class="breadcrumb-item active" aria-current="page">Course Management</li>
         </ol>
     </nav>
-    <table class="table table-dark table-striped table-responsive">
-        <thead>
-            <tr>
-                <th scope="col-4 colspan-2">Courses</th>
-                <th scope="col-3">Views</th>
-                <th scope="col-3">Rating</th>
-                <th scope="col-3">Sales</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for course in courseList %}
-            <tr>
-                <td>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="col">
-                                <a href="/course/{{ course.get_courseID() }}">
-                                    <img src="{{ course.get_thumbnail() }}" alt="Course Thumbnail">
-                                </a>
-                            </div>
-                            <div class="col">
-                                <a href="/course/{{ course.get_courseID() }}" class="">
-                                    <h5 class="title">{{ course.get_title() }}</h5>
-                                </a>
-                                <a href="/course/{{ course.get_courseID() }}" class=" mb-2 text-muted">
-                                    <p class="description">{{ course.get_description() }}</p>
-                                </a>
-                            </div>
-                            <div class="col">
-                                <p class="views">{{ course.get_views() }}</p>
-                            </div>
-                            <div class="ratings col">
-                                {% with averageCourseRating = course.get_averageRating() %}
-                                {% if averageCourseRating == 5 %}
+    
+    {% for course in courseList %}
+    <div class="row g-0 casing mx-auto border">
+        <div class="col-5"> <img class="resize img-fluid rounded float-start" src="{{ course.get_thumbnail() }}" alt="">
+        </div>
+        <div class="col-6">
+            <div class="card-body text">
+                <h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ course.get_title() }}</a></h5>
+                <p class="card-text">Course Description: {{ course.get_description() }}</p>
+            </div>
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="selection col">
+                        {% if course.get_course_type() == "video" %}
+                        <p class="info">Lesson Type: Online Videos</p>
+                        {% elif course.get_course_type() == "zoom" %}
+                        <p class="info">Lesson Type: Zoom Session</p>
+                        {% endif %}
+                        <div class="ratings col">
+                            {% with averageCourseRating = course.get_averageRating() %}
+                            {% if averageCourseRating == 5 %}
+                            <span class="fas fa-star"></span>
+                            <span class="fas fa-star"></span>
+                            <span class="fas fa-star"></span>
+                            <span class="fas fa-star"></span>
+                            <span class="fas fa-star"></span>
+                            {% elif averageCourseRating >= 4 and averageCourseRating < 5 %} <span class="fas fa-star"></span>
                                 <span class="fas fa-star"></span>
                                 <span class="fas fa-star"></span>
                                 <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                <span class="fas fa-star"></span>
-                                {% elif averageCourseRating >= 4 and averageCourseRating < 5 %} 
-                                    <span class="fas fa-star"></span>
-                                    <span class="fas fa-star"></span>
+                                <span class="far fa-star"></span>
+                                {% elif averageCourseRating >= 3 and averageCourseRating < 4 %} <span class="fas fa-star"></span>
                                     <span class="fas fa-star"></span>
                                     <span class="fas fa-star"></span>
                                     <span class="far fa-star"></span>
-                                    {% elif averageCourseRating >= 3 and averageCourseRating < 4 %} 
-                                        <span class="fas fa-star"></span>
-                                        <span class="fas fa-star"></span>
+                                    <span class="far fa-star"></span>
+                                    {% elif averageCourseRating >= 2 and averageCourseRating < 3 %} <span class="fas fa-star"></span>
                                         <span class="fas fa-star"></span>
                                         <span class="far fa-star"></span>
                                         <span class="far fa-star"></span>
-                                        {% elif averageCourseRating >= 2 and averageCourseRating < 3 %} 
-                                            <span class="fas fa-star"></span>
-                                            <span class="fas fa-star"></span>
+                                        <span class="far fa-star"></span>
+                                        {% elif averageCourseRating >= 1 and averageCourseRating < 2 %} <span class="fas fa-star"></span>
                                             <span class="far fa-star"></span>
                                             <span class="far fa-star"></span>
                                             <span class="far fa-star"></span>
-                                            {% elif averageCourseRating >= 1 and averageCourseRating < 2 %} 
-                                                <span class="fas fa-star"></span>
+                                            <span class="far fa-star"></span>
+                                            {% elif averageCourseRating >= 0 and averageCourseRating < 1 %} <span class="far fa-star"></span>
                                                 <span class="far fa-star"></span>
                                                 <span class="far fa-star"></span>
                                                 <span class="far fa-star"></span>
                                                 <span class="far fa-star"></span>
-                                                {% elif averageCourseRating >= 0 and averageCourseRating < 1 %} 
-                                                    <span class="far fa-star"></span>
-                                                    <span class="far fa-star"></span>
-                                                    <span class="far fa-star"></span>
-                                                    <span class="far fa-star"></span>
-                                                    <span class="far fa-star"></span>
-                                                    {% endif %}
-                                                    {% endwith %}
-                            </div>
-                            <div>
-                                <p class="sales">{{ course.get_sales() }}</p>
-                            </div>
+                                                {% endif %}
+                                                {% endwith %}
                         </div>
+                        <p class="sales">Number of purchases: {{ course.get_numberPurchased() }}</p>
+
+                        {% if course.get_course_type() == "video" %}
+                        <a href="/course/{{course.get_courseID()}}/upload_lesson" class="btn btn-primary">Create Video Lesson</a>
+
+                        {% elif course.get_course_type() == "zoom" %}
+                        <a href="/course/{{course.get_courseID()}}/upload_zoom" class="btn btn-primary">Create Zoom Lesson</a>
+                        {% endif %}
                     </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="container-md">
-        <h2>Channel Content</h2>
-        <!-- Get Courses from database -->
-        <a href="../users/general/course_page.html">
-            <!-- Course Thumbnail -->
-        </a>
-        <a href="../users/general/course_page.html">
-            <!-- Course Title -->
-        </a>
-        <!-- Course Description -->
-        <!-- Views -->
-        <!-- Rating -->
-        <!-- Sales -->
+                </div>
+            </div>
+        </div>
     </div>
+    {% endfor %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
 
-
-{% endwith %}
 
 {% endblock %}

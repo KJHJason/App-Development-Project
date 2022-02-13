@@ -28,9 +28,9 @@
                 <div class="col-md">
                     <a href="/course/{{ course.get_courseID() }}"><img class="image" src="{{ course.get_thumbnail() }}" alt="Course Thumbanil"></a>
                     <a href="/course/{{ course.get_courseID() }}">
-                        <h4>{{ course.get_Title() }}</h4>
+                        <h4>{{ course.get_title() }}</h4>
                     </a>
-                    <p>{{ course.get_Description() }}</p>
+                    <p>{{ course.get_description() }}</p>
                     {% if course.get_course_type() == "Video" %}
                     <p class="card-text fw-bold">Video: ${{ course.get_price() }}</p>
                     {% elif course.get_course_type() == "Zoom" %}

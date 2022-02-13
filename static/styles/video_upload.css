@@ -24,28 +24,3 @@
 .btn-margin {
   margin-right: 10px;
 }
-
-#dropzoneText{
-  color: #000000;
-}
-
-label{
-  margin-top: 10px;
-}
-
-#radioBtnVideo{
-  margin-top: 15px;
-}
-
-#radioBtnZoom{
-  margin-top: 15px;
-}
-#teacher_condition2{
-  margin-left: 10px;
-  margin-top: 15px;
-}
-/* * {
-  background: #000 !important;
-  color: #0f0 !important;
-  outline: solid #f00 1px !important;
-} */

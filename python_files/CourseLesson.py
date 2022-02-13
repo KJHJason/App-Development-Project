@@ -32,14 +32,14 @@ class Lesson():
 
 # Video Data
 class VideoLesson(Lesson):
-    def __init__(self, title, description, thumbnail, videoAbsolutePath):
+    def __init__(self, title, description, thumbnail, videoPath):
         super().__init__(title, description, thumbnail)
-        self.__videoAbsolutePath = videoAbsolutePath
+        self.__videoPath = videoPath
 
-    def set_videoAbsolutePath(self, videoAbsolutePath):
-        self.__videoAbsolutePath = videoAbsolutePath
-    def get_videoAbsolutePath(self):
-        return self.__videoAbsolutePath
+    def set_videoPath(self, videoPath):
+        self.__videoPath = videoPath
+    def get_videoPath(self):
+        return self.__videoPath
 
 # Zoom Link --> To be changed
 # Different timings for different students for different courses

@@ -51,41 +51,19 @@
             <div class="mb-3 col-5">
                 <!-- Video Title -->
                 <div class="mb-4">
-                    <label for="vidoeTitle" class="form-label">Video Lesson Title</label>
-                    <input name="zoomTitle" class="form-control" id="videoTitle" type="text" value="" required
+                    <label for="videoTitle" class="form-label">Video Lesson Title</label>
+                    <input name="videoTitle" class="form-control" id="videoTitle" type="text" required
                         placeholder="Lesson Title" />
                 </div>
 
                 <!-- Video Description -->
                 <div class="mb-4">
                     <label for="videoDescription" class="form-label">Video Lesson Description</label>
-                    <textarea name="videoDescription" class="form-control" id="videoDescription" rows="4" value=""
+                    <textarea name="videoDescription" class="form-control" id="videoDescription" rows="4"
                         required placeholder="Lesson Description"></textarea>
                 </div>
             </div>
-            <!-- Video Upload -->
-            <label for="video thumbnail"> Upload Video:</label>
-            <div class="row">
-                <div class="col-md-5 image-center">
-                    <div class="mb-9">
-                        <div id="imageForm">
-                            <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
-                                <input type="hidden" name="submittedForm" value="image">
-                                <div class="dz-default dz-message upload-background">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <br>
-                                    <span>Click or drop your video file here</span>
-                                </div>
-                                <button type="submit" id="submit-button" hidden>Upload Video</button>
-                                <button class="" id="remove-pfp" hidden data-dz-remove>Cancel</button>
-                            </form>
-                            <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
-                            <label for="remove-pfp"
-                                class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
 
         <button type="button" class="btn">

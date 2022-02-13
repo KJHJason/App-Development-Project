@@ -27,8 +27,8 @@ class Course():
     def increase_view(self):
         self.__views += 1
 
-    def add_video_lesson(self, title, description, thumbnail, videoAbsolutePath): 
-        self.__lessons.append(VideoLesson(title, description, thumbnail, videoAbsolutePath))
+    def add_video_lesson(self, title, description, thumbnail, videoPath): 
+        self.__lessons.append(VideoLesson(title, description, thumbnail, videoPath))
     def add_zoom_lessons(self, title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay):
         self.__lessons.append(ZoomLesson(title, description, thumbnail, zoomURL, zoomPassword, timings, weeklyDay))
 
