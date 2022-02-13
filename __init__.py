@@ -4559,6 +4559,17 @@ def viewVideo(courseID,lessonID):
 # blocks all user from viewing the video so that they are only allowed to view the video from the purchase view
 @app.route("/static/course_videos/<courseID>/<lessonID>")
 def blockAccess(courseID, lessonID):
+    if "userSession" in session:
+        userSession = session["userSession"]
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        if userFound and accGoodStatus:
+            if courseID in userKey.get_purchases():
+                return make_response(206)
+            else:
+                abort(403)
+        else:
+            abort(403)
+    else:
       abort(403)
 
 """End of View Video Courses by Royston"""
