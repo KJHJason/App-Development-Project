@@ -30,30 +30,10 @@
 </div>
 {% endif %}
 {% endwith %}
+
 <!-- Video Upload -->
 <div class="container-sm">
-    <label for="video thumbnail"> Upload Video Here:</label>
-    <div class="row">
-        <div class="col-md-5 image-center">
-            <div class="mb-9">
-                <div id="imageForm">
-                    <form action="" method="POST" enctype="multipart/form-data" class="dropzone" id="dropper">
-                        <input type="hidden" name="submittedForm" value="image">
-                        <div class="dz-default dz-message upload-background">
-                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                            <br>
-                            <span>Click or drop your video file here</span>
-                        </div>
-                        <button type="submit" id="submit-button" hidden>Upload Video</button>
-                        <button class="" id="remove-pfp" hidden data-dz-remove>Cancel</button>
-                    </form>
-                    <label for="submit-button" class="btn btn-success profile-icon float-end">Upload</label>
-                    <label for="remove-pfp"
-                        class="btn btn-danger profile-icon float-end btn-margin">Cancel</label>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 
 {% endblock %}

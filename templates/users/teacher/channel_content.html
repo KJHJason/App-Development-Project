@@ -7,13 +7,13 @@
 {% endif %}
 
 {% block head %}
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/channel_content.css') }}">
 {% endblock %}
 {% block title %}Channel Content | CourseFinity{% endblock %}
 
 {% block content %}
-<!-- Teacher Profile Pic -->
-<!-- Teacher Name -->
+
 <div class="container">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -78,7 +78,37 @@
                         <p class="sales">Number of purchases: {{ course.get_numberPurchased() }}</p>
 
                         {% if course.get_course_type() == "video" %}
-                        <a href="/course/{{course.get_courseID()}}/upload_lesson" class="btn btn-primary">Create Video Lesson</a>
+                        <div class="modal fade" id="uploadVideoModal{{ course.get_courseID() }}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+                            aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <label for="video thumbnail"> Upload Video Here:</label>
+                                        <div class="row">
+                                            <div class="col-md-5 image-center">
+                                                <div class="mb-9">
+                                                    <div id="imageForm">
+                                                        <form action="" method="POST" enctype="multipart/form-data" class="dropzone"
+                                                            id="dropper{{ course.get_courseID() }}">
+                                                            <div class="dz-default dz-message upload-background">
+                                                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                                                <br>
+                                                                <span>Click or drop your video file here</span>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="" onclick="return false;" class="btn btn-primary" data-bs-toggle="modal"data-bs-target="#uploadVideoModal{{ course.get_courseID() }}">Create Video Lesson</a>
 
                         {% elif course.get_course_type() == "zoom" %}
                         <a href="/course/{{course.get_courseID()}}/upload_zoom" class="btn btn-primary">Create Zoom Lesson</a>
@@ -93,6 +123,39 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+{% for course in courseList %}
+{% if course.get_course_type() == "video"%}
+<script type="application/javascript">
+//Dropzone for lesson video
+    Dropzone.options.dropper{{course.get_courseID()}} = {
+    maxFiles: 1,
+    paramName: 'lessonVideo',
+    acceptedFiles: ".mp4, .mov, .avi",
+    chunking: true,
+    forceChunking: true,
+    url: '/course/{{course.get_courseID()}}/upload_lesson',
+    maxFilesize: 10000, // megabytes
+    chunkSize: 10000000, // bytes
+    retryChunks: true,
+    retryChunksLimit: 3,
+    autoProcessQueue: true,
+    autoQueue: true, // Make sure the files aren't queued until manually added
 
+    init: function() {
+        let lessonVideoDropzone = this;
+       
+        // when the user profile image has been successfully uploaded, refresh the page after 1.5 seconds
+        lessonVideoDropzone.on("success", function () {
+            function redirectUser() {
+            location.reload();
+            }
+            setInterval(redirectUser, 1500);
+        });
+    }
+};
+</script>
 
+{% endif %}
+{% endfor %}
 {% endblock %}
