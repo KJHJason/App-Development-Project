@@ -20,7 +20,7 @@
             <div id="pfp" class="col-2">
                 <img src="{{ teacherProfile }}" alt="{{ teacherProfile }}'s Profile Icon" id="user-icon-setting">
             </div>
-            <div id="bio" class="card-body col-9">
+            <div id="bio" class="card-body text-dark bg-light col-9">
                 {% if bio == "" %}
                 <p>Hello! Please take a look at the courses that I am teaching!</p>
                 {% else %}
@@ -35,7 +35,7 @@
         {% if popularCourseLen >= 1 %}
             {% for course in popularCourseList %}
             <div class="col">
-                <div class="card h-100">
+                <div class="card text-dark bg-light h-100">
                     <a href="/course/{{ course.get_courseID() }}"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
                     <div class="card-body">
                         <h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ course.get_shortTitle() }}</a></h5>
@@ -93,7 +93,7 @@
             {% endfor %}
         {% else %}
             <div class="col">
-                <div class="card h-100">
+                <div class="card text-dark bg-light h-100">
                     <img src="{{ url_for('static', filename='images/courses/placeholder.webp') }}" class="card-img-top" alt="Course Thumbnail">
                     <div class="card-body">
                         <h4 class="card-title">No Course Available</h4>
@@ -110,7 +110,7 @@
         {% if lastThreeCourseLen >= 1 %}
             {% for course in lastThreeCourseList %}
             <div class="col">
-                <div class="card h-100">
+                <div class="card text-dark bg-light h-100">
                     <a href="/course/{{ course.get_courseID() }}"><img src="{{ course.get_thumbnail() }}" class="card-img-top" alt="Course Thumbnail"></a>
                     <div class="card-body">
                         <h5 class="card-title"><a href="/course/{{ course.get_courseID() }}">{{ course.get_shortTitle() }}</a></h5>
@@ -168,7 +168,7 @@
             {% endfor %}
         {% else %}
             <div class="col">
-                <div class="card h-100">
+                <div class="card text-dark bg-light h-100">
                     <img src="{{ url_for('static', filename='images/courses/placeholder.webp') }}" class="card-img-top" alt="Course Thumbnail">
                     <div class="card-body">
                         <h4 class="card-title">No Course Available</h4>
@@ -182,7 +182,7 @@
     {% if teacherCourseLen > 3 %}
     <div class="row">
         <div class="col">
-            <a class="float-end" href="/{{ teacherUID }}/teacher_courses">See All Courses</a>
+            <a class="float-end" href="/teacher/{{teacherPageUID}}/page_<int:coursePageNum>">See All Courses</a>
         </div>
     </div> 
     {% endif %}    
