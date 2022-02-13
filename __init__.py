@@ -4556,6 +4556,10 @@ def viewVideo(courseID,lessonID):
             return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
             # return redirect(url_for("userLogin"))
 
+app.route("/static/course_videos/<courseID>/<lessonID>")
+def blockAccess():
+      abort(401)
+
 """End of View Video Courses by Royston"""
 
 """Add to Cart by Wei Ren"""
