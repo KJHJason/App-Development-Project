@@ -4,7 +4,7 @@
   outline: solid #f00 1px !important;
 }*/
 
-body .g-0 {
+.content {
     padding:0px 2.5vw;
 }
 
@@ -24,18 +24,12 @@ body .g-0 {
 
 .card .row {
     align-items:center;
-    padding:0.75em 0.75em 0px;
 }
 
 .col-8 .card-body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-}
-
-.card-img {
-    margin: 1vw;
-    width:25vw;
 }
 
 .card-title .fa-times:hover {
@@ -201,14 +195,8 @@ body .g-0 {
     margin:2.5px;
 }
 
-.information p{/*Text in area around Profile, including Price*/
-    direction:rtl;
-    margin:0;
-}
-
-.information p:nth-of-type(2n) {/*Price*/
-    font-weight:bold;
-    font-size:min(1.5625em, 3.75vw);
+.information span{
+    font-size:1.25rem;
 }
 
 .information a:hover {
@@ -219,7 +207,7 @@ body .g-0 {
 
 #shopping-title {
     /*Top-Bottom, Left-Right*/
-    margin:2.5em 5vw;
+    margin:2.5em 2.5vw;
 }
 
 /*Not a shopping card, but a shopping cart.*/
@@ -290,19 +278,21 @@ body .g-0 {
     .card-body .row {
         padding:0px;
     }
+    .information span{
+        font-size:;
+    }
 }
 
 @media only screen and (max-width: 450px) {
-    .selection p, .selection a {
-        width:100%;
-        height:50%;
-        padding:25px;
-    }
-    .selection {
-        width:100%;
+    .information .text-center {
+        margin-top: 1rem;
+        margin-bottom:0px;
     }
     .card-body .row {
         flex-direction:column;
+    }
+    .card .card-body:first-of-type {
+        padding-bottom:0px;
     }
 }
 
