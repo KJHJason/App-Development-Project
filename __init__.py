@@ -11,7 +11,7 @@ from base64 import b64encode, b64decode
 from apscheduler.schedulers.background import BackgroundScheduler
 from matplotlib import pyplot as plt
 from dicebear import DOptions
-from python_files import Student, Teacher, Forms, Course, CourseLesson
+from python_files import Student, Teacher, Forms, Course
 from python_files.Ticket import Ticket
 from python_files.Cashout import Cashout
 from python_files.Common import checkUniqueElements
