@@ -5911,22 +5911,23 @@ def upload(courseID):
     if "userSession" in session:
 
         userSession = session["userSession"]
+
+        db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
+        try:
+            if "Courses" in db and "Users" in db:
+                courseDict = db['Courses']
+                userDict = db['Users']
+            else:
+                db.close()
+                return redirect(url_for("home"))
+        except:
+            db.close()
+            print("Error in retrieving Lessons from user.db")
+            return redirect(url_for("home"))
+
         userKey, userFound, accGoodStatus, accType = get_key_and_validate(userSession, userDict)
 
         if userFound and accGoodStatus and accType == "Teacher":
-
-            db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "c")
-            try:
-                if "Courses" in db and "Users" in db:
-                    courseDict = db['Courses']
-                    userDict = db['Users']
-                else:
-                    db.close()
-                    return redirect(url_for("home"))
-            except:
-                db.close()
-                print("Error in retrieving Lessons from user.db")
-                return redirect(url_for("home"))
 
             courseObject = courseDict.get(courseID)
             if courseObject == None: # if courseID does not exist in courseDict
