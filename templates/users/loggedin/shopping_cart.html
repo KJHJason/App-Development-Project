@@ -19,42 +19,56 @@
 
     <div class="col"> <!--col-8 if PayPal exists -->
 
-        {% if status == "Success" %}
-        <div>
-            <div class="alert-div alert alert-info alert-dismissible fade show" role="alert">
-                <div>
-                    <i class="bi bi-info-circle"></i>
+        {% if courseAddedTitle != None %}
+            {% if status == "Success" %}
+            <div>
+                <div class="alert-div alert alert-info alert-dismissible fade show" role="alert">
+                    <div>
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <div>
+                        Course Titled '{{ courseAddedTitle }}' Added to Cart
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div>
-                    Course Titled '{{ courseAddedTitle }}' Added to Cart
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-        {% elif status == "Added" %}
-        <div>
-            <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
-                <div>
-                    <i class="bi bi-exclamation-circle"></i>
+            {% elif status == "Already in Cart" %}
+            <div>
+                <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+                    <div>
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        Course Titled '{{ courseAddedTitle }}' Already In Cart
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div>
-                    Course Titled '{{ courseAddedTitle }}' Already In Cart
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
-        {% elif status == "Purchased" %}
-        <div>
-            <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
-                <div>
-                    <i class="bi bi-exclamation-triangle"></i>
+            {% elif status == "Already Purchased" %}
+            <div>
+                <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+                    <div>
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        Course Titled '{{ courseAddedTitle }}' Already Purchased
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div>
-                    Course Titled '{{ courseAddedTitle }}' Already Purchased
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        </div>
+            {% elif status == "Own Course" %}
+            <div>
+                <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
+                    <div>
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        Own Course Titled '{{ courseAddedTitle }}' cannot be bought.
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+            {% endif %}
         {% endif %}
 
         {% for course in courseList %}
@@ -69,16 +83,22 @@
 
         <!--Course Info-->
         <div class="card">
-            <div class="row g-0">
-                <div class="col">
-                    <img src= "{{ course['courseThumbnail'] }}" class="card-img" alt="Course Thumbnail">
-                    <!--url_for('static', filename=course['courseThumbnail'])-->
-                </div>
-                <div class="col">
-                    <div class="information">
-                        <!--url_for('static', filename=course['courseOwnerLink'])--><!--url_for('static', filename=course['courseOwnerProfile'])-->
-                        <p><a href="{{ course['courseOwnerLink'] }}"><img src="{{ course['courseOwnerProfile'] }}" alt="Course Creator Profile"><span>&nbsp;&nbsp;</span>{{ course['courseOwnerUsername'] }}&nbsp;</a></p>
-                        <p>US${{ course['coursePricePaying'] }}</p>
+            <div class="card-body">
+                <div class="row g-0">
+                    <div class="col">
+                        <img src= "{{ course['courseThumbnail'] }}" class="card-img" alt="Course Thumbnail">
+                    </div>
+                    <div class="col">
+                        <div class="information">
+                            <p class="text-center">
+                                <a class="d-inline-flex align-items-center" href="{{ course['courseOwnerLink'] }}">
+                                    <span>{{ course['courseOwnerUsername'] }}</span>&nbsp;
+                                    <img src="{{ course['courseOwnerProfile'] }}" alt="Course Creator Profile">
+                                </a>
+                                <br>
+                                <span class="fw-bold">{{ course['courseType'] }}: US${{ course['coursePricePaying'] }}</span>
+                            </a></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,13 +106,11 @@
 
 
             <div class="card-body text">
-                <a href="/course/{{ course['courseID'] }}"><h5 class="card-title">{{ course['courseTitle'] }}<i class="fas fa-times" onclick="removeCourse('{{ course['courseID'] }}')"></i></h5></a>
+                <h5 class="card-title"><a href="/course/{{ course['courseID'] }}">{{ course['courseTitle'] }}</a><i class="fas fa-times" onclick="removeCourse('{{ course['courseID'] }}')"></i></h5>
                 <p class="card-text">{{ course['courseDescription'] }}</p>
             </div>
 
-
-
-            <div class="card-body">
+            <!--<div class="card-body">
                 <div class="row g-0">
                     <div class="selection col">
                         {% if info == "Video" %}
@@ -101,7 +119,7 @@
                         {% elif info == "Zoom" %}
                         <p class="info">Zoom Session</p>
                         <a href="{{ link }}" class="view">View Zoom Link</a>
-                        {% else %}	<!--Zoom not specified.-->
+                        {% else %}
                             {% if course['courseType'] == "Video" %}
                             <a href="{{ link_vid }}" class="selected">Video Recording</a>
                             {% elif course['courseType'] != "Video" %}
@@ -117,7 +135,7 @@
                         {% endif %}
                     </div>
                 </div>
-            </div>
+            </div>-->
         </div>
 
         {% endfor %}
@@ -172,51 +190,40 @@
 
 {% else %}
 
-{% if status == "Success" %}
-<div class="div d-flex justify-content-center">
-    <div class="alert-div alert alert-info alert-dismissible fade show" role="alert">
-        <div>
-            <i class="bi bi-info-circle"></i>
+    {% if courseAddedTitle != None %}
+        {% if status == "Already Purchased" %}
+        <div class="div d-flex justify-content-center">
+            <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
+                <div>
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    Course Titled '{{ courseAddedTitle }}' Already Purchased
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         </div>
-        <div>
-            Course Titled '{{ courseAddedTitle }}' Added to Cart
+        {% elif status == "Own Course" %}
+        <div class="div d-flex justify-content-center">
+            <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
+                <div>
+                    <i class="bi bi-exclamation-circle"></i>
+                </div>
+                <div>
+                    Own Course Titled '{{ courseAddedTitle }}' cannot be bought.
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-</div>
-{% elif status == "Added" %}
-<div class="div d-flex justify-content-center">
-    <div class="alert-div alert alert-warning alert-dismissible fade show" role="alert">
-        <div>
-            <i class="bi bi-exclamation-circle"></i>
-        </div>
-        <div>
-            Course Titled '{{ courseAddedTitle }}' Already In Cart
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-</div>
-{% elif status == "Purchased" %}
-<div class="div d-flex justify-content-center">
-    <div class="alert-div alert alert-danger alert-dismissible fade show" role="alert">
-        <div>
-            <i class="bi bi-exclamation-triangle"></i>
-        </div>
-        <div>
-            Course Titled '{{ courseAddedTitle }}' Already Purchased
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-</div>
-{% endif %}
+        {% endif %}
+    {% endif %}
 
-<div class="empty-cart">
-    <a href="/"><i class="fas fa-cart-plus"></i></a>
-    <p>Seems like there isn't anything here. Continue Shopping?</p>
-</div>
+    <div class="empty-cart">
+        <a href="/"><i class="fas fa-cart-plus"></i></a>
+        <p>Seems like there isn't anything here. Continue Shopping?</p>
+    </div>
 
 {% endif %}
-
 {% endblock %}
 
 
@@ -224,7 +231,7 @@
 {% block extra_js %}
 
 <script src="{{ url_for('static', filename='scripts/shopping_card.js') }}"></script>
-{% if count != 0 %}
+{% if courseList != [] %}
 <!--Paypal API-->
 <script src="https://www.paypal.com/sdk/js?client-id=AUTh83JMz8mLNGNzpzJRJSbSLUAEp7oe1ieGGqYCmVXpq427DeSVElkHnc0tt70b8gHlWg4yETnLLu1s&debug=false"></script>
 <script src="{{ url_for('static', filename='scripts/paypal_checkout.js') }}"></script>

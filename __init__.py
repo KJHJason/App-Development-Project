@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort
+from flask import Flask, render_template, request, redirect, url_for, session, make_response, flash, Markup, abort, send_from_directory
 import shelve, math, paypalrestsdk, difflib, json, csv, phonenumbers, pyotp, qrcode
 from os import environ
 from flask_limiter import Limiter
@@ -39,7 +39,7 @@ app.config["DATABASE_FOLDER"] = str(app.root_path) + "\\databases"
 # for image uploads file path
 app.config["PROFILE_UPLOAD_PATH"] = "static/images/user"
 app.config["THUMBNAIL_UPLOAD_PATH"] = "static/images/courses/thumbnails"
-app.config["ALLOWED_IMAGE_EXTENSIONS"] = {"png", "jpg", "jpeg"}
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ("png", "jpg", "jpeg")
 
 # for course video uploads file path
 app.config["COURSE_VIDEO_FOLDER"] = "static/course_videos"
@@ -2154,6 +2154,10 @@ def deleteUser(userID):
             try:
                 if 'Users' in db:
                     userDict = db['Users']
+                    if "Courses" in db:
+                        courseDict = db['Courses']
+                    else:
+                        courseDict = {}
                 else:
                     db.close()
                     print("No user data in user shelve files.")
@@ -2168,10 +2172,24 @@ def deleteUser(userID):
 
             if userKey != None:
                 userImageFileName = userKey.get_profile_image()
+
+                # deletes any courses if the teacher has uploaded any courses previously
+                if userKey.get_acc_type() == "Teacher":
+                    numOfCoursesTeaching = len(userKey.get_coursesTeaching())
+                    if numOfCoursesTeaching >= 1:
+                        courseDictCopy = courseDict.copy()
+                        for courseID, course in courseDictCopy.items():
+                            if course.get_userID() == userID:
+                                courseDict.pop(courseID)
+
                 userDict.pop(userID)
+                db["Courses"] = courseDict
                 db['Users'] = userDict
                 db.close()
-                delete_user_profile(userImageFileName)
+
+                if bool(userImageFileName):
+                    delete_user_profile(userImageFileName)
+
                 print(f"User account with the ID, {userID}, has been deleted.")
                 flash(f"User with user ID, {userID}, has been successfully deleted.", "User has been deleted")
                 return redirect(redirectURL)
@@ -2406,7 +2424,8 @@ def resetProfileImage(userID):
                 userImageFileName = userKey.get_profile_image()
                 db['Users'] = userDict
                 db.close()
-                delete_user_profile(userImageFileName)
+                if bool(userImageFileName):
+                    delete_user_profile(userImageFileName)
                 print(f"User account with the ID, {userID}, has its profile picture reset.")
                 flash(f"User account with the ID, {userID}, profile picture has been reset and deleted from the web server successfully.", "User's profile picture has been reset!")
                 return redirect(redirectURL)
@@ -2597,6 +2616,22 @@ def dashboard():
             # return redirect(url_for("adminLogin"))
     else:
         return redirect(url_for("home"))
+
+# block users that are not admins from accessing the files
+@app.route("/static/data/<folder>/<childFolder>/<filename>")
+def blockAccessToData(folder, childFolder, filename):
+    if "adminSession" in session:
+        adminSession = session["adminSession"]
+
+        userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
+
+        if userFound and accActive:
+            directoryPath = "".join([str(app.root_path), "\\static\\data\\", folder, "\\", childFolder])
+            return send_from_directory(directoryPath, filename, as_attachment=True)
+        else:
+            abort(403)
+    else:
+        abort(403)
 
 """End of Admin Data Visualisation (Total user per day) by Jason"""
 
@@ -3588,9 +3623,9 @@ def teacherCashOut():
                                 flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                             else:
                                 flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+                                userKey.set_earnings(0)
+                                userKey.set_accumulated_earnings(0)
 
-                            userKey.set_earnings(0)
-                            userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
@@ -3639,7 +3674,7 @@ def teacherCashOut():
 
                             paypalError = False
                             try:
-                                cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                                cashout = Cashout(cashoutID, datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
                                 cashoutDict[cashoutID] = cashout
                             except:
                                 print("Error in PayPal Payout.")
@@ -3649,8 +3684,8 @@ def teacherCashOut():
                                 flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                             else:
                                 flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+                                userKey.set_accumulated_earnings(0)
 
-                            userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
@@ -4469,6 +4504,97 @@ def explore(pageNum, tag):
 
 """End of Explore Category by Royston"""
 
+"""View Video Courses by Royston"""
+
+@app.route("/purchaseview/<courseID>/view_video/<lessonID>" , methods=["GET","POST"])
+def viewVideo(courseID,lessonID):
+    if "userSession" in session:
+        userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+
+
+        if userFound and accGoodStatus:
+            # add in your own code here for your C,R,U,D operation and remember to close() it after manipulating the data
+            imagesrcPath = retrieve_user_profile_pic(userKey)
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
+            purchasedCourses = userKey.get_purchases()
+            print("PurchaseID exists?: ", purchasedCourses)
+
+            try:
+                db = shelve.open(app.config["DATABASE_FOLDER"] + "\\user", "r")
+                courseDict = db["Courses"]
+                db.close()
+
+            except:
+                print("Error in obtaining course.db data")
+                return redirect(url_for("home"))
+
+            pageNum = session.get("pageNumber")
+
+            if "pageNumber" in session:
+                pageNum = session["pageNumber"]
+            else:
+                pageNum = 0
+            
+            if purchasedCourses != {}:
+                if courseID in purchasedCourses:
+                    course = courseDict[courseID]
+                    lessonList = course.get_lesson_list()
+                    for lessonObject in lessonList:
+                        lessonObjectID = lessonObject.get_lessonID()
+                        if lessonID == lessonObjectID:
+                            video = lessonObject.get_videoPath()
+                            print(video)
+                            break
+
+            else:
+                print("Purchase History is Empty")
+                return redirect(url_for("home"))
+            
+            # Get shopping cart len
+            shoppingCartLen = len(userKey.get_shoppingCart())
+            
+            return render_template('users/loggedin/view_video.html',courseID=courseID, pageNum = pageNum, shoppingCartLen=shoppingCartLen,video = video, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+
+        else:
+            print("User not found or is banned.")
+            # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+            session.clear()
+            return redirect(url_for("home"))
+    else:
+        if "adminSession" in session:
+            return redirect(url_for("home"))
+        else:
+            # determine if it make sense to redirect the user to the home page or the login page
+            return redirect(url_for("home")) # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
+            # return redirect(url_for("userLogin"))
+
+# blocks all user from viewing the video so that they are only allowed to view the video from the purchase view
+@app.route("/static/course_videos/<courseID>/<lessonID>")
+def blockAccess(courseID, lessonID):
+    # courseID is the folder for the course videos and lessonID is technically the file name with its extension, e.g. hello.mp4
+    if "userSession" in session:
+        userSession = session["userSession"]
+        userKey, userFound, accGoodStatus, accType = validate_session_get_userKey_open_file(userSession)
+        if userFound and accGoodStatus:
+            if courseID in userKey.get_purchases():
+                directoryPath = construct_path(app.config["COURSE_VIDEO_FOLDER"], courseID)
+                # first argument is the absolute path to the course video directory and the second argument is the filename (e.g. hello.mp4)
+                return send_from_directory(directoryPath, lessonID, as_attachment=False) # display instead of telling the user to download the video
+            else:
+                abort(403)
+        else:
+            abort(403)
+    else:
+      abort(403)
+
+"""End of View Video Courses by Royston"""
+
 """Add to Cart by Wei Ren"""
 @app.post("/add_to_cart/<courseID>")
 def addToCart(courseID):
@@ -4512,15 +4638,23 @@ def addToCart(courseID):
                 print("Course ID not in CourseDict")
                 abort(404)
 
+            session["Course Title"] = courseDict[courseID].get_title()
+
             # Is course already in cart?
             if courseID in userKey.get_shoppingCart():
-                session["Course Already Added"] = courseDict[courseID].get_title()
+                session["Add To Cart Status"] = "Already in Cart"
                 return redirect(url_for('shoppingCart'))
 
             # Is course already purchased?
             elif courseID in userKey.get_purchases():
-                session["Course Already Purchased"] = courseDict[courseID].get_title()
+                session["Add To Cart Status"] = "Already Purchased"
                 return redirect(url_for('shoppingCart'))
+
+            # Is it your own course?
+            elif accType == "Teacher":
+                if courseID in userKey.get_coursesTeaching():
+                    session["Add To Cart Status"] = "Own Course"
+                    return redirect(url_for('shoppingCart'))
 
             userKey.add_to_cart(courseID)
 
@@ -4529,7 +4663,7 @@ def addToCart(courseID):
 
             db.close() # remember to close your shelve files!
 
-            session["Course Added"] = courseDict[courseID].get_title()
+            session["Add To Cart Status"] = "Success"
             return redirect(url_for('shoppingCart'))
 
         else:
@@ -4637,8 +4771,8 @@ def shoppingCart():
                     db['Users'] = userDict
                     db.close()
 
-                    flash("Your purchase is successful. For more info on courses, check your purchase history. Good luck and have fun learning!", "Course(s) successfully purchased!")
-                    return redirect(url_for('home'))
+                    flash("Your purchase is successful. For more info on courses, view your course materials. Good luck and have fun learning!", "Course(s) successfully purchased!")
+                    return redirect('/purchasehistory/0')
 
                 elif removeCourseForm.validate():
                     courseID =  removeCourseForm.courseID.data
@@ -4669,18 +4803,11 @@ def shoppingCart():
                 print(session)
 
                 # Check if there were courses added
-                if "Course Added" in session:
-                    courseAddedTitle = session["Course Added"]
-                    status = "Success"
-                    session.pop("Course Added")
-                elif "Course Already Added" in session:
-                    courseAddedTitle = session["Course Already Added"]
-                    status = "Added"
-                    session.pop("Course Already Added")
-                elif "Course Already Purchased" in session:
-                    courseAddedTitle = session["Course Already Purchased"]
-                    status = "Purchased"
-                    session.pop("Course Already Purchased")
+                if "Course Title" in session:
+                    courseAddedTitle = session["Course Title"]
+                    status = session["Add To Cart Status"]
+                    session.pop("Course Title")
+                    session.pop("Add To Cart Status")
                 else:
                     courseAddedTitle = None
                     status = None
@@ -4703,7 +4830,7 @@ def shoppingCart():
                     courseList.append({"courseID" : courseID,
                                        "courseType" : course.get_course_type(),
                                        "courseTitle" : course.get_shortTitle(),
-                                       "courseDescription" : course.get_shortDescription(),
+                                       "courseDescription" : ellipsis(course.get_description(), "Custom", 140),
                                        "coursePricePaying" : course.get_price(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
@@ -4720,7 +4847,7 @@ def shoppingCart():
 
                 db.close() # remember to close your shelve files!
                 print(courseAddedTitle)
-                return render_template('users/loggedin/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/shopping_cart.html', status=status, courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -4775,7 +4902,7 @@ def contactUs():
                     email = contactForm.email.data
                     subject = contactForm.subject.data
 
-                    ticketID = generate_6_char_id(list(ticketDict.keys()))
+                    ticketID = generate_6_char_id(ticketDict)
 
                     ticket = Ticket(ticketID, userKey.get_user_id(), accType, name, email, subject, contactForm.enquiry.data)
 
@@ -4894,7 +5021,7 @@ def supportTicketManagement(pageNum):
                 session['Query'] = ""
             # GET is a client request for data from the web server,
             # while POST and PUT are used to send messages that upload data to the web server
-            print(ticketSearch.querySearch(placeholder="Search for ticket (using ID, name, etc.)", value='query'))
+
             # Only if there are entries
             if request.method == "POST" and ticketDict != {}:
 

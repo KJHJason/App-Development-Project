@@ -15,8 +15,9 @@ from python_files.Teacher import Teacher
 from python_files.Student import Student
 from python_files.Course import Course
 from python_files.CourseLesson import VideoLesson , ZoomLesson, Lesson
+from python_files.Ticket import Ticket
 from python_files.Security import sanitise, generate_admin_id
-from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_ID_to_length
+from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_ID_to_length, generate_6_char_id
 from python_files.Graph import userbaseGraph
 from datetime import date, timedelta
 import shelve, pathlib
@@ -70,6 +71,8 @@ user = Student(userIDStudent2, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent2] = user
 
+
+
 #General
 userIDStudent3 = generate_ID(userDict)
 username = "Waffles"
@@ -79,6 +82,12 @@ user = Student(userIDStudent3, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent3] = user
+
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent3, user.get_acc_type(), username, email, "Bugs", "Too many Pancakes.")
+
+
 
 #General
 userIDStudent4 = generate_ID(userDict)
@@ -90,6 +99,12 @@ user = Student(userIDStudent4, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent4] = user
 
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent4, user.get_acc_type(), username, email, "Account", "Is it possible to have animated Profile Pics? I like watermelons.")
+
+
+
 #General
 userIDStudent5 = generate_ID(userDict)
 username = "Edan Pang"
@@ -100,6 +115,12 @@ user = Student(userIDStudent5, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent5] = user
 
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent5, user.get_acc_type(), username, email, "Jobs", "Hello Jason, can I have a job here? Tell everyone I said hi!")
+
+
+
 #General
 userIDStudent6 = generate_ID(userDict)
 username = "Daniel Fan"
@@ -109,6 +130,12 @@ user = Student(userIDStudent6, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent6] = user
+
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent5, user.get_acc_type(), username, email, "News", "I have made a video covering your company's interest in Daniel. Please have a look at it and see if there is anything that you would like me to improve for you: https://www.youtube.com/watch?v=0Tz-Zd9Vr08")
+
+
 
 """Teacher 1"""
 
@@ -208,8 +235,6 @@ course.add_review(userIDStudent6, "I agree, god tier course!", "Lorem ipsum dolo
 
 course.set_views(1)
 
-user.set_courseTeaching(courseID)
-
 courseDict[courseID] = course
 
 title = "How to be a Daniel"
@@ -225,6 +250,24 @@ course = Course(courseID, courseType, price, "Other_Academics", title, descripti
 course.add_review(userIDStudent1, "Very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(570)
+
+user.set_courseTeaching(courseID)
+
+title = "How to be a daniel part 1"
+description = "You will learn the ups & up here."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
+videoPath = "".join(["/static/course_videos/", courseID,"/Aiming at legs.mp4"])
+
+course.add_video_lesson(title, description, thumbnail, videoPath)
+
+title = "How to make a daniel part 2"
+description = "You will now learn about the bees and the birds."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
+videoPath = "".join(["/static/course_videos/", courseID, "/Test_video.mp4"])
+
+print(f"Please change demo video folder to {courseID}")
+
+course.add_video_lesson(title, description, thumbnail, videoPath)
 
 user.set_courseTeaching(courseID)
 
@@ -316,8 +359,6 @@ graphList = [userbaseGraph(1), userbaseGraph(3), userbaseGraph(3), userbaseGraph
 
 for i in range(len(graphList)-1, -1, -1):
     graphList[i].set_date(todayDate - timedelta(days=30-i))
-
-print(graphList)
 
 # Overwrite entire shelve with updated dictionary
 userBase["Users"] = userDict
