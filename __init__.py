@@ -3586,9 +3586,9 @@ def teacherCashOut():
                                 flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                             else:
                                 flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+                                userKey.set_earnings(0)
+                                userKey.set_accumulated_earnings(0)
 
-                            userKey.set_earnings(0)
-                            userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
@@ -3637,7 +3637,7 @@ def teacherCashOut():
 
                             paypalError = False
                             try:
-                                cashout = Cashout(datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
+                                cashout = Cashout(cashoutID, datetime.now(), totalEarned, userKey.get_cashoutPreference(), receiver, response['batch_header']['payout_batch_id'])
                                 cashoutDict[cashoutID] = cashout
                             except:
                                 print("Error in PayPal Payout.")
@@ -3647,8 +3647,8 @@ def teacherCashOut():
                                 flash(Markup("We believe this may be an issue on our side. Please try again later, or inform us via our <a href='/contact_us'>Contact Us</a> page."), "Failed to cash out")
                             else:
                                 flash("You have successfully collected your revenue (after commission)!", "Collected Revenue")
+                                userKey.set_accumulated_earnings(0)
 
-                            userKey.set_accumulated_earnings(0)
                             db["Users"] = userDict
                             db.close()
                             return redirect(url_for("teacherCashOut"))
@@ -4510,14 +4510,21 @@ def addToCart(courseID):
                 print("Course ID not in CourseDict")
                 abort(404)
 
+            session["Course Title"] = courseDict[courseID].get_title()
+
             # Is course already in cart?
             if courseID in userKey.get_shoppingCart():
-                session["Course Already Added"] = courseDict[courseID].get_title()
+                session["Add To Cart Status"] = "Already in Cart"
                 return redirect(url_for('shoppingCart'))
 
             # Is course already purchased?
             elif courseID in userKey.get_purchases():
-                session["Course Already Purchased"] = courseDict[courseID].get_title()
+                session["Add To Cart Status"] = "Already Purchased"
+                return redirect(url_for('shoppingCart'))
+
+            # Is it your own course?
+            elif courseID in userKey.get_coursesTeaching():
+                session["Add To Cart Status"] = "Own Course"
                 return redirect(url_for('shoppingCart'))
 
             userKey.add_to_cart(courseID)
@@ -4527,7 +4534,7 @@ def addToCart(courseID):
 
             db.close() # remember to close your shelve files!
 
-            session["Course Added"] = courseDict[courseID].get_title()
+            session["Add To Cart Status"] = "Success"
             return redirect(url_for('shoppingCart'))
 
         else:
@@ -4667,18 +4674,11 @@ def shoppingCart():
                 print(session)
 
                 # Check if there were courses added
-                if "Course Added" in session:
-                    courseAddedTitle = session["Course Added"]
-                    status = "Success"
-                    session.pop("Course Added")
-                elif "Course Already Added" in session:
-                    courseAddedTitle = session["Course Already Added"]
-                    status = "Added"
-                    session.pop("Course Already Added")
-                elif "Course Already Purchased" in session:
-                    courseAddedTitle = session["Course Already Purchased"]
-                    status = "Purchased"
-                    session.pop("Course Already Purchased")
+                if "Course Title" in session:
+                    courseAddedTitle = session["Course Title"]
+                    status = session["Add To Cart Status"]
+                    session.pop("Course Title")
+                    session.pop("Add To Cart Status")
                 else:
                     courseAddedTitle = None
                     status = None
@@ -4701,7 +4701,7 @@ def shoppingCart():
                     courseList.append({"courseID" : courseID,
                                        "courseType" : course.get_course_type(),
                                        "courseTitle" : course.get_shortTitle(),
-                                       "courseDescription" : course.get_shortDescription(),
+                                       "courseDescription" : ellipsis(course.get_description(), "Custom", 140),
                                        "coursePricePaying" : course.get_price(),
                                        "courseOwnerUsername" : courseOwnerUsername,
                                        "courseOwnerProfile" : courseOwnerProfile,
@@ -4718,7 +4718,7 @@ def shoppingCart():
 
                 db.close() # remember to close your shelve files!
                 print(courseAddedTitle)
-                return render_template('users/loggedin/shopping_cart.html', courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                return render_template('users/loggedin/shopping_cart.html', status=status, courseAddedTitle=courseAddedTitle, courseList=courseList[::-1],form = removeCourseForm, checkoutForm = checkoutCompleteForm, subtotal = "{:,.2f}".format(subtotal), accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
 
         else:
             db["Users"] = userDict  # Save changes
@@ -4892,7 +4892,7 @@ def supportTicketManagement(pageNum):
                 session['Query'] = ""
             # GET is a client request for data from the web server,
             # while POST and PUT are used to send messages that upload data to the web server
-            print(ticketSearch.querySearch(placeholder="Search for ticket (using ID, name, etc.)", value='query'))
+
             # Only if there are entries
             if request.method == "POST" and ticketDict != {}:
 

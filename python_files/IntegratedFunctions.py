@@ -845,7 +845,7 @@ def delete_QR_code_images():
 """Done by Wei Ren"""
 
 # Adds ellipsis to text to prevent overflow, feel free to add your own limits
-def ellipsis(text, textType):
+def ellipsis(text, textType, wordLimit = None):
     length = 0
     count = 0
     weight = {'a': 60,
@@ -901,12 +901,15 @@ def ellipsis(text, textType):
               'Y': 70,
               'Z': 65,
               ' ': 27}
-    if textType == "Title":
+    if wordLimit != None and textType == "Custom":
+        wordLimit *= weight['A']
+    elif textType == "Title":
         wordLimit = 35*weight['A']
     elif textType == "Description":
         wordLimit = 70*weight['A']
     else:
         return None # You never know.
+
     for character in list(text):
         currentLength = length
         if character in weight:
