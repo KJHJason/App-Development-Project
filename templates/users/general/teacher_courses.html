@@ -21,13 +21,13 @@
         </ol>
     </nav>
     
-    {% if session.get("userSession") == teacherPageUID %}
+    {# if session.get("userSession") == teacherPageUID #}
     <div class="container">
         {% for course in courseList%}
             <div class="row">
                 <div class="col-md">
                     <a href="/course/{{ course.get_courseID() }}"><img class="image" src="{{ course.get_thumbnail() }}" alt="Course Thumbanil"></a>
-                    <a href="/course/{{ course.get_courseID() }">
+                    <a href="/course/{{ course.get_courseID() }}">
                         <h4>{{ course.get_Title() }}</h4>
                     </a>
                     <p>{{ course.get_Description() }}</p>
