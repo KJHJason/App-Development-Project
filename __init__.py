@@ -2624,7 +2624,6 @@ def blockAccessToData(folder, childFolder, filename):
         userKey, userFound, accActive = admin_get_key_and_validate_open_file(adminSession)
 
         if userFound and accActive:
-            # add in your code here
             directoryPath = "".join([str(app.root_path), "\\static\\data\\", folder, "\\", childFolder])
             return send_from_directory(directoryPath, filename, as_attachment=True)
         else:
