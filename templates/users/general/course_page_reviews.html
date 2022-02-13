@@ -17,6 +17,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/teacher_page/{{ course.get_userID() }}">{{ courseTeacherUsername }}</a></li>
+            <li class="breadcrumb-item active"><a href="/teacher/{{ course.get_userID() }}/page_1">All Courses</a></li>
             <li class="breadcrumb-item"><a href="/course/{{ course.get_courseID() }}">{{ course.get_title() }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">All Reviews</li>
         </ol>
