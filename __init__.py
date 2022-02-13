@@ -5933,7 +5933,7 @@ def upload(courseID):
             if courseObject == None: # if courseID does not exist in courseDict
                 return make_response("Course noot found!", 404)
 
-            file = request.files.get("video")
+            file = request.files.get("lessonVideo")
             
             extensionType = get_extension(file.filename)
             if extensionType != False:
@@ -5953,7 +5953,7 @@ def upload(courseID):
             
             # If the file already exists it's ok if we are appending to it,
             # but not if it's new file that would overwrite the existing one
-            if savePath.is_file():
+            if savePath.is_file() and currentChunk== 0:
                 # if the user has uploaded another video with the same filename of an existing video
                 return make_response("Video file with the same name already exists! Please rename to a different filename.", 500)
 
