@@ -68,7 +68,7 @@
                 <p class="card-text">{{ Lesson.get_description() }}</p>
                 {% for courseInformation in courseList %}
                     {% if courseInformation["CourseTypeCheck"] == "Video" %}
-                    <a target="_blank" href="{{ Lesson.get_videoAbsolutePath() }}" class="view">View Recording</a>
+                    <a href="/purchaseview/{{ courseID }}/view_video/{{ Lesson.get_lessonID() }}" class="view">View Recording</a>
                     {% elif courseInformation["CourseTypeCheck"] == "Zoom" or "Video" %}
                     <a target="_blank" href="{{ Lesson.get_zoom_link() }}" class="view">View Zoom Link</a>
                     <p>Zoom Password: {{ Lesson.get_zoom_password() }}</p>

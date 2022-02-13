@@ -208,8 +208,6 @@ course.add_review(userIDStudent6, "I agree, god tier course!", "Lorem ipsum dolo
 
 course.set_views(1)
 
-user.set_courseTeaching(courseID)
-
 courseDict[courseID] = course
 
 title = "How to be a Daniel"
@@ -225,6 +223,22 @@ course = Course(courseID, courseType, price, "Other_Academics", title, descripti
 course.add_review(userIDStudent1, "Very god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.set_views(570)
+
+user.set_courseTeaching(courseID)
+
+title = "How to be a daniel part 1"
+description = "You will learn the ups & up here."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
+videoPath = "https://www.youtube.com/watch?v=MP87VxcKvzY"
+
+course.add_video_lesson(title, description, thumbnail, videoPath)
+
+title = "How to make a daniel part 2"
+description = "You will now learn about the bees and the birds."
+thumbnail = "/static/images/courses/thumbnails/course_thumbnail_1.webp"
+videoPath = "https://www.youtube.com/watch?v=g1h0XECsMDs"
+
+course.add_video_lesson(title, description, thumbnail, videoPath)
 
 user.set_courseTeaching(courseID)
 
