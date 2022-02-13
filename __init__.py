@@ -6473,6 +6473,6 @@ if __name__ == '__main__':
     scheduler.configure(timezone="Asia/Singapore") # configure timezone to always follow Singapore's timezone
     # adding a scheduled job to save data for the graph everyday at 11.59 p.m. below
     scheduler.add_job(saveNoOfUserPerDay, trigger="cron", hour="23", minute="59", second="0", id="collectUserbaseData")
-    scheduler.add_job(delete_QR_code_images, "interval", hours=1, id="delete_otp_images")
+    scheduler.add_job(delete_QR_code_images, "interval", hours=1, id="deleteOtpImages")
     scheduler.start()
     app.run(debug=True, use_reloader=False)
