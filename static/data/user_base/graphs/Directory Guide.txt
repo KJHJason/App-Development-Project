@@ -1,0 +1,1 @@
+This is where the graphs images generated from matplotlib are stored.
