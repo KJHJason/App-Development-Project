@@ -6,6 +6,28 @@
 {% block title %}Create Zoom Lesson | CourseFinity{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                {% for category, message in messages %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalLabel">{{ category }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>{{ message }}</h6>
+                </div>
+                {% endfor %}
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endwith %}
 
 <div class="container-sm" id="form">
     <form action="" method="POST" enctype="multipart/form-data">
@@ -80,5 +102,13 @@
 {% endblock %}
 
 {% block extra_js %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<script>
+    var alertModal = new bootstrap.Modal(document.getElementById("alertModal"), {});
+    alertModal.show();
+</script>
+{% endif %}
+{% endwith %}
 <script src="{{ url_for('static', filename='scripts/upload_zoom.js') }}"></script>
 {% endblock %}
