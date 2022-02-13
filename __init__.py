@@ -4850,7 +4850,7 @@ def contactUs():
             return(redirect(url_for("home")))
 
         else:
-            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm, success=success)
+            return render_template("users/general/contact_us.html", accType="Guest", form = contactForm)
 
 """End of Contact Us by Wei Ren"""
 
@@ -5183,7 +5183,7 @@ def teacherCourses(teacherPageUID, coursePageNum):
             else:
                 shoppingCartLen = 0
 
-            return render_template('users/general/tecaher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen, courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
+            return render_template('users/general/teacher_courses.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen, courseList=paginationCourseList, courseListCount=courseListLen, maxPages=maxPages, pageNum=coursePageNum, paginationList=paginationList, nextPage=nextPage, previousPage=previousPage)
         else:
             print("Admin/User account is not found or is not active/banned.")
             session.clear()
@@ -5198,7 +5198,7 @@ def teacherCourses(teacherPageUID, coursePageNum):
 """Course Creation by Clarence"""
 
 @app.route("/create_course/<teacherUID>", methods=["GET", "POST"])
-def course_thumbnail_upload(teacherUID):
+def courseUpload(teacherUID):
     if "userSession" in session:
         userSession = session["userSession"]
 
@@ -5228,116 +5228,88 @@ def course_thumbnail_upload(teacherUID):
 
         if userFound and accGoodStatus:
             # insert your C,R,U,D operation here to deal with the user shelve data files
-            courseID = generate_course_ID(courseDict)
-
-            for courseID in courseDict:
-                courseObject = courseDict.get(courseID)
-
+            
             if request.method == "POST":
-                typeOfFormSubmitted = request.form.get("submittedForm")
-                if typeOfFormSubmitted == "courseDetails":
-                    courseTitleInput = sanitise(request.form.get("courseTitle"))
-                    courseDescriptionInput = sanitise(request.form.get("courseDescription"))
-                    courseTagInput = sanitise(request.form.get("courseTag"))
-                    courseTypeInput = request.form.get("courseType")
-                    coursePriceInput = sanitise(request.form.get("coursePrice"))
+                courseID = generate_course_ID(courseDict)
 
-                    courseObject.set_title(courseTitleInput)
-                    courseObject.set_description(courseDescriptionInput)
-                    courseObject.set_tag(courseTagInput)
-                    courseObject.set_type(courseTypeInput)
-                    courseObject.set_price(coursePriceInput)
+                courseTitleInput = sanitise(request.form.get("courseTitle"))
+                courseDescriptionInput = sanitise(request.form.get("courseDescription"))
+                courseTagInput = sanitise(request.form.get("courseTag"))
+                courseTypeInput = request.form.get("courseType")
+                coursePriceInput = sanitise(request.form.get("coursePrice"))
+                
+                if "courseThumbnail" not in request.files:
+                    print("No file sent.")
+                    return redirect(url_for("courseUpload", teacherUID=teacherUID))
 
-                    db.close()
-                    print("Course details have been created.")
-                    return redirect(url_for("teacherPage"))
-                elif typeOfFormSubmitted == "image":
-                    if "courseThumbnail" not in request.files:
-                        print("No file sent.")
-                        return redirect(url_for("userProfile"))
+                file = request.files.get("courseThumbnail")
 
-                    file = request.files["profileImage"]
+                extensionType = get_extension(file.filename)
+                if extensionType != False:
+                    # renaming the file name of the submitted image data payload
+                    file.filename = courseID + extensionType
+                    filename = file.filename
+                else:
+                    filename = "invalid"
 
-                    totalChunks = int(request.form["dztotalchunkcount"])
-                    currentChunk = int(request.form['dzchunkindex'])
+                # getting the uploaded file size value from the cookie made in the javascript when uploading the user profile image
+                uploadedFileSize = request.cookies.get("filesize")
+                print("Uploaded file size:", uploadedFileSize, "bytes")
 
-                    extensionType = get_extension(file.filename)
-                    if extensionType != False:
-                        file.filename = userSession + extensionType # renaming the file name of the submitted image data payload
-                        filename = file.filename
-                    else:
-                        filename = "invalid"
 
-                    if file and allowed_image_file(filename):
-                        # will only accept .png, .jpg, .jpeg
-                        print("File extension accepted and is within size limit.")
+                if file and allowed_image_file(filename):
+                    # will only accept .png, .jpg, .jpeg
+                    print("File extension accepted and is within size limit.")
 
-                        courseThumbnailFileName = file.filename
-                        newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], courseThumbnailFileName)
+                    # to construct a file path for userID.extension (e.g. 0.jpg) for renaming the file
 
-                        if currentChunk == 0:
-                            newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
+                    userImageFileName = file.filename
+                    newFilePath = construct_path(app.config["THUMBNAIL_UPLOAD_PATH"], userImageFileName)
+                    file.save(newFilePath)
 
-                        print("Total file size:", int(request.form['dztotalfilesize']))
+                    # resizing, compressing, and converting the thumbnail image to webp
+                    imageResized, webpFilePath = resize_image(newFilePath, (1920, 1080))
 
-                        try:
-                            with open(newFilePath, "ab") as imageData: # ab flag for opening a file for appending data in binary format
-                                imageData.seek(int(request.form['dzchunkbyteoffset']))
-                                print("dzchunkbyteoffset:", int(request.form['dzchunkbyteoffset']))
-                                imageData.write(file.stream.read())
-                                imageData.close()
-                        except OSError:
-                            print('Could not write to file')
-                            return make_response("Error writing to file", 500)
-                        except:
-                            print("Unexpected error.")
-                            return make_response("Unexpected error", 500)
-
-                        if currentChunk + 1 == totalChunks:
-                            # This was the last chunk, the file should be complete and the size we expect
-                            if newFilePath.stat().st_size != int(request.form['dztotalfilesize']):
-                                print(f"File {file.filename} was completed, but there is a size mismatch. Received {newFilePath.stat().st_size} but had expected {request.form['dztotalfilesize']}")
-                                # remove corrupted image
-                                newFilePath.unlink(missing_ok=True) # missing_ok argument is set to True as the file might not exist (>= Python 3.8)
-                                return make_response("Uploaded image is corrupted! Please try again!", 500)
-                            else:
-                                print(f'File {file.filename} has been uploaded successfully')
-                        else:
-                            db.close()
-                            print(f"Chunk {currentChunk + 1} of {totalChunks} for file {file.filename} complete")
-                            return make_response((f"Chunk {currentChunk} out of {totalChunks} Uploaded", 200))
+                    if imageResized:
+                        # if file was successfully resized, it means the image is a valid image
+                        relativeWebpFilePath = "".join(["/", app.config["THUMBNAIL_UPLOAD_PATH"], "/", webpFilePath.name])
+                        course = Course.Course(courseID, courseTypeInput, coursePriceInput ,courseTagInput ,courseTitleInput, courseDescriptionInput, relativeWebpFilePath, teacherUID)
+                        courseDict[courseID] = course
+                        db["Courses"] = courseDict
+                        print("Course created successfully.")
+                        db.close()
+                        print("Course details have been created.")
+                        flash("Your course has been created! You can now add lessons to the course.", "Course Created")
+                        return redirect("/teacher/" + teacherUID + "/page_1")
                     else:
                         db.close()
-                        print("Image extension not supported.")
-                        return make_response("Image extension not supported!", 500)
+                        flash("Image file is corrupted", "Corrupted File")
+                        webpFilePath.unlink(missing_ok=True)
+                        return redirect(url_for("courseUpload", teacherUID=teacherUID))
                 else:
                     db.close()
-                    return make_response("Image extension not supported!", 500)
+                    flash(Markup("Sorry! Only png, jpg, jpeg are only supported currently!<br>Please upload a supported image file!<br>Thank you!"), "File Extension Not Accepted")
+                    return redirect(url_for("courseUpload", teacherUID=teacherUID))
             else:
                 db.close()
-            imagesrcPath = retrieve_user_profile_pic(userKey)
-            if accType == "Teacher":
-                teacherUID = userSession
+                imagesrcPath = retrieve_user_profile_pic(userKey)
+                if accType == "Teacher":
+                    teacherUID = userSession
 
-                # Get shopping cart len
-                shoppingCartLen = len(userKey.get_shoppingCart())
+                    # Get shopping cart len
+                    shoppingCartLen = len(userKey.get_shoppingCart())
 
-                db.close()  # remember to close your shelve files!
-                return render_template('users/teacher/create_course.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
-            else:
-                db.close()
-                print("User not found or is banned")
-                # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
-                session.clear()
-                return redirect(url_for("home"))
+                    db.close()  # remember to close your shelve files!
+                    return render_template('users/teacher/create_course.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                else:
+                    db.close()
+                    print("User not found or is banned")
+                    # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage
+                    session.clear()
+                    return redirect(url_for("home"))
         else:
-            if "adminSession" in session:
-                return redirect(url_for("home"))
-            else:
-                # determine if it make sense to redirect the user to the home page or the login page
-                # if it make sense to redirect the user to the home page, you can delete the if else statement here and just put return redirect(url_for("home"))
-                return redirect(url_for("home"))
-                # return redirect(url_for("userLogin"))
+            db.close()
+            return redirect(url_for("userLogin"))
     else:
         if "adminSession" in session:
             return redirect(url_for("home"))
@@ -6155,6 +6127,36 @@ def teacherHandbook():
     else:
         return render_template("users/general/teacher_handbook.html", accType="Guest")
 
+@app.route('/community_guidelines')
+def communityGuidelines():
+    if "adminSession" in session or "userSession" in session:
+        if "adminSession" in session:
+            userSession = session["adminSession"]
+        else:
+            userSession = session["userSession"]
+
+        userKey, userFound, accGoodStatus, accType, imagesrcPath = general_page_open_file_with_userKey(userSession)
+
+        if userFound and accGoodStatus:
+            if accType == "Teacher":
+                teacherUID = userSession
+            else:
+                teacherUID = ""
+
+            if accType != "Admin":
+                # Get shopping cart len
+                shoppingCartLen = len(userKey.get_shoppingCart())
+            else:
+                shoppingCartLen = 0
+
+            return render_template('users/general/community_guidelines.html', accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+        else:
+            print("Admin/User account is not found or is not active/banned.")
+            session.clear()
+            return render_template("users/general/community_guidelines.html", accType="Guest")
+    else:
+        return render_template("users/general/community_guidelines.html", accType="Guest")
+
 """End of Genral Pages"""
 
 # 7 template app.route("") for you guys :prayge:
@@ -6288,7 +6290,10 @@ def insertName():
                 teacherUID = userSession
             else:
                 teacherUID = ""
-            return render_template('users/loggedin/page.html', accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                
+            shoppingCartLen = len(userKey.get_shoppingCart())
+                
+            return render_template('users/loggedin/page.html', shoppingCartLen=shoppingCartLen, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
         else:
             print("User not found or is banned.")
             # if user is not found/banned for some reason, it will delete any session and redirect the user to the homepage

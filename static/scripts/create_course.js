@@ -1,17 +1,11 @@
-$(document).ready(function(){
-    $("#uploadThumnailButton").click(function(){
-        $("#imageForm").toggle();
-    });
-});
-
 // Dropzone.js for segmenting data payload to chunks of data
-Dropzone.options.dropper = {
+Dropzone.options.courseThumbnail = {
     maxFiles: 1,
     paramName: 'courseThumbnail',
     acceptedFiles: ".jpeg,.jpg,.png",
     chunking: true,
     forceChunking: true,
-    url: '/create_course',
+    url: '/create_course/{{ teacherUID }}',
     maxFilesize: 50, // megabytes
     chunkSize: 1000000, // bytes
     retryChunks: true,
@@ -41,7 +35,7 @@ Dropzone.options.dropper = {
         myDropzone.on('sending', function(file, xhr, formData) {
             /* Append inputs to FormData */
             $(".dz-progress").show();
-            formData.append("courseThumbnail", document.getElementById('dropper').value);
+            formData.append("courseThumbnail", document.getElementById('courseThumbnail').value);
         });
     }
 };

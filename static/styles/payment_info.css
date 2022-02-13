@@ -1,9 +1,0 @@
-#paypal-button-container {
-    text-align:center;
-    margin:1vw;
-    margin-top:calc(1vw + 3rem);/*Centered with footer*/
-}
-
-#paypal-button-container div {
-    width:25%;
-}
