@@ -35,7 +35,7 @@
                             {% if accType == "Admin" %}
                                 <button type="button" class="btn btn-success float-end">Admin cannot add to cart!</button>
                             {% elif searchInformation["Bought"] == True %}
-                                <form action="/purchaseview/{{ courseID }}}" method="POST">
+                                <form action="/purchaseview/{{ courseID }}" method="POST">
                                     <button type="submit" class="btn btn-success float-end"><i class="fas fa-shopping-bag"></i> View Purchase</button>
                                 </form>
                             {% else %}
