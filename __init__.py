@@ -39,7 +39,7 @@ app.config["DATABASE_FOLDER"] = str(app.root_path) + "\\databases"
 # for image uploads file path
 app.config["PROFILE_UPLOAD_PATH"] = "static/images/user"
 app.config["THUMBNAIL_UPLOAD_PATH"] = "static/images/courses/thumbnails"
-app.config["ALLOWED_IMAGE_EXTENSIONS"] = {"png", "jpg", "jpeg"}
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ("png", "jpg", "jpeg")
 
 # for course video uploads file path
 app.config["COURSE_VIDEO_FOLDER"] = "static/course_videos"
