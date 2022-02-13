@@ -4900,7 +4900,7 @@ def contactUs():
                     email = contactForm.email.data
                     subject = contactForm.subject.data
 
-                    ticketID = generate_6_char_id(list(ticketDict.keys()))
+                    ticketID = generate_6_char_id(ticketDict)
 
                     ticket = Ticket(ticketID, userKey.get_user_id(), accType, name, email, subject, contactForm.enquiry.data)
 

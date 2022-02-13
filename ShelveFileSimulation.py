@@ -15,8 +15,9 @@ from python_files.Teacher import Teacher
 from python_files.Student import Student
 from python_files.Course import Course
 from python_files.CourseLesson import VideoLesson , ZoomLesson, Lesson
+from python_files.Ticket import Ticket
 from python_files.Security import sanitise, generate_admin_id
-from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_ID_to_length
+from python_files.IntegratedFunctions import generate_ID, generate_course_ID, generate_ID_to_length, generate_6_char_id
 from python_files.Graph import userbaseGraph
 from datetime import date, timedelta
 import shelve, pathlib
@@ -33,31 +34,7 @@ adminDict = {}
 courseDict = {}
 ticketDict = {}
 graphList = []
-"""
-                    dbAdmin = shelve.open(app.config["DATABASE_FOLDER"] + "\\admin", "c")
-                    # Remember to validate
-                    try:
-                        if "Tickets" in dbAdmin:
-                            ticketDict = dbAdmin['Tickets']
-                        else:
-                            print("admin.db has no contact entries.")
-                            ticketDict = {}
-                    except:
-                        print("Error in retrieving Tickets from admin.db")
 
-                    name = contactForm.name.data
-                    email = contactForm.email.data
-                    subject = contactForm.subject.data
-
-                    ticketID = generate_6_char_id(list(ticketDict.keys()))
-
-                    ticket = Ticket(ticketID, userKey.get_user_id(), accType, name, email, subject, contactForm.enquiry.data)
-
-                    print(ticket)
-
-                    ticketDict[ticketID] = ticket
-                    dbAdmin['Tickets'] = ticketDict
-"""
 """
 {"Users":{userID:User()}
          {userID:User()}
@@ -94,6 +71,8 @@ user = Student(userIDStudent2, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent2] = user
 
+
+
 #General
 userIDStudent3 = generate_ID(userDict)
 username = "Waffles"
@@ -103,6 +82,12 @@ user = Student(userIDStudent3, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent3] = user
+
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent3, user.get_acc_type(), username, email, "Bugs", "Too many Pancakes.")
+
+
 
 #General
 userIDStudent4 = generate_ID(userDict)
@@ -114,6 +99,12 @@ user = Student(userIDStudent4, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent4] = user
 
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent4, user.get_acc_type(), username, email, "Account", "Is it possible to have animated Profile Pics? I like watermelons.")
+
+
+
 #General
 userIDStudent5 = generate_ID(userDict)
 username = "Edan Pang"
@@ -124,6 +115,12 @@ user = Student(userIDStudent5, username, email, password)
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent5] = user
 
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent5, user.get_acc_type(), username, email, "Jobs", "Hello Jason, can I have a job here? Tell everyone I said hi!")
+
+
+
 #General
 userIDStudent6 = generate_ID(userDict)
 username = "Daniel Fan"
@@ -133,6 +130,12 @@ user = Student(userIDStudent6, username, email, password)
 
 # Get corresponding userID for updating/adding to dictionary
 userDict[userIDStudent6] = user
+
+# Tickets
+ticketID = generate_6_char_id(ticketDict)
+ticketDict[ticketID] = Ticket(ticketID, userIDStudent5, user.get_acc_type(), username, email, "News", "I have made a video covering your company's interest in Daniel. Please have a look at it and see if there is anything that you would like me to improve for you: https://www.youtube.com/watch?v=0Tz-Zd9Vr08")
+
+
 
 """Teacher 1"""
 
