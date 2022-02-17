@@ -692,7 +692,7 @@ Hence, please only force shut down the program if necessary.
             print("\nThank you and have a nice day.")
             break
         else:
-            print("\nError: Invalid command, please enter a number between 1 to 6 as specified in the control panel guide.")
+            print("\nError: Invalid command, please enter a number between 1 to 9 as specified in the control panel guide.")
 
 if __name__ == '__main__':
     main()
