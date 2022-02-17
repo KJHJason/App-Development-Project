@@ -1845,7 +1845,7 @@ def userManagement(pageNum):
                 redirectURL = "/user_management/page/" + str(pageNum)
 
                 if validEmail:
-                    userID = int(request.form["userID"])
+                    userID = request.form["userID"]
                     userKey = userDict.get(userID)
                     oldEmail = userKey.get_email()
                     duplicateEmail = check_duplicates(email, userDict, "email")
@@ -1979,7 +1979,7 @@ def userSearchManagement(pageNum):
                 redirectURL = "/user_management/search/" + str(pageNum) +"/" + parametersURL
 
                 if validEmail:
-                    userID = int(request.form["userID"])
+                    userID = request.form["userID"]
                     userKey = userDict.get(userID)
                     oldEmail = userKey.get_email()
                     duplicateEmail = check_duplicates(email, userDict, "email")
@@ -2889,12 +2889,12 @@ def updateUsername():
                     else:
                         db.close()
                         flash("Sorry, Username has already been taken!")
-                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
+                        return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID, shoppingCartLen=shoppingCartLen)
                 else:
                     db.close()
                     print("Update username input same as user's current username")
                     flash("Sorry, you cannot change your username to your current username!")
-                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
+                    return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID = teacherUID, shoppingCartLen=shoppingCartLen)
             else:
                 db.close()
                 return render_template('users/loggedin/change_username.html', form=create_update_username_form, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID = teacherUID)
@@ -2980,12 +2980,12 @@ def updateEmail():
                     else:
                         db.close()
                         flash("Sorry, the email you have entered is already taken by another user!")
-                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                        return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen)
                 else:
                     db.close()
                     print("User updated email input is the same as their current email")
                     flash("Sorry, you cannot change your email to your current email!")
-                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
+                    return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, imagesrcPath=imagesrcPath, teacherUID=teacherUID, shoppingCartLen=shoppingCartLen)
             else:
                 db.close()
                 return render_template('users/loggedin/change_email.html', form=create_update_email_form, accType=accType, shoppingCartLen=shoppingCartLen, imagesrcPath=imagesrcPath, teacherUID=teacherUID)
@@ -3539,7 +3539,7 @@ def teacherCashOut():
                         cashoutDict = dbAdmin['Cashouts']
                     else:
                         print("Cashout data in shelve is empty.")
-                        cashoutDict = []
+                        cashoutDict = {}
                 except:
                     print("Error in retrieving Cashouts from admin.db")
 
