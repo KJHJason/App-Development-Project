@@ -140,18 +140,18 @@ ticketDict[ticketID] = Ticket(ticketID, userIDStudent5, user.get_acc_type(), use
 """Teacher 1"""
 
 #General
-userID = generate_ID(userDict)
+userIDAvery = generate_ID(userDict)
 username = "Avery"
 email = sanitise("ice_cream@gmail.com".lower())
 password = "789&*("
-user = Teacher(userID, username, email, password)
+user = Teacher(userIDAvery, username, email, password)
 
 #Teacher
 user.set_earnings("5")
 user.set_accumulated_earnings("100")
 user.update_teacher_join_date_to_today()
 
-userDict[userID] = user
+userDict[userIDAvery] = user
 #Courses (Royston)
 
 #Courses Teaching (Wei Ren)
@@ -162,7 +162,7 @@ zoomPrice = "{:,.2f}".format(72.5)
 courseType = "Zoom" ## Zoom or Video
 
 courseID = generate_course_ID(courseDict)
-course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, userID)
+course = Course(courseID, courseType, zoomPrice, "Web_Development", title, description, thumbnail, userIDAvery)
 
 course.add_review(userIDStudent2, "Good course to be honest", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "4")
 
@@ -201,6 +201,7 @@ user = Teacher(userID, username, email, password)
 #Teacher
 user.set_earnings("100")
 user.update_teacher_join_date_to_today()
+user.set_accumulated_earnings("10")
 """
 #Cashout Info
 user.set_cashoutPreference("Phone")
@@ -222,8 +223,6 @@ course = Course(courseID, courseType, price, "Math", title, description, thumbna
 
 
 course.add_review(userIDStudent2, "Good course to be honest", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
-
-course.add_review(userIDStudent2, "The best course for becoming a better self!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
 
 course.add_review(userIDStudent3, "Welp, that was disappointing!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "1")
 
@@ -269,8 +268,6 @@ print(f"Please change demo video folder to {courseID}")
 
 course.add_video_lesson(title, description, thumbnail, videoPath)
 
-user.set_courseTeaching(courseID)
-
 courseDict[courseID] = course
 
 
@@ -295,6 +292,15 @@ course.add_review(userIDStudent4, "Not worth your money and time", "Lorem ipsum 
 course.add_review(userIDStudent5, "Actually enjoyed learning from this course", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "4")
 
 course.add_review(userIDStudent6, "I agree, god tier course!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "5")
+
+course.add_review(userIDAvery, "Enjoyed the course", "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", "4")
+
+AveryUserObject = userDict.get(userIDAvery)
+
+simulatedPurchaseDict = {}
+simulatedPurchaseDict[courseID] = {'Course ID' : courseID, "Date" : date.today(), 'Time' : "13:59 (Example)", 'Cost' : 129, "PayPalOrderID" : "simulatedOrderIDExample", "PayPalAccountID" : "SimulatedPayerIDExample"}
+
+AveryUserObject.set_purchases(simulatedPurchaseDict)
 
 course.set_views(1000)
 
