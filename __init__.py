@@ -3176,6 +3176,9 @@ def changeAccountType():
                     if bool(userKey.get_shoppingCart()):
                         user.set_shoppingCart(userKey.get_shoppingCart())
 
+                    if bool(userKey.get_otp_setup_key()):
+                        user.set_otp_setup_key(userKey.get_otp_setup_key())
+
                     user.set_tags_viewed(userKey.get_tags_viewed())
 
                     userDict[userID] = user # overrides old student object with the new teacher object
